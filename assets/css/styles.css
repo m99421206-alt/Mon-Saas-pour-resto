@@ -1,0 +1,585 @@
+/* =============================================================================
+   AfricaMenu — Landing (mobile-first)
+   Couleurs et espacements calqués sur les maquettes fournies.
+   ============================================================================= */
+
+:root {
+  /* Palette */
+  --color-bg: #ffffff;
+  --color-text: #000000;
+  --color-text-muted: #555555;
+  --color-text-soft: #666666;
+  --color-accent: #ff6b00;
+  --color-footer: #0b1221;
+  --color-success: #58d671;
+  --color-wa: #25d366;
+  --color-icon-box: #fdf1e7;
+  --color-placeholder: #d9d9d9;
+  --color-cta-orange: #ff6b00;
+
+  /* Typo */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  /* Espacements (mobile-first) */
+  --space-xs: 0.5rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 2.5rem;
+  --space-2xl: 3rem;
+  --space-3xl: 3.5rem;
+
+  --container-pad: 1.25rem; /* ~20px */
+  --radius-card: 1.75rem; /* 28px */
+  --radius-hero-img: 2rem; /* 32px */
+  --shadow-card: 0 12px 32px rgba(15, 23, 42, 0.08);
+  --shadow-btn: 0 8px 24px rgba(255, 107, 0, 0.35);
+  --shadow-float: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --max-content: 72rem;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+/* ----------------------------------------------------------------------------- Utilitaires */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.text-accent {
+  color: var(--color-accent);
+}
+
+.container {
+  width: 100%;
+  max-width: var(--max-content);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+}
+
+.container--narrow {
+  max-width: 26rem; /* ~416px : colonne mobile lisible */
+}
+
+.section {
+  padding-block: var(--space-2xl);
+}
+
+/* Tablette / desktop : respiration un peu plus large */
+@media (min-width: 48rem) {
+  :root {
+    --container-pad: 1.5rem;
+  }
+
+  .section {
+    padding-block: var(--space-3xl);
+  }
+
+  .container--narrow {
+    max-width: 36rem;
+  }
+}
+
+/* ----------------------------------------------------------------------------- Header */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 3.5rem;
+  padding-block: var(--space-sm);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+/* Logo placeholder : fond orange + picto blanc (fourchette / couteau simplifiés SVG) */
+.brand__logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.brand__name {
+  font-weight: 700;
+  font-size: 1.0625rem;
+  letter-spacing: -0.02em;
+}
+
+.link-login {
+  font-weight: 400;
+  font-size: 0.9375rem;
+}
+
+.link-login:hover,
+.link-login:focus-visible {
+  text-decoration: underline;
+  outline: none;
+}
+
+/* ----------------------------------------------------------------------------- Hero (aligné gauche sur mobile comme la maquette) */
+
+.hero {
+  padding-top: var(--space-lg);
+  padding-bottom: var(--space-xl);
+}
+
+/* Hero : contenu sur toute la largeur utile (lignes de titre plus longues) */
+.hero .container {
+  max-width: 100%;
+}
+
+.hero__title {
+  /* Grand : monte avec la largeur d’écran ; plafond ~76px */
+  font-size: clamp(2.375rem, 5vw + 1.75rem, 4.75rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  max-width: 100%;
+}
+
+.hero__lead {
+  margin-top: var(--space-md);
+  font-size: 1rem;
+  color: var(--color-text);
+  line-height: 1.65;
+  max-width: 36rem;
+}
+
+.hero .btn {
+  margin-top: var(--space-lg);
+}
+
+.hero__badges {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  margin-top: var(--space-xl);
+}
+
+.hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  font-size: 0.6875rem; /* 11px */
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+/* Coches plus petites uniquement dans le hero */
+.hero__badges .check-icon {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--color-success);
+  position: relative;
+}
+
+.hero__badges .check-icon::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: 0.28rem;
+  height: 0.48rem;
+  border: solid #fff;
+  border-width: 0 1.5px 1.5px 0;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+/* ----------------------------------------------------------------------------- Boutons */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  font-family: inherit;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  border-radius: 999px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.btn--primary {
+  background: var(--color-accent);
+  color: #fff;
+  box-shadow: var(--shadow-btn);
+}
+
+.btn--primary:hover {
+  transform: translateY(-1px);
+}
+
+.btn--lg {
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  min-height: 3.25rem;
+}
+
+.btn--xl {
+  padding: 1rem 1.75rem;
+  font-size: 1rem;
+  width: 100%;
+  max-width: 22rem;
+  background: #fff;
+  color: var(--color-cta-orange);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+.btn--xl:hover {
+  transform: translateY(-1px);
+}
+
+.btn__icon {
+  display: inline-flex;
+}
+
+.btn__icon svg {
+  display: block;
+}
+
+.btn__icon--muted {
+  color: #9ca3af;
+}
+
+.btn--on-orange:focus-visible {
+  outline-color: #fff;
+}
+
+/* ----------------------------------------------------------------------------- Grille de cartes fonctionnalités */
+
+.features {
+  padding-top: var(--space-md);
+}
+
+.feature-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.feature-card {
+  background: #fff;
+  border-radius: var(--radius-card);
+  padding: clamp(1.75rem, 4vw, 2.25rem);
+  box-shadow: var(--shadow-card);
+  width: min(100%, 26rem);
+  margin-inline: auto;
+}
+
+.feature-card__icon-wrap {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 0.625rem;
+  background: var(--color-icon-box);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-md);
+}
+
+.feature-card__icon {
+  width: 1.35rem;
+  height: 1.35rem;
+  color: var(--color-text);
+}
+
+.feature-card__title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: var(--space-xs);
+}
+
+.feature-card__text {
+  font-size: 0.9375rem;
+  color: #333333;
+  line-height: 1.6;
+}
+
+@media (min-width: 48rem) {
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+  }
+
+  .feature-card {
+    width: auto;
+    margin-inline: 0;
+  }
+}
+
+/* ----------------------------------------------------------------------------- Showcase (image placeholder + badge) */
+
+.showcase {
+  text-align: center;
+}
+
+.showcase__visual {
+  position: relative;
+  margin-inline: auto;
+  max-width: 20rem;
+}
+
+.showcase__placeholder {
+  aspect-ratio: 3 / 4;
+  width: 100%;
+  border-radius: var(--radius-hero-img);
+  background: var(--color-placeholder);
+  min-height: 14rem;
+}
+
+.showcase__float-card {
+  position: absolute;
+  left: 0.25rem;
+  bottom: -1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: var(--shadow-float);
+  text-align: left;
+  max-width: calc(100% - 0.5rem);
+}
+
+.showcase__float-label {
+  font-size: 0.75rem;
+  color: var(--color-text-soft);
+  font-weight: 400;
+}
+
+.showcase__float-strong {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  margin-top: 0.125rem;
+}
+
+.showcase__title {
+  margin-top: var(--space-3xl);
+  font-size: clamp(1.5rem, 4.5vw, 1.875rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.showcase__subtitle {
+  margin-top: var(--space-md);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.55;
+  max-width: 22rem;
+  margin-inline: auto;
+}
+
+/* ----------------------------------------------------------------------------- Étapes (centré) */
+
+.section--center {
+  text-align: center;
+}
+
+.steps__title {
+  font-size: clamp(1.5rem, 4vw, 1.75rem);
+  font-weight: 700;
+}
+
+.steps__intro {
+  margin-top: var(--space-sm);
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+}
+
+.steps__list {
+  margin-top: var(--space-2xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.steps__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  max-width: 22rem;
+  margin-inline: auto;
+}
+
+.steps__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.steps__item-title {
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.steps__item-text {
+  font-size: 0.875rem;
+  color: var(--color-text-soft);
+  line-height: 1.55;
+}
+
+/* ----------------------------------------------------------------------------- Bandeau CTA orange */
+
+.cta-band {
+  background: var(--color-cta-orange);
+  color: #fff;
+  text-align: center;
+  padding-block: var(--space-3xl);
+}
+
+.cta-band__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.cta-band__title {
+  font-size: clamp(1.375rem, 4vw, 1.625rem);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.cta-band__text {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  opacity: 0.98;
+  max-width: 24rem;
+}
+
+/* ----------------------------------------------------------------------------- Footer */
+
+.site-footer {
+  background: var(--color-footer);
+  color: #fff;
+  padding-block: var(--space-xl);
+  text-align: center;
+}
+
+.site-footer__brand {
+  font-weight: 700;
+  font-size: 1.125rem;
+  letter-spacing: -0.02em;
+}
+
+/* ----------------------------------------------------------------------------- Animations au scroll (classe ajoutée par JS) */
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .btn {
+    transition: none;
+  }
+}
