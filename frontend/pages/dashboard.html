@@ -29,63 +29,95 @@
     <main class="dashboard-main" id="dashboard-main">
       <header class="dash-topbar">
         <a href="../../index.html" class="dash-brand" aria-label="Retour accueil AfricaMenu">
+          
           <!-- Logo : carré orange + glyphe blanc (placeholder — remplacer par SVG) -->
           <span class="dash-brand__logo" aria-hidden="true">
-            <span class="dash-brand__logo-glyph"></span>
+            <img src="../../assets/images/icone/logo.png" alt="Logo AfricaMenu" width="40" height="40" />
+            
+           
           </span>
           <span class="dash-brand__name">AfricaMenu</span>
         </a>
 
         <button class="dash-menu-btn" id="open-drawer" type="button" aria-label="Ouvrir le menu" aria-controls="dash-drawer" aria-expanded="false">
-          <!-- Icône menu : 3 traits CSS (pas d’image) -->
+         
           <span class="dash-menu-bars" aria-hidden="true"></span>
         </button>
       </header>
 
       <section class="dash-intro">
-        <h1 class="dash-title">Bonjour le (nom du resto)</h1>
+        <h1 class="dash-title">Bonjour, (nom du resto)</h1>
         <p class="dash-subtitle">Voici un aperçu de votre menu digital</p>
       </section>
 
       <section class="dash-grid" aria-label="Résumé du menu">
-        <article class="dash-card">
+        <!-- Carte stat : Catégories -->
+        <article class="dash-card dash-card--stat">
           <div class="dash-row">
-            <span class="dash-icon dash-icon--purple" aria-hidden="true">☷</span>
-            <div>
+            <div class="dash-icon-tile dash-icon-tile--purple" aria-hidden="true">
+              <img src="../../assets/images/icone/categorie.png" alt="Logo AfricaMenu" width="30" height="30" />
+            </div>
+            <div class="dash-stat-copy">
               <p class="dash-label">Catégories</p>
               <p class="dash-value">0</p>
             </div>
           </div>
         </article>
 
-        <article class="dash-card">
+        <!-- Carte stat : plats -->
+        <article class="dash-card dash-card--stat">
           <div class="dash-row">
-            <span class="dash-icon dash-icon--orange" aria-hidden="true">◍</span>
-            <div>
+            <div class="dash-icon-tile dash-icon-tile--orange" aria-hidden="true">
+              <img src ="../../assets/images/icone/coutellerie.png" alt="Logo AfricaMenu" width="40" height="40" />
+            </div>
+            <div class="dash-stat-copy">
               <p class="dash-label">plats</p>
               <p class="dash-value">0</p>
             </div>
           </div>
         </article>
 
-        <article class="dash-card dash-card--actions">
-          <button class="quick-action quick-action--accent" type="button">+ Ajouter un plat</button>
-          <button class="quick-action" type="button">+ Ajouter une categorie</button>
+        <!-- Actions rapides -->
+        <article class="dash-card dash-card--actions" aria-label="Actions rapides">
+          <button class="dash-action" type="button">
+            <span class="dash-action__disc dash-action__disc--accent" aria-hidden="true">+</span>
+            <span class="dash-action__label dash-action__label--accent">Ajouter un plat</span>
+          </button>
+          <div class="dash-action-divider" aria-hidden="true"></div>
+          <button class="dash-action" type="button">
+            <span class="dash-action__disc dash-action__disc--dark" aria-hidden="true">+</span>
+            <span class="dash-action__label">Ajouter une catégorie</span>
+          </button>
         </article>
 
-        <article class="dash-card">
+        <!-- Lien public du menu -->
+        <article class="dash-card dash-card--link">
           <h2 class="dash-card-title">Lien de votre menu</h2>
-          <input class="dash-link-input" type="text" value="https://" readonly />
-          <a href="#" class="dash-link-btn">Voir le menu</a>
+          <input
+            class="dash-link-input"
+            type="url"
+            name="menuUrl"
+            placeholder="https://"
+            inputmode="url"
+            autocomplete="off"
+          />
+          <a href="#" class="dash-link-btn">
+            <span>Voir le menu</span>
+            <span class="dash-link-btn__icon" aria-hidden="true" title=""></span>
+          </a>
         </article>
 
+        <!-- Bloc QR (CTA) -->
         <article class="dash-qr-card">
-          <h2 class="dash-qr-title">Votre QR Code pret !!</h2>
+          <h2 class="dash-qr-title">Votre QR Code prêt !!</h2>
           <p class="dash-qr-text">
-            telechargez-le et imprimez-le pour le placer sur vos tables. vos clients
-            pourront scanner et commander directement
+            téléchargez-le et imprimez-le pour le placer sur vos tables. vos clients pourront scanner et commander
+            directement
           </p>
-          <button type="button" class="dash-qr-btn">Obtenir mon QR Code</button>
+          <button type="button" class="dash-qr-btn">
+            <img src="../../assets/images/icone/qrcode.png" alt="" width="20" height="20" />
+            <span class="dash-qr-btn__label">Obtenir mon QR Code</span>
+          </button>
         </article>
       </section>
     </main>
@@ -118,8 +150,10 @@
       <!-- En-tête : logo placeholder + nom (pas de bouton X ici : il est flottant à droite) -->
       <header class="dash-drawer__header">
         <div class="dash-drawer__brand" id="dash-drawer-title">
-          <!-- Carré orange vide = emplacement logo (SVG / img plus tard) -->
-          <span class="dash-drawer__logo" aria-hidden="true"></span>
+          <!-- Même placeholder que la barre du haut -->
+          <span class="dash-drawer__logo" aria-hidden="true">
+          <img src="../../assets/images/icone/logo.png" alt="" width="30" height="30" />
+          </span>
           <span class="dash-drawer__brand-name">AfricaMenu</span>
         </div>
       </header>
@@ -128,37 +162,53 @@
         <ul class="dash-drawer__list">
           <li>
             <a class="dash-drawer__link is-active" href="#" aria-current="page">
-              <span class="dash-drawer__ico" aria-hidden="true"></span>
+              <span class="dash-drawer__ico" aria-hidden="true">
+                <img src ="../../assets/images/icone/tableaux-de-bord.png" 
+                alt ="" width="20" height="20"/></span>
+              </span>
               <span class="dash-drawer__label">tableau de bord</span>
             </a>
           </li>
           <li>
             <a class="dash-drawer__link" href="#">
-              <span class="dash-drawer__ico" aria-hidden="true"></span>
+              <span class="dash-drawer__ico" aria-hidden="true">
+                <img src ="../../assets/images/icone/restaurant .png" 
+                alt ="" width="30" height="30"/></span>
               <span class="dash-drawer__label">Mes plats</span>
             </a>
           </li>
           <li>
             <a class="dash-drawer__link" href="#">
-              <span class="dash-drawer__ico" aria-hidden="true"></span>
+              <span class="dash-drawer__ico" aria-hidden="true">
+                <img src ="../../assets/images/icone/categorie (1).png" 
+                alt ="" width="20" height="20"/></span>
+              </span>
               <span class="dash-drawer__label">Catégories</span>
             </a>
           </li>
           <li>
             <a class="dash-drawer__link" href="#">
-              <span class="dash-drawer__ico" aria-hidden="true"></span>
+              <span class="dash-drawer__ico" aria-hidden="true">
+                <img src ="../../assets/images/icone/menu.png" 
+                alt ="" width="20" height="20"/></span>
+              </span>
               <span class="dash-drawer__label">Mon Menu</span>
             </a>
           </li>
           <li>
             <a class="dash-drawer__link" href="#">
-              <span class="dash-drawer__ico" aria-hidden="true"></span>
+              <span class="dash-drawer__ico" aria-hidden="true"><img src 
+                ="../../assets/images/icone/qr-code.png" 
+                alt ="" width="30" height="30"/> </span>
               <span class="dash-drawer__label">QR Code</span>
             </a>
           </li>
           <li>
             <a class="dash-drawer__link" href="#">
-              <span class="dash-drawer__ico" aria-hidden="true"></span>
+              <span class="dash-drawer__ico" aria-hidden="true">
+                <img src ="../../assets/images/icone/parametres.png" 
+                alt ="" width="20" height="20"/>
+              </span>
               <span class="dash-drawer__label">Paramètres</span>
             </a>
           </li>
@@ -169,7 +219,9 @@
         <p class="dash-drawer__resto">Nom du resto</p>
         <p class="dash-drawer__email">email du resto</p>
         <a class="dash-drawer__logout" href="login.html">
-          <span class="dash-drawer__ico dash-drawer__ico--logout" aria-hidden="true"></span>
+          <span class="dash-drawer__ico dash-drawer__ico--logout" 
+          aria-hidden="true"><img src ="../../assets/images/icone/se-deconnecter.png" 
+          alt ="" width="20" height="20"/> </span>
           <span>Déconnexion</span>
         </a>
       </footer>

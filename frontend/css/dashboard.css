@@ -1,16 +1,22 @@
-/* Dashboard AfricaMenu (mobile-first) */
+/* Dashboard AfricaMenu (mobile-first) — aligné maquette SaaS */
 
 :root {
-  --dash-bg: #f4f4f4;
+  --dash-bg: #fafafa;
+  --dash-page: #ffffff;
   --dash-card: #ffffff;
-  --dash-text: #111111;
-  --dash-muted: #666666;
+  --dash-text: #000000;
+  --dash-muted: #757575;
   --dash-accent: #ff6b00;
   --dash-accent-soft: #fff0e6;
-  --dash-dark: #09132a;
-  --dash-border: #ececec;
-  /* Drawer (maquette mobile) */
-  --drawer-width: 17.5rem; /* ~280px */
+  --dash-dark: #000000;
+  --dash-input-bg: #e0e0e0;
+  --dash-icon-purple-bg: #e8eaf6;
+  --dash-icon-orange-bg: #fff3e6;
+  --dash-radius-card: 1.125rem; /* ~18px */
+  --dash-shadow-card: 0 4px 10px rgba(0, 0, 0, 0.05);
+  --dash-link-icon: #ffb020;
+  /* Drawer */
+  --drawer-width: 17.5rem;
   --drawer-surface: #dedede;
   --drawer-text: #111111;
   --drawer-radius: 0.75rem;
@@ -29,7 +35,7 @@ body.dashboard-page {
   margin: 0;
   min-height: 100vh;
   min-height: 100dvh;
-  background: var(--dash-bg);
+  background: var(--dash-page);
   color: var(--dash-text);
   font-family: var(--font-sans);
 }
@@ -38,7 +44,7 @@ body.dashboard-page {
   width: 100%;
   max-width: 30rem;
   margin: 0 auto;
-  padding: 1.5rem 1rem max(1.5rem, env(safe-area-inset-bottom, 0px));
+  padding: 1.25rem 1.1rem max(1.75rem, env(safe-area-inset-bottom, 0px));
 }
 
 /* Entete principal du dashboard */
@@ -58,20 +64,44 @@ body.dashboard-page {
 }
 
 .dash-brand__logo {
-  width: 3rem;
-  height: 3rem;
-  border-radius: var(--drawer-radius);
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.65rem;
   background: var(--dash-accent);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #111;
+  flex-shrink: 0;
+}
+
+/* Glyphe blanc type fourchette / couteau (placeholder CSS) */
+.dash-brand__logo-glyph {
+  display: block;
+  width: 0.65rem;
+  height: 0.85rem;
+  border-left: 2px solid #fff;
+  border-right: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  border-radius: 0 0 3px 3px;
+  position: relative;
+}
+
+.dash-brand__logo-glyph::after {
+  content: "";
+  position: absolute;
+  right: -5px;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: #fff;
+  border-radius: 1px;
 }
 
 .dash-brand__name {
-  font-size: 2rem;
+  font-size: 1.2rem;
   font-weight: 700;
   letter-spacing: -0.02em;
+  color: var(--dash-text);
 }
 
 .dash-menu-btn {
@@ -79,12 +109,21 @@ body.dashboard-page {
   height: 2.75rem;
   border: none;
   background: transparent;
-  color: #111;
+  color: var(--dash-text);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 0.5rem;
   cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.dash-menu-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.dash-menu-btn:active {
+  transform: scale(0.96);
 }
 
 .dash-menu-btn:focus-visible {
@@ -121,155 +160,402 @@ body.dashboard-page {
 }
 
 .dash-intro {
-  margin-top: 1.4rem;
+  margin-top: 1.35rem;
 }
 
 .dash-title {
   margin: 0;
-  font-size: clamp(1.2rem, 5vw, 1.9rem);
-  font-weight: 800;
-  line-height: 1.15;
+  font-size: clamp(1.35rem, 4.8vw, 1.65rem);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--dash-text);
 }
 
 .dash-subtitle {
-  margin: 0.45rem 0 0;
+  margin: 0.5rem 0 0;
   color: var(--dash-muted);
-  font-size: 0.98rem;
+  font-size: 0.9375rem;
+  line-height: 1.45;
 }
 
 .dash-grid {
-  margin-top: 1.35rem;
+  margin-top: 1.25rem;
   display: grid;
   gap: 1rem;
 }
 
+/* Cartes blanches — ombre douce, gros arrondis */
 .dash-card {
   background: var(--dash-card);
-  border: 1px solid var(--dash-border);
-  border-radius: 1rem;
-  padding: 1rem;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  border: none;
+  border-radius: var(--dash-radius-card);
+  padding: 1.05rem 1.1rem;
+  box-shadow: var(--dash-shadow-card);
 }
 
 .dash-row {
   display: flex;
-  align-items: flex-start;
-  gap: 0.7rem;
+  align-items: center;
+  gap: 0.85rem;
 }
 
-.dash-icon {
-  width: 1.65rem;
-  height: 1.65rem;
-  border-radius: 0.4rem;
-  display: inline-flex;
+.dash-stat-copy {
+  min-width: 0;
+}
+
+/* Tuiles d’icônes stats (placeholders remplaçables) */
+.dash-icon-tile {
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.65rem;
+  display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
 }
 
-.dash-icon--purple {
-  color: #7a57f4;
-  background: #f3efff;
+.dash-icon-tile--purple {
+  background: var(--dash-icon-purple-bg);
 }
 
-.dash-icon--orange {
-  color: #e3972a;
-  background: #fff5e8;
+.dash-icon-tile--orange {
+  background: var(--dash-icon-orange-bg);
+}
+
+.dash-icon-tile__ph {
+  display: block;
+  opacity: 0.55;
+}
+
+/* Liste / puces (placeholder) */
+.dash-icon-tile__ph--list {
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: #5c6bc0;
+  box-shadow:
+    0 0.45rem 0 0 #5c6bc0,
+    0 0.9rem 0 0 #5c6bc0;
+}
+
+/* Assiette / plat (placeholder cercle) */
+.dash-icon-tile__ph--meal {
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 2px solid #e65100;
+  border-radius: 50%;
 }
 
 .dash-label {
   margin: 0;
-  font-size: 0.95rem;
-  color: #3f3f3f;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--dash-muted);
 }
 
 .dash-value {
-  margin: 0.15rem 0 0;
-  font-size: 2rem;
+  margin: 0.2rem 0 0;
+  font-size: 1.45rem;
   line-height: 1;
   font-weight: 800;
+  color: var(--dash-text);
 }
 
+/* Carte actions : deux lignes type « chip » modernes */
 .dash-card--actions {
-  display: grid;
-  gap: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.65rem;
 }
 
-.quick-action {
-  text-align: left;
-  border: none;
-  background: transparent;
+.dash-action {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: linear-gradient(180deg, #ffffff 0%, #f8f8f8 100%);
   font: inherit;
-  font-size: 1.05rem;
-  color: #1f1f1f;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 0.85rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition:
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.22s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
 }
 
-.quick-action--accent {
-  color: #d97c2d;
+/* 1re action : teinte orange très légère */
+.dash-card--actions > .dash-action:first-of-type {
+  background: linear-gradient(135deg, rgba(255, 107, 0, 0.1) 0%, #ffffff 55%, #fafafa 100%);
+  border-color: rgba(255, 107, 0, 0.14);
+}
+
+.dash-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Survol : ombre légèrement teintée orange sur « Ajouter un plat » */
+.dash-card--actions > .dash-action:first-of-type:hover {
+  border-color: rgba(255, 107, 0, 0.28);
+  box-shadow:
+    0 6px 22px rgba(255, 107, 0, 0.16),
+    0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.dash-action:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition-duration: 0.1s;
+}
+
+.dash-action:focus-visible {
+  outline: 2px solid var(--dash-accent);
+  outline-offset: 2px;
+}
+
+.dash-action__disc {
+  flex-shrink: 0;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.28rem;
+  font-weight: 500;
+  line-height: 1;
+  color: #fff;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dash-action:hover .dash-action__disc {
+  transform: scale(1.06);
+}
+
+.dash-action:active .dash-action__disc {
+  transform: scale(1);
+}
+
+.dash-action__disc--accent {
+  background: linear-gradient(145deg, #ff8f40 0%, #ff6b00 45%, #e85d00 100%);
+  box-shadow:
+    0 4px 14px rgba(255, 107, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.dash-action__disc--dark {
+  background: linear-gradient(145deg, #3d3d3d 0%, #1a1a1a 55%, #000000 100%);
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.dash-action__label {
+  font-size: 0.98rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--dash-text);
+}
+
+.dash-action__label--accent {
+  color: #e65f00;
+}
+
+.dash-action-divider {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-action,
+  .dash-action__disc {
+    transition-duration: 0.01ms;
+  }
+
+  .dash-action:hover,
+  .dash-action:active {
+    transform: none;
+  }
+
+  .dash-action:hover .dash-action__disc,
+  .dash-action:active .dash-action__disc {
+    transform: none;
+  }
 }
 
 .dash-card-title {
   margin: 0;
-  font-size: 1.7rem;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--dash-text);
+}
+
+.dash-card--link .dash-link-input {
+  margin-top: 0.9rem;
 }
 
 .dash-link-input {
-  margin-top: 0.85rem;
   width: 100%;
   border: none;
-  border-radius: 0.45rem;
-  padding: 0.65rem 0.7rem;
-  background: #d9d9d9;
-  color: #555;
+  border-radius: 0.65rem;
+  padding: 0.8rem 0.95rem;
+  background: var(--dash-input-bg);
+  color: var(--dash-text);
   font-size: 1rem;
+  font-family: inherit;
 }
 
+.dash-link-input::placeholder {
+  color: #616161;
+}
+
+.dash-link-input:focus {
+  outline: 2px solid rgba(255, 107, 0, 0.45);
+  outline-offset: 1px;
+}
+
+/* Bouton noir + icône « lien externe » à droite (placeholder) */
 .dash-link-btn {
+  position: relative;
   margin-top: 0.95rem;
-  display: inline-flex;
+  display: flex;
   width: 100%;
-  justify-content: center;
   align-items: center;
-  min-height: 2.6rem;
-  border-radius: 0.5rem;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0.65rem 2.75rem 0.65rem 1rem;
+  border-radius: 0.65rem;
   background: var(--dash-dark);
   color: #fff;
   text-decoration: none;
   font-weight: 700;
+  font-size: 1rem;
+  transition:
+    background 0.18s ease,
+    transform 0.12s ease;
 }
 
+.dash-link-btn:hover {
+  background: #1a1a1a;
+}
+
+.dash-link-btn:active {
+  transform: scale(0.99);
+}
+
+.dash-link-btn:focus-visible {
+  outline: 2px solid var(--dash-accent);
+  outline-offset: 2px;
+}
+
+.dash-link-btn__icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--dash-link-icon);
+  border-radius: 3px;
+  box-sizing: border-box;
+}
+
+.dash-link-btn__icon::after {
+  content: "";
+  position: absolute;
+  right: -4px;
+  top: -4px;
+  width: 6px;
+  height: 6px;
+  border-top: 2px solid var(--dash-link-icon);
+  border-right: 2px solid var(--dash-link-icon);
+}
+
+/* Bloc QR — fond orange marque */
 .dash-qr-card {
   background: var(--dash-accent);
   color: #fff;
-  border-radius: 1rem;
-  padding: 1.25rem 1rem;
+  border-radius: var(--dash-radius-card);
+  padding: 1.35rem 1.15rem 1.25rem;
   text-align: center;
+  box-shadow: var(--dash-shadow-card);
 }
 
 .dash-qr-title {
   margin: 0;
-  font-size: 1.9rem;
-  line-height: 1.15;
+  font-size: clamp(1.25rem, 4vw, 1.45rem);
+  line-height: 1.2;
   font-weight: 800;
 }
 
 .dash-qr-text {
-  margin: 0.8rem auto 0;
-  max-width: 18rem;
-  font-size: 0.97rem;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.95);
+  margin: 0.85rem auto 0;
+  max-width: 19rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.96);
 }
 
 .dash-qr-btn {
-  margin-top: 1rem;
+  margin-top: 1.15rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
   border: none;
-  border-radius: 0.52rem;
+  border-radius: 0.65rem;
   background: #fff;
-  color: #6b6b6b;
-  padding: 0.65rem 1rem;
+  padding: 0.75rem 1.25rem;
   font: inherit;
   font-weight: 700;
+  cursor: pointer;
+  transition:
+    box-shadow 0.18s ease,
+    transform 0.12s ease;
+}
+
+.dash-qr-btn:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.dash-qr-btn:active {
+  transform: scale(0.99);
+}
+
+.dash-qr-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.dash-qr-btn > img {
+  display: block;
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  object-fit: contain;
+}
+
+/* Icône QR placeholder (grille simplifiée) */
+.dash-qr-btn__icon {
+  flex-shrink: 0;
+  width: 1.35rem;
+  height: 1.35rem;
+  background:
+    linear-gradient(#ff6b00, #ff6b00) 0 0 / 40% 40% no-repeat,
+    linear-gradient(#ff6b00, #ff6b00) 60% 0 / 40% 40% no-repeat,
+    linear-gradient(#ff6b00, #ff6b00) 0 60% / 40% 40% no-repeat,
+    linear-gradient(#ff6b00, #ff6b00) 60% 60% / 40% 40% no-repeat;
+  opacity: 0.85;
+}
+
+.dash-qr-btn__label {
+  color: var(--dash-accent);
 }
 
 /* ------------------------------------------------------------------
@@ -379,6 +665,14 @@ body.dashboard-page {
   align-items: center;
   justify-content: center;
   color: #111;
+  line-height: 0;
+}
+
+.dash-drawer__logo img {
+  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: contain;
 }
 
 .dash-drawer__brand-name {
@@ -434,17 +728,39 @@ body.dashboard-page {
   color: var(--dash-accent);
 }
 
-/* Placeholders icônes : petits blocs (remplacer par SVG / font icon) */
+/* Icônes menu : zone fixe + centrage (img ou placeholder) */
 .dash-drawer__ico {
   flex-shrink: 0;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 2rem;
+  height: 2rem;
   border-radius: 0.35rem;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.dash-drawer__ico img {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+  max-width: 88%;
+  max-height: 88%;
+  object-fit: contain;
+}
+
+/* Fond discret seulement quand pas d’image (évite un cadre derrière le PNG) */
+.dash-drawer__ico:has(img) {
+  background: transparent;
 }
 
 .dash-drawer__link.is-active .dash-drawer__ico {
-  background: rgba(255, 107, 0, 0.28);
+  background: rgba(255, 107, 0, 0.22);
+}
+
+.dash-drawer__link.is-active .dash-drawer__ico:has(img) {
+  background: transparent;
 }
 
 .dash-drawer__label {
@@ -500,6 +816,13 @@ body.dashboard-page {
   width: 1.35rem;
   height: 1.35rem;
   background: rgba(255, 107, 0, 0.22);
+}
+
+.dash-drawer__ico--logout img {
+  width: 1rem;
+  height: 1rem;
+  max-width: 85%;
+  max-height: 85%;
 }
 
 /* Desktop : contenu un peu plus large ; drawer inchangé (mobile-first) */

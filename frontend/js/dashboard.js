@@ -1,8 +1,8 @@
 /**
- * Dashboard — drawer mobile (off-canvas)
- * - Ouverture / fermeture avec animation
- * - Overlay cliquable, touche Escape
- * - aria-expanded sur le bouton menu
+ * Dashboard AfricaMenu
+ * - Drawer : ouverture / fermeture, overlay, Escape, aria-expanded
+ * - Le reste du contenu (stats, actions, lien, QR) est statique pour l’instant ;
+ *   brancher les boutons sur l’API quand le backend sera prêt.
  */
 (function () {
   "use strict";
