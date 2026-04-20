@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="Gérez les plats de votre menu — AfricaMenu." />
-    <title>Mes plats — AfricaMenu</title>
+    <meta name="description" content="Gérez les catégories de votre menu — AfricaMenu." />
+    <title>Catégories — AfricaMenu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -13,9 +13,8 @@
     />
     <link rel="stylesheet" href="../css/dashboard.css" />
   </head>
-  <body class="dashboard-page plats-page">
-    <!-- Même chrome que le tableau de bord : entête + drawer -->
-    <main class="dashboard-main" id="mes-plats-main">
+  <body class="dashboard-page cats-page">
+    <main class="dashboard-main" id="categories-main">
       <header class="dash-topbar">
         <a href="../../index.html" class="dash-brand" aria-label="Retour accueil AfricaMenu">
           <span class="dash-brand__logo" aria-hidden="true">
@@ -36,27 +35,26 @@
         </button>
       </header>
 
-      <!-- Titre de page -->
-      <header class="plats-page-head">
-        <h1 class="plats-page-title">Mes Plats</h1>
-        <p class="plats-page-sub">Gérez les plats de votre menu</p>
+      <header class="cats-page-head">
+        <h1 class="cats-page-title">Catégories</h1>
+        <p class="cats-page-sub">
+          Gérez les catégories de votre menu (ex&nbsp;: Entrées, Plats, Boissons).
+        </p>
       </header>
 
-      <!-- CTA principal (pleine largeur) -->
-      <button type="button" class="plats-add-btn" id="plats-add-main" data-action="add-plat">
-        <span class="plats-add-btn__plus" aria-hidden="true">+</span>
-        <span>Ajouter un plat</span>
+      <button type="button" class="cats-add-btn" id="cats-add-main" data-action="add-category">
+        <span class="cats-add-btn__plus" aria-hidden="true">+</span>
+        <span>Ajouter</span>
       </button>
 
-      <!-- État vide : liste des plats vide (brancher données API plus tard) -->
-      <section class="plats-empty" aria-labelledby="plats-empty-title">
-        <div class="plats-empty__icon-wrap" aria-hidden="true">
+      <section class="cats-empty" aria-labelledby="cats-empty-title">
+        <div class="cats-empty__icon-wrap" aria-hidden="true">
           <img src="../../assets/images/icone/logo.png" alt="" width="50" height="50" />
         </div>
-        <h2 id="plats-empty-title" class="plats-empty__title">Aucun plat</h2>
-        <p class="plats-empty__desc">Commencez par ajouter des plats à votre menu</p>
-        <button type="button" class="plats-empty__cta" id="plats-add-empty" data-action="add-plat">
-          + Ajouter un plat
+        <h2 id="cats-empty-title" class="cats-empty__title">Aucune catégorie</h2>
+        <p class="cats-empty__desc">Commencez par ajouter une catégorie pour organiser vos plats.</p>
+        <button type="button" class="cats-empty__cta" id="cats-add-empty" data-action="add-category">
+          + Ajouter une catégorie
         </button>
       </section>
     </main>
@@ -88,7 +86,7 @@
             </a>
           </li>
           <li>
-            <a class="dash-drawer__link is-active" href="mes-plats.html" aria-current="page">
+            <a class="dash-drawer__link" href="mes-plats.html">
               <span class="dash-drawer__ico" aria-hidden="true">
                 <img src="../../assets/images/icone/restaurant .png" alt="" width="30" height="30" />
               </span>
@@ -96,7 +94,7 @@
             </a>
           </li>
           <li>
-            <a class="dash-drawer__link" href="categories.html">
+            <a class="dash-drawer__link is-active" href="categories.html" aria-current="page">
               <span class="dash-drawer__ico" aria-hidden="true">
                 <img src="../../assets/images/icone/categorie (1).png" alt="" width="20" height="20" />
               </span>
@@ -143,6 +141,6 @@
     </aside>
 
     <script src="../js/dashboard.js"></script>
-    <script src="../js/mes-plats.js"></script>
+    <script src="../js/categories.js"></script>
   </body>
 </html>
