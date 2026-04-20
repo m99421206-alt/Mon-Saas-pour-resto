@@ -1,0 +1,9 @@
+# Dépendances Node (étape 2+)
+node_modules/
+
+# Secrets — ne jamais committer
+.env
+
+# OS
+Thumbs.db
+.DS_Store

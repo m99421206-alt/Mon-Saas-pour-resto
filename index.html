@@ -23,12 +23,12 @@
       <div class="container site-header__inner">
         <a href="#top" class="brand" aria-label="AfricaMenu — Accueil">
           <span class="brand__logo" aria-hidden="true">
-            <img src="docs/img/logo.png" alt="AfricaMenu" />
+            <img src="assets/images/icone/logo.png" />
           </span>
           <span class="brand__name">AfricaMenu</span>
         </a>
         <nav class="site-header__nav" aria-label="Navigation principale">
-          <a href="#connexion" class="link-login">Se connecter</a>
+          <a href="frontend/pages/login.html" class="link-login">Se connecter</a>
         </nav>
       </div>
     </header>
@@ -46,7 +46,7 @@
             recevez vos commandes directement sur WhatsApp. Sans compétences
             techniques.
           </p>
-          <a href="#commencer" class="btn btn--primary btn--lg">
+          <a href="frontend/pages/register.html" class="btn btn--primary btn--lg">
             <span>Créer mon menu</span>
             <span class="btn__icon" aria-hidden="true">
               <svg
@@ -140,13 +140,14 @@
       <section class="showcase section" aria-labelledby="showcase-title">
         <div class="container container--narrow">
           <div class="showcase__visual" data-reveal>
-            <div>
+            <!-- Zone image : remplacer par <img src="assets/images/..."> quand vous aurez l’asset -->
+            <div class="showcase__visual-img">
               <img
                 src="assets/images/icone/img-d'accroché.png"
-                class="showcase__image"
-                alt="Menu digital sur téléphone"
+                alt="Exemple de menu digital AfricaMenu"
               />
             </div>
+
             <aside
               class="showcase__float-card"
               aria-label="Notification de commande"
@@ -238,7 +239,7 @@
             Rejoignez les restaurants qui utilisent déjà AfricaMenu pour
             améliorer l’expérience de leurs clients.
           </p>
-          <a href="#top" class="btn btn--on-orange btn--xl">
+          <a href="frontend/pages/register.html" class="btn btn--on-orange btn--xl">
             <span>Commencer maintenant</span>
             <span class="btn__icon btn__icon--muted" aria-hidden="true">
               <svg
@@ -270,38 +271,8 @@
     </main>
 
     <footer class="site-footer">
-      <div class="container site-footer__inner">
-        <a href="#top" class="site-footer__brand">AfricaMenu</a>
-
-        <div class="site-footer__links">
-          <div>
-            <p class="site-footer__title">Produit</p>
-            <a href="#commencer" class="site-footer__link">Créer mon menu</a>
-            <a href="#features" class="site-footer__link">Fonctionnalités</a>
-          </div>
-          <div>
-            <p class="site-footer__title">Support</p>
-            <a href="#connexion" class="site-footer__link">Se connecter</a>
-            <a
-              href="mailto:contact@africamenu.example"
-              class="site-footer__link"
-              >Contact</a
-            >
-          </div>
-          <div>
-            <p class="site-footer__title">À propos</p>
-            <p class="site-footer__text">
-              AfricaMenu digitalise votre menu et simplifie les commandes
-              WhatsApp pour les restaurants et fast-foods.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div class="container site-footer__bottom">
-        <p class="site-footer__copy">
-          © 2026 AfricaMenu. Tous droits réservés.
-        </p>
+      <div class="container">
+        <p class="site-footer__brand">AfricaMenu</p>
       </div>
     </footer>
 

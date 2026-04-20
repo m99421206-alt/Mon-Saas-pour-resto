@@ -1,0 +1,520 @@
+/* Dashboard AfricaMenu (mobile-first) */
+
+:root {
+  --dash-bg: #f4f4f4;
+  --dash-card: #ffffff;
+  --dash-text: #111111;
+  --dash-muted: #666666;
+  --dash-accent: #ff6b00;
+  --dash-accent-soft: #fff0e6;
+  --dash-dark: #09132a;
+  --dash-border: #ececec;
+  /* Drawer (maquette mobile) */
+  --drawer-width: 17.5rem; /* ~280px */
+  --drawer-surface: #dedede;
+  --drawer-text: #111111;
+  --drawer-radius: 0.75rem;
+  --font-sans:
+    "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body.dashboard-page {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--dash-bg);
+  color: var(--dash-text);
+  font-family: var(--font-sans);
+}
+
+.dashboard-main {
+  width: 100%;
+  max-width: 30rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem max(1.5rem, env(safe-area-inset-bottom, 0px));
+}
+
+/* Entete principal du dashboard */
+.dash-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.dash-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.dash-brand__logo {
+  width: 3rem;
+  height: 3rem;
+  border-radius: var(--drawer-radius);
+  background: var(--dash-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #111;
+}
+
+.dash-brand__name {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.dash-menu-btn {
+  width: 2.75rem;
+  height: 2.75rem;
+  border: none;
+  background: transparent;
+  color: #111;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.dash-menu-btn:focus-visible {
+  outline: 2px solid var(--dash-accent);
+  outline-offset: 2px;
+}
+
+/* Hamburger (traits) — placeholder visuel */
+.dash-menu-bars {
+  position: relative;
+  width: 1.25rem;
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.dash-menu-bars::before,
+.dash-menu-bars::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.dash-menu-bars::before {
+  top: -7px;
+}
+
+.dash-menu-bars::after {
+  top: 7px;
+}
+
+.dash-intro {
+  margin-top: 1.4rem;
+}
+
+.dash-title {
+  margin: 0;
+  font-size: clamp(1.2rem, 5vw, 1.9rem);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.dash-subtitle {
+  margin: 0.45rem 0 0;
+  color: var(--dash-muted);
+  font-size: 0.98rem;
+}
+
+.dash-grid {
+  margin-top: 1.35rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.dash-card {
+  background: var(--dash-card);
+  border: 1px solid var(--dash-border);
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.dash-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+
+.dash-icon {
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.dash-icon--purple {
+  color: #7a57f4;
+  background: #f3efff;
+}
+
+.dash-icon--orange {
+  color: #e3972a;
+  background: #fff5e8;
+}
+
+.dash-label {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #3f3f3f;
+}
+
+.dash-value {
+  margin: 0.15rem 0 0;
+  font-size: 2rem;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.dash-card--actions {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.quick-action {
+  text-align: left;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 1.05rem;
+  color: #1f1f1f;
+}
+
+.quick-action--accent {
+  color: #d97c2d;
+}
+
+.dash-card-title {
+  margin: 0;
+  font-size: 1.7rem;
+}
+
+.dash-link-input {
+  margin-top: 0.85rem;
+  width: 100%;
+  border: none;
+  border-radius: 0.45rem;
+  padding: 0.65rem 0.7rem;
+  background: #d9d9d9;
+  color: #555;
+  font-size: 1rem;
+}
+
+.dash-link-btn {
+  margin-top: 0.95rem;
+  display: inline-flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  min-height: 2.6rem;
+  border-radius: 0.5rem;
+  background: var(--dash-dark);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.dash-qr-card {
+  background: var(--dash-accent);
+  color: #fff;
+  border-radius: 1rem;
+  padding: 1.25rem 1rem;
+  text-align: center;
+}
+
+.dash-qr-title {
+  margin: 0;
+  font-size: 1.9rem;
+  line-height: 1.15;
+  font-weight: 800;
+}
+
+.dash-qr-text {
+  margin: 0.8rem auto 0;
+  max-width: 18rem;
+  font-size: 0.97rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.dash-qr-btn {
+  margin-top: 1rem;
+  border: none;
+  border-radius: 0.52rem;
+  background: #fff;
+  color: #6b6b6b;
+  padding: 0.65rem 1rem;
+  font: inherit;
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------------------
+   Drawer mobile (off-canvas) — overlay + panneau ~280px + fermeture
+   ------------------------------------------------------------------ */
+
+/* Voile derrière le contenu */
+.dash-overlay {
+  position: fixed;
+  inset: 0;
+  /* Voile grisé derrière le panneau */
+  background: rgba(0, 0, 0, 0.28);
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+
+.dash-overlay.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Bouton X en haut à droite (zone claire à droite du panneau) */
+.dash-drawer-close {
+  position: fixed;
+  top: max(0.75rem, env(safe-area-inset-top, 0px));
+  right: max(0.75rem, env(safe-area-inset-right, 0px));
+  z-index: 60;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: none;
+  border-radius: var(--drawer-radius);
+  background: #e8e8e8;
+  color: #111;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.96);
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease;
+}
+
+.dash-drawer-close.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+.dash-drawer-close:focus-visible {
+  outline: 2px solid var(--dash-accent);
+  outline-offset: 2px;
+}
+
+.dash-drawer-close__x {
+  font-size: 1.65rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+/* Panneau latéral */
+.dash-drawer {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--drawer-width);
+  max-width: 86vw;
+  background: var(--drawer-surface);
+  border-radius: 0 var(--drawer-radius) var(--drawer-radius) 0;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1rem max(1.25rem, env(safe-area-inset-bottom, 0px)) 1rem;
+  transform: translateX(-105%);
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.dash-drawer.is-open {
+  transform: translateX(0);
+}
+
+/* Header drawer */
+.dash-drawer__header {
+  padding-bottom: 0.5rem;
+}
+
+.dash-drawer__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Logo carré orange (placeholder) */
+.dash-drawer__logo {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--drawer-radius);
+  background: var(--dash-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #111;
+}
+
+.dash-drawer__brand-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--drawer-text);
+}
+
+/* Navigation */
+.dash-drawer__nav {
+  flex: 1;
+  margin-top: 1.25rem;
+  min-height: 0;
+}
+
+.dash-drawer__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.dash-drawer__link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 0.9rem;
+  border-radius: var(--drawer-radius);
+  text-decoration: none;
+  color: var(--drawer-text);
+  font-size: 1rem;
+  font-weight: 500;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease;
+}
+
+.dash-drawer__link:hover {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.dash-drawer__link:focus-visible {
+  outline: 2px solid var(--dash-accent);
+  outline-offset: 2px;
+}
+
+/* Lien actif (tableau de bord) */
+.dash-drawer__link.is-active {
+  background: var(--dash-accent-soft);
+  color: var(--dash-accent);
+}
+
+/* Placeholders icônes : petits blocs (remplacer par SVG / font icon) */
+.dash-drawer__ico {
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.35rem;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.dash-drawer__link.is-active .dash-drawer__ico {
+  background: rgba(255, 107, 0, 0.28);
+}
+
+.dash-drawer__label {
+  line-height: 1.2;
+}
+
+/* Pied du drawer */
+.dash-drawer__footer {
+  margin-top: auto;
+  padding-top: 1.5rem;
+}
+
+.dash-drawer__resto {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--drawer-text);
+}
+
+.dash-drawer__email {
+  margin: 0.2rem 0 0;
+  font-size: 0.875rem;
+  color: #555;
+}
+
+.dash-drawer__logout {
+  margin-top: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--dash-accent);
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 0.35rem;
+}
+
+.dash-drawer__logout:hover {
+  text-decoration: underline;
+}
+
+.dash-drawer__logout:focus-visible {
+  outline: 2px solid var(--dash-accent);
+  outline-offset: 3px;
+}
+
+.dash-drawer__ico--logout {
+  width: 1.35rem;
+  height: 1.35rem;
+  background: rgba(255, 107, 0, 0.22);
+}
+
+/* Desktop : contenu un peu plus large ; drawer inchangé (mobile-first) */
+@media (min-width: 48rem) {
+  .dashboard-main {
+    max-width: 38rem;
+    padding: 1.75rem 1.25rem 2rem;
+  }
+
+  .dash-brand__name {
+    font-size: 1.6rem;
+  }
+
+  .dash-card-title,
+  .dash-qr-title {
+    font-size: 1.35rem;
+  }
+}

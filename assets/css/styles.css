@@ -407,6 +407,28 @@ p {
   max-width: 20rem;
 }
 
+.showcase__visual-img {
+  border-radius: var(--radius-hero-img);
+  overflow: hidden;
+  background: linear-gradient(145deg, #f8fafc, #eef2ff);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+}
+
+.showcase__visual-img img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  transition: transform 240ms ease;
+}
+
+@media (hover: hover) {
+  .showcase__visual-img:hover img {
+    transform: scale(1.03);
+  }
+}
+
 .showcase__placeholder {
   aspect-ratio: 3 / 4;
   width: 100%;
@@ -564,80 +586,139 @@ p {
   max-width: 24rem;
 }
 
-/* ----------------------------------------------------------------------------- Footer */
+/* ----------------------------------------------------------------------------- Footer (mobile-first) */
 
 .site-footer {
   background: var(--color-footer);
   color: #fff;
-  padding-block: var(--space-2xl);
+  padding-top: clamp(1.75rem, 5vw, 2.5rem);
+  /* Espace pour la barre d’accueil iPhone ; le .container gère les côtés */
+  padding-bottom: max(1.75rem, env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.site-footer .container {
+  display: flex;
+  justify-content: center;
 }
 
 .site-footer__inner {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
   align-items: center;
+  text-align: center;
+  gap: clamp(1.25rem, 4vw, 1.75rem);
+  max-width: var(--max-content);
+  margin-inline: auto;
+}
+
+.site-footer__brand-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
 }
 
 .site-footer__brand {
+  margin: 0;
   font-weight: 700;
-  font-size: 1.25rem;
-  letter-spacing: -0.02em;
+  font-size: clamp(1.125rem, 3.5vw, 1.35rem);
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
 }
 
-.site-footer__links {
-  display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-  gap: var(--space-lg);
+.site-footer__tagline {
+  margin: 0;
+  font-size: clamp(0.8125rem, 2.5vw, 0.9375rem);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.45;
+  max-width: 22rem;
+}
+
+.site-footer__nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem 1.25rem;
   width: 100%;
-  max-width: 42rem;
 }
 
-.site-footer__title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  margin-bottom: 0.75rem;
-}
-
-.site-footer__link,
-.site-footer__text {
-  display: block;
-  color: #d9d9d9;
-  font-size: 0.95rem;
-  line-height: 1.7;
+.site-footer__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: 0.375rem;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .site-footer__link:hover,
 .site-footer__link:focus-visible {
   color: #fff;
   text-decoration: underline;
-  outline: none;
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 3px;
 }
 
 .site-footer__bottom {
-  border-top: 1px solid rgba(255, 255, 255, 0.18);
-  margin-top: var(--space-lg);
-  padding-top: var(--space-lg);
-  text-align: center;
+  width: 100%;
+  max-width: 24rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  padding-top: clamp(1rem, 3vw, 1.25rem);
+  margin-top: 0.25rem;
 }
 
 .site-footer__copy {
   margin: 0;
-  color: #c4c4c4;
-  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: clamp(0.75rem, 2.5vw, 0.8125rem);
+  line-height: 1.5;
 }
 
 @media (min-width: 48rem) {
   .site-footer__inner {
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: flex-start;
     justify-content: space-between;
+    text-align: left;
+    gap: 1.5rem 2rem;
   }
 
-  .site-footer__links {
-    max-width: none;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .site-footer__brand-block {
+    align-items: flex-start;
     text-align: left;
+    flex: 1 1 12rem;
+    min-width: 0;
+  }
+
+  .site-footer__tagline {
+    max-width: 18rem;
+  }
+
+  .site-footer__nav {
+    flex: 0 1 auto;
+    justify-content: flex-end;
+    width: auto;
+    gap: 1rem 1.5rem;
+  }
+
+  .site-footer__bottom {
+    flex: 1 0 100%;
+    max-width: none;
+    text-align: center;
+    margin-top: 0.5rem;
   }
 }
 
