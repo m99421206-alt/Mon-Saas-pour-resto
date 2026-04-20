@@ -72,6 +72,15 @@ body.dashboard-page {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  line-height: 0;
+  overflow: hidden;
+}
+
+.dash-brand__logo img {
+  display: block;
+  width: 1.55rem;
+  height: 1.55rem;
+  object-fit: contain;
 }
 
 /* Glyphe blanc type fourchette / couteau (placeholder CSS) */
@@ -220,6 +229,15 @@ body.dashboard-page {
 
 .dash-icon-tile--orange {
   background: var(--dash-icon-orange-bg);
+}
+
+.dash-icon-tile img {
+  display: block;
+  max-width: 78%;
+  max-height: 78%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
 .dash-icon-tile__ph {
@@ -823,6 +841,213 @@ body.dashboard-page {
   height: 1rem;
   max-width: 85%;
   max-height: 85%;
+}
+
+/* ------------------------------------------------------------------
+   Pages sous-app : Mes plats, Catégories (même squelette UI)
+   ------------------------------------------------------------------ */
+
+.plats-page-head,
+.cats-page-head {
+  margin-top: 1.5rem;
+}
+
+.plats-page-title,
+.cats-page-title {
+  margin: 0;
+  font-size: clamp(1.5rem, 5vw, 1.85rem);
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--dash-text);
+}
+
+/* Maquette catégories : titre tout en minuscules */
+.cats-page-title {
+  text-transform: lowercase;
+}
+
+.plats-page-sub,
+.cats-page-sub {
+  margin: 0.45rem 0 0;
+  font-size: 0.95rem;
+  color: var(--dash-muted);
+  line-height: 1.45;
+}
+
+/* Bouton orange pleine largeur */
+.plats-add-btn,
+.cats-add-btn {
+  margin-top: 1.35rem;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.35rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: linear-gradient(180deg, #ff7a1a 0%, var(--dash-accent) 55%, #e85d00 100%);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(255, 107, 0, 0.35);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+/* Catégories : libellé court « + Ajouter », contenu aligné à gauche */
+.cats-add-btn {
+  justify-content: flex-start;
+  padding-left: 1.1rem;
+}
+
+.plats-add-btn:hover,
+.cats-add-btn:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 6px 20px rgba(255, 107, 0, 0.42);
+}
+
+.plats-add-btn:active,
+.cats-add-btn:active {
+  transform: scale(0.98);
+}
+
+.plats-add-btn:focus-visible,
+.cats-add-btn:focus-visible {
+  outline: 2px solid var(--dash-accent);
+  outline-offset: 3px;
+}
+
+.plats-add-btn__plus,
+.cats-add-btn__plus {
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Carte état vide (plats / catégories) */
+.plats-empty,
+.cats-empty {
+  margin-top: 1.5rem;
+  padding: 2.5rem 1.35rem 2rem;
+  border: 1px solid #eeeeee;
+  border-radius: 0.5rem;
+  background: #fff;
+  text-align: center;
+  box-shadow: var(--dash-shadow-card);
+}
+
+/* Maquette catégories : carte un peu plus « nette » */
+.cats-empty {
+  border-radius: 0.25rem;
+  box-shadow: none;
+}
+
+.plats-empty__icon-wrap,
+.cats-empty__icon-wrap {
+  width: 4.5rem;
+  height: 4.5rem;
+  margin: 0 auto 1.25rem;
+  border-radius: 50%;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.plats-empty__icon-wrap img,
+.cats-empty__icon-wrap img {
+  display: block;
+  max-width: 55%;
+  max-height: 55%;
+  object-fit: contain;
+}
+
+/* Fourchette / couteau en gris (placeholder) */
+.plats-empty__glyph,
+.cats-empty__glyph {
+  display: block;
+  width: 0.75rem;
+  height: 1rem;
+  border-left: 2px solid #757575;
+  border-right: 2px solid #757575;
+  border-bottom: 2px solid #757575;
+  border-radius: 0 0 3px 3px;
+  position: relative;
+}
+
+.plats-empty__glyph::after,
+.cats-empty__glyph::after {
+  content: "";
+  position: absolute;
+  right: -6px;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: #757575;
+  border-radius: 1px;
+}
+
+.plats-empty__title,
+.cats-empty__title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--dash-text);
+}
+
+.plats-empty__desc,
+.cats-empty__desc {
+  margin: 0.65rem auto 0;
+  max-width: 18rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--dash-muted);
+}
+
+.plats-empty__cta,
+.cats-empty__cta {
+  margin-top: 1.35rem;
+  padding: 0.4rem 0.75rem;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--dash-accent);
+  cursor: pointer;
+  border-radius: 0.35rem;
+  transition: opacity 0.15s ease;
+}
+
+.plats-empty__cta:hover,
+.cats-empty__cta:hover {
+  opacity: 0.85;
+  text-decoration: underline;
+}
+
+.plats-empty__cta:focus-visible,
+.cats-empty__cta:focus-visible {
+  outline: 2px solid var(--dash-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plats-add-btn,
+  .cats-add-btn {
+    transition: none;
+  }
+
+  .plats-add-btn:active,
+  .cats-add-btn:active {
+    transform: none;
+  }
 }
 
 /* Desktop : contenu un peu plus large ; drawer inchangé (mobile-first) */
