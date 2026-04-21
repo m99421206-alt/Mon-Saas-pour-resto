@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="Aperçu du menu client sur mobile — AfricaMenu." />
+    <title>Mon Menu — AfricaMenu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/dashboard.css" />
+  </head>
+  <body class="dashboard-page" data-menu-id="demo">
+    <main class="dashboard-main" id="mon-menu-main">
+      <header class="dash-topbar">
+        <a href="../../index.html" class="dash-brand" aria-label="Retour accueil AfricaMenu">
+          <span class="dash-brand__logo" aria-hidden="true">
+            <img src="../../assets/images/icone/logo.png" alt="" width="40" height="40" />
+          </span>
+          <span class="dash-brand__name">AfricaMenu</span>
+        </a>
+
+        <button
+          class="dash-menu-btn"
+          id="open-drawer"
+          type="button"
+          aria-label="Ouvrir le menu"
+          aria-controls="dash-drawer"
+          aria-expanded="false"
+        >
+          <span class="dash-menu-bars" aria-hidden="true"></span>
+        </button>
+      </header>
+
+      <header class="apercu-head">
+        <h1 class="apercu-title">Aperçu du menu</h1>
+        <p class="apercu-sub">voici ce que vos clients voient sur les téléphone</p>
+      </header>
+
+      <button type="button" class="apercu-voir-btn" data-action="view-public-menu" data-menu-id="demo">
+        <span class="apercu-voir-btn__label">Voir</span>
+        <span class="apercu-voir-btn__icon" aria-hidden="true" title="Ouvrir le menu public"></span>
+      </button>
+
+      <section class="apercu-device-wrap" aria-label="Simulation écran client">
+        <div class="apercu-device-card">
+          <div class="apercu-phone" aria-hidden="true">
+            <div class="apercu-phone__bezel">
+              <div class="apercu-phone__island" aria-hidden="true"></div>
+              <div class="apercu-phone__screen">
+                <div class="apercu-phone__status">
+                  <span class="apercu-phone__time">11:24</span>
+                  <span class="apercu-phone__sys" aria-hidden="true">
+                    <span class="apercu-phone__signal"></span>
+                    <span class="apercu-phone__battery"></span>
+                  </span>
+                </div>
+
+                <div class="client-menu">
+                  <div class="client-menu__hero">
+                    <div class="client-menu__hero-ph" role="img" aria-label="Image d’en-tête (placeholder)"></div>
+                    <div class="client-menu__logo-badge" aria-hidden="true">
+                      <span class="client-menu__logo-inner">LOGO</span>
+                    </div>
+                  </div>
+
+                  <div class="client-menu__intro">
+                    <h2 class="client-menu__name">LE KING</h2>
+                    <p class="client-menu__desc">
+                      Texte de description du restaurant — placeholder à remplacer par votre accroche.
+                    </p>
+                  </div>
+
+                  <h3 class="client-menu__section-title">Categories</h3>
+                  <ul class="client-menu__cats">
+                    <li class="client-menu__cat">
+                      <span class="client-menu__cat-thumb" aria-hidden="true"></span>
+                      <span class="client-menu__cat-label">MENU</span>
+                      <span class="client-menu__cat-chev" aria-hidden="true">›</span>
+                    </li>
+                    <li class="client-menu__cat">
+                      <span class="client-menu__cat-thumb" aria-hidden="true"></span>
+                      <span class="client-menu__cat-label">BOISSONS</span>
+                      <span class="client-menu__cat-chev" aria-hidden="true">›</span>
+                    </li>
+                    <li class="client-menu__cat">
+                      <span class="client-menu__cat-thumb" aria-hidden="true"></span>
+                      <span class="client-menu__cat-label">DESSERT</span>
+                      <span class="client-menu__cat-chev" aria-hidden="true">›</span>
+                    </li>
+                    <li class="client-menu__cat">
+                      <span class="client-menu__cat-thumb" aria-hidden="true"></span>
+                      <span class="client-menu__cat-label">PATS AFRICAIN</span>
+                      <span class="client-menu__cat-chev" aria-hidden="true">›</span>
+                    </li>
+                  </ul>
+
+                  <div class="client-menu__nouv-head">
+                    <h3 class="client-menu__section-title client-menu__section-title--inline">Les nouveautés</h3>
+                    <span class="client-menu__see-all">Tout Voir ›</span>
+                  </div>
+                  <div class="client-menu__nouv-strip" role="list">
+                    <div class="client-menu__dish-card" role="listitem">
+                      <div class="client-menu__dish-ph" aria-hidden="true"></div>
+                      <p class="client-menu__dish-name">Plat</p>
+                    </div>
+                    <div class="client-menu__dish-card" role="listitem">
+                      <div class="client-menu__dish-ph" aria-hidden="true"></div>
+                      <p class="client-menu__dish-name">Plat</p>
+                    </div>
+                    <div class="client-menu__dish-card" role="listitem">
+                      <div class="client-menu__dish-ph" aria-hidden="true"></div>
+                      <p class="client-menu__dish-name">Plat</p>
+                    </div>
+                  </div>
+
+                  <span class="client-menu__wa" aria-label="WhatsApp (placeholder)" title="WhatsApp"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div class="dash-overlay" id="dash-overlay" hidden aria-hidden="true"></div>
+
+    <button type="button" class="dash-drawer-close" id="close-drawer" hidden aria-label="Fermer le menu">
+      <span class="dash-drawer-close__x" aria-hidden="true">×</span>
+    </button>
+
+    <aside class="dash-drawer" id="dash-drawer" aria-labelledby="dash-drawer-title" aria-hidden="true">
+      <header class="dash-drawer__header">
+        <div class="dash-drawer__brand" id="dash-drawer-title">
+          <span class="dash-drawer__logo" aria-hidden="true">
+            <img src="../../assets/images/icone/logo.png" alt="" width="30" height="30" />
+          </span>
+          <span class="dash-drawer__brand-name">AfricaMenu</span>
+        </div>
+      </header>
+
+      <nav class="dash-drawer__nav" aria-label="Navigation principale">
+        <ul class="dash-drawer__list">
+          <li>
+            <a class="dash-drawer__link" href="dashboard.html">
+              <span class="dash-drawer__ico" aria-hidden="true">
+                <img src="../../assets/images/icone/tableaux-de-bord.png" alt="" width="20" height="20" />
+              </span>
+              <span class="dash-drawer__label">tableau de bord</span>
+            </a>
+          </li>
+          <li>
+            <a class="dash-drawer__link" href="mes-plats.html">
+              <span class="dash-drawer__ico" aria-hidden="true">
+                <img src="../../assets/images/icone/restaurant .png" alt="" width="30" height="30" />
+              </span>
+              <span class="dash-drawer__label">Mes plats</span>
+            </a>
+          </li>
+          <li>
+            <a class="dash-drawer__link" href="categories.html">
+              <span class="dash-drawer__ico" aria-hidden="true">
+                <img src="../../assets/images/icone/categorie (1).png" alt="" width="20" height="20" />
+              </span>
+              <span class="dash-drawer__label">Catégories</span>
+            </a>
+          </li>
+          <li>
+            <a class="dash-drawer__link is-active" href="mon-menu.html" aria-current="page">
+              <span class="dash-drawer__ico" aria-hidden="true">
+                <img src="../../assets/images/icone/menu.png" alt="" width="20" height="20" />
+              </span>
+              <span class="dash-drawer__label">Mon Menu</span>
+            </a>
+          </li>
+          <li>
+            <a class="dash-drawer__link" href="qr-code.html">
+              <span class="dash-drawer__ico" aria-hidden="true">
+                <img src="../../assets/images/icone/qr-code.png" alt="" width="30" height="30" />
+              </span>
+              <span class="dash-drawer__label">QR Code</span>
+            </a>
+          </li>
+          <li>
+            <a class="dash-drawer__link" href="parametres.html">
+              <span class="dash-drawer__ico" aria-hidden="true">
+                <img src="../../assets/images/icone/parametres.png" alt="" width="20" height="20" />
+              </span>
+              <span class="dash-drawer__label">Paramètres</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <footer class="dash-drawer__footer">
+        <p class="dash-drawer__resto">Nom du resto</p>
+        <p class="dash-drawer__email">email du resto</p>
+        <a class="dash-drawer__logout" href="login.html">
+          <span class="dash-drawer__ico dash-drawer__ico--logout" aria-hidden="true">
+            <img src="../../assets/images/icone/se-deconnecter.png" alt="" width="20" height="20" />
+          </span>
+          <span>Déconnexion</span>
+        </a>
+      </footer>
+    </aside>
+
+    <script src="../js/dashboard.js"></script>
+    <script src="../js/mon-menu.js"></script>
+  </body>
+</html>

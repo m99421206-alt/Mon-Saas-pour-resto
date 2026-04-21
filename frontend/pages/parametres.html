@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="Gérez les catégories de votre menu — AfricaMenu." />
-    <title>Catégories — AfricaMenu</title>
+    <meta name="description" content="Paramètres du restaurant — AfricaMenu." />
+    <title>Paramètres — AfricaMenu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -13,8 +13,8 @@
     />
     <link rel="stylesheet" href="../css/dashboard.css" />
   </head>
-  <body class="dashboard-page cats-page">
-    <main class="dashboard-main" id="categories-main">
+  <body class="dashboard-page parametres-page">
+    <main class="dashboard-main" id="parametres-main">
       <header class="dash-topbar">
         <a href="../../index.html" class="dash-brand" aria-label="Retour accueil AfricaMenu">
           <span class="dash-brand__logo" aria-hidden="true">
@@ -35,28 +35,74 @@
         </button>
       </header>
 
-      <header class="cats-page-head">
-        <h1 class="cats-page-title">Catégories</h1>
-        <p class="cats-page-sub">
-          Gérez les catégories de votre menu (ex&nbsp;: Entrées, Plats, Boissons).
-        </p>
+      <header class="plats-page-head">
+        <h1 class="plats-page-title">Paramètres</h1>
+        <p class="plats-page-sub">Gérez les informations de votre restaurant.</p>
       </header>
 
-      <button type="button" class="cats-add-btn" id="cats-add-main" data-action="add-category">
-        <span class="cats-add-btn__plus" aria-hidden="true">+</span>
-        <span>Ajouter</span>
-      </button>
+      <form class="parametres-form" id="parametres-form" novalidate>
+        <div class="parametres-card">
+          <h2 class="parametres-card__title">Informations générales</h2>
+          <div class="parametres-card__rule" aria-hidden="true"></div>
 
-      <section class="cats-empty" aria-labelledby="cats-empty-title">
-        <div class="cats-empty__icon-wrap" aria-hidden="true">
-          <img src="../../assets/images/icone/logo.png" alt="" width="50" height="50" />
+          <div class="param-field">
+            <label class="param-field__label" for="restaurant-name">Nom du restaurant</label>
+            <input
+              class="param-field__input"
+              id="restaurant-name"
+              name="restaurantName"
+              type="text"
+              autocomplete="organization"
+              placeholder=""
+            />
+            <p class="param-field__hint">
+              Note : Changer le nom ne modifiera pas le lien de votre menu pour éviter de casser vos QR codes
+              existants.
+            </p>
+          </div>
+
+          <div class="param-field">
+            <label class="param-field__label" for="whatsapp-number">Numéro WhatsApp pour les commandes</label>
+            <input
+              class="param-field__input"
+              id="whatsapp-number"
+              name="whatsapp"
+              type="tel"
+              inputmode="tel"
+              autocomplete="tel"
+              placeholder=""
+            />
+            <p class="param-field__hint">format recommandé avec l'indicatif : +223</p>
+          </div>
+
+          <div class="param-field">
+            <label class="param-field__label" for="logo-url">Image de votre logo</label>
+            <input
+              class="param-field__input"
+              id="logo-url"
+              name="logoUrl"
+              type="url"
+              inputmode="url"
+              autocomplete="off"
+              placeholder="https://"
+            />
+          </div>
+
+          <button type="submit" class="param-save-btn" id="parametres-save">
+            <span class="param-save-btn__icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  d="M17 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7l-4-4zm-5 16a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm3-10H9V5h6v4z"
+                />
+              </svg>
+            </span>
+            <span>Enregistrer les modifications</span>
+          </button>
         </div>
-        <h2 id="cats-empty-title" class="cats-empty__title">Aucune catégorie</h2>
-        <p class="cats-empty__desc">Commencez par ajouter une catégorie pour organiser vos plats.</p>
-        <button type="button" class="cats-empty__cta" id="cats-add-empty" data-action="add-category">
-          + Ajouter une catégorie
-        </button>
-      </section>
+
+        <p class="parametres-feedback" id="parametres-feedback" role="status" aria-live="polite" hidden></p>
+      </form>
     </main>
 
     <div class="dash-overlay" id="dash-overlay" hidden aria-hidden="true"></div>
@@ -94,7 +140,7 @@
             </a>
           </li>
           <li>
-            <a class="dash-drawer__link is-active" href="categories.html" aria-current="page">
+            <a class="dash-drawer__link" href="categories.html">
               <span class="dash-drawer__ico" aria-hidden="true">
                 <img src="../../assets/images/icone/categorie (1).png" alt="" width="20" height="20" />
               </span>
@@ -118,7 +164,7 @@
             </a>
           </li>
           <li>
-            <a class="dash-drawer__link" href="parametres.html">
+            <a class="dash-drawer__link is-active" href="parametres.html" aria-current="page">
               <span class="dash-drawer__ico" aria-hidden="true">
                 <img src="../../assets/images/icone/parametres.png" alt="" width="20" height="20" />
               </span>
@@ -141,6 +187,6 @@
     </aside>
 
     <script src="../js/dashboard.js"></script>
-    <script src="../js/categories.js"></script>
+    <script src="../js/parametres.js"></script>
   </body>
 </html>

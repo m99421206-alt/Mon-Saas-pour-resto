@@ -19,7 +19,8 @@
     />
     <link rel="stylesheet" href="../css/dashboard.css" />
   </head>
-  <body class="dashboard-page">
+  <!-- data-menu-id : id utilisé par mon-menu.js pour /menu/:id -->
+  <body class="dashboard-page" data-menu-id="demo">
     <!--
       Dashboard:
       1) Barre du haut (marque + ouverture drawer)
@@ -47,10 +48,10 @@
 
       <section class="dash-intro">
         <h1 class="dash-title">Bonjour, (nom du resto)</h1>
-        <p class="dash-subtitle">Voici un aperçu de votre menu digital</p>
+        <p class="dash-subtitle">Gérez votre établissement : stats, actions rapides, lien public et QR code.</p>
       </section>
 
-      <section class="dash-grid" aria-label="Résumé du menu">
+      <section class="dash-grid" aria-label="Tableau de bord">
         <!-- Carte stat : Catégories -->
         <article class="dash-card dash-card--stat">
           <div class="dash-row">
@@ -101,10 +102,10 @@
             inputmode="url"
             autocomplete="off"
           />
-          <a href="#" class="dash-link-btn">
+          <button type="button" class="dash-link-btn" data-action="view-public-menu">
             <span>Voir le menu</span>
             <span class="dash-link-btn__icon" aria-hidden="true" title=""></span>
-          </a>
+          </button>
         </article>
 
         <!-- Bloc QR (CTA) -->
@@ -114,10 +115,10 @@
             téléchargez-le et imprimez-le pour le placer sur vos tables. vos clients pourront scanner et commander
             directement
           </p>
-          <button type="button" class="dash-qr-btn">
+          <a href="qr-code.html" class="dash-qr-btn">
             <img src="../../assets/images/icone/qrcode.png" alt="" width="20" height="20" />
             <span class="dash-qr-btn__label">Obtenir mon QR Code</span>
-          </button>
+          </a>
         </article>
       </section>
     </main>
@@ -185,7 +186,7 @@
             </a>
           </li>
           <li>
-            <a class="dash-drawer__link" href="#">
+            <a class="dash-drawer__link" href="mon-menu.html">
               <span class="dash-drawer__ico" aria-hidden="true">
                 <img src="../../assets/images/icone/menu.png" alt="" width="20" height="20" />
               </span>
@@ -193,7 +194,7 @@
             </a>
           </li>
           <li>
-            <a class="dash-drawer__link" href="#">
+            <a class="dash-drawer__link" href="qr-code.html">
               <span class="dash-drawer__ico" aria-hidden="true">
                 <img src="../../assets/images/icone/qr-code.png" alt="" width="30" height="30" />
               </span>
@@ -201,7 +202,7 @@
             </a>
           </li>
           <li>
-            <a class="dash-drawer__link" href="#">
+            <a class="dash-drawer__link" href="parametres.html">
               <span class="dash-drawer__ico" aria-hidden="true">
                 <img src="../../assets/images/icone/parametres.png" alt="" width="20" height="20" />
               </span>
@@ -224,5 +225,6 @@
     </aside>
 
     <script src="../js/dashboard.js"></script>
+    <script src="../js/mon-menu.js"></script>
   </body>
 </html>

@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="Gérez les catégories de votre menu — AfricaMenu." />
-    <title>Catégories — AfricaMenu</title>
+    <meta name="description" content="Votre QR code menu — AfricaMenu." />
+    <title>Votre QR Code — AfricaMenu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -13,8 +13,14 @@
     />
     <link rel="stylesheet" href="../css/dashboard.css" />
   </head>
-  <body class="dashboard-page cats-page">
-    <main class="dashboard-main" id="categories-main">
+  <!-- data-restaurant-name / data-share-url-base : à brancher sur l’API plus tard -->
+  <body
+    class="dashboard-page qr-code-page"
+    data-menu-id="demo"
+    data-restaurant-name="Le king"
+    data-share-url-base="https://africamenu.app/menu/"
+  >
+    <main class="dashboard-main" id="qr-code-main">
       <header class="dash-topbar">
         <a href="../../index.html" class="dash-brand" aria-label="Retour accueil AfricaMenu">
           <span class="dash-brand__logo" aria-hidden="true">
@@ -35,28 +41,43 @@
         </button>
       </header>
 
-      <header class="cats-page-head">
-        <h1 class="cats-page-title">Catégories</h1>
-        <p class="cats-page-sub">
-          Gérez les catégories de votre menu (ex&nbsp;: Entrées, Plats, Boissons).
+      <header class="plats-page-head">
+        <h1 class="plats-page-title">Votre QR Code</h1>
+        <p class="plats-page-sub">
+          Imprimez ce QR code et placez-le sur vos tables. Vos clients n'auront qu'à le scanner pour voir votre menu.
         </p>
       </header>
 
-      <button type="button" class="cats-add-btn" id="cats-add-main" data-action="add-category">
-        <span class="cats-add-btn__plus" aria-hidden="true">+</span>
-        <span>Ajouter</span>
-      </button>
-
-      <section class="cats-empty" aria-labelledby="cats-empty-title">
-        <div class="cats-empty__icon-wrap" aria-hidden="true">
-          <img src="../../assets/images/icone/logo.png" alt="" width="50" height="50" />
+      <article class="qr-code-card" aria-labelledby="qr-code-title">
+        <h2 id="qr-code-title" class="visually-hidden">QR code du menu</h2>
+        <div class="qr-code-card__inner">
+          <p class="qr-code-card__name" id="qr-restaurant-name">Le king</p>
+          <p class="qr-code-card__hint">Scannez pour voir le menu</p>
+          <div class="qr-code-canvas-wrap">
+            <canvas id="qr-code-canvas" width="220" height="220" aria-label="QR code (aperçu généré localement)"></canvas>
+          </div>
+          <button type="button" class="qr-code-download" id="qr-code-download">
+            Télécharger l'image QR
+          </button>
         </div>
-        <h2 id="cats-empty-title" class="cats-empty__title">Aucune catégorie</h2>
-        <p class="cats-empty__desc">Commencez par ajouter une catégorie pour organiser vos plats.</p>
-        <button type="button" class="cats-empty__cta" id="cats-add-empty" data-action="add-category">
-          + Ajouter une catégorie
-        </button>
-      </section>
+
+        <div class="qr-code-share">
+          <p>Ou partagez le lien :</p>
+          <div class="qr-share-row">
+            <label class="visually-hidden" for="qr-share-url">Lien du menu</label>
+            <input
+              class="qr-share-input"
+              id="qr-share-url"
+              type="url"
+              readonly
+              placeholder="https://"
+              autocomplete="off"
+            />
+            <button type="button" class="qr-copy-btn" id="qr-copy-btn">copier</button>
+          </div>
+          <p class="qr-copy-feedback" id="qr-copy-feedback" role="status" aria-live="polite" hidden></p>
+        </div>
+      </article>
     </main>
 
     <div class="dash-overlay" id="dash-overlay" hidden aria-hidden="true"></div>
@@ -94,7 +115,7 @@
             </a>
           </li>
           <li>
-            <a class="dash-drawer__link is-active" href="categories.html" aria-current="page">
+            <a class="dash-drawer__link" href="categories.html">
               <span class="dash-drawer__ico" aria-hidden="true">
                 <img src="../../assets/images/icone/categorie (1).png" alt="" width="20" height="20" />
               </span>
@@ -110,7 +131,7 @@
             </a>
           </li>
           <li>
-            <a class="dash-drawer__link" href="qr-code.html">
+            <a class="dash-drawer__link is-active" href="qr-code.html" aria-current="page">
               <span class="dash-drawer__ico" aria-hidden="true">
                 <img src="../../assets/images/icone/qr-code.png" alt="" width="30" height="30" />
               </span>
@@ -141,6 +162,6 @@
     </aside>
 
     <script src="../js/dashboard.js"></script>
-    <script src="../js/categories.js"></script>
+    <script src="../js/qr-code.js"></script>
   </body>
 </html>
