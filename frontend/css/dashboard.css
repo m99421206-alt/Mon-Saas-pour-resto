@@ -1051,6 +1051,158 @@ a.dash-qr-btn {
   outline-offset: 2px;
 }
 
+.cats-status,
+.plats-status {
+  min-height: 1.35rem;
+  margin: 0.85rem 0 0;
+  color: var(--dash-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.cats-status.is-error,
+.plats-status.is-error {
+  color: #b00020;
+  font-weight: 600;
+}
+
+.cats-form,
+.plats-form {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #eeeeee;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  box-shadow: var(--dash-shadow-card);
+}
+
+.cats-form__label,
+.plats-form__label {
+  display: block;
+  margin: 0.85rem 0 0.45rem;
+  color: var(--dash-text);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.cats-form__label:first-child,
+.plats-form__label:first-child {
+  margin-top: 0;
+}
+
+.cats-form__row {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.cats-form__input,
+.plats-form__input {
+  width: 100%;
+  border: 1px solid #dddddd;
+  border-radius: 0.55rem;
+  padding: 0.78rem 0.85rem;
+  font: inherit;
+  color: var(--dash-text);
+  background: #ffffff;
+}
+
+.cats-form__input:focus,
+.plats-form__input:focus {
+  outline: 2px solid var(--dash-accent);
+  outline-offset: 2px;
+}
+
+.cats-form__submit,
+.cats-form__cancel,
+.plats-form__submit,
+.plats-form__cancel {
+  border: none;
+  border-radius: 0.55rem;
+  padding: 0.78rem 1rem;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cats-form__submit,
+.plats-form__submit {
+  background: var(--dash-accent);
+  color: #ffffff;
+}
+
+.cats-form__cancel,
+.plats-form__cancel {
+  margin-top: 0.65rem;
+  background: #f2f2f2;
+  color: var(--dash-text);
+}
+
+.cats-list,
+.plats-list {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.cats-item,
+.plats-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid #eeeeee;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  box-shadow: var(--dash-shadow-card);
+}
+
+.cats-item__copy {
+  min-width: 0;
+}
+
+.cats-item__name,
+.plats-item__name {
+  margin: 0;
+  color: var(--dash-text);
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.plats-item__meta {
+  margin: 0.25rem 0 0;
+  color: var(--dash-muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.cats-item__actions,
+.plats-item__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+
+.cats-item__btn,
+.plats-item__btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.45rem 0.65rem;
+  background: #f2f2f2;
+  color: var(--dash-text);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cats-item__btn--danger,
+.plats-item__btn--danger {
+  background: #fff0f0;
+  color: #b00020;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .plats-add-btn,
   .cats-add-btn {

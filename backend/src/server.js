@@ -14,7 +14,7 @@ const productRoutes = require("./routes/productRoutes");
 const menuRoutes = require("./routes/menuRoutes");
 
 const app = express();
-const PORT = Number(process.env.PORT) || 3001;
+const PORT = Number(process.env.PORT) || 4000;
 
 /* Corps des requêtes en JSON (POST / PUT) */
 app.use(express.json());
