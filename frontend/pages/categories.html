@@ -47,7 +47,28 @@
         <span>Ajouter</span>
       </button>
 
-      <section class="cats-empty" aria-labelledby="cats-empty-title">
+      <p class="cats-status" id="cats-status" role="status"></p>
+
+      <form class="cats-form" id="cats-form" hidden>
+        <label class="cats-form__label" for="cats-name">Nom de la catégorie</label>
+        <div class="cats-form__row">
+          <input
+            class="cats-form__input"
+            id="cats-name"
+            name="name"
+            type="text"
+            placeholder="Ex : Plats africains"
+            autocomplete="off"
+            required
+          />
+          <button class="cats-form__submit" type="submit" id="cats-submit">Enregistrer</button>
+        </div>
+        <button class="cats-form__cancel" type="button" id="cats-cancel">Annuler</button>
+      </form>
+
+      <section class="cats-list" id="cats-list" aria-label="Liste des catégories" hidden></section>
+
+      <section class="cats-empty" id="cats-empty" aria-labelledby="cats-empty-title">
         <div class="cats-empty__icon-wrap" aria-hidden="true">
           <img src="../../assets/images/icone/logo.png" alt="" width="50" height="50" />
         </div>
@@ -129,9 +150,9 @@
       </nav>
 
       <footer class="dash-drawer__footer">
-        <p class="dash-drawer__resto">Nom du resto</p>
-        <p class="dash-drawer__email">email du resto</p>
-        <a class="dash-drawer__logout" href="login.html">
+        <p class="dash-drawer__resto" id="cats-drawer-restaurant">Nom du resto</p>
+        <p class="dash-drawer__email" id="cats-drawer-email">email du resto</p>
+        <a class="dash-drawer__logout" href="login.html" id="cats-logout">
           <span class="dash-drawer__ico dash-drawer__ico--logout" aria-hidden="true">
             <img src="../../assets/images/icone/se-deconnecter.png" alt="" width="20" height="20" />
           </span>
