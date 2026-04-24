@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="../css/dashboard.css" />
   </head>
   <!-- data-menu-id : id utilisé par mon-menu.js pour /menu/:id -->
-  <body class="dashboard-page" data-menu-id="demo">
+  <body class="dashboard-page" data-menu-id="">
     <!--
       Dashboard:
       1) Barre du haut (marque + ouverture drawer)
@@ -47,7 +47,7 @@
       </header>
 
       <section class="dash-intro">
-        <h1 class="dash-title">Bonjour, (nom du resto)</h1>
+        <h1 class="dash-title" id="dashboard-title">Bonjour</h1>
         <p class="dash-subtitle">Gérez votre établissement : stats, actions rapides, lien public et QR code.</p>
       </section>
 
@@ -60,7 +60,7 @@
             </div>
             <div class="dash-stat-copy">
               <p class="dash-label">Catégories</p>
-              <p class="dash-value">0</p>
+              <p class="dash-value" id="dashboard-categories-count">0</p>
             </div>
           </div>
         </article>
@@ -73,19 +73,19 @@
             </div>
             <div class="dash-stat-copy">
               <p class="dash-label">plats</p>
-              <p class="dash-value">0</p>
+              <p class="dash-value" id="dashboard-products-count">0</p>
             </div>
           </div>
         </article>
 
         <!-- Actions rapides -->
         <article class="dash-card dash-card--actions" aria-label="Actions rapides">
-          <button class="dash-action" type="button">
+          <button class="dash-action" type="button" id="dashboard-add-product">
             <span class="dash-action__disc dash-action__disc--accent" aria-hidden="true">+</span>
             <span class="dash-action__label dash-action__label--accent">Ajouter un plat</span>
           </button>
           <div class="dash-action-divider" aria-hidden="true"></div>
-          <button class="dash-action" type="button">
+          <button class="dash-action" type="button" id="dashboard-add-category">
             <span class="dash-action__disc dash-action__disc--dark" aria-hidden="true">+</span>
             <span class="dash-action__label">Ajouter une catégorie</span>
           </button>
@@ -98,11 +98,13 @@
             class="dash-link-input"
             type="url"
             name="menuUrl"
+            id="dashboard-menu-url"
             placeholder="https://"
             inputmode="url"
             autocomplete="off"
+            readonly
           />
-          <button type="button" class="dash-link-btn" data-action="view-public-menu">
+          <button type="button" class="dash-link-btn" data-action="view-public-menu" id="dashboard-view-menu">
             <span>Voir le menu</span>
             <span class="dash-link-btn__icon" aria-hidden="true" title=""></span>
           </button>
@@ -213,9 +215,9 @@
       </nav>
 
       <footer class="dash-drawer__footer">
-        <p class="dash-drawer__resto">Nom du resto</p>
-        <p class="dash-drawer__email">email du resto</p>
-        <a class="dash-drawer__logout" href="login.html">
+        <p class="dash-drawer__resto" id="dashboard-drawer-restaurant">Nom du resto</p>
+        <p class="dash-drawer__email" id="dashboard-drawer-email">email du resto</p>
+        <a class="dash-drawer__logout" href="login.html" id="dashboard-logout">
           <span class="dash-drawer__ico dash-drawer__ico--logout" aria-hidden="true">
             <img src="../../assets/images/icone/se-deconnecter.png" alt="" width="20" height="20" />
           </span>
