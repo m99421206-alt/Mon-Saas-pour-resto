@@ -62,6 +62,17 @@
           </div>
 
           <div class="param-field">
+            <label class="param-field__label" for="restaurant-description">Description du restaurant</label>
+            <textarea
+              class="param-field__input param-field__textarea"
+              id="restaurant-description"
+              name="description"
+              rows="4"
+              placeholder="Décrivez l'ambiance, les spécialités ou votre cuisine."
+            ></textarea>
+          </div>
+
+          <div class="param-field">
             <label class="param-field__label" for="whatsapp-number">Numéro WhatsApp pour les commandes</label>
             <input
               class="param-field__input"
@@ -175,9 +186,9 @@
       </nav>
 
       <footer class="dash-drawer__footer">
-        <p class="dash-drawer__resto">Nom du resto</p>
-        <p class="dash-drawer__email">email du resto</p>
-        <a class="dash-drawer__logout" href="login.html">
+        <p class="dash-drawer__resto" id="param-drawer-restaurant">Nom du resto</p>
+        <p class="dash-drawer__email" id="param-drawer-email">email du resto</p>
+        <a class="dash-drawer__logout" href="login.html" id="param-logout">
           <span class="dash-drawer__ico dash-drawer__ico--logout" aria-hidden="true">
             <img src="../../assets/images/icone/se-deconnecter.png" alt="" width="20" height="20" />
           </span>

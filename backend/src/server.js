@@ -12,6 +12,7 @@ const userRoutes = require("./routes/userRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const productRoutes = require("./routes/productRoutes");
 const menuRoutes = require("./routes/menuRoutes");
+const restaurantRoutes = require("./routes/restaurantRoutes");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
@@ -41,6 +42,8 @@ app.use("/api", userRoutes);
 app.use("/api/categories", categoryRoutes);
 /* CRUD produits (étape 8) — JWT requis */
 app.use("/api/products", productRoutes);
+/* Paramètres restaurant — JWT requis */
+app.use("/api/restaurant", restaurantRoutes);
 /* Menu public client (étape 9) — sans JWT */
 app.use("/menu", menuRoutes);
 

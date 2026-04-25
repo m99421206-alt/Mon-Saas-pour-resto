@@ -203,5 +203,12 @@
     window.location.href = "categories.html";
   });
 
+  viewMenuBtn?.addEventListener("click", function () {
+    const explicitUrl = viewMenuBtn.getAttribute("data-menu-url");
+    if (explicitUrl) {
+      window.location.href = explicitUrl;
+    }
+  });
+
   loadDashboard();
 })();

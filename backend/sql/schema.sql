@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS `restaurants` (
   `user_id` INT UNSIGNED NOT NULL,
   `name` VARCHAR(255) NOT NULL,
   `description` TEXT NULL,
+  `whatsapp` VARCHAR(32) NULL,
+  `logo_url` VARCHAR(512) NULL,
   PRIMARY KEY (`id`),
   KEY `idx_restaurants_user_id` (`user_id`),
   CONSTRAINT `fk_restaurants_user`

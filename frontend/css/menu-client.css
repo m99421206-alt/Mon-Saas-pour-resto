@@ -1,0 +1,423 @@
+:root {
+  --menu-bg: #f6f6f6;
+  --menu-card: #ffffff;
+  --menu-text: #171717;
+  --menu-muted: #7a7a7a;
+  --menu-border: #ececec;
+  --menu-orange: #ff6b00;
+  --menu-whatsapp: #25d366;
+  --menu-shadow: 0 12px 32px rgba(17, 17, 17, 0.08);
+  --menu-soft-shadow: 0 6px 20px rgba(17, 17, 17, 0.06);
+  --menu-radius-lg: 20px;
+  --menu-radius-md: 16px;
+  --menu-radius-sm: 12px;
+  --menu-font:
+    "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body.menu-page {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--menu-bg);
+  color: var(--menu-text);
+  font-family: var(--menu-font);
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.menu-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  align-items: center;
+  min-height: 58px;
+  padding: max(0.25rem, env(safe-area-inset-top, 0px)) 1rem 0.25rem;
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid var(--menu-border);
+  backdrop-filter: blur(16px);
+}
+
+.menu-topbar__button,
+.menu-topbar__spacer {
+  width: 44px;
+  height: 44px;
+}
+
+.menu-topbar__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--menu-text);
+  cursor: pointer;
+}
+
+.menu-topbar__button:active {
+  background: #efefef;
+}
+
+.menu-topbar__bars,
+.menu-topbar__bars::before,
+.menu-topbar__bars::after {
+  display: block;
+  width: 20px;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.menu-topbar__bars {
+  position: relative;
+}
+
+.menu-topbar__bars::before,
+.menu-topbar__bars::after {
+  content: "";
+  position: absolute;
+  left: 0;
+}
+
+.menu-topbar__bars::before {
+  top: -7px;
+}
+
+.menu-topbar__bars::after {
+  top: 7px;
+}
+
+.menu-topbar__title {
+  margin: 0;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.menu-main {
+  width: min(100%, 480px);
+  margin: 0 auto;
+  padding: 0 1rem calc(6rem + env(safe-area-inset-bottom, 0px));
+}
+
+.restaurant-hero {
+  padding-top: 1rem;
+}
+
+.restaurant-hero__cover {
+  height: 168px;
+  border-radius: var(--menu-radius-lg);
+  background:
+    linear-gradient(135deg, rgba(0, 0, 0, 0.18), rgba(255, 107, 0, 0.2)),
+    linear-gradient(120deg, #c7d7c8 0%, #91a68c 40%, #6c7b66 100%);
+  box-shadow: var(--menu-soft-shadow);
+}
+
+.restaurant-card {
+  position: relative;
+  display: flex;
+  gap: 1rem;
+  margin: -42px 0 0;
+  padding: 1rem;
+  border-radius: var(--menu-radius-lg);
+  background: var(--menu-card);
+  box-shadow: var(--menu-shadow);
+}
+
+.restaurant-card__logo {
+  width: 86px;
+  height: 86px;
+  flex: 0 0 86px;
+  display: grid;
+  place-items: center;
+  border: 3px solid #ffffff;
+  border-radius: var(--menu-radius-md);
+  background:
+    radial-gradient(circle at 50% 28%, rgba(255, 255, 255, 0.2), transparent 24%),
+    #0b0b0b;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+}
+
+.restaurant-card__logo span {
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.restaurant-card__content {
+  min-width: 0;
+  padding-top: 0.35rem;
+}
+
+.restaurant-card__name {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+}
+
+.restaurant-card__desc {
+  margin: 0.5rem 0 0;
+  color: var(--menu-muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.menu-section {
+  margin-top: 1.7rem;
+}
+
+.menu-section__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.menu-section__title {
+  margin: 0 0 0.85rem;
+  font-size: 1.65rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.menu-section__head .menu-section__title {
+  margin-bottom: 0;
+}
+
+.menu-section__link {
+  border: 0;
+  background: transparent;
+  color: var(--menu-text);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.category-list {
+  overflow: hidden;
+  border-radius: var(--menu-radius-md);
+  background: var(--menu-card);
+  box-shadow: var(--menu-soft-shadow);
+}
+
+.category-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  min-height: 72px;
+  padding: 0.72rem 0.85rem;
+  border: 0;
+  border-bottom: 1px solid var(--menu-border);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.16s ease,
+    transform 0.16s ease;
+}
+
+.category-card:last-child {
+  border-bottom: 0;
+}
+
+.category-card:active {
+  background: #f7f7f7;
+  transform: scale(0.99);
+}
+
+.category-card__image {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  border-radius: var(--menu-radius-sm);
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.65), transparent 18%),
+    linear-gradient(135deg, #ffb45c, #d85b13 45%, #522c12);
+}
+
+.category-card:nth-child(2n) .category-card__image {
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.7), transparent 18%),
+    linear-gradient(135deg, #ffe08a, #ff8a00 48%, #d9480f);
+}
+
+.category-card:nth-child(3n) .category-card__image {
+  background:
+    radial-gradient(circle at 50% 35%, rgba(255, 255, 255, 0.75), transparent 16%),
+    linear-gradient(135deg, #ece2d0, #c89666 50%, #7a4a2a);
+}
+
+.category-card__name {
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.category-card__arrow {
+  color: #8c8c8c;
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+.menu-section--featured {
+  padding: 1.1rem 0 0;
+}
+
+.product-strip {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  padding: 0.1rem 1rem 0.9rem 0;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.product-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.product-card {
+  flex: 0 0 82%;
+  max-width: 330px;
+  scroll-snap-align: start;
+  border-radius: var(--menu-radius-lg);
+  background: var(--menu-card);
+  box-shadow: var(--menu-soft-shadow);
+  overflow: hidden;
+}
+
+.product-card__image {
+  height: 230px;
+  background:
+    radial-gradient(circle at 45% 35%, rgba(255, 255, 255, 0.24), transparent 18%),
+    linear-gradient(150deg, #f2b46d 0%, #b55524 50%, #3d1e12 100%);
+}
+
+.product-card:nth-child(2n) .product-card__image {
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.32), transparent 18%),
+    linear-gradient(150deg, #ffdf8f 0%, #e06b1c 52%, #55230c 100%);
+}
+
+.product-card:nth-child(3n) .product-card__image {
+  background:
+    radial-gradient(circle at 55% 35%, rgba(255, 255, 255, 0.35), transparent 16%),
+    linear-gradient(150deg, #d6ece0 0%, #75a67f 52%, #284735 100%);
+}
+
+.product-card__body {
+  padding: 0.85rem 1rem 1rem;
+}
+
+.product-card__name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.product-card__price {
+  margin: 0.3rem 0 0;
+  color: var(--menu-orange);
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.menu-empty {
+  margin: 0;
+  padding: 1rem;
+  border-radius: var(--menu-radius-md);
+  background: var(--menu-card);
+  color: var(--menu-muted);
+  font-weight: 700;
+  box-shadow: var(--menu-soft-shadow);
+}
+
+.whatsapp-float {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right, 0px));
+  bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+  z-index: 30;
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--menu-whatsapp);
+  color: #ffffff;
+  text-decoration: none;
+  box-shadow: 0 12px 28px rgba(37, 211, 102, 0.42);
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.whatsapp-float:active {
+  transform: scale(0.94);
+  box-shadow: 0 8px 20px rgba(37, 211, 102, 0.35);
+}
+
+.whatsapp-float__icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+@media (min-width: 481px) {
+  body.menu-page {
+    background:
+      linear-gradient(90deg, #eeeeee 0, #eeeeee calc((100vw - 480px) / 2), transparent 0),
+      var(--menu-bg);
+  }
+
+  .menu-topbar {
+    width: min(100%, 480px);
+    margin: 0 auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .category-card,
+  .whatsapp-float {
+    transition: none;
+  }
+}

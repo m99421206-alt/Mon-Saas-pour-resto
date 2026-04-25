@@ -1,93 +1,110 @@
 /**
  * Page « Votre QR Code »
- * - Aperçu : motif type QR dessiné sur <canvas> (placeholder jusqu’à génération serveur)
+ * - Génère un vrai QR depuis le lien public du menu
  * - Téléchargement PNG du canvas
  * - Copie du lien partageable dans le presse-papiers
  */
 (function () {
   "use strict";
 
+  var API_URL = "http://localhost:4000";
+  var TOKEN_KEY = "africamenu_token";
+  var USER_KEY = "africamenu_user";
+  var RESTAURANT_KEY = "africamenu_restaurant";
+
   var canvas = document.getElementById("qr-code-canvas");
   var downloadBtn = document.getElementById("qr-code-download");
+  var printBtn = document.getElementById("qr-code-print");
   var copyBtn = document.getElementById("qr-copy-btn");
   var urlInput = document.getElementById("qr-share-url");
   var feedback = document.getElementById("qr-copy-feedback");
   var nameEl = document.getElementById("qr-restaurant-name");
-  var body = document.body;
+  var drawerRestaurant = document.getElementById("qr-drawer-restaurant");
+  var drawerEmail = document.getElementById("qr-drawer-email");
+  var logoutLink = document.getElementById("qr-logout");
 
-  function menuId() {
-    var id = body.getAttribute("data-menu-id");
-    if (id && String(id).trim()) return String(id).trim();
-    var q = new URLSearchParams(window.location.search).get("id");
-    if (q && String(q).trim()) return String(q).trim();
-    return "demo";
+  var currentRestaurant = null;
+  var currentShareUrl = "";
+
+  function redirectToLogin() {
+    window.location.href = "login.html";
   }
 
-  function shareUrl() {
-    var base = (body.getAttribute("data-share-url-base") || "").trim();
-    var id = menuId();
-    if (!base) {
-      return "https://africamenu.app/menu/" + encodeURIComponent(id);
-    }
-    if (base.indexOf("://") === -1) {
-      base = "https://" + base.replace(/^\/+/, "");
-    }
-    if (base.endsWith("/")) {
-      return base + encodeURIComponent(id);
-    }
-    return base + "/" + encodeURIComponent(id);
+  function clearSession() {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(RESTAURANT_KEY);
   }
 
-  function restaurantName() {
-    var n = body.getAttribute("data-restaurant-name");
-    return n && String(n).trim() ? String(n).trim() : "Le king";
+  function getStoredJson(key) {
+    try {
+      return JSON.parse(localStorage.getItem(key) || "null");
+    } catch (error) {
+      return null;
+    }
   }
 
-  /** Motif pseudo-QR déterministe (placeholder visuel, pas un vrai encodage) */
-  function drawPlaceholderQr(ctx, size, seedStr) {
-    var n = 29;
-    var cell = size / n;
-    var h = 0;
-    var i;
-    for (i = 0; i < seedStr.length; i++) {
-      h = (h * 31 + seedStr.charCodeAt(i)) >>> 0;
+  async function readJson(response) {
+    try {
+      return await response.json();
+    } catch (error) {
+      return {};
+    }
+  }
+
+  async function loadMe() {
+    var token = localStorage.getItem(TOKEN_KEY);
+    if (!token) {
+      redirectToLogin();
+      return null;
     }
 
+    var response = await fetch(API_URL + "/api/me", {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    });
+    var data = await readJson(response);
+
+    if (response.status === 401) {
+      clearSession();
+      redirectToLogin();
+      return null;
+    }
+    if (!response.ok) {
+      throw new Error(data.message || "Impossible de charger le restaurant.");
+    }
+
+    localStorage.setItem(USER_KEY, JSON.stringify(data.user || null));
+    localStorage.setItem(RESTAURANT_KEY, JSON.stringify(data.restaurant || null));
+    return data;
+  }
+
+  function buildPublicMenuUrl(restaurantId) {
+    var currentPath = window.location.pathname;
+    var menuPath = currentPath.replace(/qr-code\.html$/, "mon-menu.html");
+    return window.location.origin + menuPath + "?id=" + encodeURIComponent(restaurantId);
+  }
+
+  function updateAccountInfo(user, restaurant) {
+    var restaurantName = restaurant && restaurant.name ? restaurant.name : "Nom du resto";
+    if (nameEl) nameEl.textContent = restaurantName;
+    if (drawerRestaurant) drawerRestaurant.textContent = restaurantName;
+    if (drawerEmail) drawerEmail.textContent = user && user.email ? user.email : "email du resto";
+  }
+
+  function drawFallbackQr(ctx, size) {
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, size, size);
     ctx.fillStyle = "#000000";
-
-    function finder(x0, y0) {
-      var dx;
-      var dy;
-      for (dy = 0; dy < 7; dy++) {
-        for (dx = 0; dx < 7; dx++) {
-          var on = dx === 0 || dy === 0 || dx === 6 || dy === 6 || (dx >= 2 && dx <= 4 && dy >= 2 && dy <= 4);
-          if (on) {
-            ctx.fillRect((x0 + dx) * cell, (y0 + dy) * cell, cell + 0.35, cell + 0.35);
-          }
-        }
-      }
-    }
-
-    finder(0, 0);
-    finder(n - 7, 0);
-    finder(0, n - 7);
-
-    for (var y = 0; y < n; y++) {
-      for (var x = 0; x < n; x++) {
-        if (x < 9 && y < 9) continue;
-        if (x >= n - 8 && y < 9) continue;
-        if (x < 9 && y >= n - 8) continue;
-        var t = ((h + x * 73856093 + y * 19349663) >>> 0) % 5;
-        if (t === 0 || t === 1) {
-          ctx.fillRect(x * cell, y * cell, cell + 0.35, cell + 0.35);
-        }
-      }
-    }
+    ctx.font = "bold 14px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("QR indisponible", size / 2, size / 2 - 8);
+    ctx.font = "12px Inter, sans-serif";
+    ctx.fillText("Copiez le lien ci-dessous", size / 2, size / 2 + 14);
   }
 
-  function initCanvas() {
+  function renderQrCode(url) {
     if (!canvas) return;
     var display = 220;
     var dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -98,18 +115,41 @@
     var ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    drawPlaceholderQr(ctx, display, shareUrl() + "|" + menuId());
+
+    var img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = function () {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, display, display);
+      ctx.drawImage(img, 0, 0, display, display);
+    };
+    img.onerror = function () {
+      drawFallbackQr(ctx, display);
+    };
+    img.src =
+      "https://api.qrserver.com/v1/create-qr-code/?size=440x440&margin=16&data=" +
+      encodeURIComponent(url);
   }
 
   function downloadPng() {
     if (!canvas) return;
-    var link = document.createElement("a");
-    link.download = "qrcode-africamenu-" + menuId() + ".png";
-    link.href = canvas.toDataURL("image/png");
-    link.rel = "noopener";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      var link = document.createElement("a");
+      var id = currentRestaurant && currentRestaurant.id ? currentRestaurant.id : "menu";
+      link.download = "qrcode-africamenu-" + id + ".png";
+      link.href = canvas.toDataURL("image/png");
+      link.rel = "noopener";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      window.open(
+        "https://api.qrserver.com/v1/create-qr-code/?size=440x440&margin=16&data=" +
+          encodeURIComponent(currentShareUrl),
+        "_blank",
+        "noopener"
+      );
+    }
   }
 
   function setCopyFeedback(msg, ok) {
@@ -125,7 +165,7 @@
 
   function copyUrl() {
     if (!urlInput) return;
-    var text = urlInput.value || shareUrl();
+    var text = urlInput.value || currentShareUrl;
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(
         function () {
@@ -148,23 +188,52 @@
     }
   }
 
-  if (nameEl) {
-    nameEl.textContent = restaurantName();
-  }
-  if (urlInput) {
-    urlInput.value = shareUrl();
+  async function init() {
+    try {
+      var storedUser = getStoredJson(USER_KEY);
+      var storedRestaurant = getStoredJson(RESTAURANT_KEY);
+      updateAccountInfo(storedUser, storedRestaurant);
+
+      var data = await loadMe();
+      if (!data || !data.restaurant) return;
+
+      currentRestaurant = data.restaurant;
+      currentShareUrl = buildPublicMenuUrl(data.restaurant.id);
+      updateAccountInfo(data.user, data.restaurant);
+
+      if (urlInput) {
+        urlInput.value = currentShareUrl;
+      }
+      renderQrCode(currentShareUrl);
+    } catch (error) {
+      setCopyFeedback(error.message || "Impossible de générer le QR code.", false);
+      if (storedRestaurant && storedRestaurant.id) {
+        currentRestaurant = storedRestaurant;
+        currentShareUrl = buildPublicMenuUrl(storedRestaurant.id);
+        if (urlInput) urlInput.value = currentShareUrl;
+        renderQrCode(currentShareUrl);
+      }
+    }
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initCanvas);
+    document.addEventListener("DOMContentLoaded", init);
   } else {
-    initCanvas();
+    init();
   }
 
   if (downloadBtn) {
     downloadBtn.addEventListener("click", downloadPng);
   }
+  if (printBtn) {
+    printBtn.addEventListener("click", function () {
+      window.print();
+    });
+  }
   if (copyBtn) {
     copyBtn.addEventListener("click", copyUrl);
+  }
+  if (logoutLink) {
+    logoutLink.addEventListener("click", clearSession);
   }
 })();

@@ -10,7 +10,7 @@ async function getPublicMenu(req, res) {
     var pool = getPool();
 
     var [restaurants] = await pool.query(
-      "SELECT id, name, description FROM restaurants WHERE id = ? LIMIT 1",
+      "SELECT id, name, description, whatsapp, logo_url FROM restaurants WHERE id = ? LIMIT 1",
       [restaurantId]
     );
     if (!restaurants.length) {

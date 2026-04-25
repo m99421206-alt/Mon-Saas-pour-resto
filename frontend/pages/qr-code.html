@@ -13,13 +13,7 @@
     />
     <link rel="stylesheet" href="../css/dashboard.css" />
   </head>
-  <!-- data-restaurant-name / data-share-url-base : à brancher sur l’API plus tard -->
-  <body
-    class="dashboard-page qr-code-page"
-    data-menu-id="demo"
-    data-restaurant-name="Le king"
-    data-share-url-base="https://africamenu.app/menu/"
-  >
+  <body class="dashboard-page qr-code-page">
     <main class="dashboard-main" id="qr-code-main">
       <header class="dash-topbar">
         <a href="../../index.html" class="dash-brand" aria-label="Retour accueil AfricaMenu">
@@ -58,6 +52,9 @@
           </div>
           <button type="button" class="qr-code-download" id="qr-code-download">
             Télécharger l'image QR
+          </button>
+          <button type="button" class="qr-code-download qr-code-download--secondary" id="qr-code-print">
+            Imprimer
           </button>
         </div>
 
@@ -150,9 +147,9 @@
       </nav>
 
       <footer class="dash-drawer__footer">
-        <p class="dash-drawer__resto">Nom du resto</p>
-        <p class="dash-drawer__email">email du resto</p>
-        <a class="dash-drawer__logout" href="login.html">
+        <p class="dash-drawer__resto" id="qr-drawer-restaurant">Nom du resto</p>
+        <p class="dash-drawer__email" id="qr-drawer-email">email du resto</p>
+        <a class="dash-drawer__logout" href="login.html" id="qr-logout">
           <span class="dash-drawer__ico dash-drawer__ico--logout" aria-hidden="true">
             <img src="../../assets/images/icone/se-deconnecter.png" alt="" width="20" height="20" />
           </span>
