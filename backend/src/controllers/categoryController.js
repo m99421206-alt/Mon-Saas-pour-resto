@@ -117,6 +117,17 @@ async function deleteCategory(req, res) {
     }
 
     var pool = getPool();
+    var [products] = await pool.query(
+      "SELECT id FROM products WHERE restaurant_id = ? AND category_id = ? LIMIT 1",
+      [restaurantId, categoryId]
+    );
+
+    if (products.length > 0) {
+      return res.status(409).json({
+        message: "Impossible de supprimer une catégorie qui contient encore des produits.",
+      });
+    }
+
     var [result] = await pool.query("DELETE FROM categories WHERE id = ? AND restaurant_id = ?", [
       categoryId,
       restaurantId,
