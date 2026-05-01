@@ -105,6 +105,7 @@ async function updateCategory(req, res) {
 }
 
 async function deleteCategory(req, res) {
+  var connection;
   try {
     var categoryId = Number(req.params.id);
     if (!Number.isInteger(categoryId) || categoryId < 1) {
@@ -117,18 +118,52 @@ async function deleteCategory(req, res) {
     }
 
     var pool = getPool();
-    var [result] = await pool.query("DELETE FROM categories WHERE id = ? AND restaurant_id = ?", [
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    var [categories] = await connection.query(
+      "SELECT id FROM categories WHERE id = ? AND restaurant_id = ? FOR UPDATE",
+      [categoryId, restaurantId]
+    );
+
+    if (categories.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: "Catégorie introuvable." });
+    }
+
+    var [products] = await connection.query(
+      "SELECT COUNT(*) AS product_count FROM products WHERE category_id = ? AND restaurant_id = ?",
+      [categoryId, restaurantId]
+    );
+    var productCount = Number(products[0] && products[0].product_count) || 0;
+    if (productCount > 0) {
+      await connection.rollback();
+      return res.status(409).json({
+        message: "Impossible de supprimer une catégorie contenant des produits.",
+      });
+    }
+
+    await connection.query("DELETE FROM categories WHERE id = ? AND restaurant_id = ?", [
       categoryId,
       restaurantId,
     ]);
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Catégorie introuvable." });
-    }
+    await connection.commit();
 
     return res.status(204).send();
   } catch (err) {
+    if (connection) {
+      try {
+        await connection.rollback();
+      } catch (rollbackErr) {
+        // Preserve the original server response; rollback failures are not user-actionable.
+      }
+    }
     return res.status(500).json({ message: "Erreur serveur." });
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 }
 
