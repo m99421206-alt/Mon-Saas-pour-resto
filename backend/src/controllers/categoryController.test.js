@@ -2,7 +2,6 @@ const assert = require("node:assert/strict");
 const { test } = require("node:test");
 
 const database = require("../config/database");
-const categoryController = require("./categoryController");
 
 function createResponse() {
   return {
@@ -47,6 +46,8 @@ test("deleteCategory refuses to delete a category that still contains products",
   };
 
   t.mock.method(database, "getPool", () => pool);
+  delete require.cache[require.resolve("./categoryController")];
+  const categoryController = require("./categoryController");
 
   const req = {
     params: { id: "5" },
