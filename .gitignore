@@ -4,6 +4,9 @@ node_modules/
 # Secrets — ne jamais committer
 .env
 
+# Images uploadées par les restaurants
+backend/uploads/
+
 # OS
 Thumbs.db
 .DS_Store

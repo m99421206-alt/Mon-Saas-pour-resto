@@ -87,7 +87,15 @@
           </div>
 
           <div class="param-field">
-            <label class="param-field__label" for="logo-url">Image de votre logo</label>
+            <label class="param-field__label" for="logo-file">Image de votre logo</label>
+            <input
+              class="param-field__input"
+              id="logo-file"
+              name="logoFile"
+              type="file"
+              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+            />
+            <img class="param-image-preview" id="logo-preview" alt="Aperçu du logo" hidden />
             <input
               class="param-field__input"
               id="logo-url"
@@ -96,7 +104,47 @@
               inputmode="url"
               autocomplete="off"
               placeholder="https://"
+              hidden
             />
+          </div>
+
+          <div class="param-field">
+            <label class="param-field__label" for="banner-file">Photo de bannière du restaurant</label>
+            <input
+              class="param-field__input"
+              id="banner-file"
+              name="bannerFile"
+              type="file"
+              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+            />
+            <img class="param-image-preview param-image-preview--banner" id="banner-preview" alt="Aperçu de la bannière" hidden />
+            <input
+              class="param-field__input"
+              id="banner-url"
+              name="bannerUrl"
+              type="url"
+              inputmode="url"
+              autocomplete="off"
+              placeholder="https://"
+              hidden
+            />
+            <p class="param-field__hint">Cette image apparaîtra en haut du menu client.</p>
+          </div>
+
+          <div class="param-field">
+            <label class="param-field__label" for="theme-color">Couleur du thème</label>
+            <div class="param-color-row">
+              <input class="param-field__color" id="theme-color" name="themeColor" type="color" value="#FF7A51" />
+              <input
+                class="param-field__input"
+                id="theme-color-text"
+                type="text"
+                inputmode="text"
+                value="#FF7A51"
+                aria-label="Code couleur du thème"
+              />
+            </div>
+            <p class="param-field__hint">Couleur utilisée pour les boutons et accents du menu client.</p>
           </div>
 
           <button type="submit" class="param-save-btn" id="parametres-save">

@@ -26,7 +26,7 @@ async function listCategories(req, res) {
 
     var pool = getPool();
     var [rows] = await pool.query(
-      "SELECT id, restaurant_id, name FROM categories WHERE restaurant_id = ? ORDER BY id ASC",
+      "SELECT id, restaurant_id, name FROM categories WHERE restaurant_id = ? ORDER BY id DESC",
       [restaurantId]
     );
     return res.json({ categories: rows });

@@ -13,7 +13,7 @@ async function getMe(req, res) {
     }
 
     var [restaurants] = await pool.query(
-      "SELECT id, name, description, whatsapp, logo_url FROM restaurants WHERE user_id = ? ORDER BY id ASC LIMIT 1",
+      "SELECT id, name, description, whatsapp, logo_url, banner_url, theme_color FROM restaurants WHERE user_id = ? ORDER BY id ASC LIMIT 1",
       [req.user.id]
     );
 

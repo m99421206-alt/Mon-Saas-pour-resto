@@ -5,6 +5,7 @@
 
 require("dotenv").config();
 
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
@@ -13,12 +14,16 @@ const categoryRoutes = require("./routes/categoryRoutes");
 const productRoutes = require("./routes/productRoutes");
 const menuRoutes = require("./routes/menuRoutes");
 const restaurantRoutes = require("./routes/restaurantRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 
 /* Corps des requêtes en JSON (POST / PUT) */
 app.use(express.json());
+
+/* Images uploadées par les restaurants */
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 /* Autoriser le frontend (autre origine) à appeler l’API — affiné à l’étape 10 */
 app.use(
@@ -44,6 +49,8 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 /* Paramètres restaurant — JWT requis */
 app.use("/api/restaurant", restaurantRoutes);
+/* Upload images — JWT requis */
+app.use("/upload", uploadRoutes);
 /* Menu public client (étape 9) — sans JWT */
 app.use("/menu", menuRoutes);
 

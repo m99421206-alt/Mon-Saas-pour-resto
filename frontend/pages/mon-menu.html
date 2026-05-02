@@ -3,66 +3,163 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="Menu digital client — AfricaMenu." />
-    <title>Menu client — AfricaMenu</title>
+    <title>Menu client - AfricaMenu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      referrerpolicy="no-referrer"
     />
     <link rel="stylesheet" href="../css/menu-client.css" />
   </head>
-  <body class="menu-page">
-    <header class="menu-topbar">
-      <button class="menu-topbar__button" type="button" aria-label="Ouvrir les catégories">
-        <span class="menu-topbar__bars" aria-hidden="true"></span>
-      </button>
-      <p class="menu-topbar__title" id="restaurant-short-name">LE KING</p>
-      <span class="menu-topbar__spacer" aria-hidden="true"></span>
-    </header>
+  <body>
+    <div class="app">
+      <main class="page">
+        <section class="hero" aria-labelledby="restaurant-name">
+          <img
+            class="hero__cover"
+            src="../../assets/images/icone/salonresto.jpg"
+            alt="AfricaMenu"
+          />
 
-    <main class="menu-main">
-      <section class="restaurant-hero" aria-labelledby="restaurant-name">
-        <div class="restaurant-hero__cover" aria-label="Image de couverture du restaurant"></div>
+          <article class="restaurant">
+            <div class="restaurant__logo" aria-label="Logo du restaurant">
+              <img src="../../assets/images/icone/logoresto.jpg" alt="Logo du restaurant" />
+            </div>
+            <div class="restaurant__content">
+              <h1 class="restaurant__title" id="restaurant-name">Menu du restaurant</h1>
+              <p class="restaurant__desc" id="restaurant-description">
+                Les informations du restaurant seront chargées automatiquement.
+              </p>
+            </div>
+          </article>
+        </section>
 
-        <article class="restaurant-card">
-          <div class="restaurant-card__logo" aria-label="Logo du restaurant">
-            <span>KING</span>
+        <section class="section" aria-labelledby="categories-title">
+          <h2 class="section__title" id="categories-title">Catégories</h2>
+          <div class="categories" id="categories"></div>
+        </section>
+
+        <section class="section" aria-label="Produits">
+          <div class="products-grid" id="products"></div>
+        </section>
+      </main>
+
+      <section class="product-detail" id="product-detail" aria-labelledby="detail-title" hidden>
+        <button class="detail-back" id="detail-back" type="button" aria-label="Retour au menu">
+          <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+        </button>
+
+        <img
+          class="detail-image"
+          id="detail-image"
+          src="../../assets/images/icone/logo.png"
+          alt="Image du produit"
+        />
+
+        <div class="detail-content">
+          <h2 class="detail-title" id="detail-title">Produit</h2>
+          <p class="detail-price" id="detail-price">0 CFA</p>
+          <p class="detail-description" id="detail-description">Description du produit</p>
+
+          <div class="detail-group" id="detail-size-group">
+            <p class="detail-label">Taille</p>
+            <div class="size-options" id="size-options" aria-label="Choisir une taille">
+              <button class="size-option active" type="button" data-size="Petit">Petit</button>
+              <button class="size-option" type="button" data-size="Moins">Moins</button>
+              <button class="size-option" type="button" data-size="Grand">Grand</button>
+            </div>
           </div>
-          <div class="restaurant-card__content">
-            <h1 class="restaurant-card__name" id="restaurant-name">LE KING</h1>
-            <p class="restaurant-card__desc" id="restaurant-description">
-              Le King, l'endroit idéal pour savourer des plats délicieux dans une ambiance chaleureuse.
-            </p>
+
+          <div class="detail-group">
+            <p class="detail-label">Quantité</p>
+            <div class="quantity-control" aria-label="Choisir une quantité">
+              <button class="quantity-btn quantity-btn--minus" id="quantity-minus" type="button">−</button>
+              <span class="quantity-value" id="quantity-value">02</span>
+              <button class="quantity-btn quantity-btn--plus" id="quantity-plus" type="button">+</button>
+            </div>
           </div>
-        </article>
-      </section>
 
-      <section class="menu-section" aria-labelledby="categories-title">
-        <h2 class="menu-section__title" id="categories-title">Categories</h2>
-        <div class="category-list" id="category-list"></div>
-      </section>
-
-      <section class="menu-section menu-section--featured" aria-labelledby="featured-title">
-        <div class="menu-section__head">
-          <h2 class="menu-section__title" id="featured-title">Les nouveautés</h2>
-          <button class="menu-section__link" type="button" id="view-all-products">Tout voir ›</button>
+          <section class="similar-section" aria-labelledby="similar-title">
+            <h3 class="similar-title" id="similar-title">Produit similaire</h3>
+            <div class="similar-list" id="similar-products"></div>
+          </section>
         </div>
-        <div class="product-strip" id="product-strip" aria-label="Nouveautés" tabindex="0"></div>
-      </section>
-    </main>
 
-    <a
-      class="whatsapp-float"
-      id="whatsapp-order"
-      href="https://wa.me/22300000000?text=Bonjour%2C%20je%20souhaite%20commander"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Commander sur WhatsApp"
-    >
-      <span class="whatsapp-float__icon" aria-hidden="true">☎</span>
-    </a>
+        <div class="detail-actions">
+          <button class="action-btn action-btn--add" id="detail-add" type="button">
+            <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+            <span>Ajouter</span>
+          </button>
+          <button class="action-btn action-btn--order" id="detail-order" type="button">
+            <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+            <span>Commander</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="order-page" id="order-page" aria-labelledby="order-title" hidden>
+        <button class="order-back" id="order-back" type="button" aria-label="Retour">
+          <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+        </button>
+
+        <div class="order-card">
+          <header class="order-header">
+            <h2 class="order-title" id="order-title">Votre Commande</h2>
+          </header>
+
+          <p class="order-instruction">
+            Cliquez sur <strong>Commander</strong> pour envoyer votre commande sur
+            <span>WhatsApp</span>
+          </p>
+
+          <div class="order-list" id="order-list"></div>
+
+          <div class="order-total">
+            <span>Total :</span>
+            <strong id="order-total">0 CFA</strong>
+          </div>
+
+          <button class="order-submit" id="order-submit" type="button">
+            <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+            <span>Commander</span>
+          </button>
+        </div>
+        <div class="order-footer" aria-hidden="true"></div>
+      </section>
+
+      <a
+        class="whatsapp"
+        id="whatsapp"
+        href="https://wa.me/22399421206?text=Bonjour%2C%20je%20souhaite%20commander"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Commander sur WhatsApp"
+      >
+        <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+      </a>
+
+      <nav class="bottom-nav" aria-label="Navigation principale">
+        <a class="bottom-nav__item active" id="home-nav" href="#" aria-current="page" aria-label="Accueil">
+          <i class="fa-solid fa-house" aria-hidden="true"></i>
+        </a>
+        <a class="bottom-nav__item" id="favorites-nav" href="#" aria-label="Favoris">
+          <i class="fa-regular fa-heart" aria-hidden="true"></i>
+        </a>
+        <a class="bottom-nav__item" id="cart-nav" href="#" aria-label="Panier">
+          <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
+        </a>
+      </nav>
+
+      <div class="cart-toast" id="cart-toast" role="status" aria-live="polite" hidden>
+        Produit ajouté au panier
+      </div>
+    </div>
 
     <script src="../js/mon-menu.js"></script>
   </body>

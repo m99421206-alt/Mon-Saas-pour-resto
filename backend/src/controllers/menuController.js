@@ -10,7 +10,7 @@ async function getPublicMenu(req, res) {
     var pool = getPool();
 
     var [restaurants] = await pool.query(
-      "SELECT id, name, description, whatsapp, logo_url FROM restaurants WHERE id = ? LIMIT 1",
+      "SELECT id, name, description, whatsapp, logo_url, banner_url, theme_color FROM restaurants WHERE id = ? LIMIT 1",
       [restaurantId]
     );
     if (!restaurants.length) {
@@ -18,14 +18,37 @@ async function getPublicMenu(req, res) {
     }
 
     var [categories] = await pool.query(
-      "SELECT id, restaurant_id, name FROM categories WHERE restaurant_id = ? ORDER BY id ASC",
+      "SELECT id, restaurant_id, name FROM categories WHERE restaurant_id = ? ORDER BY id DESC",
       [restaurantId]
     );
 
     var [products] = await pool.query(
-      "SELECT id, restaurant_id, category_id, name, price, image FROM products WHERE restaurant_id = ? ORDER BY id ASC",
+      "SELECT id, restaurant_id, category_id, name, description, price, image, has_sizes FROM products WHERE restaurant_id = ? ORDER BY id DESC",
       [restaurantId]
     );
+
+    var variantsByProduct = {};
+    if (products.length) {
+      var productIds = products.map(function (product) {
+        return product.id;
+      });
+      var [variants] = await pool.query(
+        "SELECT id, product_id, name, price, image, sort_order FROM product_variants WHERE product_id IN (?) ORDER BY product_id ASC, sort_order DESC, id DESC",
+        [productIds]
+      );
+      for (var v = 0; v < variants.length; v += 1) {
+        var variant = variants[v];
+        if (!variantsByProduct[variant.product_id]) {
+          variantsByProduct[variant.product_id] = [];
+        }
+        variantsByProduct[variant.product_id].push({
+          id: variant.id,
+          name: variant.name,
+          price: variant.price,
+          image: variant.image,
+        });
+      }
+    }
 
     var productsByCategory = {};
     for (var i = 0; i < products.length; i += 1) {
@@ -36,8 +59,11 @@ async function getPublicMenu(req, res) {
       productsByCategory[p.category_id].push({
         id: p.id,
         name: p.name,
+        description: p.description,
         price: p.price,
         image: p.image,
+        has_sizes: p.has_sizes,
+        variants: variantsByProduct[p.id] || [],
       });
     }
 

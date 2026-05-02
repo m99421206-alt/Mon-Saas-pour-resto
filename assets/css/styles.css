@@ -329,7 +329,7 @@ p {
 }
 
 .btn--on-orange:focus-visible {
-  outline-color: #fff;
+  outline-color: #df1d1d;
 }
 
 /* ----------------------------------------------------------------------------- Grille de cartes fonctionnalités */

@@ -12,8 +12,15 @@
   const form = document.getElementById("plats-form");
   const nameInput = document.getElementById("plats-name");
   const priceInput = document.getElementById("plats-price");
+  const descriptionInput = document.getElementById("plats-description");
   const categorySelect = document.getElementById("plats-category");
   const imageInput = document.getElementById("plats-image");
+  const imageFileInput = document.getElementById("plats-image-file");
+  const imagePreview = document.getElementById("plats-image-preview");
+  const hasSizesInput = document.getElementById("plats-has-sizes");
+  const variantsSection = document.getElementById("plats-variants");
+  const variantsList = document.getElementById("plats-variants-list");
+  const addVariantBtn = document.getElementById("plats-variant-add");
   const submitBtn = document.getElementById("plats-submit");
   const cancelBtn = document.getElementById("plats-cancel");
   const list = document.getElementById("plats-list");
@@ -78,6 +85,36 @@
     return data;
   }
 
+  async function uploadImage(file) {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) {
+      redirectToLogin();
+      return null;
+    }
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const response = await fetch(API_URL + "/upload", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+      body: formData,
+    });
+
+    const data = response.status === 204 ? {} : await readJson(response);
+    if (response.status === 401) {
+      clearSession();
+      redirectToLogin();
+      return null;
+    }
+    if (!response.ok) {
+      throw new Error(data.message || "Upload impossible.");
+    }
+    return data.url;
+  }
+
   function getStoredJson(key) {
     try {
       return JSON.parse(localStorage.getItem(key) || "null");
@@ -110,6 +147,28 @@
       .replace(/'/g, "&#039;");
   }
 
+  function resolveImageUrl(url) {
+    if (!url) return "";
+    return String(url).indexOf("/uploads/") === 0 ? API_URL + url : url;
+  }
+
+  function setImagePreview(preview, url) {
+    if (!preview) return;
+    if (!url) {
+      preview.hidden = true;
+      preview.removeAttribute("src");
+      return;
+    }
+    preview.src = resolveImageUrl(url);
+    preview.hidden = false;
+  }
+
+  function previewSelectedFile(input, preview) {
+    const file = input && input.files ? input.files[0] : null;
+    if (!file) return;
+    setImagePreview(preview, URL.createObjectURL(file));
+  }
+
   function findCategoryName(categoryId) {
     const category = categories.find(function (item) {
       return item.id === Number(categoryId);
@@ -123,6 +182,108 @@
       return "0.00";
     }
     return number.toFixed(2);
+  }
+
+  function productHasSizes(product) {
+    return product.has_sizes === true || product.has_sizes === 1 || product.has_sizes === "1";
+  }
+
+  function getDefaultVariants(product) {
+    if (product && product.variants && product.variants.length) {
+      return product.variants;
+    }
+
+    return [
+      { name: "Petit", price: "", image: "" },
+      { name: "Moyen", price: "", image: "" },
+      { name: "Grand", price: "", image: "" },
+    ];
+  }
+
+  function createVariantRow(variant) {
+    const row = document.createElement("article");
+    row.className = "plats-variant";
+    row.innerHTML =
+      '<div class="plats-variant__row">' +
+      '<label class="plats-variant__label">Nom' +
+      '<input class="plats-variant__input" data-variant-field="name" type="text" placeholder="Ex : Grand" value="' +
+      escapeHtml(variant && variant.name ? variant.name : "") +
+      '" />' +
+      "</label>" +
+      '<label class="plats-variant__label">Prix' +
+      '<input class="plats-variant__input" data-variant-field="price" type="number" min="0" step="0.01" placeholder="Ex : 5000" value="' +
+      escapeHtml(variant && variant.price != null ? formatPrice(variant.price) : "") +
+      '" />' +
+      "</label>" +
+      "</div>" +
+      '<label class="plats-variant__label">Image de cette taille' +
+      '<input class="plats-variant__input" data-variant-field="imageFile" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" />' +
+      '<img class="plats-image-preview" data-variant-preview alt="Aperçu de cette option" hidden />' +
+      '<input class="plats-variant__input" data-variant-field="image" type="url" placeholder="https://..." value="' +
+      escapeHtml(variant && variant.image ? variant.image : "") +
+      '" hidden />' +
+      "</label>" +
+      '<button class="plats-variant__remove" type="button" data-action="remove-variant">Supprimer cette option</button>';
+    setImagePreview(row.querySelector("[data-variant-preview]"), variant && variant.image ? variant.image : "");
+    return row;
+  }
+
+  function renderVariantRows(variants) {
+    variantsList.innerHTML = "";
+    variants.forEach(function (variant) {
+      variantsList.appendChild(createVariantRow(variant));
+    });
+  }
+
+  function setVariantsVisible(isVisible, product) {
+    variantsSection.hidden = !isVisible;
+    if (isVisible && !variantsList.children.length) {
+      renderVariantRows(getDefaultVariants(product));
+    }
+    if (!isVisible) {
+      variantsList.innerHTML = "";
+    }
+  }
+
+  function readVariants() {
+    return Array.from(variantsList.querySelectorAll(".plats-variant"))
+      .map(function (row) {
+        const name = row.querySelector("[data-variant-field='name']").value.trim();
+        const price = Number(row.querySelector("[data-variant-field='price']").value);
+        const image = row.querySelector("[data-variant-field='image']").value.trim();
+        return {
+          name: name,
+          price: price,
+          image: image || null,
+        };
+      })
+      .filter(function (variant) {
+        return variant.name && Number.isFinite(variant.price) && variant.price >= 0;
+      });
+  }
+
+  async function uploadSelectedImages(currentImage) {
+    let image = currentImage;
+
+    if (imageFileInput.files && imageFileInput.files[0]) {
+      setStatus("Upload de l'image du plat...");
+      image = await uploadImage(imageFileInput.files[0]);
+      imageInput.value = image || "";
+    }
+
+    const variantRows = Array.from(variantsList.querySelectorAll(".plats-variant"));
+    for (let i = 0; i < variantRows.length; i += 1) {
+      const row = variantRows[i];
+      const fileInput = row.querySelector("[data-variant-field='imageFile']");
+      const hiddenImageInput = row.querySelector("[data-variant-field='image']");
+      if (fileInput && fileInput.files && fileInput.files[0]) {
+        setStatus("Upload de l'image d'une option...");
+        const uploadedUrl = await uploadImage(fileInput.files[0]);
+        hiddenImageInput.value = uploadedUrl || "";
+      }
+    }
+
+    return image;
   }
 
   function renderCategoryOptions() {
@@ -168,6 +329,9 @@
         escapeHtml(findCategoryName(product.category_id)) +
         " · " +
         escapeHtml(formatPrice(product.price)) +
+        (productHasSizes(product) ? " · Tailles disponibles" : " · Sans tailles") +
+        (product.variants && product.variants.length ? " · " + product.variants.length + " option(s)" : "") +
+        (product.description ? "<br>" + escapeHtml(product.description) : "") +
         "</p>" +
         "</div>" +
         '<div class="plats-item__actions">' +
@@ -192,8 +356,14 @@
     form.hidden = false;
     nameInput.value = product ? product.name : "";
     priceInput.value = product ? formatPrice(product.price) : "";
+    descriptionInput.value = product && product.description ? product.description : "";
     categorySelect.value = product ? String(product.category_id) : String(categories[0].id);
     imageInput.value = product && product.image ? product.image : "";
+    imageFileInput.value = "";
+    setImagePreview(imagePreview, imageInput.value);
+    hasSizesInput.checked = product ? productHasSizes(product) : false;
+    renderVariantRows(getDefaultVariants(product));
+    setVariantsVisible(hasSizesInput.checked, product);
     submitBtn.textContent = product ? "Modifier" : "Enregistrer";
     nameInput.focus();
   }
@@ -202,6 +372,8 @@
     editingId = null;
     form.hidden = true;
     form.reset();
+    variantsList.innerHTML = "";
+    setImagePreview(imagePreview, "");
   }
 
   function onAddPlat() {
@@ -248,6 +420,7 @@
     const name = nameInput.value.trim();
     const price = Number(priceInput.value);
     const categoryId = Number(categorySelect.value);
+    const description = descriptionInput.value.trim();
     const image = imageInput.value.trim();
 
     if (!name) {
@@ -266,18 +439,33 @@
       return;
     }
 
-    submitBtn.disabled = true;
-    const wasEditing = Boolean(editingId);
-    setStatus(wasEditing ? "Modification en cours..." : "Création en cours...");
-
-    const body = {
-      name: name,
-      price: price,
-      category_id: categoryId,
-      image: image || null,
-    };
+    let variants = hasSizesInput.checked ? readVariants() : [];
+    if (hasSizesInput.checked && !variants.length) {
+      setStatus("Ajoutez au moins une option avec un nom et un prix.", true);
+      const firstVariantInput = variantsList.querySelector("[data-variant-field='price']");
+      if (firstVariantInput) {
+        firstVariantInput.focus();
+      }
+      return;
+    }
 
     try {
+      submitBtn.disabled = true;
+      const wasEditing = Boolean(editingId);
+      setStatus(wasEditing ? "Modification en cours..." : "Création en cours...");
+
+      const uploadedImage = await uploadSelectedImages(image || null);
+      variants = hasSizesInput.checked ? readVariants() : [];
+      const body = {
+        name: name,
+        price: price,
+        category_id: categoryId,
+        description: description || null,
+        image: uploadedImage || null,
+        has_sizes: hasSizesInput.checked ? 1 : 0,
+        variants: variants,
+      };
+
       if (editingId) {
         await apiRequest("/api/products/" + encodeURIComponent(editingId), {
           method: "PUT",
@@ -303,6 +491,31 @@
   cancelBtn.addEventListener("click", function () {
     closeForm();
     setStatus("");
+  });
+
+  imageFileInput.addEventListener("change", function () {
+    previewSelectedFile(imageFileInput, imagePreview);
+  });
+
+  hasSizesInput.addEventListener("change", function () {
+    setVariantsVisible(hasSizesInput.checked, null);
+  });
+
+  addVariantBtn.addEventListener("click", function () {
+    variantsList.appendChild(createVariantRow({ name: "", price: "", image: "" }));
+  });
+
+  variantsList.addEventListener("click", function (event) {
+    const removeBtn = event.target.closest("[data-action='remove-variant']");
+    if (!removeBtn) return;
+    removeBtn.closest(".plats-variant").remove();
+  });
+
+  variantsList.addEventListener("change", function (event) {
+    const fileInput = event.target.closest("[data-variant-field='imageFile']");
+    if (!fileInput) return;
+    const row = fileInput.closest(".plats-variant");
+    previewSelectedFile(fileInput, row.querySelector("[data-variant-preview]"));
   });
 
   list.addEventListener("click", async function (event) {

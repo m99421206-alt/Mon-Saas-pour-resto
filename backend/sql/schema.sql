@@ -19,6 +19,8 @@ CREATE TABLE IF NOT EXISTS `restaurants` (
   `description` TEXT NULL,
   `whatsapp` VARCHAR(32) NULL,
   `logo_url` VARCHAR(512) NULL,
+  `banner_url` VARCHAR(512) NULL,
+  `theme_color` VARCHAR(16) NOT NULL DEFAULT '#FF7A51',
   PRIMARY KEY (`id`),
   KEY `idx_restaurants_user_id` (`user_id`),
   CONSTRAINT `fk_restaurants_user`
@@ -42,8 +44,10 @@ CREATE TABLE IF NOT EXISTS `products` (
   `restaurant_id` INT UNSIGNED NOT NULL,
   `category_id` INT UNSIGNED NOT NULL,
   `name` VARCHAR(255) NOT NULL,
+  `description` TEXT NULL,
   `price` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
   `image` VARCHAR(512) NULL,
+  `has_sizes` TINYINT(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (`id`),
   KEY `idx_products_restaurant_id` (`restaurant_id`),
   KEY `idx_products_category_id` (`category_id`),
@@ -52,5 +56,19 @@ CREATE TABLE IF NOT EXISTS `products` (
     ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_products_category`
     FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`)
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `product_variants` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `product_id` INT UNSIGNED NOT NULL,
+  `name` VARCHAR(100) NOT NULL,
+  `price` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  `image` VARCHAR(512) NULL,
+  `sort_order` INT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_product_variants_product_id` (`product_id`),
+  CONSTRAINT `fk_product_variants_product`
+    FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
     ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

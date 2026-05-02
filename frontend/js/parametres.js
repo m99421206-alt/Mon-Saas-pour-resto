@@ -16,6 +16,13 @@
   var descriptionInput = document.getElementById("restaurant-description");
   var whatsappInput = document.getElementById("whatsapp-number");
   var logoInput = document.getElementById("logo-url");
+  var logoFileInput = document.getElementById("logo-file");
+  var logoPreview = document.getElementById("logo-preview");
+  var bannerInput = document.getElementById("banner-url");
+  var bannerFileInput = document.getElementById("banner-file");
+  var bannerPreview = document.getElementById("banner-preview");
+  var themeColorInput = document.getElementById("theme-color");
+  var themeColorTextInput = document.getElementById("theme-color-text");
   var drawerRestaurant = document.getElementById("param-drawer-restaurant");
   var drawerEmail = document.getElementById("param-drawer-email");
   var logoutLink = document.getElementById("param-logout");
@@ -83,6 +90,59 @@
     return data;
   }
 
+  async function uploadImage(file) {
+    var token = localStorage.getItem(TOKEN_KEY);
+    if (!token) {
+      redirectToLogin();
+      return null;
+    }
+
+    var formData = new FormData();
+    formData.append("image", file);
+
+    var response = await fetch(API_URL + "/upload", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+      body: formData,
+    });
+
+    var data = await readJson(response);
+    if (response.status === 401) {
+      clearSession();
+      redirectToLogin();
+      return null;
+    }
+    if (!response.ok) {
+      throw new Error(data.message || "Upload impossible.");
+    }
+    return data.url;
+  }
+
+  function resolveImageUrl(url) {
+    if (!url) return "";
+    return url.indexOf("/uploads/") === 0 ? API_URL + url : url;
+  }
+
+  function setImagePreview(preview, url) {
+    if (!preview) return;
+    if (!url) {
+      preview.hidden = true;
+      preview.removeAttribute("src");
+      return;
+    }
+
+    preview.src = resolveImageUrl(url);
+    preview.hidden = false;
+  }
+
+  function previewSelectedFile(input, preview) {
+    var file = input && input.files ? input.files[0] : null;
+    if (!file) return;
+    setImagePreview(preview, URL.createObjectURL(file));
+  }
+
   function renderAccountInfo(user, restaurant) {
     var restaurantName = restaurant && restaurant.name ? restaurant.name : "Nom du resto";
     if (drawerRestaurant) drawerRestaurant.textContent = restaurantName;
@@ -95,6 +155,11 @@
     descriptionInput.value = restaurant.description || "";
     whatsappInput.value = restaurant.whatsapp || "";
     logoInput.value = restaurant.logo_url || "";
+    bannerInput.value = restaurant.banner_url || "";
+    setImagePreview(logoPreview, restaurant.logo_url || "");
+    setImagePreview(bannerPreview, restaurant.banner_url || "");
+    themeColorInput.value = restaurant.theme_color || "#FF7A51";
+    themeColorTextInput.value = restaurant.theme_color || "#FF7A51";
   }
 
   async function loadPage() {
@@ -134,13 +199,28 @@
     setFeedback("Enregistrement...");
 
     try {
+      var logoUrl = logoInput.value.trim() || null;
+      var bannerUrl = bannerInput.value.trim() || null;
+
+      if (logoFileInput.files && logoFileInput.files[0]) {
+        setFeedback("Upload du logo...");
+        logoUrl = await uploadImage(logoFileInput.files[0]);
+      }
+      if (bannerFileInput.files && bannerFileInput.files[0]) {
+        setFeedback("Upload de la bannière...");
+        bannerUrl = await uploadImage(bannerFileInput.files[0]);
+      }
+
+      setFeedback("Enregistrement...");
       var data = await apiRequest("/api/restaurant", {
         method: "PUT",
         body: {
           name: name,
           description: descriptionInput.value.trim() || null,
           whatsapp: whatsappInput.value.trim() || null,
-          logo_url: logoInput.value.trim() || null,
+          logo_url: logoUrl,
+          banner_url: bannerUrl,
+          theme_color: themeColorTextInput.value.trim() || "#FF7A51",
         },
       });
 
@@ -160,6 +240,25 @@
   if (logoutLink) {
     logoutLink.addEventListener("click", clearSession);
   }
+
+  logoFileInput.addEventListener("change", function () {
+    previewSelectedFile(logoFileInput, logoPreview);
+  });
+
+  bannerFileInput.addEventListener("change", function () {
+    previewSelectedFile(bannerFileInput, bannerPreview);
+  });
+
+  themeColorInput.addEventListener("input", function () {
+    themeColorTextInput.value = themeColorInput.value.toUpperCase();
+  });
+
+  themeColorTextInput.addEventListener("input", function () {
+    var value = themeColorTextInput.value.trim();
+    if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+      themeColorInput.value = value;
+    }
+  });
 
   loadPage();
 })();
