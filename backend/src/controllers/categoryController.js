@@ -117,6 +117,16 @@ async function deleteCategory(req, res) {
     }
 
     var pool = getPool();
+    var [products] = await pool.query(
+      "SELECT COUNT(*) AS count FROM products WHERE category_id = ? AND restaurant_id = ?",
+      [categoryId, restaurantId]
+    );
+    if (Number(products[0].count) > 0) {
+      return res.status(409).json({
+        message: "Supprimez ou déplacez les plats de cette catégorie avant de la supprimer.",
+      });
+    }
+
     var [result] = await pool.query("DELETE FROM categories WHERE id = ? AND restaurant_id = ?", [
       categoryId,
       restaurantId,
