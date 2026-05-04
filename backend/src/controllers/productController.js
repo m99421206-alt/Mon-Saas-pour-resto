@@ -121,12 +121,12 @@ async function attachVariants(pool, products) {
   });
 }
 
-async function replaceProductVariants(pool, productId, variants) {
-  await pool.query("DELETE FROM product_variants WHERE product_id = ?", [productId]);
+async function replaceProductVariants(connection, productId, variants) {
+  await connection.query("DELETE FROM product_variants WHERE product_id = ?", [productId]);
 
   for (var i = 0; i < variants.length; i += 1) {
     var variant = variants[i];
-    await pool.query(
+    await connection.query(
       "INSERT INTO product_variants (product_id, name, price, image, sort_order) VALUES (?, ?, ?, ?, ?)",
       [productId, variant.name, variant.price, variant.image, variant.sort_order]
     );
@@ -186,11 +186,23 @@ async function createProduct(req, res) {
     }
 
     var pool = getPool();
-    var [result] = await pool.query(
-      "INSERT INTO products (restaurant_id, category_id, name, description, price, image, has_sizes) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [restaurantId, categoryId, name, description, price, image, hasSizes]
-    );
-    await replaceProductVariants(pool, result.insertId, hasSizes ? variants : []);
+    var connection = await pool.getConnection();
+    var result;
+    try {
+      await connection.beginTransaction();
+      var insertResult = await connection.query(
+        "INSERT INTO products (restaurant_id, category_id, name, description, price, image, has_sizes) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [restaurantId, categoryId, name, description, price, image, hasSizes]
+      );
+      result = insertResult[0];
+      await replaceProductVariants(connection, result.insertId, hasSizes ? variants : []);
+      await connection.commit();
+    } catch (err) {
+      await connection.rollback();
+      throw err;
+    } finally {
+      connection.release();
+    }
 
     return res.status(201).json({
       product: {
@@ -249,16 +261,28 @@ async function updateProduct(req, res) {
     }
 
     var pool = getPool();
-    var [result] = await pool.query(
-      "UPDATE products SET category_id = ?, name = ?, description = ?, price = ?, image = ?, has_sizes = ? WHERE id = ? AND restaurant_id = ?",
-      [categoryId, name, description, price, image, hasSizes, productId, restaurantId]
-    );
+    var connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+      var updateResult = await connection.query(
+        "UPDATE products SET category_id = ?, name = ?, description = ?, price = ?, image = ?, has_sizes = ? WHERE id = ? AND restaurant_id = ?",
+        [categoryId, name, description, price, image, hasSizes, productId, restaurantId]
+      );
+      var result = updateResult[0];
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Produit introuvable." });
+      if (result.affectedRows === 0) {
+        await connection.rollback();
+        return res.status(404).json({ message: "Produit introuvable." });
+      }
+
+      await replaceProductVariants(connection, productId, hasSizes ? variants : []);
+      await connection.commit();
+    } catch (err) {
+      await connection.rollback();
+      throw err;
+    } finally {
+      connection.release();
     }
-
-    await replaceProductVariants(pool, productId, hasSizes ? variants : []);
 
     return res.json({
       product: {
