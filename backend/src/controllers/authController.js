@@ -62,9 +62,9 @@ async function register(req, res) {
       [userId, restaurantName, null]
     );
 
-    await connection.commit();
-
     const token = signToken({ userId: userId });
+
+    await connection.commit();
 
     return res.status(201).json({
       message: "Compte créé avec succès.",
