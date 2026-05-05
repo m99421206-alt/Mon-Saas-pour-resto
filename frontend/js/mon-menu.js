@@ -288,24 +288,52 @@ function createCategoryButton(category) {
 function createProductCard(product) {
   const card = document.createElement("article");
   card.className = "product-card";
-  card.innerHTML = `
-    <div class="product-card__media">
-      <img class="product-card__image" src="${product.image}" alt="${product.alt}" loading="lazy" />
-      <button
-        class="product-card__heart ${isFavorite(product.id) ? "is-favorite" : ""}"
-        type="button"
-        aria-label="Ajouter ${product.name} aux favoris"
-        aria-pressed="${isFavorite(product.id)}"
-      >
-        <i class="${getFavoriteIconClass(product.id)} fa-heart" aria-hidden="true"></i>
-      </button>
-    </div>
-    <div class="product-card__body">
-      <h3 class="product-card__name">${product.name}</h3>
-      <p class="product-card__meta">${product.meta}</p>
-      <p class="product-card__price">${product.price}</p>
-    </div>
-  `;
+
+  const media = document.createElement("div");
+  media.className = "product-card__media";
+
+  const image = document.createElement("img");
+  image.className = "product-card__image";
+  image.src = product.image;
+  image.alt = product.alt;
+  image.loading = "lazy";
+  media.appendChild(image);
+
+  const favoriteButton = document.createElement("button");
+  favoriteButton.className = "product-card__heart";
+  if (isFavorite(product.id)) {
+    favoriteButton.classList.add("is-favorite");
+  }
+  favoriteButton.type = "button";
+  favoriteButton.setAttribute("aria-label", `Ajouter ${product.name} aux favoris`);
+  favoriteButton.setAttribute("aria-pressed", String(isFavorite(product.id)));
+
+  const favoriteIcon = document.createElement("i");
+  favoriteIcon.className = `${getFavoriteIconClass(product.id)} fa-heart`;
+  favoriteIcon.setAttribute("aria-hidden", "true");
+  favoriteButton.appendChild(favoriteIcon);
+  media.appendChild(favoriteButton);
+
+  const body = document.createElement("div");
+  body.className = "product-card__body";
+
+  const name = document.createElement("h3");
+  name.className = "product-card__name";
+  name.textContent = product.name;
+  body.appendChild(name);
+
+  const meta = document.createElement("p");
+  meta.className = "product-card__meta";
+  meta.textContent = product.meta;
+  body.appendChild(meta);
+
+  const price = document.createElement("p");
+  price.className = "product-card__price";
+  price.textContent = product.price;
+  body.appendChild(price);
+
+  card.appendChild(media);
+  card.appendChild(body);
 
   card.addEventListener("click", function () {
     showProductDetail(product);
@@ -323,23 +351,49 @@ function createSimilarProductCard(product) {
   const card = document.createElement("button");
   card.type = "button";
   card.className = "similar-card";
-  card.innerHTML = `
-    <span
-      class="similar-card__heart ${isFavorite(product.id) ? "is-favorite" : ""}"
-      role="button"
-      tabindex="0"
-      aria-label="Ajouter ${product.name} aux favoris"
-      aria-pressed="${isFavorite(product.id)}"
-    >
-      <i class="${getFavoriteIconClass(product.id)} fa-heart" aria-hidden="true"></i>
-    </span>
-    <img class="similar-card__image" src="${product.image}" alt="${product.alt}" loading="lazy" />
-    <span class="similar-card__body">
-      <span class="similar-card__name">${product.name}</span>
-      <span class="similar-card__meta">${product.meta}</span>
-      <span class="similar-card__price">${product.price}</span>
-    </span>
-  `;
+
+  const favoriteButton = document.createElement("span");
+  favoriteButton.className = "similar-card__heart";
+  if (isFavorite(product.id)) {
+    favoriteButton.classList.add("is-favorite");
+  }
+  favoriteButton.setAttribute("role", "button");
+  favoriteButton.tabIndex = 0;
+  favoriteButton.setAttribute("aria-label", `Ajouter ${product.name} aux favoris`);
+  favoriteButton.setAttribute("aria-pressed", String(isFavorite(product.id)));
+
+  const favoriteIcon = document.createElement("i");
+  favoriteIcon.className = `${getFavoriteIconClass(product.id)} fa-heart`;
+  favoriteIcon.setAttribute("aria-hidden", "true");
+  favoriteButton.appendChild(favoriteIcon);
+  card.appendChild(favoriteButton);
+
+  const image = document.createElement("img");
+  image.className = "similar-card__image";
+  image.src = product.image;
+  image.alt = product.alt;
+  image.loading = "lazy";
+  card.appendChild(image);
+
+  const body = document.createElement("span");
+  body.className = "similar-card__body";
+
+  const name = document.createElement("span");
+  name.className = "similar-card__name";
+  name.textContent = product.name;
+  body.appendChild(name);
+
+  const meta = document.createElement("span");
+  meta.className = "similar-card__meta";
+  meta.textContent = product.meta;
+  body.appendChild(meta);
+
+  const price = document.createElement("span");
+  price.className = "similar-card__price";
+  price.textContent = product.price;
+  body.appendChild(price);
+
+  card.appendChild(body);
 
   card.addEventListener("click", function () {
     showProductDetail(product);
@@ -502,7 +556,14 @@ function renderProductVariants(product) {
     button.className = "size-option";
     button.type = "button";
     button.dataset.variantId = variant.id;
-    button.innerHTML = `<span>${variant.name}</span><small>${variant.price}</small>`;
+
+    const name = document.createElement("span");
+    name.textContent = variant.name;
+    button.appendChild(name);
+
+    const price = document.createElement("small");
+    price.textContent = variant.price;
+    button.appendChild(price);
 
     button.addEventListener("click", function () {
       setSelectedVariant(variant);
@@ -614,18 +675,44 @@ function updateOrderItemQuantity(itemKey, nextQuantity) {
 function createOrderItem(item) {
   const row = document.createElement("div");
   row.className = "order-item";
-  row.innerHTML = `
-    <span class="order-item__name">${item.quantity} x ${item.label}</span>
-    <span class="order-item__controls">
-      <button class="order-qty-btn" type="button" data-action="plus" aria-label="Ajouter ${item.label}">
-        <i class="fa-solid fa-plus" aria-hidden="true"></i>
-      </button>
-      <button class="order-qty-btn" type="button" data-action="minus" aria-label="Retirer ${item.label}">
-        <i class="fa-solid fa-minus" aria-hidden="true"></i>
-      </button>
-    </span>
-    <span class="order-item__price">${item.price}</span>
-  `;
+
+  const name = document.createElement("span");
+  name.className = "order-item__name";
+  name.textContent = `${item.quantity} x ${item.label}`;
+  row.appendChild(name);
+
+  const controls = document.createElement("span");
+  controls.className = "order-item__controls";
+
+  const plusButton = document.createElement("button");
+  plusButton.className = "order-qty-btn";
+  plusButton.type = "button";
+  plusButton.dataset.action = "plus";
+  plusButton.setAttribute("aria-label", `Ajouter ${item.label}`);
+
+  const plusIcon = document.createElement("i");
+  plusIcon.className = "fa-solid fa-plus";
+  plusIcon.setAttribute("aria-hidden", "true");
+  plusButton.appendChild(plusIcon);
+  controls.appendChild(plusButton);
+
+  const minusButton = document.createElement("button");
+  minusButton.className = "order-qty-btn";
+  minusButton.type = "button";
+  minusButton.dataset.action = "minus";
+  minusButton.setAttribute("aria-label", `Retirer ${item.label}`);
+
+  const minusIcon = document.createElement("i");
+  minusIcon.className = "fa-solid fa-minus";
+  minusIcon.setAttribute("aria-hidden", "true");
+  minusButton.appendChild(minusIcon);
+  controls.appendChild(minusButton);
+  row.appendChild(controls);
+
+  const price = document.createElement("span");
+  price.className = "order-item__price";
+  price.textContent = item.price;
+  row.appendChild(price);
 
   row.querySelector('[data-action="plus"]').addEventListener("click", function () {
     updateOrderItemQuantity(item.key, item.quantity + 1);
