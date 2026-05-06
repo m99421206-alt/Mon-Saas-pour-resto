@@ -8,7 +8,8 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "db:schema": "node scripts/init-db.js",
-    "db:settings": "node scripts/migrate-restaurant-settings.js"
+    "db:settings": "node scripts/migrate-restaurant-settings.js",
+    "test": "node --test"
   },
   "engines": {
     "node": ">=18"
