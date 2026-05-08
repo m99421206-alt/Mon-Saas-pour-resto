@@ -4,7 +4,7 @@
 (function () {
   "use strict";
 
-  var API_URL = "http://localhost:4000";
+  var API_URL = window.AFRICAMENU_CONFIG.API_URL;
   var TOKEN_KEY = "africamenu_token";
   var USER_KEY = "africamenu_user";
   var RESTAURANT_KEY = "africamenu_restaurant";
@@ -23,6 +23,7 @@
   var bannerPreview = document.getElementById("banner-preview");
   var themeColorInput = document.getElementById("theme-color");
   var themeColorTextInput = document.getElementById("theme-color-text");
+  var themeChoiceButtons = Array.from(document.querySelectorAll("[data-theme-color]"));
   var drawerRestaurant = document.getElementById("param-drawer-restaurant");
   var drawerEmail = document.getElementById("param-drawer-email");
   var logoutLink = document.getElementById("param-logout");
@@ -143,6 +144,19 @@
     setImagePreview(preview, URL.createObjectURL(file));
   }
 
+  function normalizeThemeColor(value) {
+    return /^#[0-9A-Fa-f]{6}$/.test(String(value || "").trim()) ? String(value).trim().toUpperCase() : "#FF7A00";
+  }
+
+  function setThemeColor(value) {
+    var color = normalizeThemeColor(value);
+    themeColorInput.value = color;
+    themeColorTextInput.value = color;
+    themeChoiceButtons.forEach(function (button) {
+      button.classList.toggle("is-active", button.dataset.themeColor.toUpperCase() === color);
+    });
+  }
+
   function renderAccountInfo(user, restaurant) {
     var restaurantName = restaurant && restaurant.name ? restaurant.name : "Nom du resto";
     if (drawerRestaurant) drawerRestaurant.textContent = restaurantName;
@@ -158,8 +172,7 @@
     bannerInput.value = restaurant.banner_url || "";
     setImagePreview(logoPreview, restaurant.logo_url || "");
     setImagePreview(bannerPreview, restaurant.banner_url || "");
-    themeColorInput.value = restaurant.theme_color || "#FF7A51";
-    themeColorTextInput.value = restaurant.theme_color || "#FF7A51";
+    setThemeColor(restaurant.theme_color || "#FF7A00");
   }
 
   async function loadPage() {
@@ -220,7 +233,7 @@
           whatsapp: whatsappInput.value.trim() || null,
           logo_url: logoUrl,
           banner_url: bannerUrl,
-          theme_color: themeColorTextInput.value.trim() || "#FF7A51",
+          theme_color: normalizeThemeColor(themeColorTextInput.value),
         },
       });
 
@@ -250,14 +263,20 @@
   });
 
   themeColorInput.addEventListener("input", function () {
-    themeColorTextInput.value = themeColorInput.value.toUpperCase();
+    setThemeColor(themeColorInput.value);
   });
 
   themeColorTextInput.addEventListener("input", function () {
     var value = themeColorTextInput.value.trim();
     if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
-      themeColorInput.value = value;
+      setThemeColor(value);
     }
+  });
+
+  themeChoiceButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      setThemeColor(button.dataset.themeColor);
+    });
   });
 
   loadPage();

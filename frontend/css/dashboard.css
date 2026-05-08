@@ -438,6 +438,38 @@ body.dashboard-page {
   outline-offset: 1px;
 }
 
+.dash-copy-btn {
+  width: 100%;
+  min-height: 2.75rem;
+  margin-top: 0.7rem;
+  border: 1px solid var(--dash-accent);
+  border-radius: 0.65rem;
+  background: var(--dash-accent-soft);
+  color: var(--dash-accent);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.dash-copy-btn.is-done {
+  background: #e8f5e9;
+  border-color: #2e7d32;
+  color: #2e7d32;
+}
+
+.dash-copy-feedback {
+  margin: 0.45rem 0 0;
+  color: #2e7d32;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.dash-copy-feedback.is-error {
+  color: #b00020;
+}
+
 /* Bouton noir + icône « lien externe » à droite (placeholder) */
 .dash-link-btn {
   position: relative;
@@ -1236,6 +1268,20 @@ a.dash-qr-btn {
   cursor: pointer;
 }
 
+.plats-form__actions {
+  position: sticky;
+  bottom: 0.75rem;
+  z-index: 5;
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border: 1px solid #eeeeee;
+  border-radius: 0.8rem;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
 .cats-form__submit,
 .plats-form__submit {
   background: var(--dash-accent);
@@ -1244,9 +1290,12 @@ a.dash-qr-btn {
 
 .cats-form__cancel,
 .plats-form__cancel {
-  margin-top: 0.65rem;
   background: #f2f2f2;
   color: var(--dash-text);
+}
+
+.cats-form__cancel {
+  margin-top: 0.65rem;
 }
 
 .cats-list,
@@ -1614,6 +1663,32 @@ a.dash-qr-btn {
 .param-field__textarea {
   min-height: 6rem;
   resize: vertical;
+}
+
+.param-theme-choices {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-bottom: 0.65rem;
+}
+
+.param-theme-choice {
+  min-height: 2.75rem;
+  display: grid;
+  place-items: center;
+  border: 2px solid transparent;
+  border-radius: 0.7rem;
+  background: var(--choice-color);
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.param-theme-choice.is-active {
+  border-color: var(--dash-text);
+  box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.08);
 }
 
 .param-color-row {

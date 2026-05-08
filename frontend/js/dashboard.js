@@ -6,7 +6,7 @@
 (function () {
   "use strict";
 
-  const API_URL = "http://localhost:4000";
+  const API_URL = window.AFRICAMENU_CONFIG.API_URL;
   const TOKEN_KEY = "africamenu_token";
   const USER_KEY = "africamenu_user";
   const RESTAURANT_KEY = "africamenu_restaurant";
@@ -21,6 +21,8 @@
   const drawerRestaurant = document.getElementById("dashboard-drawer-restaurant");
   const drawerEmail = document.getElementById("dashboard-drawer-email");
   const menuUrlInput = document.getElementById("dashboard-menu-url");
+  const copyMenuBtn = document.getElementById("dashboard-copy-menu");
+  const copyFeedback = document.getElementById("dashboard-copy-feedback");
   const viewMenuBtn = document.getElementById("dashboard-view-menu");
   const logoutLink = document.getElementById("dashboard-logout");
   const addProductBtn = document.getElementById("dashboard-add-product");
@@ -106,6 +108,49 @@
       menuUrlInput.value = publicUrl;
       viewMenuBtn.setAttribute("data-menu-url", publicUrl);
     }
+  }
+
+  function setCopyFeedback(message, isError) {
+    if (!copyFeedback) return;
+
+    copyFeedback.textContent = message;
+    copyFeedback.hidden = !message;
+    copyFeedback.classList.toggle("is-error", Boolean(isError));
+
+    window.setTimeout(function () {
+      copyFeedback.hidden = true;
+      copyFeedback.textContent = "";
+      copyFeedback.classList.remove("is-error");
+    }, 2200);
+  }
+
+  function copyMenuUrl() {
+    const url = menuUrlInput ? menuUrlInput.value : "";
+    if (!url) {
+      setCopyFeedback("Lien indisponible pour le moment.", true);
+      return;
+    }
+
+    function markCopied() {
+      copyMenuBtn?.classList.add("is-done");
+      setCopyFeedback("Lien copié.");
+      window.setTimeout(function () {
+        copyMenuBtn?.classList.remove("is-done");
+      }, 1800);
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(markCopied, function () {
+        menuUrlInput.select();
+        document.execCommand("copy");
+        markCopied();
+      });
+      return;
+    }
+
+    menuUrlInput.select();
+    document.execCommand("copy");
+    markCopied();
   }
 
   async function loadDashboard() {
@@ -209,6 +254,8 @@
       window.location.href = explicitUrl;
     }
   });
+
+  copyMenuBtn?.addEventListener("click", copyMenuUrl);
 
   loadDashboard();
 })();

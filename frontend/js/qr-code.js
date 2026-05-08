@@ -7,7 +7,7 @@
 (function () {
   "use strict";
 
-  var API_URL = "http://localhost:4000";
+  var API_URL = window.AFRICAMENU_CONFIG.API_URL;
   var TOKEN_KEY = "africamenu_token";
   var USER_KEY = "africamenu_user";
   var RESTAURANT_KEY = "africamenu_restaurant";

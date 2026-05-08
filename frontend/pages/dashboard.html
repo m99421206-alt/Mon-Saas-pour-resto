@@ -104,6 +104,10 @@
             autocomplete="off"
             readonly
           />
+          <button type="button" class="dash-copy-btn" id="dashboard-copy-menu">
+            Copier le lien
+          </button>
+          <p class="dash-copy-feedback" id="dashboard-copy-feedback" role="status" aria-live="polite" hidden></p>
           <button type="button" class="dash-link-btn" data-action="view-public-menu" id="dashboard-view-menu">
             <span>Voir le menu</span>
             <span class="dash-link-btn__icon" aria-hidden="true" title=""></span>
@@ -190,7 +194,7 @@
           <li>
             <a class="dash-drawer__link" href="mon-menu.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/menu.png" alt="" width="20" height="20" />
+                <img src="../../assets/images/icone/carte-de-menu.png" alt="" width="90" height="90" />
               </span>
               <span class="dash-drawer__label">Mon Menu</span>
             </a>
@@ -198,7 +202,7 @@
           <li>
             <a class="dash-drawer__link" href="qr-code.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/qr-code.png" alt="" width="30" height="30" />
+                <img src="../../assets/images/icone/balayage-du-code-qr.png" alt="" width="30" height="30" />
               </span>
               <span class="dash-drawer__label">QR Code</span>
             </a>
@@ -226,6 +230,7 @@
       </footer>
     </aside>
 
+    <script src="../js/config.js"></script>
     <script src="../js/dashboard.js"></script>
   </body>
 </html>

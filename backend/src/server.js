@@ -18,6 +18,35 @@ const uploadRoutes = require("./routes/uploadRoutes");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
+const HOST = process.env.HOST || "0.0.0.0";
+const LAN_URL = process.env.LAN_URL || "http://localhost:" + PORT;
+const allowedOrigins = (process.env.CORS_ORIGIN || "")
+  .split(",")
+  .map(function (origin) {
+    return origin.trim();
+  })
+  .filter(Boolean);
+
+function isAllowedCorsOrigin(origin) {
+  if (!origin) {
+    return true;
+  }
+
+  if (allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
+    return true;
+  }
+
+  if (!allowedOrigins.length) {
+    try {
+      var url = new URL(origin);
+      return url.protocol === "http:" && url.port === "5500";
+    } catch (error) {
+      return false;
+    }
+  }
+
+  return false;
+}
 
 /* Corps des requêtes en JSON (POST / PUT) */
 app.use(express.json());
@@ -28,7 +57,13 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 /* Autoriser le frontend (autre origine) à appeler l’API — affiné à l’étape 10 */
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || true,
+    origin: function (origin, callback) {
+      if (isAllowedCorsOrigin(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Origine CORS non autorisée."));
+    },
     credentials: true,
   })
 );
@@ -54,6 +89,7 @@ app.use("/upload", uploadRoutes);
 /* Menu public client (étape 9) — sans JWT */
 app.use("/menu", menuRoutes);
 
-app.listen(PORT, function () {
+app.listen(PORT, HOST, function () {
   console.log("AfricaMenu API — http://localhost:" + PORT);
+  console.log("AfricaMenu API réseau — " + LAN_URL);
 });

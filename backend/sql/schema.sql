@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS `restaurants` (
   `whatsapp` VARCHAR(32) NULL,
   `logo_url` VARCHAR(512) NULL,
   `banner_url` VARCHAR(512) NULL,
-  `theme_color` VARCHAR(16) NOT NULL DEFAULT '#FF7A51',
+  `theme_color` VARCHAR(16) NOT NULL DEFAULT '#FF7A00',
   PRIMARY KEY (`id`),
   KEY `idx_restaurants_user_id` (`user_id`),
   CONSTRAINT `fk_restaurants_user`

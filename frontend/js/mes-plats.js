@@ -4,7 +4,7 @@
 (function () {
   "use strict";
 
-  const API_URL = "http://localhost:4000";
+  const API_URL = window.AFRICAMENU_CONFIG.API_URL;
   const TOKEN_KEY = "africamenu_token";
   const USER_KEY = "africamenu_user";
   const RESTAURANT_KEY = "africamenu_restaurant";
@@ -219,7 +219,7 @@
       '<label class="plats-variant__label">Image de cette taille' +
       '<input class="plats-variant__input" data-variant-field="imageFile" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" />' +
       '<img class="plats-image-preview" data-variant-preview alt="Aperçu de cette option" hidden />' +
-      '<input class="plats-variant__input" data-variant-field="image" type="url" placeholder="https://..." value="' +
+      '<input class="plats-variant__input" data-variant-field="image" type="text" placeholder="https://..." value="' +
       escapeHtml(variant && variant.image ? variant.image : "") +
       '" hidden />' +
       "</label>" +

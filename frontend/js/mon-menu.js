@@ -1,4 +1,4 @@
-﻿const API_BASE_URL = "http://localhost:4000";
+﻿const API_BASE_URL = window.AFRICAMENU_CONFIG.API_URL;
 const DEFAULT_PRODUCT_IMAGE =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='420' viewBox='0 0 600 420'%3E%3Crect width='600' height='420' fill='%23f3f4f6'/%3E%3Ctext x='300' y='210' text-anchor='middle' dominant-baseline='middle' font-family='Arial,sans-serif' font-size='24' fill='%239ca3af'%3EImage indisponible%3C/text%3E%3C/svg%3E";
 
@@ -37,7 +37,7 @@ let whatsappNumber = "22399421206";
 let activeCategory = "all";
 let selectedProduct = null;
 let selectedVariant = null;
-let quantity = 2;
+let quantity = 1;
 let orderItems = [];
 let toastTimeout;
 let orderPreviousView = "menu";
@@ -367,13 +367,24 @@ function setActiveCategory(categoryId) {
   });
 }
 
+function shuffleProducts(items) {
+  const shuffled = items.slice();
+  for (let i = shuffled.length - 1; i > 0; i -= 1) {
+    const randomIndex = Math.floor(Math.random() * (i + 1));
+    const current = shuffled[i];
+    shuffled[i] = shuffled[randomIndex];
+    shuffled[randomIndex] = current;
+  }
+  return shuffled;
+}
+
 function showProducts(categoryId) {
   setActiveCategory(categoryId);
   productsEl.innerHTML = "";
 
   const visibleProducts =
     categoryId === "all"
-      ? products
+      ? shuffleProducts(products)
       : products.filter(function (product) {
           return String(product.categoryId) === String(categoryId);
         });
@@ -529,7 +540,7 @@ function showProductDetail(product) {
   detailPriceEl.textContent = product.price;
   detailDescriptionEl.textContent = product.meta;
   renderProductVariants(product);
-  updateQuantity(2);
+  updateQuantity(1);
   renderSimilarProducts(product);
   productDetailEl.hidden = false;
   whatsappEl.hidden = true;
@@ -566,18 +577,19 @@ function getSelectedOrderLine() {
   };
 }
 
-function addSelectedProductToOrder() {
+function addSelectedProductToOrder(options) {
   if (!selectedProduct) {
     return;
   }
 
+  const shouldReplaceQuantity = Boolean(options && options.replaceQuantity);
   const line = getSelectedOrderLine();
   const existingItem = orderItems.find(function (item) {
     return item.key === line.key;
   });
 
   if (existingItem) {
-    existingItem.quantity += quantity;
+    existingItem.quantity = shouldReplaceQuantity ? quantity : existingItem.quantity + quantity;
   } else {
     orderItems.push(line);
   }
@@ -682,13 +694,18 @@ function hideOrderPage(targetView) {
   setActiveNav(homeNavEl);
 }
 
+function getWhatsappGreeting() {
+  const hour = new Date().getHours();
+  return hour >= 18 || hour < 6 ? "Bonsoir" : "Bonjour";
+}
+
 function createOrderWhatsappMessage() {
   const lines = orderItems.map(function (item) {
     return `- ${item.quantity} x ${item.label} : ${item.price}`;
   });
 
   return [
-    "Bonjour, je souhaite commander :",
+    `${getWhatsappGreeting()}, je souhaite commander :`,
     ...lines,
     `Total : ${formatPrice(calculateOrderTotal())}`,
   ].join("\n");
@@ -728,7 +745,7 @@ quantityPlusEl.addEventListener("click", function () {
 });
 
 detailOrderEl.addEventListener("click", function () {
-  addSelectedProductToOrder();
+  addSelectedProductToOrder({ replaceQuantity: true });
   showOrderPage();
 });
 

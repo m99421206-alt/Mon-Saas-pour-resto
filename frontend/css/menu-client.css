@@ -4,9 +4,9 @@
   --text: #171717;
   --muted: #6b7280;
   --line: #e5e7eb;
-  --primary: #ff7a51;
-  --primary-soft: #fff0ea;
-  --primary-shadow: rgba(255, 122, 81, 0.26);
+  --primary: #ff7a00;
+  --primary-soft: #ff7a001f;
+  --primary-shadow: rgba(255, 122, 0, 0.26);
   --whatsapp: #25d366;
   --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.05);
   --shadow-logo: 0 14px 32px rgba(0, 0, 0, 0.16);
@@ -267,11 +267,16 @@ img {
 }
 
 .product-card__meta {
-  min-height: 2.1rem;
+  height: calc(0.66rem * 1.35 * 2);
   margin: 0.3rem 0 0;
   color: var(--muted);
   font-size: 0.66rem;
   line-height: 1.35;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .product-card__price {
@@ -668,6 +673,7 @@ img {
   padding-bottom: 5.25rem;
   background: var(--white);
   color: var(--text);
+  overflow: hidden;
 }
 
 .order-back {
@@ -690,13 +696,16 @@ img {
 
 .order-card {
   flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   margin-top: 4.6rem;
   border-radius: 28px 28px 0 0;
   background: var(--white);
 }
 
 .order-header {
-  padding: 1.05rem 1rem;
+  padding: 1.25rem 1rem;
   border-radius: 28px 28px 0 0;
   background: var(--primary);
   color: var(--white);
@@ -705,17 +714,17 @@ img {
 
 .order-title {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 1.25rem;
+  font-weight: 800;
 }
 
 .order-instruction {
-  max-width: 15rem;
-  margin: 1rem auto 1.2rem;
+  max-width: 18rem;
+  margin: 1.15rem auto 1.35rem;
   color: var(--primary);
-  font-size: 0.64rem;
-  font-weight: 500;
-  line-height: 1.25;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.35;
   text-align: center;
 }
 
@@ -729,25 +738,28 @@ img {
 }
 
 .order-list {
-  min-height: 14rem;
-  margin: 0 1.55rem;
-  padding-top: 0.9rem;
+  flex: 1;
+  min-height: 0;
+  margin: 0 1.35rem;
+  padding: 1rem 0 0.75rem;
   border-top: 2px dashed #cccccc;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }
 
 .order-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.45rem 0;
-  font-size: 0.68rem;
+  gap: 0.85rem;
+  padding: 0.7rem 0;
+  font-size: 0.86rem;
   font-weight: 800;
 }
 
 .order-empty {
   margin: 0;
   color: #6b7280;
-  font-size: 0.82rem;
+  font-size: 1rem;
   font-weight: 600;
   text-align: center;
 }
@@ -760,25 +772,25 @@ img {
 .order-item__controls {
   display: inline-flex;
   align-items: center;
-  gap: 0.38rem;
+  gap: 0.48rem;
 }
 
 .order-qty-btn {
-  width: 1.15rem;
-  height: 1.15rem;
+  width: 1.65rem;
+  height: 1.65rem;
   display: grid;
   place-items: center;
   border: 0;
   border-radius: 50%;
   background: #e5e7eb;
   color: #6b7280;
-  font-size: 0.65rem;
+  font-size: 0.78rem;
   cursor: pointer;
 }
 
 .order-item__price {
-  min-width: 4.6rem;
-  font-weight: 500;
+  min-width: 5.4rem;
+  font-weight: 700;
   text-align: right;
 }
 
@@ -786,36 +798,37 @@ img {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 0 1.55rem;
-  padding: 0.7rem 0;
+  margin: 0 1.35rem;
+  padding: 0.9rem 0;
   border-top: 2px dashed #cccccc;
   border-bottom: 2px dashed #cccccc;
   color: #6b7280;
-  font-size: 0.85rem;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .order-total strong {
   color: #6b7280;
-  font-size: 0.72rem;
+  font-size: 1.05rem;
   font-weight: 800;
 }
 
 .order-submit {
-  min-height: 2.6rem;
+  min-height: 3.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   width: max-content;
-  margin: 1rem auto 0;
-  padding: 0 1.65rem;
+  margin: 1.15rem auto 0;
+  padding: 0 2rem;
   border: 0;
   border-radius: 50px;
   background: var(--whatsapp);
   color: var(--white);
   font: inherit;
-  font-size: 0.82rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 800;
   box-shadow: 0 12px 26px rgba(37, 211, 102, 0.32);
   cursor: pointer;
 }
@@ -823,11 +836,11 @@ img {
 .order-submit i {
   display: grid;
   place-items: center;
-  width: 1.35rem;
-  height: 1.35rem;
+  width: 1.65rem;
+  height: 1.65rem;
   border: 1.5px solid currentColor;
   border-radius: 50%;
-  font-size: 0.82rem;
+  font-size: 1rem;
 }
 
 .order-footer {

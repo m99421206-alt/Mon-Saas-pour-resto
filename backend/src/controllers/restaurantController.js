@@ -24,7 +24,7 @@ function normalizeWhatsapp(value) {
 function normalizeThemeColor(value) {
   var text = normalizeText(value);
   if (!text) {
-    return "#FF7A51";
+    return "#FF7A00";
   }
   if (!/^#[0-9A-Fa-f]{6}$/.test(text)) {
     return false;
@@ -70,7 +70,7 @@ async function updateMyRestaurant(req, res) {
       return res.status(400).json({ message: "Numéro WhatsApp invalide. Exemple : +22370000000" });
     }
     if (themeColor === false) {
-      return res.status(400).json({ message: "Couleur de thème invalide. Exemple : #FF7A51" });
+    return res.status(400).json({ message: "Couleur de thème invalide. Exemple : #FF7A00" });
     }
 
     var pool = getPool();

@@ -54,7 +54,7 @@ async function main() {
 
   if (!(await columnExists(connection, database, "restaurants", "theme_color"))) {
     await connection.query(
-      "ALTER TABLE restaurants ADD COLUMN theme_color VARCHAR(16) NOT NULL DEFAULT '#FF7A51' AFTER banner_url"
+      "ALTER TABLE restaurants ADD COLUMN theme_color VARCHAR(16) NOT NULL DEFAULT '#FF7A00' AFTER banner_url"
     );
   }
 

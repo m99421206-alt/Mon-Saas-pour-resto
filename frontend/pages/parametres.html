@@ -100,7 +100,7 @@
               class="param-field__input"
               id="logo-url"
               name="logoUrl"
-              type="url"
+              type="text"
               inputmode="url"
               autocomplete="off"
               placeholder="https://"
@@ -122,7 +122,7 @@
               class="param-field__input"
               id="banner-url"
               name="bannerUrl"
-              type="url"
+              type="text"
               inputmode="url"
               autocomplete="off"
               placeholder="https://"
@@ -133,14 +133,31 @@
 
           <div class="param-field">
             <label class="param-field__label" for="theme-color">Couleur du thème</label>
+            <div class="param-theme-choices" id="theme-choices" aria-label="Choix du thème">
+              <button class="param-theme-choice" type="button" data-theme-color="#FF7A00" style="--choice-color: #FF7A00">
+                Orange
+              </button>
+              <button class="param-theme-choice" type="button" data-theme-color="#7F8C8D" style="--choice-color: #7F8C8D">
+                Gris
+              </button>
+              <button class="param-theme-choice" type="button" data-theme-color="#E74C3C" style="--choice-color: #E74C3C">
+                Rouge
+              </button>
+              <button class="param-theme-choice" type="button" data-theme-color="#3498DB" style="--choice-color: #3498DB">
+                Bleu
+              </button>
+              <button class="param-theme-choice" type="button" data-theme-color="#111111" style="--choice-color: #111111">
+                Noir
+              </button>
+            </div>
             <div class="param-color-row">
-              <input class="param-field__color" id="theme-color" name="themeColor" type="color" value="#FF7A51" />
+              <input class="param-field__color" id="theme-color" name="themeColor" type="color" value="#FF7A00" />
               <input
                 class="param-field__input"
                 id="theme-color-text"
                 type="text"
                 inputmode="text"
-                value="#FF7A51"
+                value="#FF7A00"
                 aria-label="Code couleur du thème"
               />
             </div>
@@ -209,7 +226,7 @@
           <li>
             <a class="dash-drawer__link" href="mon-menu.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/menu.png" alt="" width="20" height="20" />
+                <img src="../../assets/images/icone/carte-de-menu.png" alt="" width="90" height="90" />
               </span>
               <span class="dash-drawer__label">Mon Menu</span>
             </a>
@@ -217,7 +234,7 @@
           <li>
             <a class="dash-drawer__link" href="qr-code.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/qr-code.png" alt="" width="30" height="30" />
+                <img src="../../assets/images/icone/balayage-du-code-qr.png" alt="" width="30" height="30" />
               </span>
               <span class="dash-drawer__label">QR Code</span>
             </a>
@@ -245,6 +262,7 @@
       </footer>
     </aside>
 
+    <script src="../js/config.js"></script>
     <script src="../js/dashboard.js"></script>
     <script src="../js/parametres.js"></script>
   </body>
