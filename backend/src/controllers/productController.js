@@ -186,11 +186,23 @@ async function createProduct(req, res) {
     }
 
     var pool = getPool();
-    var [result] = await pool.query(
-      "INSERT INTO products (restaurant_id, category_id, name, description, price, image, has_sizes) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [restaurantId, categoryId, name, description, price, image, hasSizes]
-    );
-    await replaceProductVariants(pool, result.insertId, hasSizes ? variants : []);
+    var connection = await pool.getConnection();
+    var result;
+
+    try {
+      await connection.beginTransaction();
+      [result] = await connection.query(
+        "INSERT INTO products (restaurant_id, category_id, name, description, price, image, has_sizes) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [restaurantId, categoryId, name, description, price, image, hasSizes]
+      );
+      await replaceProductVariants(connection, result.insertId, hasSizes ? variants : []);
+      await connection.commit();
+    } catch (err) {
+      await connection.rollback();
+      throw err;
+    } finally {
+      connection.release();
+    }
 
     return res.status(201).json({
       product: {
@@ -249,16 +261,29 @@ async function updateProduct(req, res) {
     }
 
     var pool = getPool();
-    var [result] = await pool.query(
-      "UPDATE products SET category_id = ?, name = ?, description = ?, price = ?, image = ?, has_sizes = ? WHERE id = ? AND restaurant_id = ?",
-      [categoryId, name, description, price, image, hasSizes, productId, restaurantId]
-    );
+    var connection = await pool.getConnection();
+    var result;
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Produit introuvable." });
+    try {
+      await connection.beginTransaction();
+      [result] = await connection.query(
+        "UPDATE products SET category_id = ?, name = ?, description = ?, price = ?, image = ?, has_sizes = ? WHERE id = ? AND restaurant_id = ?",
+        [categoryId, name, description, price, image, hasSizes, productId, restaurantId]
+      );
+
+      if (result.affectedRows === 0) {
+        await connection.rollback();
+        return res.status(404).json({ message: "Produit introuvable." });
+      }
+
+      await replaceProductVariants(connection, productId, hasSizes ? variants : []);
+      await connection.commit();
+    } catch (err) {
+      await connection.rollback();
+      throw err;
+    } finally {
+      connection.release();
     }
-
-    await replaceProductVariants(pool, productId, hasSizes ? variants : []);
 
     return res.json({
       product: {
