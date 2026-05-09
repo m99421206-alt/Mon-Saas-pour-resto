@@ -18,7 +18,7 @@ async function getPublicMenu(req, res) {
     }
 
     var [categories] = await pool.query(
-      "SELECT id, restaurant_id, name FROM categories WHERE restaurant_id = ? ORDER BY id DESC",
+      "SELECT id, restaurant_id, name FROM categories WHERE restaurant_id = ? ORDER BY id ASC",
       [restaurantId]
     );
 

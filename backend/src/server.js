@@ -26,23 +26,52 @@ const allowedOrigins = (process.env.CORS_ORIGIN || "")
     return origin.trim();
   })
   .filter(Boolean);
+const devFrontendPorts = (process.env.DEV_FRONTEND_PORTS || "5500,5501,5173,3000")
+  .split(",")
+  .map(function (port) {
+    return port.trim();
+  })
+  .filter(Boolean);
+
+function isPrivateNetworkHost(hostname) {
+  return (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "::1" ||
+    hostname.indexOf("192.168.") === 0 ||
+    hostname.indexOf("10.") === 0 ||
+    /^172\.(1[6-9]|2\d|3[0-1])\./.test(hostname)
+  );
+}
+
+function isAllowedDevOrigin(origin) {
+  if (process.env.NODE_ENV === "production") {
+    return false;
+  }
+
+  try {
+    var url = new URL(origin);
+    return (
+      url.protocol === "http:" &&
+      isPrivateNetworkHost(url.hostname) &&
+      devFrontendPorts.includes(url.port)
+    );
+  } catch (error) {
+    return false;
+  }
+}
 
 function isAllowedCorsOrigin(origin) {
   if (!origin) {
     return true;
   }
 
-  if (allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
+  if (
+    allowedOrigins.includes("*") ||
+    allowedOrigins.includes(origin) ||
+    isAllowedDevOrigin(origin)
+  ) {
     return true;
-  }
-
-  if (!allowedOrigins.length) {
-    try {
-      var url = new URL(origin);
-      return url.protocol === "http:" && url.port === "5500";
-    } catch (error) {
-      return false;
-    }
   }
 
   return false;

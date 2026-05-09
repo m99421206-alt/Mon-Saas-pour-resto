@@ -181,14 +181,31 @@ img {
   gap: 1rem;
 }
 
+.products-category-title {
+  grid-column: 1 / -1;
+  margin: 0.25rem 0 -0.25rem;
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
 .product-card {
   position: relative;
+  display: flex;
+  flex-direction: column;
   padding: 15px;
   border-radius: 25px;
   background: var(--white);
   box-shadow: var(--shadow-card);
   overflow: hidden;
   cursor: pointer;
+}
+
+.product-card__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .product-card__media {
@@ -268,7 +285,7 @@ img {
 
 .product-card__meta {
   height: calc(0.66rem * 1.35 * 2);
-  margin: 0.3rem 0 0;
+  margin: auto 0 0;
   color: var(--muted);
   font-size: 0.66rem;
   line-height: 1.35;
@@ -280,7 +297,7 @@ img {
 }
 
 .product-card__price {
-  margin: 0.65rem 0 0;
+  margin: 0.28rem 0 0;
   color: var(--primary);
   font-size: 0.88rem;
   font-weight: 800;
@@ -849,8 +866,106 @@ img {
 }
 
 @media (max-width: 360px) {
+  .hero__cover {
+    height: 205px;
+  }
+
+  .restaurant {
+    grid-template-columns: 72px 1fr;
+    gap: 0.75rem;
+    padding-inline: 0.9rem;
+    margin-top: -30px;
+  }
+
+  .restaurant__logo {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+  }
+
+  .restaurant__content {
+    padding-top: 2.25rem;
+  }
+
+  .restaurant__title {
+    font-size: 1.35rem;
+  }
+
+  .section {
+    padding-inline: 0.8rem;
+  }
+
+  .categories {
+    margin-inline: -0.8rem;
+    padding-inline: 0.8rem;
+  }
+
+  .products-grid {
+    gap: 0.72rem;
+  }
+
+  .product-card {
+    padding: 0.65rem;
+    border-radius: 20px;
+  }
+
+  .product-card__image {
+    border-radius: 16px;
+  }
+
+  .product-card__name {
+    font-size: 0.78rem;
+  }
+
+  .product-card__price {
+    font-size: 0.82rem;
+  }
+
+  .bottom-nav {
+    padding-inline: 0.75rem;
+  }
+
   .detail-image {
-    height: 280px;
+    width: calc(100% - 1.4rem);
+    height: 255px;
+    margin-top: 0.9rem;
+    border-radius: 22px;
+  }
+
+  .detail-content {
+    padding-inline: 1rem;
+  }
+
+  .detail-title {
+    font-size: 1.38rem;
+  }
+
+  .detail-actions {
+    gap: 0.5rem;
+    padding-inline: 0.8rem;
+  }
+
+  .action-btn {
+    font-size: 0.76rem;
+  }
+
+  .order-list,
+  .order-total {
+    margin-inline: 0.9rem;
+  }
+
+  .order-item {
+    gap: 0.55rem;
+    font-size: 0.78rem;
+  }
+
+  .order-item__price {
+    min-width: 4.4rem;
+  }
+
+  .order-qty-btn {
+    width: 1.5rem;
+    height: 1.5rem;
   }
 }
 
@@ -861,5 +976,133 @@ img {
     min-height: calc(100vh - 3rem);
     border-radius: 34px;
     box-shadow: 0 24px 80px rgba(0, 0, 0, 0.08);
+  }
+}
+
+@media (min-width: 48rem) {
+  body {
+    display: grid;
+    place-items: start center;
+    padding-block: 1.5rem;
+  }
+
+  .app {
+    width: min(calc(100vw - 3rem), 760px);
+    min-height: calc(100vh - 3rem);
+    border-radius: 34px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.08);
+  }
+
+  .product-detail,
+  .detail-actions,
+  .order-page,
+  .bottom-nav {
+    width: min(calc(100vw - 3rem), 760px);
+  }
+
+  .hero__cover {
+    height: 300px;
+  }
+
+  .restaurant {
+    grid-template-columns: 104px 1fr;
+    gap: 1.25rem;
+    padding-inline: 1.75rem;
+    margin-top: -46px;
+  }
+
+  .restaurant__logo {
+    width: 104px;
+    height: 104px;
+    border-radius: 28px;
+  }
+
+  .restaurant__content {
+    padding-top: 3.3rem;
+  }
+
+  .restaurant__title {
+    font-size: 2rem;
+  }
+
+  .restaurant__desc {
+    max-width: 34rem;
+    font-size: 0.9rem;
+  }
+
+  .section {
+    padding-inline: 1.5rem;
+  }
+
+  .categories {
+    margin-inline: -1.5rem;
+    padding-inline: 1.5rem;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.1rem;
+  }
+
+  .product-card__image {
+    aspect-ratio: 1 / 0.78;
+  }
+
+  .product-card__name {
+    font-size: 0.92rem;
+  }
+
+  .product-card__meta {
+    font-size: 0.7rem;
+    height: calc(0.7rem * 1.35 * 2);
+  }
+
+  .product-card__price {
+    font-size: 0.94rem;
+  }
+
+  .bottom-nav {
+    bottom: 1.5rem;
+    border-radius: 26px;
+  }
+
+  .whatsapp {
+    left: min(calc(50% + 300px), calc(100% - 5rem));
+    bottom: max(6.75rem, calc(env(safe-area-inset-bottom, 0px) + 6.75rem));
+  }
+
+  .detail-image {
+    width: calc(100% - 3rem);
+    height: 390px;
+  }
+
+  .detail-content {
+    padding-inline: 2rem;
+  }
+
+  .detail-title {
+    font-size: 2rem;
+  }
+
+  .product-detail,
+  .order-page {
+    top: 1.5rem;
+    bottom: 1.5rem;
+    border-radius: 34px;
+    overflow: hidden auto;
+  }
+
+  .detail-actions {
+    bottom: 1.5rem;
+    border-radius: 0 0 34px 34px;
+  }
+
+  .order-page {
+    padding-bottom: 6.2rem;
+  }
+
+  .order-list,
+  .order-total {
+    margin-inline: 2rem;
   }
 }

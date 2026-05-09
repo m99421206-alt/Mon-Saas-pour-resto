@@ -273,3 +273,66 @@ body.auth-page {
   white-space: nowrap;
   border: 0;
 }
+
+@media (max-width: 360px) {
+  .auth-main {
+    padding-inline: max(0.9rem, env(safe-area-inset-left, 0px));
+  }
+
+  .auth-card {
+    max-width: 100%;
+  }
+
+  .auth-brand {
+    margin-bottom: 1.35rem;
+  }
+
+  .auth-title {
+    font-size: 1.25rem;
+  }
+
+  .auth-form {
+    gap: 1rem;
+  }
+
+  .auth-field input,
+  .auth-submit {
+    min-height: 2.9rem;
+  }
+}
+
+@media (min-width: 48rem) and (max-width: 80rem) {
+  body.auth-page {
+    background: #fafafa;
+  }
+
+  .auth-main {
+    justify-content: center;
+    padding-block: 2.5rem;
+  }
+
+  .auth-card {
+    max-width: 32rem;
+    padding: 2rem;
+    border: 1px solid #eeeeee;
+    border-radius: 1.5rem;
+    background: #ffffff;
+  }
+
+  .auth-title {
+    font-size: 1.85rem;
+  }
+
+  .auth-form {
+    gap: 1.35rem;
+  }
+
+  .auth-field input,
+  .auth-submit {
+    min-height: 3.1rem;
+  }
+
+  .auth-switch {
+    margin-bottom: 2.25rem;
+  }
+}

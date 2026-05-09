@@ -329,7 +329,7 @@ p {
 }
 
 .btn--on-orange:focus-visible {
-  outline-color: #df1d1d;
+  outline-color: #fff;
 }
 
 /* ----------------------------------------------------------------------------- Grille de cartes fonctionnalités */
@@ -719,6 +719,100 @@ p {
     max-width: none;
     text-align: center;
     margin-top: 0.5rem;
+  }
+}
+
+@media (max-width: 360px) {
+  :root {
+    --container-pad: 0.95rem;
+    --space-2xl: 2.4rem;
+    --space-3xl: 2.8rem;
+  }
+
+  .site-header__inner {
+    min-height: 3.25rem;
+  }
+
+  .brand__name {
+    font-size: 0.98rem;
+  }
+
+  .link-login {
+    font-size: 0.85rem;
+  }
+
+  .hero__title {
+    font-size: 2.05rem;
+  }
+
+  .hero__badges {
+    flex-wrap: wrap;
+    gap: 0.65rem 0.9rem;
+  }
+
+  .showcase__float-card {
+    left: 0;
+    right: 0;
+    max-width: 100%;
+  }
+}
+
+@media (min-width: 48rem) and (max-width: 80rem) {
+  :root {
+    --container-pad: 2rem;
+  }
+
+  .site-header__inner {
+    min-height: 4rem;
+  }
+
+  .hero {
+    padding-top: 3rem;
+  }
+
+  .hero .container {
+    max-width: var(--max-content);
+  }
+
+  .hero__title {
+    max-width: 46rem;
+  }
+
+  .hero__lead {
+    max-width: 42rem;
+    font-size: 1.08rem;
+  }
+
+  .hero__badges {
+    flex-wrap: wrap;
+  }
+
+  .feature-grid {
+    gap: 1.5rem;
+  }
+
+  .showcase__visual {
+    max-width: 24rem;
+  }
+
+  .showcase__title,
+  .showcase__subtitle {
+    max-width: 36rem;
+    margin-inline: auto;
+  }
+
+  .steps__list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+
+  .steps__item {
+    max-width: none;
+  }
+
+  .cta-band__text {
+    max-width: 36rem;
   }
 }
 

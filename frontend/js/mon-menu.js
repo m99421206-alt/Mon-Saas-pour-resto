@@ -55,6 +55,15 @@ function saveFavoriteIds() {
   localStorage.setItem("africamenu_favorites", JSON.stringify(favoriteIds));
 }
 
+function escapeHtml(value) {
+  return String(value == null ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function isFavorite(productId) {
   return favoriteIds.includes(productId);
 }
@@ -288,22 +297,28 @@ function createCategoryButton(category) {
 function createProductCard(product) {
   const card = document.createElement("article");
   card.className = "product-card";
+  const productName = escapeHtml(product.name);
+  const productMeta = escapeHtml(product.meta);
+  const productPrice = escapeHtml(product.price);
+  const productImage = escapeHtml(product.image);
+  const productAlt = escapeHtml(product.alt);
+  const favorite = isFavorite(product.id);
   card.innerHTML = `
     <div class="product-card__media">
-      <img class="product-card__image" src="${product.image}" alt="${product.alt}" loading="lazy" />
+      <img class="product-card__image" src="${productImage}" alt="${productAlt}" loading="lazy" />
       <button
-        class="product-card__heart ${isFavorite(product.id) ? "is-favorite" : ""}"
+        class="product-card__heart ${favorite ? "is-favorite" : ""}"
         type="button"
-        aria-label="Ajouter ${product.name} aux favoris"
-        aria-pressed="${isFavorite(product.id)}"
+        aria-label="Ajouter ${productName} aux favoris"
+        aria-pressed="${favorite}"
       >
         <i class="${getFavoriteIconClass(product.id)} fa-heart" aria-hidden="true"></i>
       </button>
     </div>
     <div class="product-card__body">
-      <h3 class="product-card__name">${product.name}</h3>
-      <p class="product-card__meta">${product.meta}</p>
-      <p class="product-card__price">${product.price}</p>
+      <h3 class="product-card__name">${productName}</h3>
+      <p class="product-card__price">${productPrice}</p>
+      <p class="product-card__meta">${productMeta}</p>
     </div>
   `;
 
@@ -323,21 +338,27 @@ function createSimilarProductCard(product) {
   const card = document.createElement("button");
   card.type = "button";
   card.className = "similar-card";
+  const productName = escapeHtml(product.name);
+  const productMeta = escapeHtml(product.meta);
+  const productPrice = escapeHtml(product.price);
+  const productImage = escapeHtml(product.image);
+  const productAlt = escapeHtml(product.alt);
+  const favorite = isFavorite(product.id);
   card.innerHTML = `
     <span
-      class="similar-card__heart ${isFavorite(product.id) ? "is-favorite" : ""}"
+      class="similar-card__heart ${favorite ? "is-favorite" : ""}"
       role="button"
       tabindex="0"
-      aria-label="Ajouter ${product.name} aux favoris"
-      aria-pressed="${isFavorite(product.id)}"
+      aria-label="Ajouter ${productName} aux favoris"
+      aria-pressed="${favorite}"
     >
       <i class="${getFavoriteIconClass(product.id)} fa-heart" aria-hidden="true"></i>
     </span>
-    <img class="similar-card__image" src="${product.image}" alt="${product.alt}" loading="lazy" />
+    <img class="similar-card__image" src="${productImage}" alt="${productAlt}" loading="lazy" />
     <span class="similar-card__body">
-      <span class="similar-card__name">${product.name}</span>
-      <span class="similar-card__meta">${product.meta}</span>
-      <span class="similar-card__price">${product.price}</span>
+      <span class="similar-card__name">${productName}</span>
+      <span class="similar-card__meta">${productMeta}</span>
+      <span class="similar-card__price">${productPrice}</span>
     </span>
   `;
 
@@ -367,27 +388,53 @@ function setActiveCategory(categoryId) {
   });
 }
 
-function shuffleProducts(items) {
-  const shuffled = items.slice();
-  for (let i = shuffled.length - 1; i > 0; i -= 1) {
-    const randomIndex = Math.floor(Math.random() * (i + 1));
-    const current = shuffled[i];
-    shuffled[i] = shuffled[randomIndex];
-    shuffled[randomIndex] = current;
-  }
-  return shuffled;
+function createProductsCategoryTitle(categoryName) {
+  const title = document.createElement("h3");
+  title.className = "products-category-title";
+  title.textContent = categoryName;
+  return title;
 }
 
 function showProducts(categoryId) {
   setActiveCategory(categoryId);
   productsEl.innerHTML = "";
 
-  const visibleProducts =
-    categoryId === "all"
-      ? shuffleProducts(products)
-      : products.filter(function (product) {
-          return String(product.categoryId) === String(categoryId);
+  if (categoryId === "all") {
+    let hasProducts = false;
+
+    categories
+      .filter(function (category) {
+        return category.id !== "all";
+      })
+      .forEach(function (category) {
+        const categoryProducts = products.filter(function (product) {
+          return String(product.categoryId) === String(category.id);
         });
+
+        if (!categoryProducts.length) {
+          return;
+        }
+
+        hasProducts = true;
+        productsEl.appendChild(createProductsCategoryTitle(category.name));
+        categoryProducts.forEach(function (product) {
+          productsEl.appendChild(createProductCard(product));
+        });
+      });
+
+    if (!hasProducts) {
+      const empty = document.createElement("p");
+      empty.className = "menu-empty";
+      empty.textContent = "Aucun plat disponible pour le moment.";
+      productsEl.appendChild(empty);
+    }
+
+    return;
+  }
+
+  const visibleProducts = products.filter(function (product) {
+    return String(product.categoryId) === String(categoryId);
+  });
 
   if (!visibleProducts.length) {
     const empty = document.createElement("p");
@@ -513,7 +560,7 @@ function renderProductVariants(product) {
     button.className = "size-option";
     button.type = "button";
     button.dataset.variantId = variant.id;
-    button.innerHTML = `<span>${variant.name}</span><small>${variant.price}</small>`;
+    button.innerHTML = `<span>${escapeHtml(variant.name)}</span><small>${escapeHtml(variant.price)}</small>`;
 
     button.addEventListener("click", function () {
       setSelectedVariant(variant);
@@ -626,17 +673,19 @@ function updateOrderItemQuantity(itemKey, nextQuantity) {
 function createOrderItem(item) {
   const row = document.createElement("div");
   row.className = "order-item";
+  const itemLabel = escapeHtml(item.label);
+  const itemPrice = escapeHtml(item.price);
   row.innerHTML = `
-    <span class="order-item__name">${item.quantity} x ${item.label}</span>
+    <span class="order-item__name">${item.quantity} x ${itemLabel}</span>
     <span class="order-item__controls">
-      <button class="order-qty-btn" type="button" data-action="plus" aria-label="Ajouter ${item.label}">
+      <button class="order-qty-btn" type="button" data-action="plus" aria-label="Ajouter ${itemLabel}">
         <i class="fa-solid fa-plus" aria-hidden="true"></i>
       </button>
-      <button class="order-qty-btn" type="button" data-action="minus" aria-label="Retirer ${item.label}">
+      <button class="order-qty-btn" type="button" data-action="minus" aria-label="Retirer ${itemLabel}">
         <i class="fa-solid fa-minus" aria-hidden="true"></i>
       </button>
     </span>
-    <span class="order-item__price">${item.price}</span>
+    <span class="order-item__price">${itemPrice}</span>
   `;
 
   row.querySelector('[data-action="plus"]').addEventListener("click", function () {
