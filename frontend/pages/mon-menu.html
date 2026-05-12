@@ -55,40 +55,42 @@
           <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
         </button>
 
-        <img
-          class="detail-image"
-          id="detail-image"
-          src="../../assets/images/icone/logo.png"
-          alt="Image du produit"
-        />
+        <div class="product-detail__scroll">
+          <img
+            class="detail-image"
+            id="detail-image"
+            src="../../assets/images/icone/logo.png"
+            alt="Image du produit"
+          />
 
-        <div class="detail-content">
-          <h2 class="detail-title" id="detail-title">Produit</h2>
-          <p class="detail-price" id="detail-price">0 CFA</p>
-          <p class="detail-description" id="detail-description">Description du produit</p>
+          <div class="detail-content">
+            <h2 class="detail-title" id="detail-title">Produit</h2>
+            <p class="detail-price" id="detail-price">0 CFA</p>
+            <p class="detail-description" id="detail-description">Description du produit</p>
 
-          <div class="detail-group" id="detail-size-group">
-            <p class="detail-label">Taille</p>
-            <div class="size-options" id="size-options" aria-label="Choisir une taille">
-              <button class="size-option active" type="button" data-size="Petit">Petit</button>
-              <button class="size-option" type="button" data-size="Moins">Moins</button>
-              <button class="size-option" type="button" data-size="Grand">Grand</button>
+            <div class="detail-group" id="detail-size-group">
+              <p class="detail-label">Taille</p>
+              <div class="size-options" id="size-options" aria-label="Choisir une taille">
+                <button class="size-option active" type="button" data-size="Petit">Petit</button>
+                <button class="size-option" type="button" data-size="Moins">Moins</button>
+                <button class="size-option" type="button" data-size="Grand">Grand</button>
+              </div>
             </div>
-          </div>
 
-          <div class="detail-group">
-            <p class="detail-label">Quantité</p>
-            <div class="quantity-control" aria-label="Choisir une quantité">
-              <button class="quantity-btn quantity-btn--minus" id="quantity-minus" type="button">−</button>
-              <span class="quantity-value" id="quantity-value">02</span>
-              <button class="quantity-btn quantity-btn--plus" id="quantity-plus" type="button">+</button>
+            <div class="detail-group">
+              <p class="detail-label">Quantité</p>
+              <div class="quantity-control" aria-label="Choisir une quantité">
+                <button class="quantity-btn quantity-btn--minus" id="quantity-minus" type="button">−</button>
+                <span class="quantity-value" id="quantity-value">02</span>
+                <button class="quantity-btn quantity-btn--plus" id="quantity-plus" type="button">+</button>
+              </div>
             </div>
-          </div>
 
-          <section class="similar-section" aria-labelledby="similar-title">
-            <h3 class="similar-title" id="similar-title">Produit similaire</h3>
-            <div class="similar-list" id="similar-products"></div>
-          </section>
+            <section class="similar-section" aria-labelledby="similar-title">
+              <h3 class="similar-title" id="similar-title">Produit similaire</h3>
+              <div class="similar-list" id="similar-products"></div>
+            </section>
+          </div>
         </div>
 
         <div class="detail-actions">

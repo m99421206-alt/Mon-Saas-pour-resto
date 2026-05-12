@@ -2,6 +2,17 @@
 const DEFAULT_PRODUCT_IMAGE =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='420' viewBox='0 0 600 420'%3E%3Crect width='600' height='420' fill='%23f3f4f6'/%3E%3Ctext x='300' y='210' text-anchor='middle' dominant-baseline='middle' font-family='Arial,sans-serif' font-size='24' fill='%239ca3af'%3EImage indisponible%3C/text%3E%3C/svg%3E";
 
+function getTrimmedDescription(value) {
+  if (value == null) {
+    return "";
+  }
+  return String(value).trim();
+}
+
+function hasVisibleDescription(value) {
+  return getTrimmedDescription(value).length > 0;
+}
+
 let categories = [{ id: "all", name: "Tout" }];
 let products = [];
 
@@ -191,8 +202,15 @@ function applyRestaurantData(restaurant) {
     document.title = `${restaurant.name} - AfricaMenu`;
   }
 
-  if (restaurant.description && restaurantDescriptionEl) {
-    restaurantDescriptionEl.textContent = restaurant.description;
+  if (restaurantDescriptionEl) {
+    const desc = getTrimmedDescription(restaurant.description);
+    if (desc) {
+      restaurantDescriptionEl.textContent = desc;
+      restaurantDescriptionEl.removeAttribute("hidden");
+    } else {
+      restaurantDescriptionEl.textContent = "";
+      restaurantDescriptionEl.hidden = true;
+    }
   }
 
   if (restaurant.logo_url && restaurantLogoEl) {
@@ -235,7 +253,7 @@ function mapPublicMenuData(data) {
         id: product.id,
         categoryId: String(category.id),
         name: product.name,
-        meta: product.description || "",
+        meta: getTrimmedDescription(product.description),
         price: formatApiPrice(product.price),
         image: image,
         detailImage: image,
@@ -297,12 +315,18 @@ function createCategoryButton(category) {
 function createProductCard(product) {
   const card = document.createElement("article");
   card.className = "product-card";
+  if (!hasVisibleDescription(product.meta)) {
+    card.classList.add("product-card--no-meta");
+  }
   const productName = escapeHtml(product.name);
   const productMeta = escapeHtml(product.meta);
   const productPrice = escapeHtml(product.price);
   const productImage = escapeHtml(product.image);
   const productAlt = escapeHtml(product.alt);
   const favorite = isFavorite(product.id);
+  const metaBlock = hasVisibleDescription(product.meta)
+    ? `<p class="product-card__meta">${productMeta}</p>`
+    : "";
   card.innerHTML = `
     <div class="product-card__media">
       <img class="product-card__image" src="${productImage}" alt="${productAlt}" loading="lazy" />
@@ -318,7 +342,7 @@ function createProductCard(product) {
     <div class="product-card__body">
       <h3 class="product-card__name">${productName}</h3>
       <p class="product-card__price">${productPrice}</p>
-      <p class="product-card__meta">${productMeta}</p>
+      ${metaBlock}
     </div>
   `;
 
@@ -344,6 +368,9 @@ function createSimilarProductCard(product) {
   const productImage = escapeHtml(product.image);
   const productAlt = escapeHtml(product.alt);
   const favorite = isFavorite(product.id);
+  const similarMetaBlock = hasVisibleDescription(product.meta)
+    ? `<span class="similar-card__meta">${productMeta}</span>`
+    : "";
   card.innerHTML = `
     <span
       class="similar-card__heart ${favorite ? "is-favorite" : ""}"
@@ -357,7 +384,7 @@ function createSimilarProductCard(product) {
     <img class="similar-card__image" src="${productImage}" alt="${productAlt}" loading="lazy" />
     <span class="similar-card__body">
       <span class="similar-card__name">${productName}</span>
-      <span class="similar-card__meta">${productMeta}</span>
+      ${similarMetaBlock}
       <span class="similar-card__price">${productPrice}</span>
     </span>
   `;
@@ -585,7 +612,13 @@ function showProductDetail(product) {
   detailImageEl.alt = product.alt;
   detailTitleEl.textContent = product.name;
   detailPriceEl.textContent = product.price;
-  detailDescriptionEl.textContent = product.meta;
+  if (hasVisibleDescription(product.meta)) {
+    detailDescriptionEl.textContent = getTrimmedDescription(product.meta);
+    detailDescriptionEl.removeAttribute("hidden");
+  } else {
+    detailDescriptionEl.textContent = "";
+    detailDescriptionEl.hidden = true;
+  }
   renderProductVariants(product);
   updateQuantity(1);
   renderSimilarProducts(product);
