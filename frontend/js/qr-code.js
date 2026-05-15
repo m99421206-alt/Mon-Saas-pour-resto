@@ -1,6 +1,6 @@
 /**
  * Page « Votre QR Code »
- * - Génère un vrai QR depuis le lien public du menu
+ * - Génère le QR depuis le lien public du menu
  * - Téléchargement PNG du canvas
  * - Copie du lien partageable dans le presse-papiers
  */
@@ -14,7 +14,6 @@
 
   var canvas = document.getElementById("qr-code-canvas");
   var downloadBtn = document.getElementById("qr-code-download");
-  var printBtn = document.getElementById("qr-code-print");
   var copyBtn = document.getElementById("qr-copy-btn");
   var urlInput = document.getElementById("qr-share-url");
   var feedback = document.getElementById("qr-copy-feedback");
@@ -76,21 +75,32 @@
     }
 
     localStorage.setItem(USER_KEY, JSON.stringify(data.user || null));
-    localStorage.setItem(RESTAURANT_KEY, JSON.stringify(data.restaurant || null));
+    localStorage.setItem(
+      RESTAURANT_KEY,
+      JSON.stringify(data.restaurant || null),
+    );
     return data;
   }
 
   function buildPublicMenuUrl(restaurantId) {
     var currentPath = window.location.pathname;
     var menuPath = currentPath.replace(/qr-code\.html$/, "mon-menu.html");
-    return window.location.origin + menuPath + "?id=" + encodeURIComponent(restaurantId);
+    return (
+      window.location.origin +
+      menuPath +
+      "?id=" +
+      encodeURIComponent(restaurantId)
+    );
   }
 
   function updateAccountInfo(user, restaurant) {
-    var restaurantName = restaurant && restaurant.name ? restaurant.name : "Nom du resto";
+    var restaurantName =
+      restaurant && restaurant.name ? restaurant.name : "Nom du resto";
     if (nameEl) nameEl.textContent = restaurantName;
     if (drawerRestaurant) drawerRestaurant.textContent = restaurantName;
-    if (drawerEmail) drawerEmail.textContent = user && user.email ? user.email : "email du resto";
+    if (drawerEmail)
+      drawerEmail.textContent =
+        user && user.email ? user.email : "email du resto";
   }
 
   function drawFallbackQr(ctx, size) {
@@ -135,7 +145,10 @@
     if (!canvas) return;
     try {
       var link = document.createElement("a");
-      var id = currentRestaurant && currentRestaurant.id ? currentRestaurant.id : "menu";
+      var id =
+        currentRestaurant && currentRestaurant.id
+          ? currentRestaurant.id
+          : "menu";
       link.download = "qrcode-africamenu-" + id + ".png";
       link.href = canvas.toDataURL("image/png");
       link.rel = "noopener";
@@ -147,7 +160,7 @@
         "https://api.qrserver.com/v1/create-qr-code/?size=440x440&margin=16&data=" +
           encodeURIComponent(currentShareUrl),
         "_blank",
-        "noopener"
+        "noopener",
       );
     }
   }
@@ -179,7 +192,7 @@
           urlInput.select();
           document.execCommand("copy");
           setCopyFeedback("Lien copié.", true);
-        }
+        },
       );
     } else {
       urlInput.select();
@@ -206,7 +219,10 @@
       }
       renderQrCode(currentShareUrl);
     } catch (error) {
-      setCopyFeedback(error.message || "Impossible de générer le QR code.", false);
+      setCopyFeedback(
+        error.message || "Impossible de générer le QR code.",
+        false,
+      );
       if (storedRestaurant && storedRestaurant.id) {
         currentRestaurant = storedRestaurant;
         currentShareUrl = buildPublicMenuUrl(storedRestaurant.id);
@@ -224,11 +240,6 @@
 
   if (downloadBtn) {
     downloadBtn.addEventListener("click", downloadPng);
-  }
-  if (printBtn) {
-    printBtn.addEventListener("click", function () {
-      window.print();
-    });
   }
   if (copyBtn) {
     copyBtn.addEventListener("click", copyUrl);

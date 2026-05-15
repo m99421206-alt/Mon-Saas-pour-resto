@@ -563,7 +563,7 @@ function getProductVariants(product) {
 function setSelectedVariant(variant) {
   selectedVariant = variant;
   detailPriceEl.textContent = variant ? variant.price : selectedProduct.price;
-  detailImageEl.src = variant && variant.image ? variant.image : selectedProduct.detailImage || selectedProduct.image;
+  detailImageEl.src = selectedProduct.detailImage || selectedProduct.image;
   detailImageEl.alt = variant ? `${selectedProduct.name} - ${variant.name}` : selectedProduct.alt;
 
   document.querySelectorAll(".size-option").forEach(function (button) {

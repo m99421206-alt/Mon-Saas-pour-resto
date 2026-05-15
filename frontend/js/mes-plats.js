@@ -194,9 +194,9 @@
     }
 
     return [
-      { name: "Petit", price: "", image: "" },
-      { name: "Moyen", price: "", image: "" },
-      { name: "Grand", price: "", image: "" },
+      { name: "Petit", price: "" },
+      { name: "Moyen", price: "" },
+      { name: "Grand", price: "" },
     ];
   }
 
@@ -216,15 +216,7 @@
       '" />' +
       "</label>" +
       "</div>" +
-      '<label class="plats-variant__label">Image de cette taille' +
-      '<input class="plats-variant__input" data-variant-field="imageFile" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png" />' +
-      '<img class="plats-image-preview" data-variant-preview alt="Aperçu de cette option" hidden />' +
-      '<input class="plats-variant__input" data-variant-field="image" type="text" placeholder="https://..." value="' +
-      escapeHtml(variant && variant.image ? variant.image : "") +
-      '" hidden />' +
-      "</label>" +
       '<button class="plats-variant__remove" type="button" data-action="remove-variant">Supprimer cette option</button>';
-    setImagePreview(row.querySelector("[data-variant-preview]"), variant && variant.image ? variant.image : "");
     return row;
   }
 
@@ -250,11 +242,9 @@
       .map(function (row) {
         const name = row.querySelector("[data-variant-field='name']").value.trim();
         const price = Number(row.querySelector("[data-variant-field='price']").value);
-        const image = row.querySelector("[data-variant-field='image']").value.trim();
         return {
           name: name,
           price: price,
-          image: image || null,
         };
       })
       .filter(function (variant) {
@@ -269,18 +259,6 @@
       setStatus("Upload de l'image du plat...");
       image = await uploadImage(imageFileInput.files[0]);
       imageInput.value = image || "";
-    }
-
-    const variantRows = Array.from(variantsList.querySelectorAll(".plats-variant"));
-    for (let i = 0; i < variantRows.length; i += 1) {
-      const row = variantRows[i];
-      const fileInput = row.querySelector("[data-variant-field='imageFile']");
-      const hiddenImageInput = row.querySelector("[data-variant-field='image']");
-      if (fileInput && fileInput.files && fileInput.files[0]) {
-        setStatus("Upload de l'image d'une option...");
-        const uploadedUrl = await uploadImage(fileInput.files[0]);
-        hiddenImageInput.value = uploadedUrl || "";
-      }
     }
 
     return image;
@@ -502,20 +480,13 @@
   });
 
   addVariantBtn.addEventListener("click", function () {
-    variantsList.appendChild(createVariantRow({ name: "", price: "", image: "" }));
+    variantsList.appendChild(createVariantRow({ name: "", price: "" }));
   });
 
   variantsList.addEventListener("click", function (event) {
     const removeBtn = event.target.closest("[data-action='remove-variant']");
     if (!removeBtn) return;
     removeBtn.closest(".plats-variant").remove();
-  });
-
-  variantsList.addEventListener("change", function (event) {
-    const fileInput = event.target.closest("[data-variant-field='imageFile']");
-    if (!fileInput) return;
-    const row = fileInput.closest(".plats-variant");
-    previewSelectedFile(fileInput, row.querySelector("[data-variant-preview]"));
   });
 
   list.addEventListener("click", async function (event) {

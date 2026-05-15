@@ -80,13 +80,12 @@ function normalizeVariants(body) {
     var item = body.variants[i] || {};
     var name = typeof item.name === "string" ? item.name.trim() : "";
     var price = Number(item.price);
-    var image = typeof item.image === "string" ? item.image.trim() : null;
 
     if (name && Number.isFinite(price) && price >= 0) {
       variants.push({
         name: name,
         price: Number(price.toFixed(2)),
-        image: image || null,
+        image: null,
         sort_order: variants.length,
       });
     }
