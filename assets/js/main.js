@@ -70,9 +70,15 @@
     });
   }
 
+  function initFooterYear() {
+    const el = document.getElementById("footer-year");
+    if (el) el.textContent = String(new Date().getFullYear());
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     initScrollReveal();
     initInternalAnchors();
     initCtaHooks();
+    initFooterYear();
   });
 })();

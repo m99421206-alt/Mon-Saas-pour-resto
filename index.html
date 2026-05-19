@@ -80,7 +80,7 @@
       </section>
 
       <!-- ========== Cartes fonctionnalités ========== -->
-      <section class="features section" aria-labelledby="features-title">
+      <section class="features section" id="fonctionnalites" aria-labelledby="features-title">
         <div class="container">
           <h2 id="features-title" class="visually-hidden">Fonctionnalités</h2>
           <ul class="feature-grid">
@@ -189,6 +189,7 @@
       <!-- ========== Comment ça marche ========== -->
       <section
         class="steps section section--center"
+        id="comment-ca-marche"
         aria-labelledby="steps-title"
       >
         <div class="container container--narrow">
@@ -265,7 +266,33 @@
 
     <footer class="site-footer">
       <div class="container">
-        <p class="site-footer__brand">A</p>
+        <div class="site-footer__inner">
+          <div class="site-footer__brand-block">
+            <a href="#top" class="site-footer__brand-link">
+              <span class="site-footer__logo" aria-hidden="true">
+                <img src="assets/images/icone/logo.png" alt="" width="40" height="40" />
+              </span>
+              <span class="site-footer__brand-name">AfricaMenu</span>
+            </a>
+            <p class="site-footer__tagline">
+              Menu digital, QR code et commandes WhatsApp — simple et rapide pour votre
+              restaurant.
+            </p>
+          </div>
+          <nav class="site-footer__nav" aria-label="Liens du pied de page">
+            <a href="#top" class="site-footer__link">Accueil</a>
+            <a href="#fonctionnalites" class="site-footer__link">Fonctionnalités</a>
+            <a href="#comment-ca-marche" class="site-footer__link">Comment ça marche</a>
+            <a href="#commencer" class="site-footer__link">Commencer</a>
+            <a href="frontend/pages/register.html" class="site-footer__link">Créer un compte</a>
+            <a href="frontend/pages/login.html" class="site-footer__link">Connexion</a>
+          </nav>
+          <div class="site-footer__bottom">
+            <p class="site-footer__copy">
+              © <span id="footer-year">2026</span> AfricaMenu. Tous droits réservés.
+            </p>
+          </div>
+        </div>
       </div>
     </footer>
 

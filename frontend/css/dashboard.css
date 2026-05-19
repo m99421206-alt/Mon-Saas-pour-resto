@@ -1476,13 +1476,6 @@ a.dash-qr-btn {
     transform 0.12s ease;
 }
 
-.qr-code-download--secondary {
-  margin-top: 0.7rem;
-  background: #f2f2f2;
-  color: var(--dash-text);
-  box-shadow: none;
-}
-
 .qr-code-download:hover {
   filter: brightness(1.04);
 }
