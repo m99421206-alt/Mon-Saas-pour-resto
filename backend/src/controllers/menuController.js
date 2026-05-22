@@ -9,18 +9,32 @@ async function getPublicMenu(req, res) {
 
     var pool = getPool();
 
-    var [restaurants] = await pool.query(
-      "SELECT id, name, description, whatsapp, logo_url, banner_url, theme_color, COALESCE(menu_suspended, 0) AS menu_suspended FROM restaurants WHERE id = ? LIMIT 1",
-      [restaurantId],
-    );
-    if (!restaurants.length) {
-      return res.status(404).json({ message: "Restaurant introuvable." });
-    }
-
-    var row = restaurants[0];
-    var ms = row.menu_suspended;
-    if (ms === 1 || ms === true || ms === "1") {
-      return res.status(403).json({ message: "Ce menu est temporairement indisponible." });
+    var row;
+    try {
+      var [restaurants] = await pool.query(
+        "SELECT id, name, description, whatsapp, logo_url, banner_url, theme_color, COALESCE(menu_suspended, 0) AS menu_suspended FROM restaurants WHERE id = ? LIMIT 1",
+        [restaurantId],
+      );
+      if (!restaurants.length) {
+        return res.status(404).json({ message: "Restaurant introuvable." });
+      }
+      row = restaurants[0];
+      var ms = row.menu_suspended;
+      if (ms === 1 || ms === true || ms === "1") {
+        return res.status(403).json({ message: "Ce menu est temporairement indisponible." });
+      }
+    } catch (pickErr) {
+      if (!(pickErr && pickErr.code === "ER_BAD_FIELD_ERROR")) {
+        throw pickErr;
+      }
+      var [legacyRows] = await pool.query(
+        "SELECT id, name, description, whatsapp, logo_url, banner_url, theme_color FROM restaurants WHERE id = ? LIMIT 1",
+        [restaurantId],
+      );
+      if (!legacyRows.length) {
+        return res.status(404).json({ message: "Restaurant introuvable." });
+      }
+      row = legacyRows[0];
     }
 
     var [categories] = await pool.query(
