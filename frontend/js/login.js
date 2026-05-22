@@ -72,7 +72,28 @@
       }
 
       saveSession(data);
-      window.location.href = "dashboard.html";
+
+      var params = new URLSearchParams(window.location.search);
+      var next = params.get("next");
+
+      function isSafeNextPage(url) {
+        if (!url || typeof url !== "string") {
+          return false;
+        }
+        if (url.indexOf("/") !== -1 || url.indexOf("\\") !== -1 || url.indexOf("..") !== -1) {
+          return false;
+        }
+        if (/^https?:/i.test(url) || url.indexOf("//") === 0) {
+          return false;
+        }
+        return /^[a-zA-Z0-9_-]+\.html$/.test(url);
+      }
+
+      if (isSafeNextPage(next)) {
+        window.location.href = next;
+      } else {
+        window.location.href = "dashboard.html";
+      }
     } catch (error) {
       showError("Impossible de contacter le serveur. Vérifiez que l'API est lancée.");
     } finally {

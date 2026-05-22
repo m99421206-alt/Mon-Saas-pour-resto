@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
 const requireAuth = require("../middlewares/authMiddleware");
+const { appendAudit, AUDIT_ACTIONS, getRestaurantIdForUserAudit } = require("../utils/auditLog");
 
 const router = express.Router();
 const uploadsDir = path.join(__dirname, "../../uploads");
@@ -46,20 +47,32 @@ const upload = multer({
 router.use(requireAuth);
 
 router.post("/", function (req, res) {
-  upload.single("image")(req, res, function (err) {
-    if (err) {
-      const message =
-        err.code === "LIMIT_FILE_SIZE" ? "L'image ne doit pas dépasser 2MB." : err.message || "Upload impossible.";
-      return res.status(400).json({ message: message });
-    }
+  upload.single("image")(req, res, async function (err) {
+    try {
+      if (err) {
+        const message =
+          err.code === "LIMIT_FILE_SIZE" ? "L'image ne doit pas dépasser 2MB." : err.message || "Upload impossible.";
+        return res.status(400).json({ message: message });
+      }
 
-    if (!req.file) {
-      return res.status(400).json({ message: "Aucune image reçue." });
-    }
+      if (!req.file) {
+        return res.status(400).json({ message: "Aucune image reçue." });
+      }
 
-    return res.status(201).json({
-      url: "/uploads/" + req.file.filename,
-    });
+      var rid = await getRestaurantIdForUserAudit(req.user.id);
+      await appendAudit({
+        userId: req.user.id,
+        restaurantId: rid,
+        action: AUDIT_ACTIONS.UPLOAD_IMAGE,
+        detail: "Upload image (« " + req.file.filename + " »)",
+      });
+
+      return res.status(201).json({
+        url: "/uploads/" + req.file.filename,
+      });
+    } catch (innerErr) {
+      return res.status(500).json({ message: "Erreur lors de l’enregistrement de l’image." });
+    }
   });
 });
 

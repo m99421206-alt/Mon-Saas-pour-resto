@@ -1,4 +1,5 @@
 const { getPool } = require("../config/database");
+const { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
 
 async function getRestaurantIdForUser(userId) {
   var pool = getPool();
@@ -53,6 +54,13 @@ async function createCategory(req, res) {
       [restaurantId, name]
     );
 
+    await appendAudit({
+      userId: req.user.id,
+      restaurantId: restaurantId,
+      action: AUDIT_ACTIONS.CATEGORY_CREATE,
+      detail: "Ajout catégorie « " + String(name).slice(0, 160) + " »",
+    });
+
     return res.status(201).json({
       category: {
         id: result.insertId,
@@ -92,6 +100,13 @@ async function updateCategory(req, res) {
       return res.status(404).json({ message: "Catégorie introuvable." });
     }
 
+    await appendAudit({
+      userId: req.user.id,
+      restaurantId: restaurantId,
+      action: AUDIT_ACTIONS.CATEGORY_UPDATE,
+      detail: "Modification catégorie « " + String(name).slice(0, 160) + " »",
+    });
+
     return res.json({
       category: {
         id: categoryId,
@@ -117,6 +132,15 @@ async function deleteCategory(req, res) {
     }
 
     var pool = getPool();
+    var [cats] = await pool.query("SELECT name FROM categories WHERE id = ? AND restaurant_id = ? LIMIT 1", [
+      categoryId,
+      restaurantId,
+    ]);
+    if (!cats.length) {
+      return res.status(404).json({ message: "Catégorie introuvable." });
+    }
+    var catName = cats[0].name ? String(cats[0].name) : "";
+
     var [result] = await pool.query("DELETE FROM categories WHERE id = ? AND restaurant_id = ?", [
       categoryId,
       restaurantId,
@@ -125,6 +149,15 @@ async function deleteCategory(req, res) {
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Catégorie introuvable." });
     }
+
+    await appendAudit({
+      userId: req.user.id,
+      restaurantId: restaurantId,
+      action: AUDIT_ACTIONS.CATEGORY_DELETE,
+      detail: catName
+        ? "Suppression catégorie « " + catName.slice(0, 160) + " »"
+        : "Suppression catégorie",
+    });
 
     return res.status(204).send();
   } catch (err) {

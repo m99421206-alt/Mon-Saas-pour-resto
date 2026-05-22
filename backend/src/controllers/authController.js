@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { getPool } = require("../config/database");
+const { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").toLowerCase());
@@ -64,6 +65,13 @@ async function register(req, res) {
 
     await connection.commit();
 
+    await appendAudit({
+      userId: userId,
+      restaurantId: restaurantResult.insertId,
+      action: AUDIT_ACTIONS.USER_REGISTER,
+      detail: "Inscription nouveau compte (« " + restaurantName + " »)",
+    });
+
     const token = signToken({ userId: userId });
 
     return res.status(201).json({
@@ -96,7 +104,9 @@ async function login(req, res) {
 
   try {
     const pool = getPool();
-    const [rows] = await pool.query("SELECT id, email, password FROM users WHERE email = ? LIMIT 1", [email]);
+    const [rows] = await pool.query("SELECT id, email, password, account_status FROM users WHERE email = ? LIMIT 1", [
+      email,
+    ]);
 
     if (!rows.length) {
       return res.status(401).json({ message: "Email ou mot de passe incorrect." });
@@ -108,10 +118,25 @@ async function login(req, res) {
       return res.status(401).json({ message: "Email ou mot de passe incorrect." });
     }
 
+    var accountStatus =
+      user.account_status != null && String(user.account_status).trim() !== ""
+        ? String(user.account_status).trim().toLowerCase()
+        : "active";
+    if (accountStatus === "suspended") {
+      return res.status(403).json({ message: "Ce compte a été suspendu. Contactez l'administrateur." });
+    }
+
     const [restaurants] = await pool.query(
       "SELECT id, name FROM restaurants WHERE user_id = ? ORDER BY id ASC LIMIT 1",
       [user.id]
     );
+
+    await appendAudit({
+      userId: user.id,
+      restaurantId: restaurants[0] ? restaurants[0].id : null,
+      action: AUDIT_ACTIONS.USER_LOGIN,
+      detail: "Connexion utilisateur",
+    });
 
     const token = signToken({ userId: user.id });
 

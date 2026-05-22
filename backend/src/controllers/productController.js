@@ -1,5 +1,6 @@
 const { getPool } = require("../config/database");
 const { removeUnusedUploads } = require("../utils/uploadCleanup");
+const { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
 
 async function getRestaurantIdForUser(userId) {
   var pool = getPool();
@@ -225,6 +226,13 @@ async function createProduct(req, res) {
       connection.release();
     }
 
+    await appendAudit({
+      userId: req.user.id,
+      restaurantId: restaurantId,
+      action: AUDIT_ACTIONS.PRODUCT_CREATE,
+      detail: "Ajout produit « " + String(name).slice(0, 160) + " »",
+    });
+
     return res.status(201).json({
       product: {
         id: productId,
@@ -334,6 +342,13 @@ async function updateProduct(req, res) {
 
     await removeUnusedUploads(oldImages);
 
+    await appendAudit({
+      userId: req.user.id,
+      restaurantId: restaurantId,
+      action: AUDIT_ACTIONS.PRODUCT_UPDATE,
+      detail: "Modification produit « " + String(name).slice(0, 160) + " »",
+    });
+
     return res.json({
       product: {
         id: productId,
@@ -366,10 +381,10 @@ async function deleteProduct(req, res) {
     }
 
     var pool = getPool();
-    var [existingProducts] = await pool.query("SELECT image FROM products WHERE id = ? AND restaurant_id = ? LIMIT 1", [
-      productId,
-      restaurantId,
-    ]);
+    var [existingProducts] = await pool.query(
+      "SELECT image, name FROM products WHERE id = ? AND restaurant_id = ? LIMIT 1",
+      [productId, restaurantId]
+    );
     var [existingVariants] = await pool.query("SELECT image FROM product_variants WHERE product_id = ?", [productId]);
     var oldImages = [];
 
@@ -391,7 +406,18 @@ async function deleteProduct(req, res) {
       return res.status(404).json({ message: "Produit introuvable." });
     }
 
+    var pname = existingProducts.length && existingProducts[0].name ? String(existingProducts[0].name) : "";
+
     await removeUnusedUploads(oldImages);
+
+    await appendAudit({
+      userId: req.user.id,
+      restaurantId: restaurantId,
+      action: AUDIT_ACTIONS.PRODUCT_DELETE,
+      detail: pname
+        ? "Suppression produit « " + pname.slice(0, 160) + " »"
+        : "Suppression produit",
+    });
 
     return res.status(204).send();
   } catch (err) {

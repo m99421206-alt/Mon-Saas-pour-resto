@@ -8,7 +8,9 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "db:schema": "node scripts/init-db.js",
-    "db:settings": "node scripts/migrate-restaurant-settings.js"
+    "db:settings": "node scripts/migrate-restaurant-settings.js",
+    "db:admin-timestamps": "node scripts/migrate-admin-timestamps.js",
+    "db:audit-log": "node scripts/migrate-audit-log.js"
   },
   "engines": {
     "node": ">=18"

@@ -13,6 +13,7 @@ const userRoutes = require("./routes/userRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const productRoutes = require("./routes/productRoutes");
 const menuRoutes = require("./routes/menuRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const restaurantRoutes = require("./routes/restaurantRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 
@@ -117,6 +118,8 @@ app.use("/api/restaurant", restaurantRoutes);
 app.use("/upload", uploadRoutes);
 /* Menu public client (étape 9) — sans JWT */
 app.use("/menu", menuRoutes);
+/* Administration plateforme — JWT + contrôle ADMIN_EMAILS (optionnel) */
+app.use("/api/admin", adminRoutes);
 
 app.listen(PORT, HOST, function () {
   console.log("AfricaMenu API — http://localhost:" + PORT);
