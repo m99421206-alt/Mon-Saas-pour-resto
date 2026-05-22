@@ -1,0 +1,738 @@
+/**
+ * Admin — page Utilisateurs (liste, recherche, filtre statut, pagination, actions).
+ */
+(function () {
+  "use strict";
+
+  var TOKEN_KEY = "africamenu_token";
+  var USER_KEY = "africamenu_user";
+  var RESTAURANT_KEY = "africamenu_restaurant";
+  var LOGIN_NEXT = "admin-users.html";
+  var PAGE_SIZE = 12;
+  var DEBOUNCE_MS = 340;
+
+  var state = {
+    page: 1,
+    q: "",
+    status: "all",
+    loading: false,
+    totalPages: 0,
+    total: 0,
+  };
+
+  function escapeHtml(value) {
+    return String(value == null ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function getApiBase() {
+    var cfg = window.AFRICAMENU_CONFIG || {};
+    return String(cfg.API_URL || "").replace(/\/$/, "");
+  }
+
+  function redirectToLogin() {
+    window.location.replace("login.html?next=" + encodeURIComponent(LOGIN_NEXT));
+  }
+
+  function clearSessionAndRedirectLogin() {
+    try {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
+      localStorage.removeItem(RESTAURANT_KEY);
+    } catch (e) {}
+    redirectToLogin();
+  }
+
+  function requireAuthToken() {
+    try {
+      if (!localStorage.getItem(TOKEN_KEY)) {
+        redirectToLogin();
+        return false;
+      }
+    } catch (e) {
+      redirectToLogin();
+      return false;
+    }
+    return true;
+  }
+
+  function getSelfUserId() {
+    try {
+      var raw = localStorage.getItem(USER_KEY);
+      if (!raw) {
+        return null;
+      }
+      var parsed = JSON.parse(raw);
+      var id = parsed && parsed.id;
+      var n = Number(id);
+      return Number.isInteger(n) && n > 0 ? n : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function hideAccessBanner() {
+    var el = document.getElementById("adm-access-banner");
+    if (!el) {
+      return;
+    }
+    el.textContent = "";
+    el.hidden = true;
+    el.classList.remove("adm-banner--warning", "adm-banner--error");
+  }
+
+  function showAccessBanner(message, variant) {
+    var el = document.getElementById("adm-access-banner");
+    if (!el) {
+      return;
+    }
+    el.textContent = message || "";
+    el.hidden = false;
+    el.classList.remove("adm-banner--warning", "adm-banner--error");
+    el.classList.add(variant === "error" ? "adm-banner--error" : "adm-banner--warning");
+    try {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    } catch (e) {}
+  }
+
+  function formatDateShort(iso) {
+    if (!iso) {
+      return "—";
+    }
+    try {
+      return new Date(iso).toLocaleString("fr-FR", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      });
+    } catch (e) {
+      return "—";
+    }
+  }
+
+  function statusBadge(status) {
+    var st = String(status || "").toLowerCase().trim();
+    var isSuspended = st === "suspended";
+    var label = isSuspended ? "Suspendu" : "Actif";
+    var cls = isSuspended ? "users-badge users-badge--suspended" : "users-badge users-badge--active";
+    return '<span class="' + cls + '" role="status">' + escapeHtml(label) + "</span>";
+  }
+
+  async function fetchJson(method, path, token, opts) {
+    opts = opts || {};
+    var base = getApiBase();
+    var headers = {
+      Accept: "application/json",
+      Authorization: "Bearer " + token,
+    };
+    if (opts.body && !opts.skipJsonHeaders) {
+      headers["Content-Type"] = "application/json";
+    }
+    try {
+      var response = await fetch(base + path, {
+        method: method,
+        headers: headers,
+        body: opts.body ? JSON.stringify(opts.body) : undefined,
+      });
+
+      var data = null;
+      var text = "";
+      try {
+        text = await response.text();
+        data = text ? JSON.parse(text) : null;
+      } catch (e) {
+        data = null;
+      }
+
+      return { ok: response.ok, status: response.status, data: data };
+    } catch (err) {
+      return { ok: false, status: 0, data: null };
+    }
+  }
+
+  function renderPagination() {
+    var nav = document.getElementById("users-pagination");
+    if (!nav) {
+      return;
+    }
+
+    nav.innerHTML = "";
+
+    var totalPages = state.totalPages;
+    var page = state.page;
+
+    if (totalPages <= 1) {
+      nav.setAttribute("hidden", "");
+      return;
+    }
+    nav.removeAttribute("hidden");
+
+    var info = document.createElement("p");
+    info.className = "users-pagination__info";
+    info.textContent = "Page " + page + " sur " + totalPages + " — " + state.total + " utilisateur(s)";
+    nav.appendChild(info);
+
+    var prev = document.createElement("button");
+    prev.type = "button";
+    prev.textContent = "Préc.";
+    prev.disabled = page <= 1;
+    prev.addEventListener("click", function () {
+      if (state.page > 1) {
+        state.page -= 1;
+        loadUsers();
+      }
+    });
+    nav.appendChild(prev);
+
+    var windowSize = 5;
+    var start = Math.max(1, page - Math.floor(windowSize / 2));
+    var end = Math.min(totalPages, start + windowSize - 1);
+    if (end - start + 1 < windowSize) {
+      start = Math.max(1, end - windowSize + 1);
+    }
+
+    for (var i = start; i <= end; i++) {
+      (function (p) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.textContent = String(p);
+        if (p === page) {
+          b.classList.add("is-current");
+          b.setAttribute("aria-current", "page");
+        }
+        b.addEventListener("click", function () {
+          state.page = p;
+          loadUsers();
+        });
+        nav.appendChild(b);
+      })(i);
+    }
+
+    var next = document.createElement("button");
+    next.type = "button";
+    next.textContent = "Suiv.";
+    next.disabled = page >= totalPages;
+    next.addEventListener("click", function () {
+      if (state.page < totalPages) {
+        state.page += 1;
+        loadUsers();
+      }
+    });
+    nav.appendChild(next);
+  }
+
+  function buildActionButtons(row) {
+    var selfId = getSelfUserId();
+    var isSelf = selfId != null && Number(row.id) === selfId;
+
+    var det =
+      '<button type="button" class="adm-btn" data-act="detail" data-id="' +
+      encodeURIComponent(row.id) +
+      '">Voir détails</button>';
+
+    var suspendDisabled = isSelf || row.status === "suspended" ? " disabled" : "";
+    var activateDisabled = isSelf || row.status !== "suspended" ? " disabled" : "";
+    var delDisabled = isSelf ? " disabled" : "";
+
+    var suspendBtn =
+      '<button type="button" class="adm-btn" data-act="suspend" data-id="' +
+      encodeURIComponent(row.id) +
+      '"' +
+      suspendDisabled +
+      ' title="' +
+      (isSelf ? "Impossible sur votre compte" : "") +
+      '">Suspendre</button>';
+
+    var activateBtn =
+      '<button type="button" class="adm-btn adm-btn--primary" data-act="activate" data-id="' +
+      encodeURIComponent(row.id) +
+      '"' +
+      activateDisabled +
+      ">" +
+      "Activer</button>";
+
+    var deleteBtn =
+      '<button type="button" class="adm-btn adm-btn--danger" data-act="delete" data-id="' +
+      encodeURIComponent(row.id) +
+      '"' +
+      delDisabled +
+      ">" +
+      "Supprimer</button>";
+
+    return det + suspendBtn + activateBtn + deleteBtn;
+  }
+
+  function tbodyPlaceholder(msg) {
+    return (
+      '<tr class="adm-table__placeholder">' + '<td colspan="4">' + escapeHtml(msg) + "</td>" + "</tr>"
+    );
+  }
+
+  async function loadUsers() {
+    if (state.loading) {
+      return;
+    }
+
+    state.loading = true;
+    hideAccessBanner();
+
+    var tbody = document.getElementById("users-body");
+    var cardsUl = document.getElementById("users-cards-list");
+    var token = localStorage.getItem(TOKEN_KEY);
+    var base = getApiBase();
+
+    if (!base) {
+      showAccessBanner("Impossible de joindre l’API : vérifiez frontend/js/config.js (API_URL).", "error");
+      if (tbody) {
+        tbody.innerHTML = tbodyPlaceholder("Erreur de configuration.");
+      }
+      state.loading = false;
+      return;
+    }
+
+    if (tbody) {
+      tbody.innerHTML = tbodyPlaceholder("Chargement…");
+    }
+
+    var qs =
+      "?page=" +
+      encodeURIComponent(String(state.page)) +
+      "&pageSize=" +
+      encodeURIComponent(String(PAGE_SIZE)) +
+      "&status=" +
+      encodeURIComponent(state.status) +
+      (state.q ? "&q=" + encodeURIComponent(state.q) : "");
+
+    var res = await fetchJson("GET", "/api/admin/users" + qs, token);
+
+    state.loading = false;
+
+    if (res.status === 401) {
+      clearSessionAndRedirectLogin();
+      return;
+    }
+
+    if (res.status === 403) {
+      showAccessBanner(
+        (res.data && res.data.message) ||
+          "Accès administration réservé. Ajoutez votre email dans ADMIN_EMAILS sur le serveur.",
+        "warning",
+      );
+      if (tbody) {
+        tbody.innerHTML = tbodyPlaceholder("Accès refusé.");
+      }
+      if (cardsUl) {
+        cardsUl.innerHTML = "";
+      }
+      var countEl = document.getElementById("users-count-label");
+      if (countEl) {
+        countEl.textContent = "";
+      }
+      renderPagination();
+      return;
+    }
+
+    if (!res.ok || !res.data || !Array.isArray(res.data.users)) {
+      showAccessBanner("Impossible de charger la liste des utilisateurs.", "error");
+      if (tbody) {
+        tbody.innerHTML = tbodyPlaceholder("Erreur lors du chargement.");
+      }
+      state.totalPages = 0;
+      state.total = 0;
+      renderPagination();
+      return;
+    }
+
+    var users = res.data.users;
+    state.totalPages = Number(res.data.totalPages) || 0;
+    state.total = Number(res.data.total) || 0;
+
+    if (state.totalPages > 0 && state.page > state.totalPages) {
+      state.page = state.totalPages;
+      state.loading = false;
+      return loadUsers();
+    }
+
+    var label = document.getElementById("users-count-label");
+    if (label) {
+      label.textContent =
+        state.total + " utilisateur(s)" + (state.q ? ' pour « ' + state.q.trim() + " »" : "");
+    }
+
+    if (!users.length) {
+      if (tbody) {
+        tbody.innerHTML = tbodyPlaceholder("Aucun utilisateur ne correspond aux critères.");
+      }
+      if (cardsUl) {
+        cardsUl.innerHTML = "";
+      }
+      renderPagination();
+      return;
+    }
+
+    if (tbody) {
+      tbody.innerHTML = "";
+      users.forEach(function (row) {
+        var tr = document.createElement("tr");
+        tr.innerHTML =
+          "<td>" +
+          '<div class="users-cell-name">' +
+          escapeHtml(row.nom) +
+          '<span class="users-cell-email">' +
+          escapeHtml(row.email || "") +
+          "</span>" +
+          "</div>" +
+          "</td>" +
+          "<td>" +
+          statusBadge(row.status) +
+          "</td>" +
+          "<td>" +
+          escapeHtml(formatDateShort(row.created_at)) +
+          "</td>" +
+          '<td><div class="users-actions">' +
+          buildActionButtons(row) +
+          "</div></td>";
+        tbody.appendChild(tr);
+      });
+    }
+
+    if (cardsUl) {
+      cardsUl.innerHTML = "";
+      users.forEach(function (row) {
+        var li = document.createElement("li");
+        li.className = "users-card";
+        li.innerHTML =
+          '<div class="users-card__head">' +
+          "<div>" +
+          '<p class="users-card__name">' +
+          escapeHtml(row.nom) +
+          "</p>" +
+          '<p class="users-card__date">' +
+          escapeHtml(formatDateShort(row.created_at)) +
+          "</p>" +
+          "</div>" +
+          statusBadge(row.status) +
+          "</div>" +
+          '<span class="users-cell-email">' +
+          escapeHtml(row.email || "") +
+          "</span>" +
+          '<div class="users-actions">' +
+          buildActionButtons(row) +
+          "</div>";
+        cardsUl.appendChild(li);
+      });
+    }
+
+    renderPagination();
+  }
+
+  function initShell() {
+    var body = document.body;
+    var sidebarBtn = document.getElementById("adm-open-sidebar");
+    var sidebar = document.getElementById("adm-sidebar-panel");
+    var overlay = document.getElementById("adm-overlay");
+
+    function setOpen(open) {
+      body.classList.toggle("adm-sidebar-open", open);
+      if (sidebarBtn) {
+        sidebarBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      }
+      if (overlay) {
+        overlay.classList.toggle("is-visible", open);
+        overlay.setAttribute("aria-hidden", open ? "false" : "true");
+      }
+    }
+
+    function closeSidebar() {
+      setOpen(false);
+    }
+
+    if (sidebarBtn && sidebar) {
+      sidebarBtn.addEventListener("click", function () {
+        setOpen(!body.classList.contains("adm-sidebar-open"));
+      });
+    }
+
+    if (overlay) {
+      overlay.addEventListener("click", closeSidebar);
+    }
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        closeSidebar();
+      }
+    });
+
+    window.addEventListener(
+      "resize",
+      function () {
+        if (window.matchMedia("(min-width: 901px)").matches) {
+          closeSidebar();
+        }
+      },
+      { passive: true },
+    );
+  }
+
+  var debounceTimer = null;
+
+  function scheduleLoad() {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+    debounceTimer = setTimeout(function () {
+      debounceTimer = null;
+      state.page = 1;
+      loadUsers();
+    }, DEBOUNCE_MS);
+  }
+
+  function attachToolbar() {
+    var qInput = document.getElementById("users-q");
+    var sel = document.getElementById("users-status-filter");
+
+    if (qInput) {
+      qInput.addEventListener("input", function () {
+        state.q = String(qInput.value || "").trim().slice(0, 160);
+        scheduleLoad();
+      });
+      qInput.addEventListener("search", function () {
+        state.q = String(qInput.value || "").trim().slice(0, 160);
+        state.page = 1;
+        loadUsers();
+      });
+    }
+
+    if (sel) {
+      sel.addEventListener("change", function () {
+        state.status = String(sel.value || "all").toLowerCase();
+        state.page = 1;
+        loadUsers();
+      });
+    }
+
+    var usersPanel = document.getElementById("adm-users-panel");
+    if (!usersPanel) {
+      usersPanel = document.getElementById("admin-main");
+    }
+    if (!usersPanel) {
+      usersPanel = document.body;
+    }
+    usersPanel.addEventListener("click", function (e) {
+      var btn = e.target.closest("button[data-act]");
+      if (!btn || btn.disabled || !usersPanel.contains(btn)) {
+        return;
+      }
+      var tbody = document.getElementById("users-body");
+      var cards = document.getElementById("users-cards-list");
+      if (!tbody || !cards) {
+        return;
+      }
+      if (!tbody.contains(btn) && !cards.contains(btn)) {
+        return;
+      }
+      var id = btn.getAttribute("data-id");
+      var act = btn.getAttribute("data-act");
+      if (!id || !act) {
+        return;
+      }
+      e.preventDefault();
+      if (act === "detail") {
+        openUserDetail(id);
+      } else if (act === "suspend") {
+        patchUserStatus(id, "suspended");
+      } else if (act === "activate") {
+        patchUserStatus(id, "active");
+      } else if (act === "delete") {
+        deleteUser(id);
+      }
+    });
+  }
+
+  function setModalOpen(open) {
+    var modal = document.getElementById("adm-user-detail-modal");
+    if (!modal) {
+      return;
+    }
+    modal.setAttribute("aria-hidden", open ? "false" : "true");
+    document.body.classList.toggle("adm-overlay-open", open);
+  }
+
+  function bindModalClose() {
+    var modal = document.getElementById("adm-user-detail-modal");
+    if (!modal) {
+      return;
+    }
+    modal.querySelectorAll("[data-close-modal]").forEach(function (el) {
+      el.addEventListener("click", function () {
+        setModalOpen(false);
+      });
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && modal.getAttribute("aria-hidden") === "false") {
+        setModalOpen(false);
+      }
+    });
+  }
+
+  async function openUserDetail(idStr) {
+    var token = localStorage.getItem(TOKEN_KEY);
+    var titleEl = document.getElementById("adm-user-detail-title");
+    var emailEl = document.getElementById("adm-user-detail-email");
+    var statusEl = document.getElementById("adm-user-detail-status");
+    var createdEl = document.getElementById("adm-user-detail-created");
+    var idEl = document.getElementById("adm-user-detail-id");
+    var listEl = document.getElementById("adm-user-detail-restaurants");
+    var emptyEl = document.getElementById("adm-user-detail-restaurants-empty");
+
+    setModalOpen(true);
+    if (titleEl) {
+      titleEl.textContent = "Chargement…";
+    }
+    if (emailEl) {
+      emailEl.textContent = "";
+    }
+
+    var res = await fetchJson("GET", "/api/admin/users/" + encodeURIComponent(idStr), token);
+
+    if (res.status === 401) {
+      clearSessionAndRedirectLogin();
+      return;
+    }
+
+    if (res.status === 403) {
+      setModalOpen(false);
+      showAccessBanner((res.data && res.data.message) || "Accès refusé.", "warning");
+      return;
+    }
+
+    if (!res.ok || !res.data || !res.data.user) {
+      setModalOpen(false);
+      showAccessBanner("Impossible de charger le détail de l’utilisateur.", "error");
+      return;
+    }
+
+    var u = res.data.user;
+    var firstResto =
+      Array.isArray(res.data.restaurants) && res.data.restaurants.length
+        ? String(res.data.restaurants[0].name || "").trim()
+        : "";
+
+    if (titleEl) {
+      titleEl.textContent = firstResto ? firstResto : "Utilisateur";
+    }
+    if (emailEl) {
+      emailEl.textContent = u.email || "—";
+    }
+    if (statusEl) {
+      statusEl.innerHTML = statusBadge(u.status);
+    }
+    if (createdEl) {
+      createdEl.textContent = formatDateShort(u.created_at);
+    }
+    if (idEl) {
+      idEl.textContent = String(u.id);
+    }
+
+    if (listEl) {
+      listEl.innerHTML = "";
+    }
+    var restos = Array.isArray(res.data.restaurants) ? res.data.restaurants : [];
+    if (emptyEl) {
+      emptyEl.hidden = restos.length > 0;
+    }
+    restos.forEach(function (r) {
+      var li = document.createElement("li");
+      var name = escapeHtml(r.name || "—");
+      var wa = r.whatsapp ? " — WhatsApp : " + escapeHtml(String(r.whatsapp)) : "";
+      li.innerHTML = name + wa;
+      if (listEl) {
+        listEl.appendChild(li);
+      }
+    });
+  }
+
+  async function patchUserStatus(idStr, status) {
+    var token = localStorage.getItem(TOKEN_KEY);
+    var res = await fetchJson("PATCH", "/api/admin/users/" + encodeURIComponent(idStr) + "/status", token, {
+      body: { status: status },
+    });
+
+    if (res.status === 401) {
+      clearSessionAndRedirectLogin();
+      return;
+    }
+
+    if (res.status === 403) {
+      showAccessBanner((res.data && res.data.message) || "Action refusée.", "warning");
+      return;
+    }
+
+    if (!res.ok) {
+      var msg = res.data && res.data.message ? res.data.message : "Action impossible.";
+      showAccessBanner(msg, "error");
+      return;
+    }
+
+    hideAccessBanner();
+    await loadUsers();
+  }
+
+  async function deleteUser(idStr) {
+    if (!confirm("Supprimer définitivement cet utilisateur et ses données associées ?")) {
+      return;
+    }
+    var token = localStorage.getItem(TOKEN_KEY);
+    var res = await fetchJson("DELETE", "/api/admin/users/" + encodeURIComponent(idStr), token, {
+      skipJsonHeaders: true,
+    });
+
+    if (res.status === 401) {
+      clearSessionAndRedirectLogin();
+      return;
+    }
+
+    if (res.status === 403) {
+      showAccessBanner((res.data && res.data.message) || "Action refusée.", "warning");
+      return;
+    }
+
+    if (!res.ok) {
+      var msg =
+        res.data && typeof res.data.message === "string" ? res.data.message : "Suppression impossible.";
+      showAccessBanner(msg, "error");
+      return;
+    }
+
+    hideAccessBanner();
+    await loadUsers();
+  }
+
+  function init() {
+    if (!requireAuthToken()) {
+      return;
+    }
+    initShell();
+    bindModalClose();
+    attachToolbar();
+
+    var qInput = document.getElementById("users-q");
+    if (qInput) {
+      state.q = String(qInput.value || "").trim();
+    }
+    var sel = document.getElementById("users-status-filter");
+    if (sel) {
+      state.status = String(sel.value || "all").toLowerCase();
+    }
+    loadUsers();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();

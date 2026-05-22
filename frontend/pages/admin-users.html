@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta
+      name="description"
+      content="Administration AfricaMenu — gestion des comptes utilisateurs."
+    />
+    <title>Utilisateurs — Admin AfricaMenu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/admin-dashboard.css" />
+    <link rel="stylesheet" href="../css/admin-users.css" />
+  </head>
+  <body class="adm-app">
+    <a class="adm-skip-link" href="#admin-main">Aller au contenu principal</a>
+
+    <aside class="adm-sidebar" id="adm-sidebar-panel" aria-label="Navigation administration plateforme">
+      <div class="adm-sidebar__inner">
+        <header class="adm-sidebar__head">
+          <a href="../../index.html" class="adm-sidebar__brand">
+            <span class="adm-sidebar__logo" aria-hidden="true">
+              <img src="../../assets/images/icone/restaurant .png" alt="" width="36" height="36" />
+            </span>
+            <span class="adm-sidebar__brand-text">AfricaMenu <span class="adm-sidebar__badge">Admin</span></span>
+          </a>
+        </header>
+
+        <nav class="adm-sidebar__nav" aria-label="Sections admin">
+          <ul class="adm-sidebar__list">
+            <li>
+              <a href="admin-dashboard.html" class="adm-sidebar__link"> Tableau de bord </a>
+            </li>
+            <li>
+              <a href="admin-users.html" class="adm-sidebar__link is-active" aria-current="page"> Utilisateurs </a>
+            </li>
+            <li>
+              <a href="#" class="adm-sidebar__link">Restaurants</a>
+            </li>
+            <li>
+              <a href="#" class="adm-sidebar__link">Abonnements</a>
+            </li>
+            <li>
+              <a href="#" class="adm-sidebar__link">Paramètres</a>
+            </li>
+          </ul>
+        </nav>
+
+        <footer class="adm-sidebar__foot">
+          <a href="login.html" class="adm-sidebar__link adm-sidebar__link--muted">Quitter l’admin</a>
+        </footer>
+      </div>
+    </aside>
+
+    <div class="adm-overlay" id="adm-overlay" aria-hidden="true"></div>
+
+    <div class="adm-layout">
+      <header class="adm-header">
+        <div class="adm-header__inner">
+          <button
+            type="button"
+            class="adm-header__menu-btn"
+            id="adm-open-sidebar"
+            aria-label="Ouvrir le menu de navigation"
+            aria-controls="adm-sidebar-panel"
+            aria-expanded="false"
+          >
+            <span class="adm-header__menu-icon" aria-hidden="true"></span>
+          </button>
+
+          <div class="adm-header__spacer" aria-hidden="true"></div>
+
+          <div class="adm-header__actions">
+            <button type="button" class="adm-header__icon-btn" id="adm-notifications" aria-label="Notifications">
+              <span class="adm-header__notif-dot" aria-hidden="true"></span>
+            </button>
+
+            <div class="adm-profile">
+              <button
+                type="button"
+                class="adm-profile__trigger"
+                id="adm-profile-trigger"
+                aria-expanded="false"
+                aria-haspopup="menu"
+              >
+                <span class="adm-profile__avatar" aria-hidden="true"></span>
+                <span class="adm-profile__meta">
+                  <span class="adm-profile__name">Administrateur</span>
+                  <span class="adm-profile__role">Super admin</span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main id="admin-main" class="adm-main">
+        <div class="adm-main__inner adm-page--users">
+          <header class="adm-page-head">
+            <h1 class="adm-page-title">Utilisateurs</h1>
+            <p class="adm-page-subtitle">
+              Liste des comptes, statut et date d’inscription — recherche, filtres et actions d’administration.
+            </p>
+          </header>
+
+          <div id="adm-access-banner" class="adm-banner" role="alert" hidden></div>
+
+          <section id="adm-users-panel" class="adm-section" aria-labelledby="adm-users-toolbar-heading">
+            <h2 id="adm-users-toolbar-heading" class="visually-hidden">Filtres et recherche utilisateurs</h2>
+
+            <div class="adm-toolbar">
+              <div class="adm-toolbar__left">
+                <div class="adm-toolbar__search-wrap">
+                  <svg class="adm-toolbar__icon-search" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      d="M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z"
+                    />
+                    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M16.5 16.5L21 21" />
+                  </svg>
+                  <label class="visually-hidden" for="users-q">Rechercher par nom ou email</label>
+                  <input
+                    id="users-q"
+                    class="adm-toolbar__search"
+                    type="search"
+                    autocomplete="off"
+                    placeholder="Rechercher (nom restaurant, email)…"
+                  />
+                </div>
+                <div class="adm-toolbar__filter">
+                  <label class="visually-hidden" for="users-status-filter">Filtrer par statut</label>
+                  <select id="users-status-filter">
+                    <option value="all">Tous les statuts</option>
+                    <option value="active">Actifs</option>
+                    <option value="suspended">Suspendus</option>
+                  </select>
+                </div>
+              </div>
+              <div class="adm-toolbar__right desktop-only-meta">
+                <span id="users-count-label" class="adm-users-count" aria-live="polite"></span>
+              </div>
+            </div>
+
+            <div class="adm-table-wrap users-table-wrap">
+              <table class="adm-table">
+                <caption class="visually-hidden">
+                  Liste des utilisateurs : nom affiché, statut du compte, date d’inscription et actions
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Nom</th>
+                    <th scope="col">Statut</th>
+                    <th scope="col">Date d’inscription</th>
+                    <th scope="col" class="users-th-actions">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="users-body">
+                  <tr class="adm-table__placeholder">
+                    <td colspan="4">Chargement…</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="users-cards">
+              <ul id="users-cards-list" class="users-cards__list"></ul>
+            </div>
+
+            <nav id="users-pagination" class="users-pagination" aria-label="Pagination des utilisateurs"></nav>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <div id="adm-user-detail-modal" class="adm-detail-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="adm-user-detail-title">
+      <div class="adm-detail-modal__backdrop" data-close-modal tabindex="-1"></div>
+      <div class="adm-detail-modal__panel">
+        <div class="adm-detail-modal__head">
+          <div class="adm-detail-modal__titlewrap">
+            <h3 id="adm-user-detail-title">Détails utilisateur</h3>
+            <p id="adm-user-detail-email" class="adm-detail-modal__email"></p>
+          </div>
+          <button type="button" class="adm-detail-modal__close" aria-label="Fermer la fenêtre" data-close-modal>
+            ×
+          </button>
+        </div>
+        <dl>
+          <div class="adm-detail-kv-row">
+            <dt>Statut</dt>
+            <dd id="adm-user-detail-status"></dd>
+          </div>
+          <div class="adm-detail-kv-row">
+            <dt>Inscription</dt>
+            <dd id="adm-user-detail-created"></dd>
+          </div>
+          <div class="adm-detail-kv-row">
+            <dt>ID</dt>
+            <dd id="adm-user-detail-id"></dd>
+          </div>
+        </dl>
+        <div class="adm-detail-section">
+          <h4>Restaurants</h4>
+          <ul id="adm-user-detail-restaurants" class="adm-detail-list"></ul>
+          <p id="adm-user-detail-restaurants-empty" class="adm-muted-inline" hidden>Aucun restaurant lié.</p>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/admin-users.js"></script>
+  </body>
+</html>

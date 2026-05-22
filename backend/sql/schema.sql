@@ -19,13 +19,19 @@ CREATE TABLE IF NOT EXISTS `restaurants` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` INT UNSIGNED NOT NULL,
   `name` VARCHAR(255) NOT NULL,
+  `city` VARCHAR(120) NULL,
+  `subscription_status` VARCHAR(20) NOT NULL DEFAULT 'trial',
+  `menu_suspended` TINYINT(1) NOT NULL DEFAULT 0,
   `description` TEXT NULL,
   `whatsapp` VARCHAR(32) NULL,
   `logo_url` VARCHAR(512) NULL,
   `banner_url` VARCHAR(512) NULL,
   `theme_color` VARCHAR(16) NOT NULL DEFAULT '#FF7A00',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_restaurants_user_id` (`user_id`),
+  KEY `idx_restaurants_subscription` (`subscription_status`),
+  KEY `idx_restaurants_menu_suspended` (`menu_suspended`),
   CONSTRAINT `fk_restaurants_user`
     FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
     ON DELETE CASCADE ON UPDATE CASCADE

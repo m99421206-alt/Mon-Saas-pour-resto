@@ -17,6 +17,9 @@ var AUDIT_ACTIONS = {
   CATEGORY_CREATE: "category.create",
   CATEGORY_UPDATE: "category.update",
   CATEGORY_DELETE: "category.delete",
+  RESTAURANT_MENU_SUSPEND: "restaurant.menu_suspend",
+  RESTAURANT_MENU_RESUME: "restaurant.menu_resume",
+  RESTAURANT_DELETE: "restaurant.delete",
 };
 
 var LABEL_FALLBACK = {
@@ -32,6 +35,9 @@ var LABEL_FALLBACK = {
   "category.create": "Ajout catégorie",
   "category.update": "Modification catégorie",
   "category.delete": "Suppression catégorie",
+  "restaurant.menu_suspend": "Suspension menu public",
+  "restaurant.menu_resume": "Réactivation menu public",
+  "restaurant.delete": "Suppression restaurant",
 };
 
 function labelForCode(code) {
