@@ -1,0 +1,691 @@
+(function () {
+  "use strict";
+
+  var TOKEN_KEY = "africamenu_token";
+  var USER_KEY = "africamenu_user";
+  var RESTAURANT_KEY = "africamenu_restaurant";
+  var LOGIN_NEXT = "admin-subscriptions.html";
+  var PAGE_SIZE = 12;
+  var DEBOUNCE_MS = 320;
+
+  var state = { page: 1, q: "", status: "all", loading: false, totalPages: 0, total: 0 };
+
+  function escapeHtml(v) {
+    return String(v == null ? "" : v)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function getApiBase() {
+    var c = window.AFRICAMENU_CONFIG || {};
+    return String(c.API_URL || "").replace(/\/$/, "");
+  }
+
+  function formatCFA(n) {
+    return Math.round(Number(n) || 0).toLocaleString("fr-FR") + " CFA";
+  }
+
+  function redirectToLogin() {
+    window.location.replace("login.html?next=" + encodeURIComponent(LOGIN_NEXT));
+  }
+
+  function clearSessionAndRedirectLogin() {
+    try {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
+      localStorage.removeItem(RESTAURANT_KEY);
+    } catch (e) {}
+    redirectToLogin();
+  }
+
+  function requireAuthToken() {
+    try {
+      if (!localStorage.getItem(TOKEN_KEY)) {
+        redirectToLogin();
+        return false;
+      }
+    } catch (e) {
+      redirectToLogin();
+      return false;
+    }
+    return true;
+  }
+
+  function hideAccessBanner() {
+    var el = document.getElementById("adm-access-banner");
+    if (!el) return;
+    el.textContent = "";
+    el.hidden = true;
+    el.classList.remove("adm-banner--warning", "adm-banner--error");
+  }
+
+  function showAccessBanner(msg, variant) {
+    var el = document.getElementById("adm-access-banner");
+    if (!el) return;
+    el.textContent = msg || "";
+    el.hidden = false;
+    el.classList.remove("adm-banner--warning", "adm-banner--error");
+    el.classList.add(variant === "error" ? "adm-banner--error" : "adm-banner--warning");
+    try {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    } catch (e) {}
+  }
+
+  function formatDate(iso) {
+    if (!iso) return "—";
+    try {
+      return new Date(iso).toLocaleString("fr-FR", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      });
+    } catch (e) {
+      return "—";
+    }
+  }
+
+  function labelStatus(s) {
+    var z = String(s || "").toLowerCase();
+    if (z === "active") return "Actif";
+    if (z === "expired") return "Expiré";
+    if (z === "suspended") return "Suspendu";
+    return "Essai";
+  }
+
+  function statusBadge(st) {
+    var z = String(st || "").toLowerCase().trim();
+    var cls = "sub-badge sub-badge--trial";
+    if (z === "active") cls = "sub-badge sub-badge--active";
+    else if (z === "expired") cls = "sub-badge sub-badge--expired";
+    else if (z === "suspended") cls = "sub-badge sub-badge--suspended";
+    return '<span class="' + cls + '" role="status">' + escapeHtml(labelStatus(z)) + "</span>";
+  }
+
+  function daysCell(dr, st) {
+    if (dr === null || dr === undefined) {
+      return '<span class="subs-days subs-days--muted" title="Pas de date de fin définie">—</span>';
+    }
+    var n = Number(dr);
+    var cls = "subs-days";
+    if (st === "active" || st === "trial") {
+      if (n <= 7) cls += " subs-days--warn";
+    }
+    if (st === "expired" || n <= 0) cls += " subs-days--muted";
+    return '<span class="' + cls + '">' + escapeHtml(String(n)) + "</span>";
+  }
+
+  function canActivate(row) {
+    var st = String(row.subscription_status || "").toLowerCase();
+    var dr = row.days_remaining;
+    if (st !== "active") return true;
+    if (dr === null || dr === undefined) return true;
+    return Number(dr) <= 0;
+  }
+
+  function canSuspend(row) {
+    return String(row.subscription_status || "").toLowerCase() !== "suspended";
+  }
+
+  function buildButtons(row) {
+    var id = encodeURIComponent(row.restaurant_id);
+    var det =
+      '<button type="button" class="adm-btn" data-act="detail" data-id="' + id + '">Voir détails</button>';
+    var actDis = canActivate(row) ? "" : " disabled";
+    var supDis = canSuspend(row) ? "" : " disabled";
+    var act =
+      '<button type="button" class="adm-btn adm-btn--primary" data-act="activate" data-id="' +
+      id +
+      '"' +
+      actDis +
+      ">Activer</button>";
+    var sus =
+      '<button type="button" class="adm-btn adm-btn--warn" data-act="suspend" data-id="' +
+      id +
+      '"' +
+      supDis +
+      ">Suspendre</button>";
+    var ren =
+      '<button type="button" class="adm-btn" data-act="renew" data-id="' + id + '">Renouveler</button>';
+    return det + act + sus + ren;
+  }
+
+  async function fetchJson(method, path, token, opts) {
+    opts = opts || {};
+    var base = getApiBase();
+    var headers = {
+      Accept: "application/json",
+      Authorization: "Bearer " + token,
+    };
+    if (opts.body !== undefined && !opts.skipJsonHeaders) {
+      headers["Content-Type"] = "application/json";
+    }
+    try {
+      var res = await fetch(base + path, {
+        method: method,
+        headers: headers,
+        body:
+          opts.body !== undefined ?
+            typeof opts.body === "string" ?
+              opts.body
+            : JSON.stringify(opts.body)
+          : undefined,
+      });
+      var data = null;
+      var text = "";
+      try {
+        text = await res.text();
+        data = text ? JSON.parse(text) : null;
+      } catch (e) {
+        data = null;
+      }
+      return { ok: res.ok, status: res.status, data: data };
+    } catch (e) {
+      return { ok: false, status: 0, data: null };
+    }
+  }
+
+  function renderPagination() {
+    var nav = document.getElementById("subs-pagination");
+    if (!nav) return;
+    nav.innerHTML = "";
+
+    var totalPages = state.totalPages;
+    var page = state.page;
+
+    if (totalPages <= 1) {
+      nav.setAttribute("hidden", "");
+      return;
+    }
+    nav.removeAttribute("hidden");
+
+    var info = document.createElement("p");
+    info.className = "users-pagination__info";
+    info.textContent = "Page " + page + " sur " + totalPages + " — " + state.total + " ligne(s)";
+    nav.appendChild(info);
+
+    function addBtn(label, disabled, fn) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.textContent = label;
+      b.disabled = disabled;
+      b.addEventListener("click", fn);
+      nav.appendChild(b);
+    }
+
+    addBtn("Préc.", page <= 1, function () {
+      if (state.page > 1) {
+        state.page -= 1;
+        loadSubscriptions();
+      }
+    });
+
+    var win = 5;
+    var start = Math.max(1, page - Math.floor(win / 2));
+    var end = Math.min(totalPages, start + win - 1);
+    if (end - start + 1 < win) start = Math.max(1, end - win + 1);
+
+    for (var i = start; i <= end; i++) {
+      (function (p) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.textContent = String(p);
+        if (p === page) {
+          b.classList.add("is-current");
+          b.setAttribute("aria-current", "page");
+        }
+        b.addEventListener("click", function () {
+          state.page = p;
+          loadSubscriptions();
+        });
+        nav.appendChild(b);
+      })(i);
+    }
+
+    addBtn("Suiv.", page >= totalPages, function () {
+      if (state.page < totalPages) {
+        state.page += 1;
+        loadSubscriptions();
+      }
+    });
+  }
+
+  function tbodyPlaceholder(m) {
+    return '<tr class="adm-table__placeholder"><td colspan="8">' + escapeHtml(m) + "</td></tr>";
+  }
+
+  async function loadSubscriptions() {
+    if (state.loading) return;
+
+    state.loading = true;
+    hideAccessBanner();
+
+    var tbody = document.getElementById("subs-body");
+    var cards = document.getElementById("subs-cards-list");
+    var token = localStorage.getItem(TOKEN_KEY);
+    var base = getApiBase();
+
+    if (!base) {
+      showAccessBanner("API non configurée (config.js → API_URL).", "error");
+      if (tbody) tbody.innerHTML = tbodyPlaceholder("Configuration manquante.");
+      state.loading = false;
+      return;
+    }
+
+    if (tbody) tbody.innerHTML = tbodyPlaceholder("Chargement…");
+
+    var qs =
+      "?page=" +
+      encodeURIComponent(String(state.page)) +
+      "&pageSize=" +
+      encodeURIComponent(String(PAGE_SIZE)) +
+      "&status=" +
+      encodeURIComponent(state.status) +
+      (state.q ? "&q=" + encodeURIComponent(state.q) : "");
+
+    var res = await fetchJson("GET", "/api/admin/subscriptions" + qs, token);
+    state.loading = false;
+
+    if (res.status === 401) {
+      clearSessionAndRedirectLogin();
+      return;
+    }
+
+    if (res.status === 403) {
+      showAccessBanner(
+        (res.data && res.data.message) || "Accès administration réservé (ADMIN_EMAILS).",
+        "warning",
+      );
+      if (tbody) tbody.innerHTML = tbodyPlaceholder("Accès refusé.");
+      if (cards) cards.innerHTML = "";
+      var c = document.getElementById("subs-count-label");
+      if (c) c.textContent = "";
+      renderPagination();
+      return;
+    }
+
+    if (!res.ok || !res.data || !Array.isArray(res.data.subscriptions)) {
+      showAccessBanner("Impossible de charger les abonnements.", "error");
+      if (tbody) tbody.innerHTML = tbodyPlaceholder("Erreur.");
+      state.totalPages = 0;
+      state.total = 0;
+      renderPagination();
+      return;
+    }
+
+    var list = res.data.subscriptions;
+    state.totalPages = Number(res.data.totalPages) || 0;
+    state.total = Number(res.data.total) || 0;
+
+    var lc = document.getElementById("subs-count-label");
+    if (lc) lc.textContent = state.total + " abonnement(s)" + (state.q ? " — « " + state.q.trim() + " »" : "");
+
+    if (state.totalPages > 0 && state.page > state.totalPages) {
+      state.page = state.totalPages;
+      state.loading = false;
+      return loadSubscriptions();
+    }
+
+    if (!list.length) {
+      if (tbody) tbody.innerHTML = tbodyPlaceholder("Aucun résultat pour ces filtres.");
+      if (cards) cards.innerHTML = "";
+      renderPagination();
+      return;
+    }
+
+    if (tbody) {
+      tbody.innerHTML = "";
+      list.forEach(function (row) {
+        var tr = document.createElement("tr");
+        tr.innerHTML =
+          "<td>" +
+          '<strong class="subs-name-strong">' +
+          escapeHtml(row.name) +
+          "</strong>" +
+          "</td><td class=\"subs-col-email subs-email-muted\">" +
+          escapeHtml(row.owner_email || "") +
+          "</td><td>" +
+          escapeHtml(formatDate(row.subscription_started_at)) +
+          "</td><td>" +
+          escapeHtml(formatDate(row.subscription_ends_at)) +
+          "</td><td>" +
+          daysCell(row.days_remaining, row.subscription_status) +
+          "</td><td><span class=\"subs-money\">" +
+          escapeHtml(formatCFA(row.subscription_amount_cfa)) +
+          "</span></td><td>" +
+          statusBadge(row.subscription_status) +
+          "</td><td><div class=\"subs-actions\">" +
+          buildButtons(row) +
+          "</div></td>";
+        tbody.appendChild(tr);
+      });
+    }
+
+    if (cards) {
+      cards.innerHTML = "";
+      list.forEach(function (row) {
+        var li = document.createElement("li");
+        li.className = "subs-card";
+        li.innerHTML =
+          '<div class="subs-card__meta">' +
+          "<div>" +
+          '<strong class="subs-name-strong">' +
+          escapeHtml(row.name) +
+          "</strong>" +
+          '<div class="subs-email-muted">' +
+          escapeHtml(row.owner_email || "") +
+          "</div>" +
+          "</div>" +
+          statusBadge(row.subscription_status) +
+          "</div>" +
+          '<div class="subs-email-muted">' +
+          "Début : " +
+          escapeHtml(formatDate(row.subscription_started_at)) +
+          " · Fin : " +
+          escapeHtml(formatDate(row.subscription_ends_at)) +
+          "</div>" +
+          '<div style="margin-top:6px" class="subs-money">' +
+          escapeHtml(formatCFA(row.subscription_amount_cfa)) +
+          "</div>" +
+          '<div style="margin-top:4px">' +
+          "Jours restants : " +
+          daysCell(row.days_remaining, row.subscription_status) +
+          "</div>" +
+          '<div class="subs-actions subs-actions--card" style="margin-top:10px">' +
+          buildButtons(row) +
+          "</div>";
+        cards.appendChild(li);
+      });
+    }
+
+    renderPagination();
+  }
+
+  function initShell() {
+    var body = document.body;
+    var btn = document.getElementById("adm-open-sidebar");
+    var sidebar = document.getElementById("adm-sidebar-panel");
+    var overlay = document.getElementById("adm-overlay");
+
+    function close() {
+      body.classList.remove("adm-sidebar-open");
+      if (btn) btn.setAttribute("aria-expanded", "false");
+      if (overlay) {
+        overlay.classList.remove("is-visible");
+        overlay.setAttribute("aria-hidden", "true");
+      }
+    }
+
+    if (btn && sidebar) {
+      btn.addEventListener("click", function () {
+        var o = body.classList.toggle("adm-sidebar-open");
+        btn.setAttribute("aria-expanded", o ? "true" : "false");
+        if (overlay) {
+          overlay.classList.toggle("is-visible", o);
+          overlay.setAttribute("aria-hidden", o ? "false" : "true");
+        }
+      });
+    }
+
+    if (overlay) overlay.addEventListener("click", close);
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") close();
+    });
+
+    window.addEventListener(
+      "resize",
+      function () {
+        if (window.matchMedia("(min-width: 901px)").matches) close();
+      },
+      { passive: true },
+    );
+  }
+
+  var debTimer = null;
+  function schedule() {
+    if (debTimer) clearTimeout(debTimer);
+    debTimer = setTimeout(function () {
+      debTimer = null;
+      state.page = 1;
+      loadSubscriptions();
+    }, DEBOUNCE_MS);
+  }
+
+  function setModal(open) {
+    var m = document.getElementById("adm-subs-detail-modal");
+    if (!m) return;
+    m.setAttribute("aria-hidden", open ? "false" : "true");
+    document.body.classList.toggle("adm-overlay-open", open);
+  }
+
+  function bindModal() {
+    var m = document.getElementById("adm-subs-detail-modal");
+    if (!m) return;
+    m.querySelectorAll("[data-close-modal]").forEach(function (el) {
+      el.addEventListener("click", function () {
+        setModal(false);
+      });
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && m.getAttribute("aria-hidden") === "false") setModal(false);
+    });
+  }
+
+  async function openDetail(idStr) {
+    var token = localStorage.getItem(TOKEN_KEY);
+    setModal(true);
+    document.getElementById("adm-subs-detail-title").textContent = "Chargement…";
+
+    var res = await fetchJson(
+      "GET",
+      "/api/admin/subscriptions/" + encodeURIComponent(idStr),
+      token,
+    );
+
+    if (res.status === 401) {
+      clearSessionAndRedirectLogin();
+      return;
+    }
+
+    if (res.status === 403 || !res.ok || !res.data || !res.data.subscription) {
+      setModal(false);
+      showAccessBanner((res.data && res.data.message) || "Détail indisponible.", "warning");
+      return;
+    }
+
+    var s = res.data.subscription;
+    document.getElementById("adm-subs-detail-title").textContent = s.name || "Restaurant";
+
+    var own = document.getElementById("adm-subs-detail-owner");
+    if (own) {
+      own.textContent = s.owner_email || "";
+      own.className = "subs-email-muted";
+      own.style.marginTop = "0";
+    }
+
+    document.getElementById("subs-d-id").textContent = String(s.restaurant_id);
+    document.getElementById("subs-d-city").textContent = s.city || "—";
+
+    document.getElementById("subs-d-start").textContent = formatDate(s.subscription_started_at);
+    document.getElementById("subs-d-end").textContent = formatDate(s.subscription_ends_at);
+    document.getElementById("subs-d-days").innerHTML =
+      s.days_remaining === null || s.days_remaining === undefined ?
+        "—"
+      : escapeHtml(String(s.days_remaining));
+    document.getElementById("subs-d-amount").textContent = formatCFA(s.subscription_amount_cfa);
+    document.getElementById("subs-d-status").innerHTML = statusBadge(s.subscription_status);
+    document.getElementById("subs-d-menu").textContent = s.menu_suspended ? "Menu suspendu" : "Menu en ligne";
+    document.getElementById("subs-d-products").textContent = String(s.product_count ?? "0");
+
+    document.getElementById("subs-d-created").textContent = formatDate(s.restaurant_created_at);
+
+    var dsc = document.getElementById("subs-d-desc");
+    var txt = String(s.description || "").trim();
+    if (txt && dsc) {
+      dsc.textContent = txt;
+      dsc.hidden = false;
+    } else if (dsc) {
+      dsc.hidden = true;
+    }
+  }
+
+  function promptOptionalAmount() {
+    var raw = prompt("Montant CFA / période (laisser vide pour ne pas modifier) :");
+    if (raw === null) return "__cancel";
+    raw = String(raw).trim().replace(/\s/g, "").replace(",", ".");
+    if (raw === "") return undefined;
+    var n = Math.round(Number(raw));
+    return Number.isFinite(n) && n >= 0 ? n : undefined;
+  }
+
+  async function activateRow(idStr) {
+    var dRaw = prompt(
+      "Si la date de fin est absente ou passée : nouvelle durée en jours (sinon inchangée) :",
+      "30",
+    );
+    if (dRaw === null) return;
+    var pd = parseInt(dRaw, 10);
+    if (!Number.isInteger(pd) || pd < 1) pd = 30;
+    if (pd > 3650) pd = 3650;
+
+    var amt = promptOptionalAmount();
+    if (amt === "__cancel") return;
+
+    var token = localStorage.getItem(TOKEN_KEY);
+    var body = { period_days: pd };
+    if (amt !== undefined) body.subscription_amount_cfa = amt;
+
+    var res = await fetchJson(
+      "POST",
+      "/api/admin/subscriptions/" + encodeURIComponent(idStr) + "/activate",
+      token,
+      { body: body },
+    );
+
+    if (res.status === 401) clearSessionAndRedirectLogin();
+    else if (!res.ok)
+      showAccessBanner((res.data && res.data.message) || "Activation impossible.", "error");
+    else {
+      hideAccessBanner();
+      await loadSubscriptions();
+    }
+  }
+
+  async function suspendRow(idStr) {
+    if (
+      !confirm(
+        "Mettre cet abonnement en statut « suspendu » ? Le champ statut passe à suspendu.",
+      )
+    ) {
+      return;
+    }
+
+    var token = localStorage.getItem(TOKEN_KEY);
+    var res = await fetchJson(
+      "POST",
+      "/api/admin/subscriptions/" + encodeURIComponent(idStr) + "/suspend",
+      token,
+      { body: {} },
+    );
+
+    if (res.status === 401) clearSessionAndRedirectLogin();
+    else if (!res.ok)
+      showAccessBanner((res.data && res.data.message) || "Suspension impossible.", "error");
+    else {
+      hideAccessBanner();
+      await loadSubscriptions();
+    }
+  }
+
+  async function renewRow(idStr) {
+    var mRaw = prompt(
+      "Renouveler : ajouter combien de mois après la date de fin actuelle (ou après aujourd’hui si passée) ?",
+      "12",
+    );
+    if (mRaw === null) return;
+    var months = parseInt(mRaw, 10);
+    if (!Number.isInteger(months) || months < 1) months = 12;
+    if (months > 120) months = 120;
+
+    var amt = promptOptionalAmount();
+    if (amt === "__cancel") return;
+
+    var token = localStorage.getItem(TOKEN_KEY);
+    var body = { months: months };
+    if (amt !== undefined) body.subscription_amount_cfa = amt;
+
+    var res = await fetchJson(
+      "POST",
+      "/api/admin/subscriptions/" + encodeURIComponent(idStr) + "/renew",
+      token,
+      { body: body },
+    );
+
+    if (res.status === 401) clearSessionAndRedirectLogin();
+    else if (!res.ok)
+      showAccessBanner((res.data && res.data.message) || "Renouvellement impossible.", "error");
+    else {
+      hideAccessBanner();
+      await loadSubscriptions();
+    }
+  }
+
+  function attachHandlers() {
+    document.getElementById("subs-q").addEventListener("input", function () {
+      state.q = String(document.getElementById("subs-q").value || "")
+        .trim()
+        .slice(0, 160);
+      schedule();
+    });
+
+    document.getElementById("subs-q").addEventListener("search", function () {
+      state.q = String(document.getElementById("subs-q").value || "")
+        .trim()
+        .slice(0, 160);
+      state.page = 1;
+      loadSubscriptions();
+    });
+
+    document.getElementById("subs-status-filter").addEventListener("change", function () {
+      state.status = String(document.getElementById("subs-status-filter").value || "all").toLowerCase();
+      state.page = 1;
+      loadSubscriptions();
+    });
+
+    var panel = document.getElementById("adm-subs-panel");
+    panel.addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-act]");
+      if (!b || b.disabled || !panel.contains(b)) return;
+
+      var tb = document.getElementById("subs-body");
+      var ul = document.getElementById("subs-cards-list");
+      if ((!tb || !tb.contains(b)) && (!ul || !ul.contains(b))) return;
+
+      var id = b.getAttribute("data-id");
+      var act = b.getAttribute("data-act");
+      if (!id || !act) return;
+      e.preventDefault();
+
+      if (act === "detail") openDetail(id);
+      else if (act === "activate") activateRow(id);
+      else if (act === "suspend") suspendRow(id);
+      else if (act === "renew") renewRow(id);
+    });
+  }
+
+  function init() {
+    if (!requireAuthToken()) return;
+    initShell();
+    attachHandlers();
+    bindModal();
+    loadSubscriptions();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();

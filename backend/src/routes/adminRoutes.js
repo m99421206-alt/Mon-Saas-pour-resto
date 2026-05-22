@@ -4,6 +4,7 @@ const requirePlatformAdmin = require("../middlewares/adminMiddleware");
 const adminController = require("../controllers/adminController");
 const adminUsersController = require("../controllers/adminUsersController");
 const adminRestaurantsController = require("../controllers/adminRestaurantsController");
+const adminSubscriptionsController = require("../controllers/adminSubscriptionsController");
 
 var router = express.Router();
 
@@ -24,5 +25,31 @@ router.patch(
   adminRestaurantsController.patchMenuSuspended,
 );
 router.delete("/restaurants/:id", requireAuth, requirePlatformAdmin, adminRestaurantsController.deleteRestaurant);
+
+router.get("/subscriptions", requireAuth, requirePlatformAdmin, adminSubscriptionsController.listSubscriptions);
+router.get(
+  "/subscriptions/:restaurantId",
+  requireAuth,
+  requirePlatformAdmin,
+  adminSubscriptionsController.getSubscriptionDetail,
+);
+router.post(
+  "/subscriptions/:restaurantId/activate",
+  requireAuth,
+  requirePlatformAdmin,
+  adminSubscriptionsController.postActivate,
+);
+router.post(
+  "/subscriptions/:restaurantId/suspend",
+  requireAuth,
+  requirePlatformAdmin,
+  adminSubscriptionsController.postSuspend,
+);
+router.post(
+  "/subscriptions/:restaurantId/renew",
+  requireAuth,
+  requirePlatformAdmin,
+  adminSubscriptionsController.postRenew,
+);
 
 module.exports = router;

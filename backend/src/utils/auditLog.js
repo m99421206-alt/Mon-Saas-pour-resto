@@ -20,6 +20,9 @@ var AUDIT_ACTIONS = {
   RESTAURANT_MENU_SUSPEND: "restaurant.menu_suspend",
   RESTAURANT_MENU_RESUME: "restaurant.menu_resume",
   RESTAURANT_DELETE: "restaurant.delete",
+  SUBSCRIPTION_ACTIVATE: "subscription.activate",
+  SUBSCRIPTION_SUSPEND: "subscription.suspend",
+  SUBSCRIPTION_RENEW: "subscription.renew",
 };
 
 var LABEL_FALLBACK = {
@@ -38,6 +41,9 @@ var LABEL_FALLBACK = {
   "restaurant.menu_suspend": "Suspension menu public",
   "restaurant.menu_resume": "Réactivation menu public",
   "restaurant.delete": "Suppression restaurant",
+  "subscription.activate": "Activation abonnement",
+  "subscription.suspend": "Suspension abonnement",
+  "subscription.renew": "Renouvellement abonnement",
 };
 
 function labelForCode(code) {
