@@ -23,6 +23,7 @@ var AUDIT_ACTIONS = {
   SUBSCRIPTION_ACTIVATE: "subscription.activate",
   SUBSCRIPTION_SUSPEND: "subscription.suspend",
   SUBSCRIPTION_RENEW: "subscription.renew",
+  SETTINGS_UPDATE: "settings.update",
 };
 
 var LABEL_FALLBACK = {
@@ -44,6 +45,7 @@ var LABEL_FALLBACK = {
   "subscription.activate": "Activation abonnement",
   "subscription.suspend": "Suspension abonnement",
   "subscription.renew": "Renouvellement abonnement",
+  "settings.update": "Mise à jour paramètres plateforme",
 };
 
 function labelForCode(code) {

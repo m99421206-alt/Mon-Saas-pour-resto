@@ -392,7 +392,10 @@ button {
   width: 2rem;
   height: 2rem;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--adm-accent) 0%, #ff9a4d 100%);
+  background-image: url('../../assets/images/icone/admin.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   flex-shrink: 0;
 }
 

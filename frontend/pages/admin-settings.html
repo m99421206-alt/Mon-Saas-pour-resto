@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="Paramètres plateforme AfricaMenu — administration." />
+    <title>Paramètres plateforme — Admin AfricaMenu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/admin-dashboard.css" />
+    <link rel="stylesheet" href="../css/admin-settings.css" />
+  </head>
+  <body class="adm-app">
+    <a class="adm-skip-link" href="#admin-main">Aller au contenu principal</a>
+
+    <aside class="adm-sidebar" id="adm-sidebar-panel" aria-label="Navigation administration plateforme">
+      <div class="adm-sidebar__inner">
+        <header class="adm-sidebar__head">
+          <a href="../../index.html" class="adm-sidebar__brand">
+            <span class="adm-sidebar__logo" aria-hidden="true">
+              <img src="../../assets/images/icone/restaurant .png" alt="" width="36" height="36" />
+            </span>
+            <span class="adm-sidebar__brand-text">AfricaMenu <span class="adm-sidebar__badge">Admin</span></span>
+          </a>
+        </header>
+
+        <nav class="adm-sidebar__nav" aria-label="Sections admin">
+          <ul class="adm-sidebar__list">
+            <li><a href="admin-dashboard.html" class="adm-sidebar__link">Tableau de bord</a></li>
+            <li><a href="admin-users.html" class="adm-sidebar__link">Utilisateurs</a></li>
+            <li><a href="admin-restaurants.html" class="adm-sidebar__link">Restaurants</a></li>
+            <li><a href="admin-subscriptions.html" class="adm-sidebar__link">Abonnements</a></li>
+            <li>
+              <a href="admin-settings.html" class="adm-sidebar__link is-active" aria-current="page"
+                >Paramètres</a
+              >
+            </li>
+          </ul>
+        </nav>
+
+        <footer class="adm-sidebar__foot">
+          <a href="login.html" class="adm-sidebar__link adm-sidebar__link--muted">Quitter l’admin</a>
+        </footer>
+      </div>
+    </aside>
+
+    <div class="adm-overlay" id="adm-overlay" aria-hidden="true"></div>
+
+    <div class="adm-layout">
+      <header class="adm-header">
+        <div class="adm-header__inner">
+          <button
+            type="button"
+            class="adm-header__menu-btn"
+            id="adm-open-sidebar"
+            aria-label="Ouvrir le menu"
+            aria-controls="adm-sidebar-panel"
+            aria-expanded="false"
+          >
+            <span class="adm-header__menu-icon" aria-hidden="true"></span>
+          </button>
+
+          <div class="adm-header__spacer" aria-hidden="true"></div>
+
+          <div class="adm-header__actions">
+            <button type="button" class="adm-header__icon-btn" aria-label="Notifications">
+              <span class="adm-header__notif-dot" aria-hidden="true"></span>
+            </button>
+            <div class="adm-profile">
+              <button type="button" class="adm-profile__trigger">
+                <span class="adm-profile__avatar" aria-hidden="true"></span>
+                <span class="adm-profile__meta">
+                  <span class="adm-profile__name">Administrateur</span>
+                  <span class="adm-profile__role">Plateforme</span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main id="admin-main" class="adm-main">
+        <div class="adm-main__inner adm-page--settings">
+          <header class="adm-page-head">
+            <div class="sett-actions-bar">
+              <div>
+                <h1 class="adm-page-title">Paramètres plateforme</h1>
+              </div>
+              <button type="button" class="sett-save-btn sett-save-btn-outline" id="sett-reload">
+                Rafraîchir
+              </button>
+            </div>
+            <p class="adm-page-subtitle sett-muted-hint">
+              Configuration globale&nbsp;: lorsque la maintenance est active, les menus publics sont indisponibles
+              (<code>/menu/</code>). La limite d’upload concerne les envois JPG/PNG après enregistrement.
+            </p>
+          </header>
+
+          <div id="adm-access-banner" class="adm-banner" role="alert" hidden></div>
+
+          <section class="adm-setting-section" aria-labelledby="sett-maint-title">
+            <div class="adm-setting-section__meta">
+              <div class="adm-setting-section__titles">
+                <h2 id="sett-maint-title">Maintenance</h2>
+                <p>Coupez l’accès aux menus clients pendant une intervention (API reste disponible).</p>
+              </div>
+              <button type="button" class="sett-save-btn" id="sett-save-maint">Enregistrer</button>
+            </div>
+            <div class="sett-card">
+              <label class="adm-switch">
+                <input id="sett-maint-checkbox" type="checkbox" autocomplete="off" />
+                <span class="adm-switch-track"><span class="adm-switch-knob"></span></span>
+                <span class="adm-switch-text">Maintenance publique active</span>
+              </label>
+            </div>
+          </section>
+
+          <section class="adm-setting-section" aria-labelledby="sett-plans-title">
+            <div class="adm-setting-section__meta">
+              <div class="adm-setting-section__titles">
+                <h2 id="sett-plans-title">Plans d’abonnement</h2>
+                <p>Catalogue utilisé comme référence côté admin (facturation Stripe à brancher ensuite si besoin).</p>
+              </div>
+              <button type="button" class="sett-save-btn" id="sett-save-plans">Enregistrer</button>
+            </div>
+            <div class="sett-card">
+              <div class="sett-plan-table-wrap">
+                <table class="sett-plan-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Identifiant</th>
+                      <th scope="col">Nom</th>
+                      <th scope="col">Prix (CFA)</th>
+                      <th scope="col">Période (mois)</th>
+                      <th scope="col" aria-label="Retirer"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="sett-plan-rows"></tbody>
+                </table>
+              </div>
+              <div class="sett-plan-toolbar">
+                <button type="button" class="sett-save-btn sett-save-btn-outline" id="sett-add-plan">
+                  + Ajouter un plan
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <section class="adm-setting-section" aria-labelledby="sett-upload-title">
+            <div class="adm-setting-section__meta">
+              <div class="adm-setting-section__titles">
+                <h2 id="sett-upload-title">Limite uploads images</h2>
+                <p>Taille max par fichier JPG/PNG (produits, logos…) — valeur servie après sauvegarde.</p>
+              </div>
+              <button type="button" class="sett-save-btn" id="sett-save-upload">Enregistrer</button>
+            </div>
+            <div class="sett-card">
+              <div class="sett-field-row">
+                <label for="sett-upload-max">Taille maximale (Mo)</label>
+                <input id="sett-upload-max" type="number" min="1" max="64" step="1" value="5" autocomplete="off" />
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <div
+      id="sett-snackbar"
+      class="sett-snackbar"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      hidden
+    ></div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/admin-settings.js"></script>
+  </body>
+</html>

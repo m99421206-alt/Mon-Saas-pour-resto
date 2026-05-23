@@ -13,7 +13,8 @@
     "db:audit-log": "node scripts/migrate-audit-log.js",
     "db:user-status": "node scripts/migrate-user-account-status.js",
     "db:admin-restaurants": "node scripts/migrate-admin-restaurants.js",
-    "db:admin-subscriptions": "node scripts/migrate-admin-subscriptions.js"
+    "db:admin-subscriptions": "node scripts/migrate-admin-subscriptions.js",
+    "db:admin-platform-settings": "node scripts/migrate-admin-platform-settings.js"
   },
   "engines": {
     "node": ">=18"

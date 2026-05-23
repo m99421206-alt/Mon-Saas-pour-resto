@@ -5,8 +5,10 @@ const adminController = require("../controllers/adminController");
 const adminUsersController = require("../controllers/adminUsersController");
 const adminRestaurantsController = require("../controllers/adminRestaurantsController");
 const adminSubscriptionsController = require("../controllers/adminSubscriptionsController");
+const adminSettingsController = require("../controllers/adminSettingsController");
 
 var router = express.Router();
+
 
 router.get("/stats", requireAuth, requirePlatformAdmin, adminController.getStats);
 router.get("/activity", requireAuth, requirePlatformAdmin, adminController.getActivity);
@@ -52,4 +54,8 @@ router.post(
   adminSubscriptionsController.postRenew,
 );
 
+router.get("/settings", requireAuth, requirePlatformAdmin, adminSettingsController.getSettings);
+router.put("/settings", requireAuth, requirePlatformAdmin, adminSettingsController.putSettings);
+
 module.exports = router;
+

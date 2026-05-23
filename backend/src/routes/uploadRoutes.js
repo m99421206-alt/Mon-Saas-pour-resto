@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
 const requireAuth = require("../middlewares/authMiddleware");
+var platformSettings = require("../services/platformSettings");
 const { appendAudit, AUDIT_ACTIONS, getRestaurantIdForUserAudit } = require("../utils/auditLog");
 
 const router = express.Router();
@@ -17,7 +18,6 @@ const storage = multer.diskStorage({
     cb(null, uploadsDir);
   },
   filename: function (req, file, cb) {
-    // Le nom unique évite d'écraser une image déjà uploadée.
     const extension = path.extname(file.originalname).toLowerCase();
     const uniqueName = Date.now() + "-" + Math.round(Math.random() * 1e9) + extension;
     cb(null, uniqueName);
@@ -36,22 +36,30 @@ function imageFileFilter(req, file, cb) {
   return cb(null, true);
 }
 
-const upload = multer({
-  storage: storage,
-  fileFilter: imageFileFilter,
-  limits: {
-    fileSize: 2 * 1024 * 1024,
-  },
-});
+function buildUploadMw() {
+  var max = platformSettings.getUploadMaxBytes();
+  return multer({
+    storage: storage,
+    fileFilter: imageFileFilter,
+    limits: {
+      fileSize: max,
+    },
+  });
+}
 
 router.use(requireAuth);
 
 router.post("/", function (req, res) {
-  upload.single("image")(req, res, async function (err) {
+  var maxBytes = platformSettings.getUploadMaxBytes();
+  var maxMb = Math.round((maxBytes / (1024 * 1024)) * 10) / 10;
+
+  buildUploadMw().single("image")(req, res, async function (err) {
     try {
       if (err) {
         const message =
-          err.code === "LIMIT_FILE_SIZE" ? "L'image ne doit pas dépasser 2MB." : err.message || "Upload impossible.";
+          err.code === "LIMIT_FILE_SIZE" ?
+            "L’image dépasse la limite configurée (~" + maxMb + " Mo)."
+          : err.message || "Upload impossible.";
         return res.status(400).json({ message: message });
       }
 

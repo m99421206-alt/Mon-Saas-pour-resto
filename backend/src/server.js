@@ -16,6 +16,7 @@ const menuRoutes = require("./routes/menuRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const restaurantRoutes = require("./routes/restaurantRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
+var platformSettings = require("./services/platformSettings");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
@@ -120,6 +121,10 @@ app.use("/upload", uploadRoutes);
 app.use("/menu", menuRoutes);
 /* Administration plateforme — JWT + contrôle ADMIN_EMAILS (optionnel) */
 app.use("/api/admin", adminRoutes);
+
+platformSettings.refresh().catch(function (e) {
+  console.warn("[platform_settings]", e.message || e);
+});
 
 app.listen(PORT, HOST, function () {
   console.log("AfricaMenu API — http://localhost:" + PORT);
