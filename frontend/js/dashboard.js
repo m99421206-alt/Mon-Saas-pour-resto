@@ -27,6 +27,11 @@
   const logoutLink = document.getElementById("dashboard-logout");
   const addProductBtn = document.getElementById("dashboard-add-product");
   const addCategoryBtn = document.getElementById("dashboard-add-category");
+  const trialExpiredBanner = document.getElementById("dash-trial-expired-banner");
+  const trialExpiredWhatsApp = document.getElementById("dash-trial-expired-whatsapp");
+
+  /** WhatsApp paiement/abonnement (Mali indicatif inclus) si non défini dans config */
+  var DEFAULT_PAYMENT_WHATSAPP = "22399421206";
 
   const TRANSITION_MS = 320;
   let closeTimer = null;
@@ -88,6 +93,128 @@
     return window.location.origin + menuPath + "?id=" + encodeURIComponent(restaurantId);
   }
 
+  function whatsappDigitsDash(value) {
+    return String(value || "").replace(/\D/g, "").replace(/^0+/, "");
+  }
+
+  /** Essai terminé ou abonnement à renouveler : afficher le CTA WhatsApp paiement. */
+  function shouldShowTrialExpiredPaymentBanner(subscription) {
+    if (!subscription) return false;
+    var st = String(subscription.status || "").toLowerCase();
+    if (st === "expired") return true;
+    if (st !== "trial") return false;
+    var dr = subscription.days_remaining;
+    if (dr !== undefined && dr !== null && Number(dr) <= 0) return true;
+    if (subscription.ends_at) {
+      var endMs = new Date(subscription.ends_at).getTime();
+      return Number.isFinite(endMs) && Date.now() > endMs;
+    }
+    return false;
+  }
+
+  /** Libellé « Plan » du message (priorité offre post-essai renvoyée par l’API). */
+  function pickPlanLabelForWhatsApp(me) {
+    var sub = (me && me.subscription) || {};
+    var offer = sub.post_trial_offer;
+    if (offer && String(offer.plan_label || "").trim()) {
+      return String(offer.plan_label).trim();
+    }
+    var pl = String(sub.plan_label || "").trim();
+    if (pl) {
+      var low = pl.toLowerCase();
+      if (low !== "essai gratuit" && low !== "trial") return pl;
+    }
+    return "Basic";
+  }
+
+  function buildTrialExpiredWhatsAppMessage(restaurantName, planLabel) {
+    var rn = restaurantName ? String(restaurantName).trim() : "Mon restaurant";
+    var pl = planLabel ? String(planLabel).trim() : "Basic";
+    return (
+      "Bonjour, je souhaite activer mon abonnement AfricaMenu.\n\n" +
+      "Nom du restaurant : " +
+      rn +
+      "\n" +
+      "Plan : " +
+      pl +
+      "\n"
+    );
+  }
+
+  function updateTrialExpiredBanner(me) {
+    if (!trialExpiredBanner || !trialExpiredWhatsApp) return;
+
+    var sub = me.subscription;
+    if (!shouldShowTrialExpiredPaymentBanner(sub)) {
+      trialExpiredBanner.hidden = true;
+      trialExpiredWhatsApp.setAttribute("href", "#");
+      return;
+    }
+
+    var cfg = window.AFRICAMENU_CONFIG || {};
+    var digits = whatsappDigitsDash(cfg.SUPPORT_WHATSAPP) || DEFAULT_PAYMENT_WHATSAPP;
+    var rest = me.restaurant || getStoredRestaurant();
+    var restName =
+      rest && rest.name ?
+        rest.name
+      : "Mon restaurant";
+
+    trialExpiredBanner.hidden = false;
+    trialExpiredWhatsApp.setAttribute(
+      "href",
+      "https://wa.me/" +
+        digits +
+        "?text=" +
+        encodeURIComponent(
+          buildTrialExpiredWhatsAppMessage(restName, pickPlanLabelForWhatsApp(me)),
+        ),
+    );
+
+    var titleEl = document.getElementById("dash-trial-expired-title");
+    var subtitleEl = document.getElementById("dash-trial-expired-subtitle");
+    if (titleEl && sub) {
+      var stLo = String(sub.status || "").toLowerCase();
+      var pkLo = String(sub.plan_key || "").toLowerCase();
+      var looksLikePaidExpired =
+        stLo === "expired" &&
+        pkLo &&
+        pkLo !== "trial" &&
+        pkLo !== "";
+      titleEl.textContent = looksLikePaidExpired ?
+        "Votre abonnement a expiré"
+      : "Votre période d’essai a expiré";
+    }
+    if (subtitleEl) {
+      subtitleEl.textContent =
+        "Cliquez sur le bouton ci-dessous : WhatsApp s’ouvre avec votre message prérempli pour activer votre abonnement.";
+    }
+  }
+
+  function applyDashboardEditLocks(subscription) {
+    var locked =
+      subscription &&
+      Object.prototype.hasOwnProperty.call(subscription, "can_edit_menu") &&
+      subscription.can_edit_menu === false;
+
+    function setBtn(btn, label) {
+      if (!btn) return;
+      btn.disabled = Boolean(locked);
+      btn.setAttribute(
+        "title",
+        locked ? "Edition du menu désactivée (abonnement). " + label : "",
+      );
+    }
+
+    setBtn(
+      addProductBtn,
+      "Ouvrez la page « mon-abonnement.html » depuis le menu pour voir votre formule et les suites possibles.",
+    );
+    setBtn(
+      addCategoryBtn,
+      "Ouvrez la page « mon-abonnement.html » depuis le menu pour voir votre formule et les suites possibles.",
+    );
+  }
+
   function renderDashboard(me, categories, products) {
     const restaurant = me.restaurant || getStoredRestaurant();
     const user = me.user || {};
@@ -99,6 +226,8 @@
     categoriesCount.textContent = String(categories.length);
     productsCount.textContent = String(products.length);
 
+    applyDashboardEditLocks(me.subscription);
+
     localStorage.setItem(USER_KEY, JSON.stringify(user || null));
     localStorage.setItem(RESTAURANT_KEY, JSON.stringify(restaurant || null));
 
@@ -108,6 +237,8 @@
       menuUrlInput.value = publicUrl;
       viewMenuBtn.setAttribute("data-menu-url", publicUrl);
     }
+
+    updateTrialExpiredBanner(me);
   }
 
   function setCopyFeedback(message, isError) {

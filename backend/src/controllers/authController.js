@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { getPool } = require("../config/database");
 const { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
+const platformSettings = require("../services/platformSettings");
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").toLowerCase());
@@ -58,16 +59,25 @@ async function register(req, res) {
 
     const userId = userResult.insertId;
 
+    const trialDays = platformSettings.getTrialPeriodDays();
     const [restaurantResult] = await connection.query(
-      "INSERT INTO restaurants (user_id, name, description) VALUES (?, ?, ?)",
-      [userId, restaurantName, null]
+      "INSERT INTO restaurants " +
+        "(user_id, name, description, subscription_status, subscription_started_at, subscription_ends_at, subscription_amount_cfa, subscription_plan_key) " +
+        "VALUES (?, ?, ?, 'trial', NOW(), DATE_ADD(NOW(), INTERVAL ? DAY), 0, 'trial')",
+      [userId, restaurantName, null, trialDays],
+    );
+
+    const restaurantId = restaurantResult.insertId;
+    const [[restaurantRow]] = await connection.query(
+      "SELECT id, name, subscription_status, subscription_started_at, subscription_ends_at, subscription_plan_key FROM restaurants WHERE id = ? LIMIT 1",
+      [restaurantId],
     );
 
     await connection.commit();
 
     await appendAudit({
       userId: userId,
-      restaurantId: restaurantResult.insertId,
+      restaurantId: restaurantId,
       action: AUDIT_ACTIONS.USER_REGISTER,
       detail: "Inscription nouveau compte (« " + restaurantName + " »)",
     });
@@ -82,8 +92,16 @@ async function register(req, res) {
         email: email,
       },
       restaurant: {
-        id: restaurantResult.insertId,
-        name: restaurantName,
+        id: restaurantRow.id,
+        name: restaurantRow.name,
+        subscription_status: restaurantRow.subscription_status,
+        subscription_started_at: restaurantRow.subscription_started_at
+          ? new Date(restaurantRow.subscription_started_at).toISOString()
+          : null,
+        subscription_ends_at: restaurantRow.subscription_ends_at
+          ? new Date(restaurantRow.subscription_ends_at).toISOString()
+          : null,
+        subscription_plan_key: restaurantRow.subscription_plan_key || "trial",
       },
     });
   } catch (error) {
@@ -127,8 +145,8 @@ async function login(req, res) {
     }
 
     const [restaurants] = await pool.query(
-      "SELECT id, name FROM restaurants WHERE user_id = ? ORDER BY id ASC LIMIT 1",
-      [user.id]
+      "SELECT id, name, subscription_status, subscription_started_at, subscription_ends_at, subscription_plan_key, subscription_amount_cfa FROM restaurants WHERE user_id = ? ORDER BY id ASC LIMIT 1",
+      [user.id],
     );
 
     await appendAudit({

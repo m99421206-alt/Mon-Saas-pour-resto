@@ -1,5 +1,6 @@
 const express = require("express");
 const requireAuth = require("../middlewares/authMiddleware");
+const requireRestaurantMenuEdit = require("../middlewares/subscriptionEditMiddleware");
 const productController = require("../controllers/productController");
 
 const router = express.Router();
@@ -7,8 +8,8 @@ const router = express.Router();
 router.use(requireAuth);
 
 router.get("/", productController.listProducts);
-router.post("/", productController.createProduct);
-router.put("/:id", productController.updateProduct);
-router.delete("/:id", productController.deleteProduct);
+router.post("/", requireRestaurantMenuEdit, productController.createProduct);
+router.put("/:id", requireRestaurantMenuEdit, productController.updateProduct);
+router.delete("/:id", requireRestaurantMenuEdit, productController.deleteProduct);
 
 module.exports = router;

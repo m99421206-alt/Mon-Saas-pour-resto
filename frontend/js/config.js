@@ -9,5 +9,10 @@
 
   window.AFRICAMENU_CONFIG = Object.assign({}, existingConfig, {
     API_URL: existingConfig.API_URL || defaultApiUrl,
+    SUPPORT_EMAIL:
+      typeof existingConfig.SUPPORT_EMAIL === "string" ? existingConfig.SUPPORT_EMAIL : "",
+    /** Numéro WhatsApp plateforme (chiffres, forme internationale sans + dans l’URL) — optionnel si le restaurant a son WhatsApp dans Paramètres. */
+    SUPPORT_WHATSAPP:
+      typeof existingConfig.SUPPORT_WHATSAPP === "string" ? existingConfig.SUPPORT_WHATSAPP : "",
   });
 })();

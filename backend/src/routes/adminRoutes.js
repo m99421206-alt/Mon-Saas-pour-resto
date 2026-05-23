@@ -53,6 +53,12 @@ router.post(
   requirePlatformAdmin,
   adminSubscriptionsController.postRenew,
 );
+router.patch(
+  "/subscriptions/:restaurantId/adjust",
+  requireAuth,
+  requirePlatformAdmin,
+  adminSubscriptionsController.patchAdjustSubscription,
+);
 
 router.get("/settings", requireAuth, requirePlatformAdmin, adminSettingsController.getSettings);
 router.put("/settings", requireAuth, requirePlatformAdmin, adminSettingsController.putSettings);

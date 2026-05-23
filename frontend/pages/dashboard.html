@@ -51,6 +51,39 @@
         <p class="dash-subtitle">Gérez votre établissement : stats, actions rapides, lien public et QR code.</p>
       </section>
 
+      <!-- Visible si l’essai est terminé ou l’abonnement expiré : CTA paiement WhatsApp -->
+      <section
+        id="dash-trial-expired-banner"
+        class="dash-trial-expired-banner"
+        hidden
+        role="alert"
+        aria-labelledby="dash-trial-expired-title"
+      >
+        <div class="dash-trial-expired-banner__inner">
+          <p class="dash-trial-expired-banner__glyph" aria-hidden="true">⚠</p>
+          <div class="dash-trial-expired-banner__content">
+            <h2 id="dash-trial-expired-title" class="dash-trial-expired-banner__title">
+              Votre période d’essai a expiré
+            </h2>
+            <p class="dash-trial-expired-banner__subtitle" id="dash-trial-expired-subtitle">
+              Activez votre abonnement en un clic&nbsp;: nous vous envoyons un message prérempli sur WhatsApp pour finaliser votre paiement.
+            </p>
+            <div class="dash-trial-expired-banner__cta-wrap">
+              <a
+                id="dash-trial-expired-whatsapp"
+                class="dash-trial-expired-banner__cta"
+                href="#"
+                rel="noopener noreferrer"
+                target="_blank"
+                >Activer mon abonnement</a>
+            </div>
+            <p class="dash-trial-expired-banner__footer">
+              <a class="dash-trial-expired-banner__link" href="mon-abonnement.html">Voir les détails de mon abonnement</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section class="dash-grid" aria-label="Tableau de bord">
         <!-- Carte stat : Catégories -->
         <article class="dash-card dash-card--stat">
@@ -173,6 +206,12 @@
                 <img src="../../assets/images/icone/tableaux-de-bord.png" alt="" width="20" height="20" />
               </span>
               <span class="dash-drawer__label">tableau de bord</span>
+            </a>
+          </li>
+          <li>
+            <a class="dash-drawer__link" href="mon-abonnement.html">
+              <span class="dash-drawer__ico" aria-hidden="true">📦</span>
+              <span class="dash-drawer__label">Mon abonnement</span>
             </a>
           </li>
           <li>

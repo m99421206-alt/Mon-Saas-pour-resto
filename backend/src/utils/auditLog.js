@@ -23,6 +23,7 @@ var AUDIT_ACTIONS = {
   SUBSCRIPTION_ACTIVATE: "subscription.activate",
   SUBSCRIPTION_SUSPEND: "subscription.suspend",
   SUBSCRIPTION_RENEW: "subscription.renew",
+  SUBSCRIPTION_ADJUST: "subscription.adjust",
   SETTINGS_UPDATE: "settings.update",
 };
 
@@ -45,6 +46,7 @@ var LABEL_FALLBACK = {
   "subscription.activate": "Activation abonnement",
   "subscription.suspend": "Suspension abonnement",
   "subscription.renew": "Renouvellement abonnement",
+  "subscription.adjust": "Ajustement durée ou plan",
   "settings.update": "Mise à jour paramètres plateforme",
 };
 

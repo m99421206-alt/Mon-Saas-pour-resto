@@ -123,7 +123,10 @@
             <div class="adm-setting-section__meta">
               <div class="adm-setting-section__titles">
                 <h2 id="sett-plans-title">Plans d’abonnement</h2>
-                <p>Catalogue utilisé comme référence côté admin (facturation Stripe à brancher ensuite si besoin).</p>
+                <p id="sett-plans-lead">
+                  Identifiants (<code>id</code>), libellés et tarifs CFA — ils alimentent l’étiquette « Plan » dans
+                  <strong>Abonnements</strong> et les listes lors de l’activation ou de l’ajustement.
+                </p>
               </div>
               <button type="button" class="sett-save-btn" id="sett-save-plans">Enregistrer</button>
             </div>
@@ -146,6 +149,22 @@
                 <button type="button" class="sett-save-btn sett-save-btn-outline" id="sett-add-plan">
                   + Ajouter un plan
                 </button>
+              </div>
+            </div>
+          </section>
+
+          <section class="adm-setting-section" aria-labelledby="sett-trial-title">
+            <div class="adm-setting-section__meta">
+              <div class="adm-setting-section__titles">
+                <h2 id="sett-trial-title">Durée d’essai gratuit</h2>
+                <p>Jours attribués automatiquement à chaque nouveau restaurant lors de l’inscription.</p>
+              </div>
+              <button type="button" class="sett-save-btn" id="sett-save-trial">Enregistrer</button>
+            </div>
+            <div class="sett-card">
+              <div class="sett-field-row">
+                <label for="sett-trial-days">Nombre de jours (1 à 365)</label>
+                <input id="sett-trial-days" type="number" min="1" max="365" step="1" value="30" autocomplete="off" />
               </div>
             </div>
           </section>

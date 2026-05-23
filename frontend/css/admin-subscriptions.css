@@ -118,9 +118,9 @@
 }
 
 .sub-badge--trial {
-  border: 1px solid rgba(99, 102, 241, 0.42);
-  color: rgb(67, 56, 202);
-  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: rgb(180, 83, 9);
+  background: rgba(253, 230, 138, 0.35);
 }
 
 .sub-badge--active {
@@ -136,9 +136,9 @@
 }
 
 .sub-badge--suspended {
-  border: 1px solid rgba(245, 158, 11, 0.52);
-  color: rgb(180, 83, 9);
-  background: rgba(251, 191, 36, 0.16);
+  border: 1px solid rgba(148, 163, 184, 0.55);
+  color: rgb(71, 85, 105);
+  background: rgba(226, 232, 240, 0.75);
 }
 
 .subs-actions {
@@ -350,6 +350,154 @@
   color: var(--adm-text-muted);
   margin-top: 12px;
   line-height: 1.45;
+}
+
+.subs-plan-chip {
+  display: inline-block;
+  margin-top: 0.08rem;
+  font-size: 0.73rem;
+  font-weight: 650;
+  color: var(--adm-text);
+}
+
+.subs-adjust-box {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--adm-border);
+}
+
+.subs-adjust-title {
+  margin: 0 0 0.4rem;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.subs-adjust-hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.78rem;
+  color: var(--adm-text-muted);
+  line-height: 1.45;
+}
+
+.subs-adjust-fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.55rem;
+  margin-bottom: 0.75rem;
+}
+
+.subs-adjust-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  font-size: 0.73rem;
+  font-weight: 700;
+}
+
+.subs-adjust-label input {
+  padding: 0.45rem 0.58rem;
+  border-radius: 10px;
+  border: 1px solid var(--adm-border);
+  font: inherit;
+  font-weight: 500;
+}
+
+.subs-adjust-label select {
+  padding: 0.45rem 0.58rem;
+  border-radius: 10px;
+  border: 1px solid var(--adm-border);
+  font: inherit;
+  font-weight: 500;
+  background: var(--adm-surface, #fff);
+  cursor: pointer;
+}
+
+.subs-adjust-label select:focus {
+  outline: none;
+  border-color: var(--adm-accent);
+  box-shadow: 0 0 0 3px var(--adm-accent-soft);
+}
+
+/* Sélecteur de plan (activation / renouvellement) */
+.subs-plan-picker {
+  padding: 0;
+  border: none;
+  max-width: 100%;
+  background: transparent;
+}
+
+.subs-plan-picker::backdrop {
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.subs-plan-picker__panel {
+  width: min(400px, 100vw - 2rem);
+  padding: clamp(18px, 4vw, 22px);
+  border-radius: 18px;
+  background: #f9fafb;
+  box-shadow:
+    0 12px 50px rgba(15, 23, 42, 0.2),
+    0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+.subs-plan-picker__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.subs-plan-picker__hint {
+  margin: 0 0 1rem;
+  font-size: 0.8rem;
+  color: var(--adm-text-muted);
+  line-height: 1.45;
+}
+
+.subs-plan-picker__label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.subs-plan-picker__labeltxt {
+  color: var(--adm-text-muted);
+}
+
+.subs-plan-picker__label select {
+  padding: 0.52rem 0.58rem;
+  border-radius: 10px;
+  border: 1px solid var(--adm-border);
+  font: inherit;
+  font-weight: 500;
+  background: var(--adm-surface, #fff);
+  cursor: pointer;
+}
+
+.subs-plan-picker__label select:focus {
+  outline: none;
+  border-color: var(--adm-accent);
+  box-shadow: 0 0 0 3px var(--adm-accent-soft);
+}
+
+.subs-plan-picker__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+@media (min-width: 480px) {
+  .subs-adjust-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .subs-adjust-fields .subs-adjust-label:last-child {
+    grid-column: 1 / -1;
+  }
 }
 
 body.adm-overlay-open {

@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS `restaurants` (
   `subscription_started_at` TIMESTAMP NULL DEFAULT NULL,
   `subscription_ends_at` TIMESTAMP NULL DEFAULT NULL,
   `subscription_amount_cfa` DECIMAL(12, 0) NOT NULL DEFAULT 0,
+  `subscription_plan_key` VARCHAR(48) NULL DEFAULT NULL,
   `menu_suspended` TINYINT(1) NOT NULL DEFAULT 0,
   `description` TEXT NULL,
   `whatsapp` VARCHAR(32) NULL,

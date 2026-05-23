@@ -10,6 +10,13 @@
 
   var state = { page: 1, q: "", status: "all", loading: false, totalPages: 0, total: 0 };
 
+  var modalRestaurantId = null;
+
+  var adjustInitialPlanKey = "";
+
+  /** Plans du catalogue plateforme (Admin → Paramètres), repris depuis l’API abonnements. */
+  var plansCatalog = [];
+
   function escapeHtml(v) {
     return String(v == null ? "" : v)
       .replace(/&/g, "&amp;")
@@ -17,6 +24,151 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
+  }
+
+  /** Même contraintes que le backend (`normalizePlanKey`). */
+  function sanitizePlanKeyClient(v) {
+    if (v === undefined || v === null) return "";
+    return String(v)
+      .trim()
+      .toLowerCase()
+      .slice(0, 48)
+      .replace(/[^a-z0-9_-]/g, "");
+  }
+
+  function planChoiceLabel(plan) {
+    var id = sanitizePlanKeyClient(plan.id);
+    if (!id) return "Plan";
+    var name = String(plan.name || id).trim() || id;
+    var lbl = name + " (" + id + ")";
+    var priceTag = "";
+    if (plan.price_cfa !== undefined && plan.price_cfa !== null) {
+      priceTag = " · " + formatCFA(Math.round(Number(plan.price_cfa) || 0));
+    }
+    var mo = Math.round(Number(plan.months) || 1);
+    var moSuffix = mo !== 1 ? " / " + mo + " mo." : "";
+    return lbl + priceTag + moSuffix;
+  }
+
+  function appendPlanOption(sel, value, label) {
+    var o = document.createElement("option");
+    o.value = value;
+    o.textContent = label;
+    sel.appendChild(o);
+  }
+
+  /**
+   * kind: `picker` = liste pour Activer/Renouveler (avec « ne pas changer »).
+   *        `adjust` = modale ajustement (essai + catalogue + « retirer »).
+   */
+  function fillPlanChoiceSelect(sel, kind) {
+    if (!sel) return;
+    sel.innerHTML = "";
+    if (kind === "picker") {
+      appendPlanOption(sel, "", "— Ne pas modifier le plan —");
+    }
+    appendPlanOption(sel, "trial", "Essai (trial)");
+    var seen = {};
+    seen.trial = true;
+    plansCatalog.forEach(function (p) {
+      var id = sanitizePlanKeyClient(p.id);
+      if (!id || id === "trial" || seen[id]) return;
+      seen[id] = true;
+      appendPlanOption(sel, id, planChoiceLabel(p));
+    });
+    if (kind === "adjust") {
+      appendPlanOption(sel, "", "— Retirer la clé plan —");
+    }
+  }
+
+  function refillAdjustPlanSelect(serverKeyRaw) {
+    var sel = document.getElementById("subs-adj-plan-key");
+    if (!sel || sel.tagName !== "SELECT") return;
+    fillPlanChoiceSelect(sel, "adjust");
+    var k = sanitizePlanKeyClient(serverKeyRaw);
+    var has = Array.prototype.some.call(sel.options, function (o) {
+      return String(o.value) === k && k !== "";
+    });
+    if (k !== "" && !has) {
+      var opt = document.createElement("option");
+      opt.value = k;
+      opt.textContent = k + " (plan actuel)";
+      if (sel.lastChild && sel.options.length >= 2) sel.insertBefore(opt, sel.lastChild);
+      else sel.appendChild(opt);
+    }
+    sel.value = k;
+  }
+
+  function fallbackPlanPickWithPrompt() {
+    return new Promise(function (resolve) {
+      var ids = {};
+      var keyList = [];
+      ids.trial = true;
+      keyList.push("trial");
+      plansCatalog.forEach(function (p) {
+        var id = sanitizePlanKeyClient(p.id);
+        if (!id || id === "trial" || ids[id]) return;
+        ids[id] = true;
+        keyList.push(id);
+      });
+
+      var help =
+        "Tapez une clé de plan parmi : " +
+        keyList.join(", ") +
+        " — laissez vide pour ne pas modifier le plan.";
+      var raw = window.prompt(help, "");
+      if (raw === null) {
+        resolve(null);
+        return;
+      }
+      resolve(sanitizePlanKeyClient(raw));
+    });
+  }
+
+  function openPlanPickDialog() {
+    var dlg = document.getElementById("subs-plan-picker");
+    var sel = document.getElementById("subs-plan-picker-select");
+    if (!dlg || !sel || typeof dlg.showModal !== "function") {
+      return fallbackPlanPickWithPrompt();
+    }
+
+    fillPlanChoiceSelect(sel, "picker");
+
+    var okBtn = document.getElementById("subs-plan-picker-ok");
+    var cancelBtn = document.getElementById("subs-plan-picker-cancel");
+    if (!okBtn || !cancelBtn) {
+      return fallbackPlanPickWithPrompt();
+    }
+
+    return new Promise(function (resolve) {
+      var NOTHING = {};
+      var route = NOTHING;
+
+      function onCloseDone() {
+        dlg.removeEventListener("close", onCloseDone);
+        if (route === NOTHING || route === false) resolve(null);
+        else resolve(route);
+      }
+
+      dlg.addEventListener("close", onCloseDone);
+
+      okBtn.onclick = function () {
+        route = sanitizePlanKeyClient(sel.value);
+        dlg.close();
+      };
+
+      cancelBtn.onclick = function () {
+        route = false;
+        dlg.close();
+      };
+
+      try {
+        dlg.showModal();
+      } catch (e) {
+        dlg.removeEventListener("close", onCloseDone);
+        fallbackPlanPickWithPrompt().then(resolve);
+      }
+    });
   }
 
   function getApiBase() {
@@ -252,7 +404,7 @@
   }
 
   function tbodyPlaceholder(m) {
-    return '<tr class="adm-table__placeholder"><td colspan="8">' + escapeHtml(m) + "</td></tr>";
+    return '<tr class="adm-table__placeholder"><td colspan="9">' + escapeHtml(m) + "</td></tr>";
   }
 
   async function loadSubscriptions() {
@@ -315,6 +467,9 @@
     }
 
     var list = res.data.subscriptions;
+    if (Array.isArray(res.data.subscription_plans)) {
+      plansCatalog = res.data.subscription_plans.slice(0, 12);
+    }
     state.totalPages = Number(res.data.totalPages) || 0;
     state.total = Number(res.data.total) || 0;
 
@@ -343,7 +498,9 @@
           '<strong class="subs-name-strong">' +
           escapeHtml(row.name) +
           "</strong>" +
-          "</td><td class=\"subs-col-email subs-email-muted\">" +
+          '</td><td><span class="subs-plan-chip">' +
+          escapeHtml(row.subscription_plan_label || "—") +
+          '</span></td><td class="subs-col-email subs-email-muted">' +
           escapeHtml(row.owner_email || "") +
           "</td><td>" +
           escapeHtml(formatDate(row.subscription_started_at)) +
@@ -373,6 +530,9 @@
           '<strong class="subs-name-strong">' +
           escapeHtml(row.name) +
           "</strong>" +
+          '<div class="subs-email-muted subs-plan-chip">' +
+          escapeHtml(row.subscription_plan_label || "—") +
+          '</div>' +
           '<div class="subs-email-muted">' +
           escapeHtml(row.owner_email || "") +
           "</div>" +
@@ -475,6 +635,7 @@
 
   async function openDetail(idStr) {
     var token = localStorage.getItem(TOKEN_KEY);
+    modalRestaurantId = idStr;
     setModal(true);
     document.getElementById("adm-subs-detail-title").textContent = "Chargement…";
 
@@ -496,6 +657,11 @@
     }
 
     var s = res.data.subscription;
+
+    if (Array.isArray(res.data.subscription_plans)) {
+      plansCatalog = res.data.subscription_plans.slice(0, 12);
+    }
+
     document.getElementById("adm-subs-detail-title").textContent = s.name || "Restaurant";
 
     var own = document.getElementById("adm-subs-detail-owner");
@@ -507,6 +673,10 @@
 
     document.getElementById("subs-d-id").textContent = String(s.restaurant_id);
     document.getElementById("subs-d-city").textContent = s.city || "—";
+    var planDdEl = document.getElementById("subs-d-plan");
+    if (planDdEl) planDdEl.textContent = s.subscription_plan_label || "—";
+
+    adjustInitialPlanKey = s.subscription_plan_key ? String(s.subscription_plan_key).trim().toLowerCase() : "";
 
     document.getElementById("subs-d-start").textContent = formatDate(s.subscription_started_at);
     document.getElementById("subs-d-end").textContent = formatDate(s.subscription_ends_at);
@@ -528,6 +698,76 @@
       dsc.hidden = false;
     } else if (dsc) {
       dsc.hidden = true;
+    }
+
+    var adjBox = document.getElementById("subs-adjust-box");
+    var dAdj = document.getElementById("subs-adj-date");
+    var addAdj = document.getElementById("subs-adj-add-days");
+    if (adjBox) adjBox.removeAttribute("hidden");
+    if (dAdj) dAdj.value = "";
+    if (addAdj) addAdj.value = "";
+    refillAdjustPlanSelect(s.subscription_plan_key);
+  }
+
+  async function submitSubscriptionAdjust() {
+    var idStr = modalRestaurantId;
+    if (!idStr) return;
+
+    var token = localStorage.getItem(TOKEN_KEY);
+    if (!token) {
+      clearSessionAndRedirectLogin();
+      return;
+    }
+
+    var dEl = document.getElementById("subs-adj-date");
+    var addEl = document.getElementById("subs-adj-add-days");
+    var pkEl = document.getElementById("subs-adj-plan-key");
+
+    var dateStr = dEl && dEl.value ? String(dEl.value).trim() : "";
+    var addRaw = addEl ? String(addEl.value || "").trim() : "";
+    var addNum = Number(addRaw);
+
+    var hasDt = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(dateStr);
+    var hasAdd = addRaw !== "" && Number.isFinite(addNum) && addNum !== 0;
+
+    if (hasDt && hasAdd) {
+      showAccessBanner("Choisissez soit une date de fin, soit une valeur en jours — pas les deux.", "error");
+      return;
+    }
+
+    var body = {};
+    if (hasDt) body.subscription_ends_at = dateStr;
+    else if (hasAdd) body.add_days = Math.round(addNum);
+
+    var initialPk = adjustInitialPlanKey ? String(adjustInitialPlanKey).trim().toLowerCase() : "";
+    if (pkEl) {
+      var cleaned = sanitizePlanKeyClient(pkEl.value);
+      var currentNorm = cleaned;
+      var initialNorm = sanitizePlanKeyClient(initialPk);
+      if (currentNorm !== initialNorm) {
+        body.subscription_plan_key = cleaned === "" ? null : cleaned;
+      }
+    }
+
+    if (!Object.keys(body).length) {
+      showAccessBanner("Modifiez au moins un champ avant d’enregistrer.", "warning");
+      return;
+    }
+
+    var res = await fetchJson(
+      "PATCH",
+      "/api/admin/subscriptions/" + encodeURIComponent(idStr) + "/adjust",
+      token,
+      { body: body },
+    );
+
+    if (res.status === 401) clearSessionAndRedirectLogin();
+    else if (!res.ok)
+      showAccessBanner((res.data && res.data.message) || "Ajustement impossible.", "error");
+    else {
+      hideAccessBanner();
+      setModal(false);
+      await loadSubscriptions();
     }
   }
 
@@ -556,6 +796,10 @@
     var token = localStorage.getItem(TOKEN_KEY);
     var body = { period_days: pd };
     if (amt !== undefined) body.subscription_amount_cfa = amt;
+
+    var pkPick = await openPlanPickDialog();
+    if (pkPick === null) return;
+    if (pkPick) body.subscription_plan_key = pkPick;
 
     var res = await fetchJson(
       "POST",
@@ -616,6 +860,10 @@
     var body = { months: months };
     if (amt !== undefined) body.subscription_amount_cfa = amt;
 
+    var pkPick = await openPlanPickDialog();
+    if (pkPick === null) return;
+    if (pkPick) body.subscription_plan_key = pkPick;
+
     var res = await fetchJson(
       "POST",
       "/api/admin/subscriptions/" + encodeURIComponent(idStr) + "/renew",
@@ -653,6 +901,13 @@
       state.page = 1;
       loadSubscriptions();
     });
+
+    var adjSendBtn = document.getElementById("subs-adj-send");
+    if (adjSendBtn) {
+      adjSendBtn.addEventListener("click", function () {
+        submitSubscriptionAdjust();
+      });
+    }
 
     var panel = document.getElementById("adm-subs-panel");
     panel.addEventListener("click", function (e) {

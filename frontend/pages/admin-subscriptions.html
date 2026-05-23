@@ -141,6 +141,7 @@
                 <thead>
                   <tr>
                     <th scope="col">Restaurant</th>
+                    <th scope="col">Plan</th>
                     <th scope="col" class="subs-col-email">Propriétaire</th>
                     <th scope="col">Début abonnement</th>
                     <th scope="col">Fin abonnement</th>
@@ -152,7 +153,7 @@
                 </thead>
                 <tbody id="subs-body">
                   <tr class="adm-table__placeholder">
-                    <td colspan="8">Chargement…</td>
+                    <td colspan="9">Chargement…</td>
                   </tr>
                 </tbody>
               </table>
@@ -195,6 +196,10 @@
             <dd id="subs-d-city"></dd>
           </div>
           <div class="adm-detail-kv-row">
+            <dt>Plan affiché</dt>
+            <dd id="subs-d-plan"></dd>
+          </div>
+          <div class="adm-detail-kv-row">
             <dt>Début</dt>
             <dd id="subs-d-start"></dd>
           </div>
@@ -227,9 +232,50 @@
             <dd id="subs-d-created"></dd>
           </div>
         </dl>
+        <div id="subs-adjust-box" class="subs-adjust-box" hidden>
+          <h4 id="subs-adjust-title" class="subs-adjust-title">Ajuster durée ou plan</h4>
+          <p class="subs-adjust-hint">
+            Choisissez la <strong>date de fin</strong>, ou des <strong>jours à ajouter</strong> (<strong>pas les deux</strong>), ou modifiez le
+            <strong>plan</strong> (catalogue défini sous Paramètres).
+          </p>
+          <div class="subs-adjust-fields">
+            <label class="subs-adjust-label">
+              <span>Fin (date)</span>
+              <input type="date" id="subs-adj-date" autocomplete="off" />
+            </label>
+            <label class="subs-adjust-label">
+              <span>Ajouter des jours</span>
+              <input type="number" id="subs-adj-add-days" min="-3660" max="3660" step="1" placeholder="± jours" />
+            </label>
+            <label class="subs-adjust-label">
+              <span>Plan</span>
+              <select id="subs-adj-plan-key" autocomplete="off"></select>
+            </label>
+          </div>
+          <button type="button" class="adm-btn adm-btn--primary" id="subs-adj-send">Enregistrer les changements</button>
+        </div>
         <p id="subs-d-desc" class="adm-muted-inline" hidden></p>
       </div>
     </div>
+
+    <dialog id="subs-plan-picker" class="subs-plan-picker" aria-labelledby="subs-plan-picker-title">
+      <div class="subs-plan-picker__panel">
+        <h3 id="subs-plan-picker-title" class="subs-plan-picker__title">Choisir un plan</h3>
+        <p id="subs-plan-picker-hint" class="subs-plan-picker__hint">
+          Catalogue défini sous <strong>Paramètres</strong> → <strong>Plans d’abonnement</strong>.
+        </p>
+        <label class="subs-plan-picker__label">
+          <span class="subs-plan-picker__labeltxt">Plan</span>
+          <select id="subs-plan-picker-select" autocomplete="off"></select>
+        </label>
+        <div class="subs-plan-picker__actions">
+          <button type="button" class="adm-btn" id="subs-plan-picker-cancel">Annuler</button>
+          <button type="button" class="adm-btn adm-btn--primary" id="subs-plan-picker-ok">
+            Continuer
+          </button>
+        </div>
+      </div>
+    </dialog>
 
     <script src="../js/config.js"></script>
     <script src="../js/admin-subscriptions.js"></script>

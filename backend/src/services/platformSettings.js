@@ -15,6 +15,8 @@ function getDefaults() {
       { id: "pro", name: "Pro", price_cfa: 15000, months: 1 },
       { id: "business", name: "Business", price_cfa: 35000, months: 1 },
     ],
+    /** Durée d’essai gratuit à l’inscription (jours), appliquée aux nouveaux restaurants. */
+    trial_period_days: 30,
     upload_max_mb: 5,
   };
 }
@@ -73,6 +75,10 @@ function rebuildFromStored(storedRaw) {
 
   CACHE.subscription_plans = sanitizePlans(stored.subscription_plans);
 
+  var tpd = Number(stored.trial_period_days);
+  if (!Number.isFinite(tpd)) tpd = base.trial_period_days;
+  CACHE.trial_period_days = Math.min(365, Math.max(1, Math.round(tpd)));
+
   var umb = Number(stored.upload_max_mb);
   if (!Number.isFinite(umb)) umb = base.upload_max_mb;
   CACHE.upload_max_mb = Math.min(64, Math.max(1, Math.round(umb)));
@@ -103,6 +109,7 @@ async function savePartial(patch) {
   var touch =
     patch.maintenance_mode !== undefined ||
     patch.subscription_plans !== undefined ||
+    patch.trial_period_days !== undefined ||
     patch.upload_max_mb !== undefined;
 
   if (!touch) {
@@ -117,6 +124,13 @@ async function savePartial(patch) {
 
   if (patch.subscription_plans !== undefined) {
     CACHE.subscription_plans = sanitizePlans(patch.subscription_plans);
+  }
+
+  if (patch.trial_period_days !== undefined) {
+    var tpd2 = Number(patch.trial_period_days);
+    if (Number.isFinite(tpd2)) {
+      CACHE.trial_period_days = Math.min(365, Math.max(1, Math.round(tpd2)));
+    }
   }
 
   if (patch.upload_max_mb !== undefined) {
@@ -144,8 +158,22 @@ function getSnapshot() {
   return deepClone({
     maintenance_mode: CACHE.maintenance_mode,
     subscription_plans: CACHE.subscription_plans,
+    trial_period_days: CACHE.trial_period_days,
     upload_max_mb: CACHE.upload_max_mb,
   });
+}
+
+/** Lecture synchrone (cache déjà chargé au boot / après refresh admin). */
+function getTrialPeriodDays() {
+  var d = Number(CACHE.trial_period_days);
+  if (!Number.isFinite(d) || d < 1) {
+    return 30;
+  }
+  return Math.min(365, Math.round(d));
+}
+
+function getSubscriptionPlansCatalog() {
+  return deepClone(CACHE.subscription_plans);
 }
 
 /** Menu public synchrone. */
@@ -170,4 +198,6 @@ module.exports = {
   getSnapshot: getSnapshot,
   isMaintenanceEnabled: isMaintenanceEnabled,
   getUploadMaxBytes: getUploadMaxBytes,
+  getTrialPeriodDays: getTrialPeriodDays,
+  getSubscriptionPlansCatalog: getSubscriptionPlansCatalog,
 };

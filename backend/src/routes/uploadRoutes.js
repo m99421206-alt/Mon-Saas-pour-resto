@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
 const requireAuth = require("../middlewares/authMiddleware");
+const requireRestaurantMenuEdit = require("../middlewares/subscriptionEditMiddleware");
 var platformSettings = require("../services/platformSettings");
 const { appendAudit, AUDIT_ACTIONS, getRestaurantIdForUserAudit } = require("../utils/auditLog");
 
@@ -49,7 +50,7 @@ function buildUploadMw() {
 
 router.use(requireAuth);
 
-router.post("/", function (req, res) {
+router.post("/", requireRestaurantMenuEdit, function (req, res) {
   var maxBytes = platformSettings.getUploadMaxBytes();
   var maxMb = Math.round((maxBytes / (1024 * 1024)) * 10) / 10;
 

@@ -2088,3 +2088,517 @@ a.dash-qr-btn {
     width: 20rem;
   }
 }
+
+/* ——— Bannière abonnement (essai / actif / expiré) ——— */
+.dash-sub-banner {
+  margin: clamp(1rem, 3vw, 1.75rem) 1.05rem 0;
+  max-width: 48rem;
+  padding: clamp(1rem, 3vw, 1.35rem);
+  border-radius: 18px;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  box-shadow:
+    0 4px 18px rgba(15, 23, 42, 0.05),
+    0 1px 0 rgba(255, 255, 255, 0.96) inset;
+  background: #fff;
+}
+
+.dash-sub-banner__title {
+  margin: 0 0 0.45rem;
+  font-size: 1.06rem;
+  font-weight: 800;
+}
+
+.dash-sub-banner__lead {
+  margin: 0 0 0.55rem;
+  font-size: 0.925rem;
+  line-height: 1.48;
+}
+
+.dash-sub-banner__muted {
+  margin: 0 0 0.85rem;
+  font-size: 0.8rem;
+  color: rgba(17, 24, 39, 0.5);
+}
+
+.dash-sub-banner__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.62rem 1.2rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.84rem;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid rgba(234, 88, 12, 0.45);
+  color: rgba(154, 52, 18, 1);
+  background: rgba(255, 237, 213, 0.75);
+}
+
+.dash-sub-banner__cta:focus-visible {
+  outline: 2px solid rgba(234, 88, 12, 0.9);
+  outline-offset: 2px;
+}
+
+.dash-sub-banner--trial {
+  border-color: rgba(245, 158, 11, 0.28);
+  background: linear-gradient(135deg, #fffbeb 0%, #fff 55%);
+}
+
+.dash-sub-banner--active {
+  border-color: rgba(34, 197, 94, 0.3);
+  background: linear-gradient(135deg, #ecfdf5 0%, #fff 54%);
+}
+
+.dash-sub-banner--active .dash-sub-banner__cta {
+  border-color: rgba(34, 197, 94, 0.4);
+  color: rgba(6, 78, 59, 1);
+  background: rgba(209, 250, 229, 0.75);
+}
+
+.dash-sub-banner--expired {
+  border-color: rgba(239, 68, 68, 0.28);
+  background: linear-gradient(135deg, #fef2f2 0%, #fff 52%);
+}
+
+.dash-sub-banner--expired .dash-sub-banner__title {
+  color: rgba(127, 29, 29, 1);
+}
+
+.dash-sub-banner--suspended {
+  border-color: rgba(148, 163, 184, 0.5);
+  background: rgba(248, 250, 252, 0.95);
+  color: rgba(51, 65, 85, 1);
+}
+
+.dash-sub-banner--expired .dash-sub-banner__cta,
+.dash-sub-banner--trial .dash-sub-banner__cta {
+  border-color: rgba(251, 146, 60, 0.45);
+  color: rgba(154, 52, 18, 1);
+  background: rgba(255, 237, 213, 0.85);
+}
+
+/* ——— Bannière dashboard : essai / abonnement expiré → WhatsApp ——— */
+.dash-trial-expired-banner {
+  margin: clamp(0.85rem, 2.8vw, 1.35rem) clamp(1rem, 3vw, 1.05rem) 0;
+  max-width: 48rem;
+}
+
+.dash-trial-expired-banner[hidden] {
+  display: none !important;
+}
+
+.dash-trial-expired-banner__inner {
+  display: flex;
+  gap: clamp(0.85rem, 3vw, 1.25rem);
+  align-items: flex-start;
+  padding: clamp(1rem, 3.2vw, 1.4rem);
+  border-radius: 18px;
+  border: 1px solid rgba(239, 68, 68, 0.32);
+  background: linear-gradient(145deg, #fef2f2 0%, #fffdfb 62%);
+  box-shadow:
+    0 6px 28px rgba(127, 29, 29, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.dash-trial-expired-banner__glyph {
+  margin: 0;
+  flex-shrink: 0;
+  font-size: clamp(1.75rem, 5vw, 2.35rem);
+  line-height: 1;
+}
+
+.dash-trial-expired-banner__content {
+  min-width: 0;
+}
+
+.dash-trial-expired-banner__title {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.05rem, 3.8vw, 1.35rem);
+  font-weight: 800;
+  color: rgb(127, 29, 29);
+}
+
+.dash-trial-expired-banner__subtitle {
+  margin: 0 0 1rem;
+  font-size: clamp(0.865rem, 2.9vw, 0.935rem);
+  line-height: 1.52;
+  color: rgba(17, 24, 39, 0.68);
+}
+
+.dash-trial-expired-banner__cta-wrap {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.dash-trial-expired-banner__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.05rem;
+  padding: 0.75rem clamp(1.35rem, 5vw, 2.25rem);
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: clamp(0.918rem, 3.2vw, 1rem);
+  text-decoration: none;
+  cursor: pointer;
+  color: #fff;
+  background: linear-gradient(160deg, #25d366 0%, #16a34a 100%);
+  border: 1px solid rgba(22, 101, 52, 0.45);
+  box-shadow:
+    0 4px 18px rgba(22, 163, 74, 0.32),
+    0 2px 0 rgba(255, 255, 255, 0.12) inset;
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.dash-trial-expired-banner__cta:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 26px rgba(22, 163, 74, 0.4),
+    0 2px 0 rgba(255, 255, 255, 0.12) inset;
+}
+
+.dash-trial-expired-banner__cta:active {
+  transform: translateY(0);
+}
+
+.dash-trial-expired-banner__cta:focus-visible {
+  outline: 3px solid rgba(234, 88, 12, 0.55);
+  outline-offset: 3px;
+}
+
+.dash-trial-expired-banner__footer {
+  margin: 1rem 0 0;
+  padding: 0;
+  font-size: 0.81rem;
+}
+
+.dash-trial-expired-banner__link {
+  color: rgba(154, 52, 18, 0.95);
+  font-weight: 600;
+}
+
+.dash-trial-expired-banner__link:focus-visible {
+  outline: 2px solid rgba(234, 88, 12, 0.7);
+  outline-offset: 2px;
+}
+
+/* ——— Carte « Mon abonnement » ——— */
+.dash-my-sub {
+  scroll-margin-top: clamp(72px, 12vw, 96px);
+  margin: clamp(1rem, 3vw, 1.5rem) clamp(1rem, 3vw, 1.05rem)
+    clamp(0.85rem, 2.5vw, 1rem);
+}
+
+.dash-my-sub__card {
+  max-width: 48rem;
+  border-radius: 20px;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  box-shadow:
+    0 6px 24px rgba(15, 23, 42, 0.07),
+    0 2px 0 rgba(255, 255, 255, 0.65) inset;
+  background: #fff;
+  padding: clamp(1.15rem, 3.5vw, 1.5rem);
+}
+
+.dash-my-sub--trial .dash-my-sub__card {
+  border-color: rgba(245, 158, 11, 0.28);
+  background: linear-gradient(145deg, #fffbeb 0%, #ffffff 62%);
+}
+
+.dash-my-sub--active .dash-my-sub__card {
+  border-color: rgba(34, 197, 94, 0.35);
+  background: linear-gradient(145deg, #ecfdf5 0%, #ffffff 62%);
+}
+
+.dash-my-sub--expired .dash-my-sub__card {
+  border-color: rgba(239, 68, 68, 0.32);
+  background: linear-gradient(145deg, #fef2f2 0%, #ffffff 65%);
+}
+
+.dash-my-sub--suspended .dash-my-sub__card {
+  border-color: rgba(148, 163, 184, 0.42);
+  background: rgba(248, 250, 252, 0.98);
+}
+
+.dash-my-sub__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.85rem;
+  margin-bottom: 1.1rem;
+}
+
+.dash-my-sub__titlewrap {
+  min-width: 0;
+}
+
+.dash-my-sub__titlewrap h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.dash-my-sub__icon {
+  font-size: 1.35rem;
+  line-height: 1;
+  margin-right: 0.08em;
+}
+
+.dash-my-sub__badge-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.dash-my-sub-badge {
+  display: inline-flex;
+  padding: 0.22rem 0.72rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.dash-my-sub-badge--active {
+  color: rgb(21, 128, 61);
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.42);
+}
+
+.dash-my-sub-badge--trial {
+  color: rgb(180, 83, 9);
+  background: rgba(253, 230, 138, 0.45);
+  border: 1px solid rgba(245, 158, 11, 0.52);
+}
+
+.dash-my-sub-badge--expired {
+  color: rgb(153, 27, 27);
+  background: rgba(254, 202, 202, 0.45);
+  border: 1px solid rgba(239, 68, 68, 0.42);
+}
+
+.dash-my-sub-badge--suspended {
+  color: rgb(71, 85, 105);
+  background: rgba(226, 232, 240, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.52);
+}
+
+.dash-my-sub__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 520px) {
+  .dash-my-sub__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.dash-my-sub__item {
+  border-radius: 14px;
+  padding: 0.78rem 0.92rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(17, 24, 39, 0.07);
+}
+
+.dash-my-sub__item-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(17, 24, 39, 0.45);
+  margin-bottom: 0.28rem;
+}
+
+.dash-my-sub__item-val {
+  font-size: 0.985rem;
+  font-weight: 700;
+}
+
+.dash-my-sub__muted {
+  font-size: 0.84rem;
+  color: rgba(17, 24, 39, 0.55);
+  line-height: 1.52;
+}
+
+.dash-my-sub__alert {
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.895rem;
+  line-height: 1.54;
+}
+
+.dash-my-sub__alert--trial {
+  border: 1px solid rgba(245, 158, 11, 0.42);
+  background: rgba(255, 247, 237, 0.85);
+  color: rgb(146, 64, 14);
+}
+
+.dash-my-sub__alert--trial p {
+  margin: 0;
+}
+
+.dash-my-sub__alert--trial p + p {
+  margin-top: 0.4rem;
+}
+
+.dash-my-sub__trial-after-label {
+  margin-top: 0.75rem !important;
+  padding-top: 0.65rem !important;
+  border-top: 1px dashed rgba(245, 158, 11, 0.35);
+  font-weight: 600;
+  font-size: 0.895rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: rgba(146, 64, 14, 0.88);
+}
+
+.dash-my-sub__trial-plan-line {
+  margin-top: 0.35rem !important;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: rgb(124, 45, 18);
+}
+
+.dash-my-sub__trial-countdown {
+  margin-top: 0.05rem !important;
+  font-size: 0.88rem !important;
+}
+
+.dash-my-sub__alert--expired {
+  border: 1px solid rgba(239, 68, 68, 0.42);
+  background: rgba(254, 242, 242, 0.9);
+  color: rgb(127, 29, 29);
+}
+
+.dash-my-sub__alert--muted {
+  border: 1px dashed rgba(17, 24, 39, 0.12);
+  background: rgba(249, 250, 251, 0.85);
+}
+
+.dash-my-sub__cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-bottom: 0.35rem;
+}
+
+.dash-my-sub__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.62rem 1.05rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.dash-my-sub__btn:hover {
+  transform: translateY(-1px);
+}
+
+.dash-my-sub__btn:active {
+  transform: translateY(0);
+}
+
+.dash-my-sub__btn:focus-visible {
+  outline: 2px solid rgba(234, 88, 12, 0.85);
+  outline-offset: 2px;
+}
+
+.dash-my-sub__btn--renew {
+  color: rgb(154, 52, 18);
+  background: rgba(255, 237, 213, 0.9);
+  border-color: rgba(251, 146, 60, 0.5);
+}
+
+.dash-my-sub__btn--plans {
+  color: rgba(51, 65, 85, 1);
+  background: rgba(248, 250, 252, 0.95);
+  border-color: rgba(148, 163, 184, 0.52);
+}
+
+.dash-my-sub__btn--plans[aria-expanded="true"] {
+  border-color: rgba(234, 88, 12, 0.45);
+  color: rgb(154, 52, 18);
+}
+
+.dash-my-sub__btn--whatsapp {
+  color: rgb(255, 255, 255);
+  background: #25d366;
+  border-color: rgba(16, 120, 72, 0.45);
+}
+
+.dash-my-sub__btn--ghost {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.dash-my-sub__plans-panel {
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed rgba(17, 24, 39, 0.12);
+}
+
+.dash-my-sub__plans-panel[hidden] {
+  display: none !important;
+}
+
+.dash-my-sub__plans-title {
+  margin: 0 0 0.65rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.dash-my-sub__plans-cards {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.6rem;
+}
+
+@media (min-width: 620px) {
+  .dash-my-sub__plans-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.dash-my-sub__plan-mini {
+  border-radius: 14px;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  padding: 0.78rem 0.92rem;
+  background: rgba(249, 250, 251, 0.75);
+}
+
+.dash-my-sub__plan-mini-title {
+  font-weight: 800;
+  font-size: 0.88rem;
+  margin-bottom: 0.2rem;
+}
+
+.dash-my-sub__plan-mini-id {
+  font-size: 0.72rem;
+  color: rgba(17, 24, 39, 0.45);
+  margin-bottom: 0.4rem;
+}
