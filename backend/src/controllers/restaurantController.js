@@ -1,5 +1,6 @@
 const { getPool } = require("../config/database");
 const { removeUnusedUploads } = require("../utils/uploadCleanup");
+const { normalizeWhatsapp: normalizeWhatsappField } = require("../utils/whatsappNormalize");
 
 function normalizeText(value) {
   if (value == null) {
@@ -7,19 +8,6 @@ function normalizeText(value) {
   }
   var text = String(value).trim();
   return text.length ? text : null;
-}
-
-function normalizeWhatsapp(value) {
-  var text = normalizeText(value);
-  if (!text) {
-    return null;
-  }
-
-  var cleaned = text.replace(/\s+/g, "");
-  if (!/^\+?[0-9]{8,20}$/.test(cleaned)) {
-    return false;
-  }
-  return cleaned;
 }
 
 function normalizeThemeColor(value) {
@@ -70,7 +58,7 @@ async function updateMyRestaurant(req, res) {
   try {
     var name = normalizeText(req.body.name || req.body.restaurantName);
     var description = normalizeText(req.body.description);
-    var whatsapp = normalizeWhatsapp(req.body.whatsapp);
+    var whatsapp = normalizeWhatsappField(req.body.whatsapp);
     var logoUrl = normalizeText(req.body.logo_url || req.body.logoUrl);
     var bannerUrl = normalizeText(req.body.banner_url || req.body.bannerUrl);
     var themeColor = normalizeThemeColor(req.body.theme_color || req.body.themeColor);

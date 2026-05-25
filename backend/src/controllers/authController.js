@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const { getPool } = require("../config/database");
 const { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
 const platformSettings = require("../services/platformSettings");
+const { normalizeWhatsapp } = require("../utils/whatsappNormalize");
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").toLowerCase());
@@ -37,6 +38,14 @@ async function register(req, res) {
     return res.status(400).json({ message: "Le mot de passe doit contenir au moins 8 caractères." });
   }
 
+  const whatsappNormalized = normalizeWhatsapp(req.body.whatsapp);
+  if (whatsappNormalized === null) {
+    return res.status(400).json({ message: "Le numéro WhatsApp pour les commandes est obligatoire." });
+  }
+  if (whatsappNormalized === false) {
+    return res.status(400).json({ message: "Numéro WhatsApp invalide. Exemple : +22370000000" });
+  }
+
   const pool = getPool();
   const connection = await pool.getConnection();
 
@@ -62,14 +71,14 @@ async function register(req, res) {
     const trialDays = platformSettings.getTrialPeriodDays();
     const [restaurantResult] = await connection.query(
       "INSERT INTO restaurants " +
-        "(user_id, name, description, subscription_status, subscription_started_at, subscription_ends_at, subscription_amount_cfa, subscription_plan_key) " +
-        "VALUES (?, ?, ?, 'trial', NOW(), DATE_ADD(NOW(), INTERVAL ? DAY), 0, 'trial')",
-      [userId, restaurantName, null, trialDays],
+        "(user_id, name, description, whatsapp, subscription_status, subscription_started_at, subscription_ends_at, subscription_amount_cfa, subscription_plan_key) " +
+        "VALUES (?, ?, ?, ?, 'trial', NOW(), DATE_ADD(NOW(), INTERVAL ? DAY), 0, 'trial')",
+      [userId, restaurantName, null, whatsappNormalized, trialDays],
     );
 
     const restaurantId = restaurantResult.insertId;
     const [[restaurantRow]] = await connection.query(
-      "SELECT id, name, subscription_status, subscription_started_at, subscription_ends_at, subscription_plan_key FROM restaurants WHERE id = ? LIMIT 1",
+      "SELECT id, name, whatsapp, subscription_status, subscription_started_at, subscription_ends_at, subscription_plan_key FROM restaurants WHERE id = ? LIMIT 1",
       [restaurantId],
     );
 
@@ -94,6 +103,7 @@ async function register(req, res) {
       restaurant: {
         id: restaurantRow.id,
         name: restaurantRow.name,
+        whatsapp: restaurantRow.whatsapp,
         subscription_status: restaurantRow.subscription_status,
         subscription_started_at: restaurantRow.subscription_started_at
           ? new Date(restaurantRow.subscription_started_at).toISOString()
@@ -145,7 +155,7 @@ async function login(req, res) {
     }
 
     const [restaurants] = await pool.query(
-      "SELECT id, name, subscription_status, subscription_started_at, subscription_ends_at, subscription_plan_key, subscription_amount_cfa FROM restaurants WHERE user_id = ? ORDER BY id ASC LIMIT 1",
+      "SELECT id, name, whatsapp, subscription_status, subscription_started_at, subscription_ends_at, subscription_plan_key, subscription_amount_cfa FROM restaurants WHERE user_id = ? ORDER BY id ASC LIMIT 1",
       [user.id],
     );
 

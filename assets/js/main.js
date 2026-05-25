@@ -8,11 +8,15 @@
 (function () {
   "use strict";
 
-  /** Sélecteur des éléments à animer à l’entrée dans le viewport */
+  /** Numéro WhatsApp équipe AfricaMenu pour les demandes depuis la landing (chiffres, indicatif inclus, sans espaces obligatoires) */
+  const LANDING_SUPPORT_WHATSAPP =
+    typeof window.AFRICA_LANDING_WHATSAPP === "string" && window.AFRICA_LANDING_WHATSAPP.trim()
+      ? window.AFRICA_LANDING_WHATSAPP.trim()
+      : "22399421206";
   const REVEAL_SELECTOR = "[data-reveal]";
 
   /**
-   * Active l’IntersectionObserver si disponible pour ajouter .is-visible
+   * Active l’IntersectionObserver si disponible pour ajouter .is-visible.
    */
   function initScrollReveal() {
     const nodes = document.querySelectorAll(REVEAL_SELECTOR);
@@ -75,7 +79,24 @@
     if (el) el.textContent = String(new Date().getFullYear());
   }
 
+  function initLandingWhatsAppLinks() {
+    const digits = String(LANDING_SUPPORT_WHATSAPP || "").replace(/\D/g, "");
+    if (!digits.length) return;
+
+    document.querySelectorAll("a[data-wa-message]").forEach((link) => {
+      const raw = link.getAttribute("data-wa-message") || "";
+      const text = raw.trim();
+      const encoded = encodeURIComponent(
+        text || "Bonjour, je souhaite des informations sur AfricaMenu pour mon restaurant."
+      );
+      link.href = `https://wa.me/${digits}?text=${encoded}`;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
+    initLandingWhatsAppLinks();
     initScrollReveal();
     initInternalAnchors();
     initCtaHooks();

@@ -73,7 +73,7 @@
           </div>
 
           <div class="param-field">
-            <label class="param-field__label" for="whatsapp-number">Numéro WhatsApp pour les commandes</label>
+            <label class="param-field__label" for="whatsapp-number">WhatsApp commandes clients</label>
             <input
               class="param-field__input"
               id="whatsapp-number"
@@ -81,9 +81,11 @@
               type="tel"
               inputmode="tel"
               autocomplete="tel"
-              placeholder=""
+              placeholder="+223…"
             />
-            <p class="param-field__hint">format recommandé avec l'indicatif : +223</p>
+            <p class="param-field__hint">
+              Même numéro que lors de l’inscription, prérempli automatiquement ; modifiez-le ici seulement pour en utiliser un autre.
+            </p>
           </div>
 
           <div class="param-field">
@@ -209,7 +211,9 @@
           </li>
           <li>
             <a class="dash-drawer__link" href="mon-abonnement.html">
-              <span class="dash-drawer__ico" aria-hidden="true">📦</span>
+              <span class="dash-drawer__ico" aria-hidden="true">
+                <img src="../../assets/images/icone/abonnement.png" alt="" width="22" height="22" />
+              </span>
               <span class="dash-drawer__label">Mon abonnement</span>
             </a>
           </li>

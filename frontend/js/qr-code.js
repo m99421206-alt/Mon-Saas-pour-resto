@@ -82,14 +82,18 @@
     return data;
   }
 
+  function resolvePublicSiteOrigin() {
+    var cfg = window.AFRICAMENU_CONFIG || {};
+    var raw =
+      typeof cfg.PUBLIC_SITE_ORIGIN === "string" ? cfg.PUBLIC_SITE_ORIGIN.trim().replace(/\/+$/, "") : "";
+    return raw.length ? raw : window.location.origin;
+  }
+
   function buildPublicMenuUrl(restaurantId) {
     var currentPath = window.location.pathname;
     var menuPath = currentPath.replace(/qr-code\.html$/, "mon-menu.html");
     return (
-      window.location.origin +
-      menuPath +
-      "?id=" +
-      encodeURIComponent(restaurantId)
+      resolvePublicSiteOrigin() + menuPath + "?id=" + encodeURIComponent(restaurantId)
     );
   }
 
@@ -202,9 +206,22 @@
   }
 
   async function init() {
+    var storedRestaurant = null;
     try {
+      var cfg = window.AFRICAMENU_CONFIG || {};
+      var pub = typeof cfg.PUBLIC_SITE_ORIGIN === "string" ? cfg.PUBLIC_SITE_ORIGIN.trim() : "";
+      var host = String(window.location.hostname || "").toLowerCase();
+      var warnEl = document.getElementById("qr-phone-scan-warning");
+      if (
+        warnEl &&
+        !pub &&
+        (host === "127.0.0.1" || host === "localhost" || host === "::1")
+      ) {
+        warnEl.hidden = false;
+      }
+
       var storedUser = getStoredJson(USER_KEY);
-      var storedRestaurant = getStoredJson(RESTAURANT_KEY);
+      storedRestaurant = getStoredJson(RESTAURANT_KEY);
       updateAccountInfo(storedUser, storedRestaurant);
 
       var data = await loadMe();

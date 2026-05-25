@@ -14,6 +14,7 @@
   const submitBtn = form.querySelector('button[type="submit"]');
   const restaurantName = document.getElementById("restaurant-name");
   const email = document.getElementById("email");
+  const whatsapp = document.getElementById("whatsapp");
   const pwd = document.getElementById("password");
   const pwd2 = document.getElementById("password-confirm");
 
@@ -50,6 +51,12 @@
       return;
     }
 
+    if (!whatsapp.value.trim()) {
+      showError("Le numéro WhatsApp pour les commandes est obligatoire.");
+      whatsapp.focus();
+      return;
+    }
+
     if (pwd.value.length < 8) {
       showError("Le mot de passe doit contenir au moins 8 caractères.");
       pwd.focus();
@@ -75,6 +82,7 @@
           restaurantName: restaurantName.value.trim(),
           email: email.value.trim(),
           password: pwd.value,
+          whatsapp: whatsapp.value.trim(),
         }),
       });
 

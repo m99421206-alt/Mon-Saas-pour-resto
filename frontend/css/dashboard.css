@@ -919,6 +919,22 @@ a.dash-qr-btn {
   line-height: 1.45;
 }
 
+.qr-phone-scan-warning {
+  margin: 0.85rem 0 0;
+  padding: 0.75rem 0.95rem;
+  border-radius: 0.55rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+}
+
+.qr-phone-scan-warning code {
+  font-size: 0.82em;
+  word-break: break-all;
+}
+
 /* Bouton orange pleine largeur */
 .plats-add-btn,
 .cats-add-btn {
@@ -2343,9 +2359,19 @@ a.dash-qr-btn {
 }
 
 .dash-my-sub__icon {
-  font-size: 1.35rem;
-  line-height: 1;
-  margin-right: 0.08em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  margin-right: 0.35rem;
+  line-height: 0;
+}
+
+.dash-my-sub__icon img {
+  display: block;
+  width: 1.42rem;
+  height: 1.42rem;
+  object-fit: contain;
 }
 
 .dash-my-sub__badge-line {

@@ -87,10 +87,17 @@
     }
   }
 
+  function resolvePublicSiteOrigin() {
+    var cfg = window.AFRICAMENU_CONFIG || {};
+    var raw =
+      typeof cfg.PUBLIC_SITE_ORIGIN === "string" ? cfg.PUBLIC_SITE_ORIGIN.trim().replace(/\/+$/, "") : "";
+    return raw.length ? raw : window.location.origin;
+  }
+
   function buildPublicMenuUrl(restaurantId) {
     const currentPath = window.location.pathname;
     const menuPath = currentPath.replace(/dashboard\.html$/, "mon-menu.html");
-    return window.location.origin + menuPath + "?id=" + encodeURIComponent(restaurantId);
+    return resolvePublicSiteOrigin() + menuPath + "?id=" + encodeURIComponent(restaurantId);
   }
 
   function whatsappDigitsDash(value) {

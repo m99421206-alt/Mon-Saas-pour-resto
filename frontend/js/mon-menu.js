@@ -188,14 +188,16 @@ function applyThemeColor(value) {
 }
 
 function applyRestaurantData(restaurant) {
+  const heroBannerFrame = document.getElementById("hero-banner-frame");
+  const heroCoverEl = document.getElementById("hero-cover");
+  const restaurantNameEl = document.getElementById("restaurant-name");
+  const restaurantDescriptionEl = document.getElementById("restaurant-description");
+  const restaurantLogoEl = document.getElementById("restaurant-logo");
+  const restaurantLogoWrap = document.getElementById("restaurant-logo-wrap");
+
   if (!restaurant) {
     return;
   }
-
-  const restaurantNameEl = document.getElementById("restaurant-name");
-  const restaurantDescriptionEl = document.getElementById("restaurant-description");
-  const restaurantLogoEl = document.querySelector(".restaurant__logo img");
-  const heroCoverEl = document.querySelector(".hero__cover");
 
   if (restaurant.name && restaurantNameEl) {
     restaurantNameEl.textContent = restaurant.name;
@@ -213,14 +215,34 @@ function applyRestaurantData(restaurant) {
     }
   }
 
-  if (restaurant.logo_url && restaurantLogoEl) {
-    restaurantLogoEl.src = normalizeImageUrl(restaurant.logo_url, restaurantLogoEl.src);
-    restaurantLogoEl.alt = `Logo ${restaurant.name || "du restaurant"}`;
+  if (heroCoverEl && heroBannerFrame) {
+    const bUrl = restaurant.banner_url ? String(restaurant.banner_url).trim() : "";
+    if (bUrl) {
+      heroCoverEl.hidden = false;
+      heroCoverEl.src = normalizeImageUrl(bUrl, "");
+      heroCoverEl.alt = `Bannière ${restaurant.name || "du restaurant"}`;
+      heroBannerFrame.classList.remove("is-empty");
+    } else {
+      heroCoverEl.hidden = true;
+      heroCoverEl.removeAttribute("src");
+      heroCoverEl.alt = "";
+      heroBannerFrame.classList.add("is-empty");
+    }
   }
 
-  if (restaurant.banner_url && heroCoverEl) {
-    heroCoverEl.src = normalizeImageUrl(restaurant.banner_url, heroCoverEl.src);
-    heroCoverEl.alt = `Bannière ${restaurant.name || "du restaurant"}`;
+  if (restaurantLogoEl && restaurantLogoWrap) {
+    const logoUrl = restaurant.logo_url ? String(restaurant.logo_url).trim() : "";
+    if (logoUrl) {
+      restaurantLogoEl.hidden = false;
+      restaurantLogoEl.src = normalizeImageUrl(logoUrl, "");
+      restaurantLogoEl.alt = `Logo ${restaurant.name || "du restaurant"}`;
+      restaurantLogoWrap.classList.remove("is-empty");
+    } else {
+      restaurantLogoEl.hidden = true;
+      restaurantLogoEl.removeAttribute("src");
+      restaurantLogoEl.alt = "";
+      restaurantLogoWrap.classList.add("is-empty");
+    }
   }
 
   applyThemeColor(restaurant.theme_color);
@@ -503,13 +525,39 @@ function showFavoriteProducts() {
 
 function renderSimilarProducts(currentProduct) {
   similarProductsEl.innerHTML = "";
-  products
-    .filter(function (product) {
-      return product.id !== currentProduct.id;
-    })
-    .forEach(function (product) {
-      similarProductsEl.appendChild(createSimilarProductCard(product));
-    });
+
+  var section = similarProductsEl.closest(".similar-section");
+  var titleEl = document.getElementById("similar-title");
+  var catId =
+    currentProduct.categoryId !== undefined && currentProduct.categoryId !== null ?
+      String(currentProduct.categoryId)
+    : "";
+
+  /** Autres produits de la même catégorie (excluant le plat ouvert). */
+  var peers = products.filter(function (product) {
+    if (product.id === currentProduct.id) {
+      return false;
+    }
+    return String(product.categoryId) === catId;
+  });
+
+  if (!peers.length) {
+    if (section) {
+      section.hidden = true;
+    }
+    return;
+  }
+
+  if (section) {
+    section.hidden = false;
+  }
+  if (titleEl) {
+    titleEl.textContent = peers.length > 1 ? "Dans cette catégorie" : "Autre plat de la même catégorie";
+  }
+
+  peers.forEach(function (product) {
+    similarProductsEl.appendChild(createSimilarProductCard(product));
+  });
 }
 
 function formatQuantity(value) {

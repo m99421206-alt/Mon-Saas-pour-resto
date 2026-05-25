@@ -40,6 +40,14 @@
         <p class="plats-page-sub">
           Imprimez ce QR code et placez-le sur vos tables. Vos clients n'auront qu'à le scanner pour voir votre menu.
         </p>
+        <p class="qr-phone-scan-warning" id="qr-phone-scan-warning" role="alert" hidden>
+          <strong>Pour tester avec un téléphone :</strong> l’URL <code>127.0.0.1</code> ou
+          <code>localhost</code> ne fonctionne pas sur le mobile — c’est son propre appareil, pas votre PC. Dans
+          <code>frontend/js/config.js</code>, renseignez
+          <code>PUBLIC_SITE_ORIGIN</code> avec l’adresse réseau de votre ordinateur (ex.
+          <code>http://192.168.1.10:5500</code>), même Wi‑Fi, puis régénérez le QR code. Lancez aussi l’API sur
+          ce réseau (port 4000 écoutant sur votre machine).
+        </p>
       </header>
 
       <article class="qr-code-card" aria-labelledby="qr-code-title">
@@ -102,7 +110,9 @@
           </li>
           <li>
             <a class="dash-drawer__link" href="mon-abonnement.html">
-              <span class="dash-drawer__ico" aria-hidden="true">📦</span>
+              <span class="dash-drawer__ico" aria-hidden="true">
+                <img src="../../assets/images/icone/abonnement.png" alt="" width="22" height="22" />
+              </span>
               <span class="dash-drawer__label">Mon abonnement</span>
             </a>
           </li>

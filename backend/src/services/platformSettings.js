@@ -11,6 +11,7 @@ function getDefaults() {
   return {
     maintenance_mode: false,
     subscription_plans: [
+      { id: "basic", name: "Basic", price_cfa: 3500, months: 1 },
       { id: "starter", name: "Starter", price_cfa: 0, months: 1 },
       { id: "pro", name: "Pro", price_cfa: 15000, months: 1 },
       { id: "business", name: "Business", price_cfa: 35000, months: 1 },

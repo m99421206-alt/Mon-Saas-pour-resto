@@ -126,8 +126,6 @@
     supportMail = supportMail && isValidEmail(supportMail) ? supportMail.trim() : "";
 
     var supportWa = cfg.SUPPORT_WHATSAPP ? waDigits(cfg.SUPPORT_WHATSAPP) : "";
-    var restoWa =
-      restaurant && restaurant.whatsapp ? waDigits(restaurant.whatsapp) : "";
 
     var section = document.createElement("section");
     section.className = "dash-my-sub " + wrapperClass(status);
@@ -142,7 +140,7 @@
     header.innerHTML =
       '<div class="dash-my-sub__titlewrap">' +
       '<h2 id="dash-my-sub-title">' +
-      '<span class="dash-my-sub__icon" aria-hidden="true">📦</span>' +
+      '<span class="dash-my-sub__icon" aria-hidden="true"><img src="../../assets/images/icone/abonnement.png" alt="" width="26" height="26" /></span>' +
       "Mon abonnement" +
       "</h2>" +
       '<div class="dash-my-sub__badge-line">' +
@@ -376,10 +374,11 @@
       }
     }
 
-    var waTarget = supportWa || restoWa;
+    /** WhatsApp réservé au contact plateforme (admin / service abonnements), jamais au numéro du restaurant (commandes clients). */
+    var waTarget = supportWa;
     if (waTarget) {
       var msg =
-        "Bonjour,%20je%20souhaite%20en%20savoir%20plus%20sur%20mon%20abonnement%20AfricaMenu%20(" +
+        "Bonjour,%20je%20contacte%20l%27administration%20AfricaMenu%20concernant%20mon%20abonnement%20(" +
         encodeURIComponent(restoName) +
         ")";
       var whats = document.createElement("a");
@@ -387,17 +386,16 @@
       whats.rel = "noopener noreferrer";
       whats.target = "_blank";
       whats.href = "https://wa.me/" + waTarget + "?text=" + msg;
-      whats.innerHTML =
-        escapeHtml(restoWa && !supportWa ? "Écrire sur WhatsApp du resto" : "WhatsApp");
+      whats.textContent = "Écrire à l’administrateur (WhatsApp)";
       appendBtn(whats);
     } else if (!supportMail && (status === "expired" || status === "suspended")) {
       var gh = document.createElement("button");
       gh.type = "button";
       gh.className = "dash-my-sub__btn dash-my-sub__btn--ghost";
       gh.disabled = true;
-      gh.textContent = "Contact support (réglé dans config)";
+      gh.textContent = "Contact administration (à configurer)";
       gh.title =
-        'Ajoutez SUPPORT_EMAIL ou SUPPORT_WHATSAPP dans config.js ou le numéro dans Paramètres.';
+        "Indiquez dans frontend/js/config.js votre SUPPORT_EMAIL ou SUPPORT_WHATSAPP pour que les restaurateurs vous contactent sur l’abonnement.";
       appendBtn(gh);
     }
 

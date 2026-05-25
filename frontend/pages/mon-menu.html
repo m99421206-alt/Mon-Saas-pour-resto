@@ -21,15 +21,19 @@
     <div class="app">
       <main class="page">
         <section class="hero" aria-labelledby="restaurant-name">
-          <img
-            class="hero__cover"
-            src="../../assets/images/icone/salonresto.jpg"
-            alt="AfricaMenu"
-          />
+          <div class="hero__banner-frame is-empty" id="hero-banner-frame">
+            <img
+              class="hero__cover--photo"
+              id="hero-cover"
+              alt=""
+              decoding="async"
+              hidden
+            />
+          </div>
 
           <article class="restaurant">
-            <div class="restaurant__logo" aria-label="Logo du restaurant">
-              <img src="../../assets/images/icone/logoresto.jpg" alt="Logo du restaurant" />
+            <div class="restaurant__logo is-empty" id="restaurant-logo-wrap" aria-label="Logo du restaurant">
+              <img id="restaurant-logo" alt="" decoding="async" hidden />
             </div>
             <div class="restaurant__content">
               <h1 class="restaurant__title" id="restaurant-name">Menu du restaurant</h1>

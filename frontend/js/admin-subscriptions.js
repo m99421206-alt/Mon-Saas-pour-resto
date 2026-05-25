@@ -17,6 +17,9 @@
   /** Plans du catalogue plateforme (Admin → Paramètres), repris depuis l’API abonnements. */
   var plansCatalog = [];
 
+  /** Clé de plan utilisée comme défaut lors du flux « Renouveler ». */
+  var RENEW_DEFAULT_PLAN_KEY = "basic";
+
   function escapeHtml(v) {
     return String(v == null ? "" : v)
       .replace(/&/g, "&amp;")
@@ -57,27 +60,97 @@
     sel.appendChild(o);
   }
 
+  /** Durée jour pour l’API activate (~30 j. / mois catalogue, plafonné comme `period_days` serveur). */
+  function monthsToApproxPeriodDays(months) {
+    var m = Math.round(Number(months) || 1);
+    if (!Number.isInteger(m) || m < 1) m = 1;
+    if (m > 120) m = 120;
+    var pd = Math.round(m * 30);
+    if (pd < 1) pd = 1;
+    if (pd > 3650) pd = 3650;
+    return pd;
+  }
+
   /**
-   * kind: `picker` = liste pour Activer/Renouveler (avec « ne pas changer »).
-   *        `adjust` = modale ajustement (essai + catalogue + « retirer »).
+   * kind: `picker` = Activer (« ne pas changer » + essai + catalogue).
+   *        `picker-renew` = Renouveler (catalogue + essai sans « ne pas modifier » ; mois / CFA viennent du plan choisi).
+   *        `adjust` = Modale d’ajustement (essai + catalogue + retirer clé plan).
    */
   function fillPlanChoiceSelect(sel, kind) {
     if (!sel) return;
     sel.innerHTML = "";
+
+    function appendCatalog() {
+      var seen = {};
+      plansCatalog.forEach(function (p) {
+        var id = sanitizePlanKeyClient(p.id);
+        if (!id || id === "trial" || seen[id]) return;
+        seen[id] = true;
+        appendPlanOption(sel, id, planChoiceLabel(p));
+      });
+    }
+
     if (kind === "picker") {
       appendPlanOption(sel, "", "— Ne pas modifier le plan —");
-    }
-    appendPlanOption(sel, "trial", "Essai (trial)");
-    var seen = {};
-    seen.trial = true;
-    plansCatalog.forEach(function (p) {
-      var id = sanitizePlanKeyClient(p.id);
-      if (!id || id === "trial" || seen[id]) return;
-      seen[id] = true;
-      appendPlanOption(sel, id, planChoiceLabel(p));
-    });
-    if (kind === "adjust") {
+      appendPlanOption(sel, "trial", "Essai (trial)");
+      appendCatalog();
+    } else if (kind === "picker-renew") {
+      appendCatalog();
+      appendPlanOption(sel, "trial", "Essai (trial)");
+    } else if (kind === "adjust") {
+      appendPlanOption(sel, "trial", "Essai (trial)");
+      appendCatalog();
       appendPlanOption(sel, "", "— Retirer la clé plan —");
+    }
+  }
+
+  /** Présélection plan pour le dialogue (ex. basic en renouvellement). */
+  function applyDefaultPlanSelection(sel, preferredKeyRaw) {
+    if (!sel) return;
+    var preferred = sanitizePlanKeyClient(preferredKeyRaw || RENEW_DEFAULT_PLAN_KEY);
+    function setIfExists(key) {
+      var k = sanitizePlanKeyClient(key);
+      if (!k) return false;
+      var ok = Array.prototype.some.call(sel.options, function (o) {
+        return String(o.value) === k;
+      });
+      if (ok) sel.value = k;
+      return ok;
+    }
+    if (setIfExists(preferred)) return;
+
+    var i;
+    var p;
+
+    // Correspond Basic 3 500 / 1 mois même si l’admin a renommé la clé
+    for (i = 0; i < plansCatalog.length; i++) {
+      p = plansCatalog[i];
+      var pid = sanitizePlanKeyClient(p.id);
+      if (!pid || pid === "trial") continue;
+      var price = Math.round(Number(p.price_cfa) || 0);
+      var mo = Math.round(Number(p.months) || 1);
+      var nm = String(p.name || "").toLowerCase();
+      if (price === 3500 && mo === 1 && (pid === "basic" || nm.indexOf("basic") !== -1)) {
+        if (setIfExists(pid)) return;
+      }
+    }
+    for (i = 0; i < plansCatalog.length; i++) {
+      p = plansCatalog[i];
+      var pid2 = sanitizePlanKeyClient(p.id);
+      if (!pid2 || pid2 === "trial") continue;
+      var price2 = Math.round(Number(p.price_cfa) || 0);
+      var mo2 = Math.round(Number(p.months) || 1);
+      if (price2 === 3500 && mo2 === 1) {
+        if (setIfExists(pid2)) return;
+      }
+    }
+
+    for (i = 0; i < sel.options.length; i++) {
+      var v = sanitizePlanKeyClient(sel.options[i].value);
+      if (v && v !== "trial") {
+        sel.value = sel.options[i].value;
+        return;
+      }
     }
   }
 
@@ -99,7 +172,11 @@
     sel.value = k;
   }
 
-  function fallbackPlanPickWithPrompt() {
+  /**
+   * @param {{ renewOnly?: boolean, renewDefaultPrompt?: string }=} opts
+   */
+  function fallbackPlanPickWithPrompt(opts) {
+    opts = opts || {};
     return new Promise(function (resolve) {
       var ids = {};
       var keyList = [];
@@ -112,42 +189,90 @@
         keyList.push(id);
       });
 
-      var help =
+      var helpRenew =
+        "Renouvellement : tapez une clé de plan présente dans le catalogue (ex. " +
+        sanitizePlanKeyClient(RENEW_DEFAULT_PLAN_KEY) +
+        "). Clés disponibles : " +
+        keyList.join(", ");
+
+      var helpClassic =
         "Tapez une clé de plan parmi : " +
         keyList.join(", ") +
         " — laissez vide pour ne pas modifier le plan.";
-      var raw = window.prompt(help, "");
+
+      var raw = window.prompt(
+        opts.renewOnly ? helpRenew : helpClassic,
+        opts.renewOnly ? String(opts.renewDefaultPrompt || RENEW_DEFAULT_PLAN_KEY) : "",
+      );
       if (raw === null) {
         resolve(null);
         return;
       }
-      resolve(sanitizePlanKeyClient(raw));
+      var k = sanitizePlanKeyClient(raw);
+      if (opts.renewOnly && !k) {
+        resolve(null);
+        return;
+      }
+      resolve(k);
     });
   }
 
-  function openPlanPickDialog() {
+  /**
+   * @param {{ renewMode?: boolean, activateMode?: boolean, defaultPlanKey?: string }=} opts Sans argument : comportement équivalent au dialogue standard (liste classique avec « Ne pas modifier » ; pas de pré-sélection).
+   */
+  function openPlanPickDialog(opts) {
+    opts = opts || {};
+    var renewMode = !!opts.renewMode;
+    var activateMode = !!opts.activateMode && !renewMode;
+    var defaultPlanKeyRaw = opts.defaultPlanKey !== undefined ? String(opts.defaultPlanKey) : "";
+
     var dlg = document.getElementById("subs-plan-picker");
     var sel = document.getElementById("subs-plan-picker-select");
     if (!dlg || !sel || typeof dlg.showModal !== "function") {
-      return fallbackPlanPickWithPrompt();
+      return fallbackPlanPickWithPrompt(
+        renewMode ? { renewOnly: true, renewDefaultPrompt: defaultPlanKeyRaw || RENEW_DEFAULT_PLAN_KEY } : {},
+      );
     }
 
-    fillPlanChoiceSelect(sel, "picker");
+    fillPlanChoiceSelect(sel, renewMode ? "picker-renew" : "picker");
+    if (renewMode || activateMode) {
+      applyDefaultPlanSelection(sel, defaultPlanKeyRaw || RENEW_DEFAULT_PLAN_KEY);
+    }
 
     var okBtn = document.getElementById("subs-plan-picker-ok");
     var cancelBtn = document.getElementById("subs-plan-picker-cancel");
+    var hintEl = document.getElementById("subs-plan-picker-hint");
     if (!okBtn || !cancelBtn) {
-      return fallbackPlanPickWithPrompt();
+      return fallbackPlanPickWithPrompt(
+        renewMode ? { renewOnly: true, renewDefaultPrompt: defaultPlanKeyRaw || RENEW_DEFAULT_PLAN_KEY } : {},
+      );
+    }
+
+    var hintSaved = hintEl ? hintEl.innerHTML : "";
+    var renewHintHtml =
+      "La durée ajoutée (mois) et le montant CFA viennent du <strong>plan choisi</strong>. Par défaut : <strong>Basic</strong>, 3&nbsp;500 CFA, <strong>1 mois</strong> — vérifiable sous <strong>Paramètres</strong> → plans d’abonnement.";
+    var activateHintHtml =
+      "Si l’échéance est passée ou absente, elle est prolongée à partir d’aujourd’hui : la durée en <strong>jours</strong> et le <strong>montant CFA</strong> suivent le <strong>plan</strong> (≈ 30 j./mois du catalogue). <strong>Ne pas modifier le plan</strong> : prolongation standard de <strong>30&nbsp;j.</strong>, clé et tarif inchangés.";
+
+    if (renewMode && hintEl) {
+      hintEl.innerHTML = renewHintHtml;
+    } else if (activateMode && hintEl) {
+      hintEl.innerHTML = activateHintHtml;
     }
 
     return new Promise(function (resolve) {
       var NOTHING = {};
       var route = NOTHING;
 
+      function restoreHintAndResolve(val) {
+        if (hintEl) hintEl.innerHTML = hintSaved;
+        resolve(val);
+      }
+
       function onCloseDone() {
         dlg.removeEventListener("close", onCloseDone);
-        if (route === NOTHING || route === false) resolve(null);
-        else resolve(route);
+        if (route === NOTHING || route === false) restoreHintAndResolve(null);
+        else restoreHintAndResolve(route);
       }
 
       dlg.addEventListener("close", onCloseDone);
@@ -166,7 +291,10 @@
         dlg.showModal();
       } catch (e) {
         dlg.removeEventListener("close", onCloseDone);
-        fallbackPlanPickWithPrompt().then(resolve);
+        if (hintEl) hintEl.innerHTML = hintSaved;
+        fallbackPlanPickWithPrompt(
+          renewMode ? { renewOnly: true, renewDefaultPrompt: defaultPlanKeyRaw || RENEW_DEFAULT_PLAN_KEY } : {},
+        ).then(resolve);
       }
     });
   }
@@ -781,25 +909,50 @@
   }
 
   async function activateRow(idStr) {
-    var dRaw = prompt(
-      "Si la date de fin est absente ou passée : nouvelle durée en jours (sinon inchangée) :",
-      "30",
-    );
-    if (dRaw === null) return;
-    var pd = parseInt(dRaw, 10);
-    if (!Number.isInteger(pd) || pd < 1) pd = 30;
-    if (pd > 3650) pd = 3650;
+    var pkPick = await openPlanPickDialog({
+      activateMode: true,
+      defaultPlanKey: RENEW_DEFAULT_PLAN_KEY,
+    });
+    if (pkPick === null) return;
 
-    var amt = promptOptionalAmount();
-    if (amt === "__cancel") return;
+    var pk = sanitizePlanKeyClient(pkPick);
+    var DEFAULT_ACTIVATE_DAYS = 30;
+    var body = { period_days: DEFAULT_ACTIVATE_DAYS };
+
+    if (pk !== "") {
+      if (pk === "trial") {
+        body.period_days = DEFAULT_ACTIVATE_DAYS;
+        body.subscription_plan_key = pk;
+      } else {
+        var matched = plansCatalog.find(function (p) {
+          return sanitizePlanKeyClient(p.id) === pk;
+        });
+        if (matched) {
+          body.period_days = monthsToApproxPeriodDays(matched.months);
+          body.subscription_plan_key = pk;
+          var price = Math.round(Number(matched.price_cfa) || 0);
+          if (Number.isFinite(price) && price >= 0) body.subscription_amount_cfa = price;
+        } else {
+          var dRaw = window.prompt(
+            "Durée en jours à ajouter depuis aujourd’hui si l’échéance doit être mise à jour (clé « " +
+              pk +
+              " » absente du catalogue chargé — rafraîchissez la page ou Paramètres).",
+            String(DEFAULT_ACTIVATE_DAYS),
+          );
+          if (dRaw === null) return;
+          var pdManual = parseInt(dRaw, 10);
+          if (!Number.isInteger(pdManual) || pdManual < 1) pdManual = DEFAULT_ACTIVATE_DAYS;
+          if (pdManual > 3650) pdManual = 3650;
+          body.period_days = pdManual;
+          body.subscription_plan_key = pk;
+          var manualAmt = promptOptionalAmount();
+          if (manualAmt === "__cancel") return;
+          if (manualAmt !== undefined) body.subscription_amount_cfa = manualAmt;
+        }
+      }
+    }
 
     var token = localStorage.getItem(TOKEN_KEY);
-    var body = { period_days: pd };
-    if (amt !== undefined) body.subscription_amount_cfa = amt;
-
-    var pkPick = await openPlanPickDialog();
-    if (pkPick === null) return;
-    if (pkPick) body.subscription_plan_key = pkPick;
 
     var res = await fetchJson(
       "POST",
@@ -844,26 +997,50 @@
   }
 
   async function renewRow(idStr) {
-    var mRaw = prompt(
-      "Renouveler : ajouter combien de mois après la date de fin actuelle (ou après aujourd’hui si passée) ?",
-      "12",
-    );
-    if (mRaw === null) return;
-    var months = parseInt(mRaw, 10);
-    if (!Number.isInteger(months) || months < 1) months = 12;
-    if (months > 120) months = 120;
+    var pkPick = await openPlanPickDialog({
+      renewMode: true,
+      defaultPlanKey: RENEW_DEFAULT_PLAN_KEY,
+    });
+    if (pkPick === null) return;
 
-    var amt = promptOptionalAmount();
-    if (amt === "__cancel") return;
+    var pk = sanitizePlanKeyClient(pkPick);
+    var body = { months: 12 };
+
+    if (pk === "trial") {
+      body.months = 1;
+      body.subscription_plan_key = pk;
+    } else {
+      var matched = plansCatalog.find(function (p) {
+        return sanitizePlanKeyClient(p.id) === pk;
+      });
+      if (matched) {
+        var mo = Math.round(Number(matched.months) || 1);
+        if (!Number.isInteger(mo) || mo < 1) mo = 1;
+        if (mo > 120) mo = 120;
+        body.months = mo;
+        body.subscription_plan_key = pk;
+        var price = Math.round(Number(matched.price_cfa) || 0);
+        if (Number.isFinite(price) && price >= 0) body.subscription_amount_cfa = price;
+      } else {
+        var mRaw = window.prompt(
+          "Durée à ajouter en mois. La clé « " +
+            pk +
+            " » est introuvable dans le catalogue chargé — rafraîchissez la page ou vérifiez Paramètres → plans d'abonnement.",
+          "1",
+        );
+        if (mRaw === null) return;
+        var monthsManual = parseInt(mRaw, 10);
+        if (!Number.isInteger(monthsManual) || monthsManual < 1) monthsManual = 1;
+        if (monthsManual > 120) monthsManual = 120;
+        body.months = monthsManual;
+        body.subscription_plan_key = pk;
+        var manualAmt = promptOptionalAmount();
+        if (manualAmt === "__cancel") return;
+        if (manualAmt !== undefined) body.subscription_amount_cfa = manualAmt;
+      }
+    }
 
     var token = localStorage.getItem(TOKEN_KEY);
-    var body = { months: months };
-    if (amt !== undefined) body.subscription_amount_cfa = amt;
-
-    var pkPick = await openPlanPickDialog();
-    if (pkPick === null) return;
-    if (pkPick) body.subscription_plan_key = pkPick;
-
     var res = await fetchJson(
       "POST",
       "/api/admin/subscriptions/" + encodeURIComponent(idStr) + "/renew",
