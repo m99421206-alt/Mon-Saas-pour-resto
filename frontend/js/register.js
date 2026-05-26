@@ -94,7 +94,15 @@
       }
 
       saveSession(data);
-      window.location.href = "dashboard.html";
+      if (
+        data.is_platform_admin ||
+        !data.restaurant ||
+        data.restaurant.onboarding_seen !== false
+      ) {
+        window.location.href = "dashboard.html";
+      } else {
+        window.location.href = "onboarding.html";
+      }
     } catch (error) {
       showError("Impossible de contacter le serveur. Vérifiez que l'API est lancée.");
     } finally {

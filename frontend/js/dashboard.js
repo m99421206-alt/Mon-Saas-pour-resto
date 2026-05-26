@@ -297,13 +297,22 @@
     }
 
     try {
-      const [me, categoriesData, productsData] = await Promise.all([
-        apiGet("/api/me"),
+      const me = await apiGet("/api/me");
+      if (!me) {
+        return;
+      }
+
+      if (!me.is_platform_admin && me.restaurant && me.restaurant.onboarding_seen === false) {
+        window.location.replace("onboarding.html");
+        return;
+      }
+
+      const [categoriesData, productsData] = await Promise.all([
         apiGet("/api/categories"),
         apiGet("/api/products"),
       ]);
 
-      if (!me || !categoriesData || !productsData) {
+      if (!categoriesData || !productsData) {
         return;
       }
 

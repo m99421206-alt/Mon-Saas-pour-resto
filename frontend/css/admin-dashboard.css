@@ -686,3 +686,76 @@ body.adm-sidebar-open {
     max-width: none;
   }
 }
+
+/* Demandes d’assistance installation (tableau admin dashboard) */
+
+.adm-setup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.adm-mini-btn {
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.25;
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--adm-border);
+  background: var(--adm-surface);
+  color: var(--adm-text);
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  display: inline-block;
+  min-width: 5.75rem;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.adm-mini-btn__hint {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--adm-text-muted);
+  margin-top: 0.08rem;
+}
+
+.adm-mini-btn--wa {
+  border-color: rgba(37, 211, 102, 0.45);
+  background: rgba(37, 211, 102, 0.1);
+  color: #065f46;
+}
+
+.adm-mini-btn--done {
+  border-color: rgba(255, 107, 0, 0.45);
+  background: var(--adm-accent-soft);
+  color: var(--adm-accent);
+}
+
+.adm-mini-btn--wa[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .adm-mini-btn:hover:not([aria-disabled="true"]) {
+    transform: translateY(-1px);
+    box-shadow: var(--adm-shadow-card);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adm-mini-btn {
+    transition: none;
+  }
+
+  .adm-mini-btn:hover {
+    transform: none;
+  }
+}

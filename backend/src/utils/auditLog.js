@@ -25,6 +25,8 @@ var AUDIT_ACTIONS = {
   SUBSCRIPTION_RENEW: "subscription.renew",
   SUBSCRIPTION_ADJUST: "subscription.adjust",
   SETTINGS_UPDATE: "settings.update",
+  ONBOARDING_SETUP_REQUEST: "onboarding.setup_request",
+  SETUP_HELP_COMPLETE: "admin.setup_help_complete",
 };
 
 var LABEL_FALLBACK = {
@@ -48,6 +50,8 @@ var LABEL_FALLBACK = {
   "subscription.renew": "Renouvellement abonnement",
   "subscription.adjust": "Ajustement durée ou plan",
   "settings.update": "Mise à jour paramètres plateforme",
+  "onboarding.setup_request": "Demande d’assistance installation",
+  "admin.setup_help_complete": "Installation marquée terminée (admin)",
 };
 
 function labelForCode(code) {

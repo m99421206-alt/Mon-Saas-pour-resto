@@ -6,6 +6,7 @@ const adminUsersController = require("../controllers/adminUsersController");
 const adminRestaurantsController = require("../controllers/adminRestaurantsController");
 const adminSubscriptionsController = require("../controllers/adminSubscriptionsController");
 const adminSettingsController = require("../controllers/adminSettingsController");
+const adminSetupHelpController = require("../controllers/adminSetupHelpController");
 
 var router = express.Router();
 
@@ -62,6 +63,14 @@ router.patch(
 
 router.get("/settings", requireAuth, requirePlatformAdmin, adminSettingsController.getSettings);
 router.put("/settings", requireAuth, requirePlatformAdmin, adminSettingsController.putSettings);
+
+router.get("/setup-help", requireAuth, requirePlatformAdmin, adminSetupHelpController.listSetupHelp);
+router.post(
+  "/restaurants/:id/setup-help/complete",
+  requireAuth,
+  requirePlatformAdmin,
+  adminSetupHelpController.postSetupHelpComplete,
+);
 
 module.exports = router;
 

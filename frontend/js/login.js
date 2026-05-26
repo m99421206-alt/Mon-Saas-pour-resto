@@ -37,6 +37,17 @@
     localStorage.setItem(RESTAURANT_KEY, JSON.stringify(data.restaurant || null));
   }
 
+  function wantsOnboarding(data) {
+    if (!data || data.is_platform_admin) {
+      return false;
+    }
+    var r = data.restaurant;
+    if (!r) {
+      return false;
+    }
+    return r.onboarding_seen === false;
+  }
+
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
     clearError();
@@ -89,7 +100,13 @@
         return /^[a-zA-Z0-9_-]+\.html$/.test(url);
       }
 
-      if (isSafeNextPage(next)) {
+      function isAdminNextPage(url) {
+        return typeof url === "string" && /^admin-[\w.-]+\.html$/i.test(url);
+      }
+
+      if (wantsOnboarding(data) && !(isSafeNextPage(next) && isAdminNextPage(next))) {
+        window.location.href = "onboarding.html";
+      } else if (isSafeNextPage(next)) {
         window.location.href = next;
       } else {
         window.location.href = "dashboard.html";

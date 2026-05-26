@@ -4,6 +4,26 @@ const { getPool } = require("../config/database");
 const { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
 const platformSettings = require("../services/platformSettings");
 const { normalizeWhatsapp } = require("../utils/whatsappNormalize");
+const { isPlatformAdminEmail } = require("../utils/platformAdmin");
+
+function mapRestaurantAuth(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    name: row.name,
+    whatsapp: row.whatsapp,
+    subscription_status: row.subscription_status,
+    subscription_started_at: row.subscription_started_at
+      ? new Date(row.subscription_started_at).toISOString()
+      : null,
+    subscription_ends_at: row.subscription_ends_at
+      ? new Date(row.subscription_ends_at).toISOString()
+      : null,
+    subscription_plan_key: row.subscription_plan_key || "trial",
+    onboarding_seen: Boolean(row.onboarding_seen),
+    needs_setup_help: Boolean(row.needs_setup_help),
+  };
+}
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").toLowerCase());
@@ -78,7 +98,9 @@ async function register(req, res) {
 
     const restaurantId = restaurantResult.insertId;
     const [[restaurantRow]] = await connection.query(
-      "SELECT id, name, whatsapp, subscription_status, subscription_started_at, subscription_ends_at, subscription_plan_key FROM restaurants WHERE id = ? LIMIT 1",
+      "SELECT id, name, whatsapp, subscription_status, subscription_started_at, subscription_ends_at, subscription_plan_key, " +
+        "COALESCE(onboarding_seen, 0) AS onboarding_seen, COALESCE(needs_setup_help, 0) AS needs_setup_help " +
+        "FROM restaurants WHERE id = ? LIMIT 1",
       [restaurantId],
     );
 
@@ -96,23 +118,12 @@ async function register(req, res) {
     return res.status(201).json({
       message: "Compte créé avec succès.",
       token: token,
+      is_platform_admin: isPlatformAdminEmail(email),
       user: {
         id: userId,
         email: email,
       },
-      restaurant: {
-        id: restaurantRow.id,
-        name: restaurantRow.name,
-        whatsapp: restaurantRow.whatsapp,
-        subscription_status: restaurantRow.subscription_status,
-        subscription_started_at: restaurantRow.subscription_started_at
-          ? new Date(restaurantRow.subscription_started_at).toISOString()
-          : null,
-        subscription_ends_at: restaurantRow.subscription_ends_at
-          ? new Date(restaurantRow.subscription_ends_at).toISOString()
-          : null,
-        subscription_plan_key: restaurantRow.subscription_plan_key || "trial",
-      },
+      restaurant: mapRestaurantAuth(restaurantRow),
     });
   } catch (error) {
     await connection.rollback();
@@ -155,7 +166,9 @@ async function login(req, res) {
     }
 
     const [restaurants] = await pool.query(
-      "SELECT id, name, whatsapp, subscription_status, subscription_started_at, subscription_ends_at, subscription_plan_key, subscription_amount_cfa FROM restaurants WHERE user_id = ? ORDER BY id ASC LIMIT 1",
+      "SELECT id, name, whatsapp, subscription_status, subscription_started_at, subscription_ends_at, subscription_plan_key, subscription_amount_cfa, " +
+        "COALESCE(onboarding_seen, 0) AS onboarding_seen, COALESCE(needs_setup_help, 0) AS needs_setup_help " +
+        "FROM restaurants WHERE user_id = ? ORDER BY id ASC LIMIT 1",
       [user.id],
     );
 
@@ -171,11 +184,12 @@ async function login(req, res) {
     return res.status(200).json({
       message: "Connexion réussie.",
       token: token,
+      is_platform_admin: isPlatformAdminEmail(user.email),
       user: {
         id: user.id,
         email: user.email,
       },
-      restaurant: restaurants[0] || null,
+      restaurant: restaurants[0] ? mapRestaurantAuth(restaurants[0]) : null,
     });
   } catch (error) {
     return res.status(500).json({ message: "Erreur serveur lors de la connexion." });

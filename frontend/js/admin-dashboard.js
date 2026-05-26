@@ -179,6 +179,106 @@
     }
   }
 
+  async function fetchAdminPost(path, token) {
+    var base = getApiBase();
+    if (!base || !token) {
+      return { ok: false, status: 0, data: null };
+    }
+    try {
+      var response = await fetch(base + path, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + token,
+        },
+      });
+      var data = null;
+      try {
+        data = await response.json();
+      } catch (e) {
+        data = null;
+      }
+      return { ok: response.ok, status: response.status, data: data };
+    } catch (err) {
+      return { ok: false, status: 0, data: null };
+    }
+  }
+
+  function waDigits(raw) {
+    return String(raw || "").replace(/\D/g, "");
+  }
+
+  function buildRestaurantWaUrl(digits, restaurantName) {
+    if (!digits) return "#";
+    var msg =
+      "Bonjour, nous vous contactons concernant votre demande d’installation AfricaMenu pour : " +
+      String(restaurantName || "votre restaurant") +
+      ".";
+    return "https://wa.me/" + digits.replace(/^0+/, "") + "?text=" + encodeURIComponent(msg);
+  }
+
+  function renderSetupHelpRows(items, forbidden) {
+    var tbody = document.getElementById("adm-setup-help-body");
+    if (!tbody) {
+      return;
+    }
+    tbody.innerHTML = "";
+
+    if (forbidden) {
+      var tr0 = document.createElement("tr");
+      tr0.className = "adm-table__placeholder";
+      tr0.innerHTML =
+        "<td colspan=\"5\">Liste réservée aux administrateurs (variable ADMIN_EMAILS sur le serveur).</td>";
+      tbody.appendChild(tr0);
+      return;
+    }
+
+    if (!items || !items.length) {
+      var trE = document.createElement("tr");
+      trE.className = "adm-table__placeholder";
+      trE.innerHTML = "<td colspan=\"5\">Aucune demande d’assistance en cours.</td>";
+      tbody.appendChild(trE);
+      return;
+    }
+
+    items.forEach(function (row) {
+      var tr = document.createElement("tr");
+      var digits = waDigits(row.phone);
+      var waUrl = buildRestaurantWaUrl(digits, row.name);
+      var nameCell = escapeHtml(row.name || "—");
+      var emailCell = escapeHtml(row.email || "—");
+      var phoneCell = escapeHtml(row.phone || "—");
+      var dateCell =
+        row.created_at ? escapeHtml(formatActivityDate(row.created_at)) : "—";
+
+      var actionsHtml =
+        '<div class="adm-setup-actions">' +
+        '<a class="adm-mini-btn adm-mini-btn--wa"' +
+        (waUrl === "#" ?
+          ' href="#" role="button" aria-disabled="true"'
+        : ' href="' + waUrl + '" target="_blank" rel="noopener noreferrer"') +
+        '>Contacter<br /><span class="adm-mini-btn__hint">WhatsApp resto</span></a>' +
+        '<button type="button" class="adm-mini-btn adm-mini-btn--done" data-setup-done="' +
+        escapeHtml(String(Number(row.id) || "")) +
+        "\">Installation<br /><span class=\"adm-mini-btn__hint\">terminée</span></button>" +
+        "</div>";
+
+      tr.innerHTML =
+        "<td>" +
+        nameCell +
+        "</td><td>" +
+        emailCell +
+        "</td><td>" +
+        phoneCell +
+        "</td><td>" +
+        dateCell +
+        "</td><td>" +
+        actionsHtml +
+        "</td>";
+      tbody.appendChild(tr);
+    });
+  }
+
   async function loadDashboardData() {
     hideAccessBanner();
 
@@ -210,17 +310,17 @@
       );
       clearStatsDisplay();
       renderActivity([]);
+      renderSetupHelpRows([], true);
       return;
     }
-
-    var d = statsRes.data || {};
-    if (statsRes.ok && Number.isFinite(Number(d.total_users))) {
+    var statsData = statsRes.data || {};
+    if (statsRes.ok && Number.isFinite(Number(statsData.total_users))) {
       applyStats({
-        total_users: Number(d.total_users),
-        active_restaurants: Number(d.active_restaurants),
-        new_signups: Number(d.new_signups),
-        active_subscriptions: Number(d.active_subscriptions),
-        estimated_revenue_cfa: Number(d.estimated_revenue_cfa),
+        total_users: Number(statsData.total_users),
+        active_restaurants: Number(statsData.active_restaurants),
+        new_signups: Number(statsData.new_signups),
+        active_subscriptions: Number(statsData.active_subscriptions),
+        estimated_revenue_cfa: Number(statsData.estimated_revenue_cfa),
       });
     } else {
       showAccessBanner(
@@ -244,6 +344,7 @@
         "warning",
       );
       renderActivity([]);
+      renderSetupHelpRows([], true);
       return;
     }
 
@@ -251,16 +352,27 @@
       renderActivity(actRes.data.items.length ? actRes.data.items : []);
     } else {
       renderActivity([]);
-      if (statsRes.ok && Number.isFinite(Number(d.total_users))) {
+      if (statsRes.ok && Number.isFinite(Number(statsData.total_users))) {
         showAccessBanner(
           "L’historique d’activité n’a pas pu être chargé.",
           "error",
         );
       }
     }
-  }
 
-  /* ---------- Shell sidebar / overlay ---------- */
+    var setupRes = await fetchAdminJson("/api/admin/setup-help?pageSize=50", token);
+    if (setupRes.status === 401) {
+      clearSessionAndRedirectLogin();
+      return;
+    }
+    if (setupRes.status === 403) {
+      renderSetupHelpRows([], true);
+    } else if (setupRes.ok && setupRes.data && Array.isArray(setupRes.data.items)) {
+      renderSetupHelpRows(setupRes.data.items, false);
+    } else {
+      renderSetupHelpRows([], false);
+    }
+  }
 
   function initShell() {
     var body = document.body;
@@ -310,10 +422,67 @@
     );
   }
 
+  function bindSetupHelpDelegation() {
+    var tbody = document.getElementById("adm-setup-help-body");
+    if (!tbody || tbody.dataset.delegBound === "1") {
+      return;
+    }
+    tbody.dataset.delegBound = "1";
+    tbody.addEventListener("click", function (ev) {
+      var btn = ev.target.closest("[data-setup-done]");
+      if (!btn || btn.disabled) {
+        return;
+      }
+      var id = btn.getAttribute("data-setup-done");
+      if (!id || !/^-?\d+$/.test(id)) {
+        return;
+      }
+      if (!confirm("Marquer l’installation de ce restaurant comme terminée ?")) {
+        return;
+      }
+      var token = localStorage.getItem(TOKEN_KEY);
+      if (!token) {
+        clearSessionAndRedirectLogin();
+        return;
+      }
+
+      btn.disabled = true;
+
+      fetchAdminPost("/api/admin/restaurants/" + id + "/setup-help/complete", token).then(
+        function (res) {
+          if (res.status === 401) {
+            clearSessionAndRedirectLogin();
+            return;
+          }
+          if (!res.ok) {
+            btn.disabled = false;
+            alert((res.data && res.data.message) || "Impossible de mettre à jour.");
+            return;
+          }
+          return fetchAdminJson("/api/admin/setup-help?pageSize=50", token);
+        },
+      ).then(function (refRes) {
+        if (!refRes) {
+          return;
+        }
+        if (refRes.status === 401) {
+          clearSessionAndRedirectLogin();
+          return;
+        }
+        if (refRes.ok && refRes.data && Array.isArray(refRes.data.items)) {
+          renderSetupHelpRows(refRes.data.items, false);
+        } else {
+          renderSetupHelpRows([], false);
+        }
+      });
+    });
+  }
+
   function init() {
     if (!requireAuthToken()) {
       return;
     }
+    bindSetupHelpDelegation();
     initShell();
     loadDashboardData();
   }

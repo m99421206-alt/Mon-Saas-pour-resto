@@ -31,6 +31,8 @@ CREATE TABLE IF NOT EXISTS `restaurants` (
   `logo_url` VARCHAR(512) NULL,
   `banner_url` VARCHAR(512) NULL,
   `theme_color` VARCHAR(16) NOT NULL DEFAULT '#FF7A00',
+  `onboarding_seen` TINYINT(1) NOT NULL DEFAULT 0,
+  `needs_setup_help` TINYINT(1) NOT NULL DEFAULT 0,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_restaurants_user_id` (`user_id`),

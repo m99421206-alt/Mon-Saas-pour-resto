@@ -2,6 +2,8 @@ const { getPool } = require("../config/database");
 const subscriptionService = require("../services/subscriptionService");
 const platformSettings = require("../services/platformSettings");
 const { resolvePlanLabel } = require("../utils/subscriptionLabels");
+const { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
+const { isPlatformAdminEmail } = require("../utils/platformAdmin");
 
 function catalogPlanKey(p) {
   return String((p || {}).id || "")
@@ -192,6 +194,7 @@ async function getMe(req, res) {
     var [restaurants] = await pool.query(
       "SELECT r.id, r.name, r.description, r.whatsapp, r.logo_url, r.banner_url, r.theme_color, " +
         "r.subscription_status, r.subscription_plan_key, r.subscription_started_at, r.subscription_ends_at, r.subscription_amount_cfa, " +
+        "COALESCE(r.onboarding_seen, 0) AS onboarding_seen, COALESCE(r.needs_setup_help, 0) AS needs_setup_help, " +
         "CASE WHEN r.subscription_ends_at IS NULL THEN NULL ELSE GREATEST(0, DATEDIFF(DATE(r.subscription_ends_at), CURDATE())) END AS days_remaining " +
         "FROM restaurants r WHERE r.user_id = ? ORDER BY r.id ASC LIMIT 1",
       [req.user.id],
@@ -205,6 +208,7 @@ async function getMe(req, res) {
       var [again] = await pool.query(
         "SELECT r.id, r.name, r.description, r.whatsapp, r.logo_url, r.banner_url, r.theme_color, " +
           "r.subscription_status, r.subscription_plan_key, r.subscription_started_at, r.subscription_ends_at, r.subscription_amount_cfa, " +
+          "COALESCE(r.onboarding_seen, 0) AS onboarding_seen, COALESCE(r.needs_setup_help, 0) AS needs_setup_help, " +
           "CASE WHEN r.subscription_ends_at IS NULL THEN NULL ELSE GREATEST(0, DATEDIFF(DATE(r.subscription_ends_at), CURDATE())) END AS days_remaining " +
           "FROM restaurants r WHERE r.id = ? LIMIT 1",
         [baseRestaurant.id],
@@ -222,11 +226,14 @@ async function getMe(req, res) {
         logo_url: baseRestaurant.logo_url,
         banner_url: baseRestaurant.banner_url,
         theme_color: baseRestaurant.theme_color,
+        onboarding_seen: Boolean(baseRestaurant.onboarding_seen),
+        needs_setup_help: Boolean(baseRestaurant.needs_setup_help),
       }
     : null;
 
     return res.json({
       user: users[0],
+      is_platform_admin: isPlatformAdminEmail(users[0].email),
       restaurant: restaurantPublic,
       subscription: subscriptionPayload,
       plans_catalog: platformSettings.getSubscriptionPlansCatalog(),
@@ -236,6 +243,48 @@ async function getMe(req, res) {
   }
 }
 
+async function postOnboardingMarkSeen(req, res) {
+  try {
+    var pool = getPool();
+    var [rows] = await pool.query("SELECT id FROM restaurants WHERE user_id = ? ORDER BY id ASC LIMIT 1", [
+      req.user.id,
+    ]);
+    if (!rows.length) {
+      return res.status(404).json({ message: "Restaurant introuvable." });
+    }
+    await pool.query("UPDATE restaurants SET onboarding_seen = 1 WHERE id = ?", [rows[0].id]);
+    return res.json({ ok: true, onboarding_seen: true });
+  } catch (err) {
+    return res.status(500).json({ message: "Erreur serveur." });
+  }
+}
+
+async function postOnboardingRequestHelp(req, res) {
+  try {
+    var pool = getPool();
+    var [rows] = await pool.query(
+      "SELECT id, name FROM restaurants WHERE user_id = ? ORDER BY id ASC LIMIT 1",
+      [req.user.id],
+    );
+    if (!rows.length) {
+      return res.status(404).json({ message: "Restaurant introuvable." });
+    }
+    var rid = rows[0].id;
+    await pool.query("UPDATE restaurants SET needs_setup_help = 1, onboarding_seen = 1 WHERE id = ?", [rid]);
+    await appendAudit({
+      userId: req.user.id,
+      restaurantId: rid,
+      action: AUDIT_ACTIONS.ONBOARDING_SETUP_REQUEST,
+      detail: "Demande d’accompagnement installation (« " + String(rows[0].name || "") + " »)",
+    });
+    return res.json({ ok: true, needs_setup_help: true, onboarding_seen: true });
+  } catch (err) {
+    return res.status(500).json({ message: "Erreur serveur." });
+  }
+}
+
 module.exports = {
   getMe: getMe,
+  postOnboardingMarkSeen: postOnboardingMarkSeen,
+  postOnboardingRequestHelp: postOnboardingRequestHelp,
 };
