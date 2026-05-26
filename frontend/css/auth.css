@@ -209,6 +209,76 @@ body.auth-page {
   box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.15);
 }
 
+/* Champ mot de passe + bouton afficher/masquer */
+.auth-password-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.auth-password-wrap input {
+  padding-right: 2.875rem;
+}
+
+.auth-password-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0 0.55rem 0.55rem 0;
+  background: transparent;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.auth-password-toggle:hover {
+  color: var(--color-text);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.auth-password-toggle:focus {
+  outline: none;
+}
+
+.auth-password-toggle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+  color: var(--color-accent);
+}
+
+.auth-password-toggle__icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.auth-password-toggle__eye,
+.auth-password-toggle__eye-off {
+  display: block;
+  flex-shrink: 0;
+}
+
+.auth-password-toggle__eye-off {
+  display: none;
+}
+
+.auth-password-toggle.is-revealed .auth-password-toggle__eye {
+  display: none;
+}
+
+.auth-password-toggle.is-revealed .auth-password-toggle__eye-off {
+  display: block;
+}
+
 .auth-field-hint {
   font-size: 0.75rem;
   color: var(--color-muted);

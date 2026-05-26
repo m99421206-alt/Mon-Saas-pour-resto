@@ -70,25 +70,65 @@
 
           <div class="auth-field">
             <label for="password">Mot de passe</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autocomplete="new-password"
-              minlength="8"
-              required
-            />
+            <div class="auth-password-wrap">
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autocomplete="new-password"
+                minlength="8"
+                required
+              />
+              <button
+                type="button"
+                class="auth-password-toggle"
+                data-password-target="password"
+                aria-label="Afficher le mot de passe"
+                aria-pressed="false"
+              >
+                <span class="auth-password-toggle__icons" aria-hidden="true">
+                  <svg class="auth-password-toggle__eye" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+                    <circle cx="13" cy="12" r="3" />
+                  </svg>
+                  <svg class="auth-password-toggle__eye-off" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A11.93 11.93 0 0112 20c-7 0-11-8-11-8a21.71 21.71 0 015.06-7.94M9.9 4.24A11.93 11.93 0 0112 4c7 0 11 8 11 8a21.71 21.71 0 01-5.06 7.94" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                </span>
+              </button>
+            </div>
           </div>
 
           <div class="auth-field">
             <label for="password-confirm">Confirmer le mot de passe</label>
-            <input
-              id="password-confirm"
-              name="passwordConfirm"
-              type="password"
-              autocomplete="new-password"
-              required
-            />
+            <div class="auth-password-wrap">
+              <input
+                id="password-confirm"
+                name="passwordConfirm"
+                type="password"
+                autocomplete="new-password"
+                required
+              />
+              <button
+                type="button"
+                class="auth-password-toggle"
+                data-password-target="password-confirm"
+                aria-label="Afficher le mot de passe"
+                aria-pressed="false"
+              >
+                <span class="auth-password-toggle__icons" aria-hidden="true">
+                  <svg class="auth-password-toggle__eye" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+                    <circle cx="13" cy="12" r="3" />
+                  </svg>
+                  <svg class="auth-password-toggle__eye-off" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A11.93 11.93 0 0112 20c-7 0-11-8-11-8a21.71 21.71 0 015.06-7.94M9.9 4.24A11.93 11.93 0 0112 4c7 0 11 8 11 8a21.71 21.71 0 01-5.06 7.94" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                </span>
+              </button>
+            </div>
           </div>
 
           <p class="auth-error" id="register-error" role="alert"></p>
@@ -99,6 +139,7 @@
     </main>
 
     <script src="../js/config.js"></script>
+    <script src="../js/password-toggle.js"></script>
     <script src="../js/register.js"></script>
   </body>
 </html>
