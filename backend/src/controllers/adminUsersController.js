@@ -31,9 +31,9 @@ async function listUsers(req, res) {
     if (qRaw) {
       var like = "%" + qRaw + "%";
       conditions.push(
-        "(u.email LIKE ? OR IFNULL(TRIM(u.phone),'') LIKE ? OR EXISTS (SELECT 1 FROM restaurants r WHERE r.user_id = u.id AND r.name LIKE ?))",
+        "(u.email LIKE ? OR IFNULL(TRIM(u.phone),'') LIKE ? OR EXISTS (SELECT 1 FROM restaurants r WHERE r.user_id = u.id AND (r.name LIKE ? OR IFNULL(r.city, '') LIKE ?)))",
       );
-      vals.push(like, like, like);
+      vals.push(like, like, like, like);
     }
 
     if (statusFilter === "active") {
@@ -63,7 +63,8 @@ async function listUsers(req, res) {
         "  u.phone AS phone, " +
         "  CASE WHEN LOWER(TRIM(COALESCE(u.account_status, 'active'))) = 'suspended' THEN 'suspended' ELSE 'active' END AS status, " +
         "  u.created_at AS created_at, " +
-        "  COALESCE((SELECT r.name FROM restaurants r WHERE r.user_id = u.id ORDER BY r.id ASC LIMIT 1), SUBSTRING_INDEX(u.email, ?, 1)) AS nom " +
+        "  COALESCE((SELECT r.name FROM restaurants r WHERE r.user_id = u.id ORDER BY r.id ASC LIMIT 1), SUBSTRING_INDEX(u.email, ?, 1)) AS nom, " +
+        "  (SELECT NULLIF(TRIM(r.city), '') FROM restaurants r WHERE r.user_id = u.id ORDER BY r.id ASC LIMIT 1) AS quartier " +
         "FROM users u " +
         whereClause +
         " ORDER BY u.id DESC LIMIT ? OFFSET ?",
@@ -80,6 +81,7 @@ async function listUsers(req, res) {
         nom: String(r.nom || "").trim() || "—",
         email: String(r.email || ""),
         phone: r.phone != null && String(r.phone).trim() !== "" ? String(r.phone).trim() : null,
+        quartier: r.quartier != null && String(r.quartier).trim() !== "" ? String(r.quartier).trim() : null,
         status: st,
         created_at: r.created_at ? new Date(r.created_at).toISOString() : null,
       };
@@ -122,19 +124,37 @@ async function getUserDetail(req, res) {
     }
 
     var [restaurants] = await pool.query(
-      "SELECT id, name, whatsapp FROM restaurants WHERE user_id = ? ORDER BY id ASC",
+      "SELECT id, name, city, whatsapp FROM restaurants WHERE user_id = ? ORDER BY id ASC",
       [id],
     );
+
+    var quartierVal = null;
+    for (var ri = 0; ri < restaurants.length; ri += 1) {
+      var c = restaurants[ri].city;
+      if (c != null && String(c).trim() !== "") {
+        quartierVal = String(c).trim();
+        break;
+      }
+    }
 
     return res.json({
       user: {
         id: u.id,
         email: u.email,
         phone: u.phone != null && String(u.phone).trim() !== "" ? String(u.phone).trim() : null,
+        quartier: quartierVal,
         status: st,
         created_at: u.created_at ? new Date(u.created_at).toISOString() : null,
       },
-      restaurants: restaurants,
+      restaurants: restaurants.map(function (r) {
+        return {
+          id: r.id,
+          name: r.name,
+          whatsapp: r.whatsapp,
+          city: r.city,
+          quartier: r.city != null && String(r.city).trim() !== "" ? String(r.city).trim() : null,
+        };
+      }),
     });
   } catch (err) {
     console.error(err);

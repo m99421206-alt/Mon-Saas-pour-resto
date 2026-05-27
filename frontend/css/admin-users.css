@@ -130,6 +130,20 @@
   text-overflow: ellipsis;
 }
 
+.users-quartier {
+  font-size: 0.875rem;
+}
+
+.users-quartier--empty {
+  color: var(--adm-text-muted);
+}
+
+.users-card__quartier {
+  margin: 0.25rem 0 0;
+  font-size: 0.78rem;
+  color: var(--adm-text-muted);
+}
+
 .users-actions {
   display: flex;
   flex-wrap: wrap;

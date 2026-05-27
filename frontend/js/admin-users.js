@@ -113,6 +113,21 @@
     }
   }
 
+  function formatQuartier(value) {
+    if (value == null || String(value).trim() === "") {
+      return "—";
+    }
+    return String(value).trim();
+  }
+
+  function quartierCellHtml(value) {
+    var text = formatQuartier(value);
+    if (text === "—") {
+      return '<span class="users-quartier users-quartier--empty">—</span>';
+    }
+    return '<span class="users-quartier">' + escapeHtml(text) + "</span>";
+  }
+
   function statusBadge(status) {
     var st = String(status || "").toLowerCase().trim();
     var isSuspended = st === "suspended";
@@ -267,7 +282,7 @@
 
   function tbodyPlaceholder(msg) {
     return (
-      '<tr class="adm-table__placeholder">' + '<td colspan="4">' + escapeHtml(msg) + "</td>" + "</tr>"
+      '<tr class="adm-table__placeholder">' + '<td colspan="5">' + escapeHtml(msg) + "</td>" + "</tr>"
     );
   }
 
@@ -392,6 +407,9 @@
           "<td>" +
           escapeHtml(formatDateShort(row.created_at)) +
           "</td>" +
+          "<td>" +
+          quartierCellHtml(row.quartier) +
+          "</td>" +
           '<td><div class="users-actions">' +
           buildActionButtons(row) +
           "</div></td>";
@@ -412,6 +430,10 @@
           "</p>" +
           '<p class="users-card__date">' +
           escapeHtml(formatDateShort(row.created_at)) +
+          "</p>" +
+          '<p class="users-card__quartier">' +
+          "Quartier : " +
+          escapeHtml(formatQuartier(row.quartier)) +
           "</p>" +
           "</div>" +
           statusBadge(row.status) +
@@ -586,6 +608,7 @@
     var createdEl = document.getElementById("adm-user-detail-created");
     var idEl = document.getElementById("adm-user-detail-id");
     var phoneEl = document.getElementById("adm-user-detail-phone");
+    var quartierEl = document.getElementById("adm-user-detail-quartier");
     var listEl = document.getElementById("adm-user-detail-restaurants");
     var emptyEl = document.getElementById("adm-user-detail-restaurants-empty");
 
@@ -598,6 +621,9 @@
     }
     if (phoneEl) {
       phoneEl.textContent = "";
+    }
+    if (quartierEl) {
+      quartierEl.textContent = "";
     }
 
     var res = await fetchJson("GET", "/api/admin/users/" + encodeURIComponent(idStr), token);
@@ -640,6 +666,9 @@
     if (createdEl) {
       createdEl.textContent = formatDateShort(u.created_at);
     }
+    if (quartierEl) {
+      quartierEl.textContent = formatQuartier(u.quartier);
+    }
     if (idEl) {
       idEl.textContent = String(u.id);
     }
@@ -654,8 +683,12 @@
     restos.forEach(function (r) {
       var li = document.createElement("li");
       var name = escapeHtml(r.name || "—");
-      var wa = r.whatsapp ? " — WhatsApp : " + escapeHtml(String(r.whatsapp)) : "";
-      li.innerHTML = name + wa;
+      var q =
+        r.quartier || r.city ?
+          " — Quartier : " + escapeHtml(formatQuartier(r.quartier || r.city))
+        : "";
+      var wa = r.whatsapp ? " — WhatsApp : " + escapeHtml(String(r.whatsapp)) : "";
+      li.innerHTML = name + q + wa;
       if (listEl) {
         listEl.appendChild(li);
       }
