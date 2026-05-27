@@ -302,6 +302,11 @@
         return;
       }
 
+      if (me.is_platform_admin) {
+        window.location.replace("admin-dashboard.html");
+        return;
+      }
+
       if (!me.is_platform_admin && me.restaurant && me.restaurant.onboarding_seen === false) {
         window.location.replace("onboarding.html");
         return;

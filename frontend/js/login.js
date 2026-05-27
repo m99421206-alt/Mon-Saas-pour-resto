@@ -108,6 +108,8 @@
         window.location.href = "onboarding.html";
       } else if (isSafeNextPage(next)) {
         window.location.href = next;
+      } else if (data.is_platform_admin) {
+        window.location.href = "admin-dashboard.html";
       } else {
         window.location.href = "dashboard.html";
       }

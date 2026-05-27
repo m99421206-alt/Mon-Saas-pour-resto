@@ -1,8 +1,11 @@
 # Dépendances Node (étape 2+)
 node_modules/
 
-# Secrets — ne jamais committer
+# Secrets — ne jamais committer (DB, JWT, ADMIN_EMAILS, mots de passe)
 .env
+.env.*
+backend/.env
+**/.env
 
 # Images uploadées par les restaurants
 backend/uploads/
