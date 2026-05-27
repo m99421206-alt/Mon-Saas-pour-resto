@@ -268,6 +268,10 @@
     categoriesCount.textContent = String(categories.length);
     productsCount.textContent = String(products.length);
 
+    if (window.MenuGo_DashShell) {
+      window.MenuGo_DashShell.populateProfile(user, restaurant);
+    }
+
     applyDashboardEditLocks(me.subscription);
 
     localStorage.setItem(USER_KEY, JSON.stringify(user || null));
@@ -370,7 +374,12 @@
     return drawer.classList.contains("is-open");
   }
 
+  function isDesktopNav() {
+    return window.MenuGo_DashShell && window.MenuGo_DashShell.isDesktop();
+  }
+
   function openDrawer() {
+    if (isDesktopNav()) return;
     if (closeTimer) {
       window.clearTimeout(closeTimer);
       closeTimer = null;
@@ -389,12 +398,15 @@
     });
 
     openBtn?.setAttribute("aria-expanded", "true");
+    openBtn?.classList.add("is-active");
+    document.body.classList.add("dash-drawer-open");
     document.body.style.overflow = "hidden";
 
     closeBtn?.focus({ preventScroll: true });
   }
 
   function closeDrawer() {
+    if (isDesktopNav()) return;
     if (!isOpen()) return;
 
     overlay.classList.remove("is-visible");
@@ -404,6 +416,8 @@
     overlay.setAttribute("aria-hidden", "true");
 
     openBtn?.setAttribute("aria-expanded", "false");
+    openBtn?.classList.remove("is-active");
+    document.body.classList.remove("dash-drawer-open");
     document.body.style.overflow = "";
 
     closeTimer = window.setTimeout(function () {

@@ -45,8 +45,6 @@ async function getStats(req, res) {
   try {
     var pool = getPool();
 
-    await subscriptionService.expireAllPastDueGlobally();
-
     var [[userRow]] = await pool.query("SELECT COUNT(*) AS n FROM users");
     var [[restRow]] = await pool.query("SELECT COUNT(*) AS n FROM restaurants");
 

@@ -132,6 +132,10 @@
     drawerRestaurant.textContent = restaurant.name || "Nom du resto";
     drawerEmail.textContent = user.email || "email du resto";
 
+    if (window.MenuGo_DashShell) {
+      window.MenuGo_DashShell.populateProfile(user, restaurant);
+    }
+
     if (me) {
       localStorage.setItem(USER_KEY, JSON.stringify(user || null));
       localStorage.setItem(RESTAURANT_KEY, JSON.stringify(restaurant || null));

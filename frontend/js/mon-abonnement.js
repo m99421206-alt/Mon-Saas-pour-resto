@@ -51,9 +51,16 @@
     return data;
   }
 
-  function fillDrawer(restaurantName, email) {
-    var ar = el("dash-drawer-restaurant");
-    var ae = el("dash-drawer-email");
+  function fillDrawer(restaurantName, email, user, restaurant) {
+    if (window.MenuGo_DashShell) {
+      window.MenuGo_DashShell.populateProfile(
+        user || { email: email },
+        restaurant || { name: restaurantName },
+      );
+      return;
+    }
+    var ar = el("dashboard-drawer-restaurant");
+    var ae = el("dashboard-drawer-email");
     if (ar)
       ar.textContent =
         restaurantName && restaurantName.trim() ? restaurantName : "Nom du resto";
@@ -78,7 +85,7 @@
       var user = me.user || {};
       var restaurant = me.restaurant || null;
       var rn = restaurant && restaurant.name ? restaurant.name : "";
-      fillDrawer(rn, user.email || "");
+      fillDrawer(rn, user.email || "", user, restaurant);
 
       if (titleMain) {
         if (rn && String(rn).trim()) {

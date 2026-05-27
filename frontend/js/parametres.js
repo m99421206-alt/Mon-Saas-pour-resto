@@ -161,6 +161,9 @@
     var restaurantName = restaurant && restaurant.name ? restaurant.name : "Nom du resto";
     if (drawerRestaurant) drawerRestaurant.textContent = restaurantName;
     if (drawerEmail) drawerEmail.textContent = user && user.email ? user.email : "email du resto";
+    if (window.MenuGo_DashShell) {
+      window.MenuGo_DashShell.populateProfile(user, restaurant);
+    }
   }
 
   function fillForm(restaurant) {
