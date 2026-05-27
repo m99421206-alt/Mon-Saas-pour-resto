@@ -100,6 +100,41 @@
     return resolvePublicSiteOrigin() + menuPath + "?id=" + encodeURIComponent(restaurantId);
   }
 
+  function renderDashboardQrPreview(url) {
+    var canvas = document.getElementById("dashboard-qr-preview");
+    if (!canvas || !url) return;
+
+    var display = 88;
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    canvas.width = Math.round(display * dpr);
+    canvas.height = Math.round(display * dpr);
+    canvas.style.width = display + "px";
+    canvas.style.height = display + "px";
+
+    var ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    var img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = function () {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, display, display);
+      ctx.drawImage(img, 0, 0, display, display);
+    };
+    img.onerror = function () {
+      ctx.fillStyle = "#f4f4f5";
+      ctx.fillRect(0, 0, display, display);
+      ctx.fillStyle = "#757575";
+      ctx.font = "600 10px Inter, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("QR", display / 2, display / 2 + 3);
+    };
+    img.src =
+      "https://api.qrserver.com/v1/create-qr-code/?size=176x176&margin=8&data=" +
+      encodeURIComponent(url);
+  }
+
   function whatsappDigitsDash(value) {
     return String(value || "").replace(/\D/g, "").replace(/^0+/, "");
   }
@@ -243,6 +278,7 @@
       document.body.setAttribute("data-menu-id", String(restaurant.id));
       menuUrlInput.value = publicUrl;
       viewMenuBtn.setAttribute("data-menu-url", publicUrl);
+      renderDashboardQrPreview(publicUrl);
     }
 
     updateTrialExpiredBanner(me);
@@ -271,9 +307,12 @@
 
     function markCopied() {
       copyMenuBtn?.classList.add("is-done");
+      var copyLabel = copyMenuBtn?.querySelector(".dash-copy-btn__label");
+      if (copyLabel) copyLabel.textContent = "Copié !";
       setCopyFeedback("Lien copié.");
       window.setTimeout(function () {
         copyMenuBtn?.classList.remove("is-done");
+        if (copyLabel) copyLabel.textContent = "Copier";
       }, 1800);
     }
 

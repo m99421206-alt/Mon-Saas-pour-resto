@@ -127,19 +127,21 @@
         <!-- Lien public du menu -->
         <article class="dash-card dash-card--link">
           <h2 class="dash-card-title">Lien de votre menu</h2>
-          <input
-            class="dash-link-input"
-            type="url"
-            name="menuUrl"
-            id="dashboard-menu-url"
-            placeholder="https://"
-            inputmode="url"
-            autocomplete="off"
-            readonly
-          />
-          <button type="button" class="dash-copy-btn" id="dashboard-copy-menu">
-            Copier le lien
-          </button>
+          <div class="dash-link-row">
+            <input
+              class="dash-link-input"
+              type="url"
+              name="menuUrl"
+              id="dashboard-menu-url"
+              placeholder="https://"
+              inputmode="url"
+              autocomplete="off"
+              readonly
+            />
+            <button type="button" class="dash-copy-btn" id="dashboard-copy-menu" aria-label="Copier le lien du menu">
+              <span class="dash-copy-btn__label">Copier</span>
+            </button>
+          </div>
           <p class="dash-copy-feedback" id="dashboard-copy-feedback" role="status" aria-live="polite" hidden></p>
           <button type="button" class="dash-link-btn" data-action="view-public-menu" id="dashboard-view-menu">
             <span>Voir le menu</span>
@@ -149,15 +151,24 @@
 
         <!-- Bloc QR (CTA) -->
         <article class="dash-qr-card">
-          <h2 class="dash-qr-title">Votre QR Code prêt !!</h2>
-          <p class="dash-qr-text">
-            téléchargez-le et imprimez-le pour le placer sur vos tables. vos clients pourront scanner et commander
-            directement
-          </p>
-          <a href="qr-code.html" class="dash-qr-btn">
-            <img src="../../assets/images/icone/qrcode.png" alt="" width="20" height="20" />
-            <span class="dash-qr-btn__label">Obtenir mon QR Code</span>
-          </a>
+          <div class="dash-qr-card__layout">
+            <div class="dash-qr-card__body">
+              <span class="dash-qr-card__icon" aria-hidden="true">
+                <img src="../../assets/images/icone/balayage-du-code-qr.png" alt="" width="22" height="22" />
+              </span>
+              <h2 class="dash-qr-title">Votre QR Code prêt !</h2>
+              <p class="dash-qr-text">
+                Téléchargez-le et imprimez-le pour vos tables. Vos clients scanneront et accéderont à votre menu.
+              </p>
+              <a href="qr-code.html" class="dash-qr-btn">
+                <img src="../../assets/images/icone/qrcode.png" alt="" width="20" height="20" />
+                <span class="dash-qr-btn__label">Obtenir mon QR Code</span>
+              </a>
+            </div>
+            <div class="dash-qr-preview" aria-hidden="true">
+              <canvas id="dashboard-qr-preview" width="88" height="88" aria-label="Aperçu du QR code"></canvas>
+            </div>
+          </div>
         </article>
       </section>
     </main>
