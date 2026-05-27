@@ -157,6 +157,74 @@
     }
   }
 
+  function initAdminImpersonationBanner() {
+    var adminToken = null;
+    try {
+      adminToken = sessionStorage.getItem("MenuGo_admin_token");
+    } catch (error) {
+      return;
+    }
+    if (!adminToken) return;
+
+    var main = document.querySelector(".dashboard-main");
+    if (!main || document.getElementById("dash-admin-impersonation-banner")) return;
+
+    var rest = getStoredRestaurant();
+    var restName = rest && rest.name ? String(rest.name) : "ce restaurant";
+
+    var banner = document.createElement("section");
+    banner.id = "dash-admin-impersonation-banner";
+    banner.className = "dash-admin-impersonation-banner";
+    banner.setAttribute("role", "status");
+
+    var inner = document.createElement("div");
+    inner.className = "dash-admin-impersonation-banner__inner";
+
+    var text = document.createElement("p");
+    text.className = "dash-admin-impersonation-banner__text";
+    text.innerHTML =
+      "<strong>Mode installation admin</strong> — Vous gérez le tableau de bord de <em></em>.";
+
+    var em = text.querySelector("em");
+    if (em) em.textContent = restName;
+
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "dash-admin-impersonation-banner__btn";
+    btn.id = "dash-admin-return-btn";
+    btn.textContent = "Retour à l’admin";
+    btn.addEventListener("click", function () {
+      var backupToken = null;
+      var backupUser = null;
+      var returnUrl = "admin-restaurants.html";
+      try {
+        backupToken = sessionStorage.getItem("MenuGo_admin_token");
+        backupUser = sessionStorage.getItem("MenuGo_admin_user");
+        returnUrl = sessionStorage.getItem("MenuGo_admin_return") || returnUrl;
+        sessionStorage.removeItem("MenuGo_admin_token");
+        sessionStorage.removeItem("MenuGo_admin_user");
+        sessionStorage.removeItem("MenuGo_admin_return");
+      } catch (error) {}
+
+      if (backupToken) {
+        localStorage.setItem("MenuGo_token", backupToken);
+        if (backupUser) {
+          localStorage.setItem("MenuGo_user", backupUser);
+        } else {
+          localStorage.removeItem("MenuGo_user");
+        }
+        localStorage.removeItem("MenuGo_restaurant");
+      }
+
+      window.location.href = returnUrl;
+    });
+
+    inner.appendChild(text);
+    inner.appendChild(btn);
+    banner.appendChild(inner);
+    main.insertBefore(banner, main.firstChild);
+  }
+
   function initNotificationsPlaceholder() {
     var btn = document.getElementById("dash-notifications-btn");
     if (!btn || btn.dataset.bound) return;
@@ -173,6 +241,7 @@
   ensureDashLayout();
   syncDesktopDrawerState();
   initFromStorage();
+  initAdminImpersonationBanner();
   initNotificationsPlaceholder();
 
   DESKTOP_MQ.addEventListener("change", syncDesktopDrawerState);

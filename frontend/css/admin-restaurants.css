@@ -262,6 +262,39 @@
   color: #b91c1c;
 }
 
+.adm-btn--install {
+  border-color: rgba(255, 107, 0, 0.45);
+  background: linear-gradient(180deg, rgba(255, 143, 64, 0.14) 0%, rgba(255, 107, 0, 0.1) 100%);
+  color: #c2410c;
+  font-weight: 700;
+}
+
+.adm-btn--install:hover:not(:disabled) {
+  border-color: rgba(255, 107, 0, 0.55);
+  background: rgba(255, 107, 0, 0.16);
+  box-shadow: 0 4px 14px rgba(255, 107, 0, 0.12);
+}
+
+.resto-detail-actions {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--adm-border);
+}
+
+.resto-detail-actions__hint {
+  margin: 0.45rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--adm-text-muted);
+}
+
+.resto-detail-actions .adm-btn--install {
+  width: 100%;
+  min-height: 2.65rem;
+  border-radius: 0.65rem;
+  font-size: 0.82rem;
+}
+
 .adm-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;

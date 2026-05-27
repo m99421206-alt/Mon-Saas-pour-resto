@@ -667,20 +667,20 @@
           "</div>" +
           statusBadge(row.subscription_status) +
           "</div>" +
-          '<div class="subs-email-muted">' +
+          '<div class="subs-card__details">' +
           "Début : " +
           escapeHtml(formatDate(row.subscription_started_at)) +
           " · Fin : " +
           escapeHtml(formatDate(row.subscription_ends_at)) +
           "</div>" +
-          '<div style="margin-top:6px" class="subs-money">' +
+          '<div class="subs-card__amount subs-money">' +
           escapeHtml(formatCFA(row.subscription_amount_cfa)) +
           "</div>" +
-          '<div style="margin-top:4px">' +
+          '<div class="subs-card__days">' +
           "Jours restants : " +
           daysCell(row.days_remaining, row.subscription_status) +
           "</div>" +
-          '<div class="subs-actions subs-actions--card" style="margin-top:10px">' +
+          '<div class="subs-actions subs-actions--card">' +
           buildButtons(row) +
           "</div>";
         cards.appendChild(li);
@@ -725,7 +725,7 @@
     window.addEventListener(
       "resize",
       function () {
-        if (window.matchMedia("(min-width: 901px)").matches) close();
+        if (window.matchMedia("(min-width: 768px)").matches) close();
       },
       { passive: true },
     );

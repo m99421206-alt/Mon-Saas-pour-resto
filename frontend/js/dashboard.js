@@ -10,6 +10,7 @@
   const TOKEN_KEY = "MenuGo_token";
   const USER_KEY = "MenuGo_user";
   const RESTAURANT_KEY = "MenuGo_restaurant";
+  const ADMIN_BACKUP_TOKEN = "MenuGo_admin_token";
 
   const openBtn = document.getElementById("open-drawer");
   const closeBtn = document.getElementById("close-drawer");
@@ -44,6 +45,14 @@
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(RESTAURANT_KEY);
+  }
+
+  function isAdminImpersonating() {
+    try {
+      return Boolean(sessionStorage.getItem(ADMIN_BACKUP_TOKEN));
+    } catch (error) {
+      return false;
+    }
   }
 
   async function readJson(response) {
@@ -351,8 +360,10 @@
       }
 
       if (!me.is_platform_admin && me.restaurant && me.restaurant.onboarding_seen === false) {
-        window.location.replace("onboarding.html");
-        return;
+        if (!isAdminImpersonating()) {
+          window.location.replace("onboarding.html");
+          return;
+        }
       }
 
       const [categoriesData, productsData] = await Promise.all([

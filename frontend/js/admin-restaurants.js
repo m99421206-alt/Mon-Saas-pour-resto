@@ -7,6 +7,9 @@
   var TOKEN_KEY = "MenuGo_token";
   var USER_KEY = "MenuGo_user";
   var RESTAURANT_KEY = "MenuGo_restaurant";
+  var ADMIN_BACKUP_TOKEN = "MenuGo_admin_token";
+  var ADMIN_BACKUP_USER = "MenuGo_admin_user";
+  var ADMIN_RETURN_URL = "MenuGo_admin_return";
   var LOGIN_NEXT = "admin-restaurants.html";
   var PAGE_SIZE = 12;
   var DEBOUNCE_MS = 320;
@@ -268,6 +271,10 @@
 
   function buildActionButtons(row) {
     var id = encodeURIComponent(row.id);
+    var dashBtn =
+      '<button type="button" class="adm-btn adm-btn--install" data-act="dashboard" data-id="' +
+      id +
+      '">Tableau de bord</button>';
     var menuBtn =
       '<button type="button" class="adm-btn" data-act="menu" data-id="' + id + '">Voir menu</button>';
     var detBtn =
@@ -284,7 +291,7 @@
       "</button>";
     var del =
       '<button type="button" class="adm-btn adm-btn--danger" data-act="delete" data-id="' + id + '">Supprimer</button>';
-    return menuBtn + detBtn + menuToggle + del;
+    return dashBtn + menuBtn + detBtn + menuToggle + del;
   }
 
   function tbodyPlaceholder(msg) {
@@ -600,6 +607,64 @@
         bannerEl.hidden = true;
       }
     }
+
+    var dashBtn = document.getElementById("adm-resto-open-dashboard");
+    if (dashBtn) {
+      dashBtn.setAttribute("data-id", String(r.id));
+      dashBtn.onclick = function () {
+        accessRestaurantDashboard(r.id);
+      };
+    }
+  }
+
+  async function accessRestaurantDashboard(restaurantId) {
+    if (
+      !confirm(
+        "Ouvrir le tableau de bord de ce restaurant pour l’installation ?\n\nVous serez connecté en tant que propriétaire du restaurant.",
+      )
+    ) {
+      return;
+    }
+
+    var token = localStorage.getItem(TOKEN_KEY);
+    var res = await fetchJson(
+      "POST",
+      "/api/admin/restaurants/" + encodeURIComponent(String(restaurantId)) + "/dashboard-access",
+      token,
+    );
+
+    if (res.status === 401) {
+      clearSessionAndRedirectLogin();
+      return;
+    }
+
+    if (res.status === 403) {
+      showAccessBanner(
+        (res.data && res.data.message) || "Accès administration réservé.",
+        "warning",
+      );
+      return;
+    }
+
+    if (!res.ok || !res.data || !res.data.token) {
+      showAccessBanner(
+        (res.data && res.data.message) || "Impossible d’ouvrir le tableau de bord du restaurant.",
+        "error",
+      );
+      return;
+    }
+
+    try {
+      sessionStorage.setItem(ADMIN_BACKUP_TOKEN, token || "");
+      sessionStorage.setItem(ADMIN_BACKUP_USER, localStorage.getItem(USER_KEY) || "");
+      sessionStorage.setItem(ADMIN_RETURN_URL, LOGIN_NEXT);
+    } catch (e) {}
+
+    localStorage.setItem(TOKEN_KEY, res.data.token);
+    localStorage.setItem(USER_KEY, JSON.stringify(res.data.user || null));
+    localStorage.setItem(RESTAURANT_KEY, JSON.stringify(res.data.restaurant || null));
+
+    window.location.href = "dashboard.html";
   }
 
   async function patchMenuSuspend(restaurantId, suspended) {
@@ -711,6 +776,7 @@
       e.preventDefault();
 
       if (act === "menu") openPublicMenu(id);
+      else if (act === "dashboard") accessRestaurantDashboard(id);
       else if (act === "detail") openDetail(id);
       else if (act === "menu-off") patchMenuSuspend(id, true);
       else if (act === "menu-on") patchMenuSuspend(id, false);

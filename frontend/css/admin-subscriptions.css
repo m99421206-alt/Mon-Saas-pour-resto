@@ -184,35 +184,58 @@
   color: rgb(180, 83, 9);
 }
 
-/* Cartes mobiles */
+/* Cartes mobiles / tablette étroite */
+.subs-cards {
+  display: none;
+}
+
 .subs-cards__list {
   list-style: none;
   margin: 0;
-  padding: clamp(13px, 4vw, 17px);
-  display: flex;
-  flex-direction: column;
-  gap: 13px;
+  padding: 0.75rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.65rem;
 }
 
 .subs-card {
-  border-radius: 16px;
+  border-radius: 0.75rem;
   border: 1px solid var(--adm-border);
   background: var(--adm-surface);
-  padding: clamp(14px, 4vw, 17px);
-  box-shadow: var(--adm-shadow-card);
+  padding: 0.75rem 0.85rem;
+  box-shadow: var(--adm-shadow);
 }
 
 .subs-card__meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 0.5rem;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 8px;
+  margin-bottom: 0.45rem;
+}
+
+.subs-card__details {
+  font-size: 0.78rem;
+  color: var(--adm-text-muted);
+  line-height: 1.4;
+}
+
+.subs-card__amount {
+  margin-top: 0.35rem;
+  font-size: 0.875rem;
+}
+
+.subs-card__days {
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
+  color: var(--adm-text-muted);
 }
 
 .subs-actions--card {
   justify-content: flex-start;
+  margin-top: 0.55rem;
+  gap: 0.28rem;
 }
 
 /* Pagination */
@@ -510,7 +533,58 @@ body.adm-overlay-open {
   }
 }
 
-@media (max-width: 899px) {
+/* Tableau compact sur PC / tablette large */
+@media (min-width: 768px) {
+  .subs-table-wrap {
+    display: block;
+  }
+
+  .subs-cards {
+    display: none !important;
+  }
+
+  .adm-page--subscriptions .adm-table-wrap {
+    border-radius: var(--adm-radius);
+    box-shadow: var(--adm-shadow);
+  }
+
+  .adm-page--subscriptions .adm-table th,
+  .adm-page--subscriptions .adm-table td {
+    padding: 0.55rem 0.7rem;
+    font-size: 0.8125rem;
+  }
+
+  .adm-page--subscriptions .adm-table th {
+    padding-top: 0.65rem;
+    padding-bottom: 0.65rem;
+    font-size: 0.72rem;
+  }
+
+  .subs-name-strong {
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+
+  .subs-email-muted {
+    font-size: 0.7rem;
+  }
+
+  .subs-actions {
+    gap: 0.28rem;
+  }
+
+  .adm-page--subscriptions .adm-btn {
+    padding: 0.28rem 0.52rem;
+    font-size: 0.68rem;
+  }
+
+  .sub-badge {
+    padding: 0.16rem 0.45rem;
+    font-size: 0.58rem;
+  }
+}
+
+@media (max-width: 767px) {
   .subs-table-wrap {
     display: none;
   }
@@ -537,8 +611,14 @@ body.adm-overlay-open {
   }
 }
 
-@media (min-width: 900px) {
-  .subs-cards {
-    display: none;
+@media (min-width: 480px) and (max-width: 767px) {
+  .subs-cards__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+    padding: 0.65rem;
+  }
+
+  .subs-card {
+    padding: 0.65rem 0.75rem;
   }
 }

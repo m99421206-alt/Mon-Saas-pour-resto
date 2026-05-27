@@ -27,6 +27,7 @@ var AUDIT_ACTIONS = {
   SETTINGS_UPDATE: "settings.update",
   ONBOARDING_SETUP_REQUEST: "onboarding.setup_request",
   SETUP_HELP_COMPLETE: "admin.setup_help_complete",
+  ADMIN_RESTAURANT_DASHBOARD: "admin.restaurant_dashboard_access",
 };
 
 var LABEL_FALLBACK = {
@@ -52,6 +53,7 @@ var LABEL_FALLBACK = {
   "settings.update": "Mise à jour paramètres plateforme",
   "onboarding.setup_request": "Demande d’assistance installation",
   "admin.setup_help_complete": "Installation marquée terminée (admin)",
+  "admin.restaurant_dashboard_access": "Accès tableau de bord restaurant (admin)",
 };
 
 function labelForCode(code) {

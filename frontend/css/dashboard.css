@@ -2521,6 +2521,58 @@ a.dash-qr-btn {
   background: rgba(255, 237, 213, 0.85);
 }
 
+/* ——— Bannière mode installation admin ——— */
+.dash-admin-impersonation-banner {
+  margin: 0 0 1rem;
+  border-radius: var(--dash-radius-card);
+  border: 1px solid rgba(255, 107, 0, 0.28);
+  background: linear-gradient(135deg, #fff8f3 0%, #fff0e6 100%);
+  box-shadow: 0 2px 12px rgba(255, 107, 0, 0.1);
+}
+
+.dash-admin-impersonation-banner__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+}
+
+.dash-admin-impersonation-banner__text {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--dash-text);
+}
+
+.dash-admin-impersonation-banner__text em {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--dash-accent);
+}
+
+.dash-admin-impersonation-banner__btn {
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 107, 0, 0.35);
+  border-radius: var(--dash-radius-sm);
+  background: #fff;
+  color: var(--dash-accent);
+  padding: 0.5rem 0.85rem;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background var(--dash-transition),
+    box-shadow var(--dash-transition);
+}
+
+.dash-admin-impersonation-banner__btn:hover {
+  background: #fffaf6;
+  box-shadow: 0 4px 12px rgba(255, 107, 0, 0.14);
+}
+
 /* ——— Bannière dashboard : essai / abonnement expiré → WhatsApp ——— */
 .dash-trial-expired-banner {
   margin: clamp(0.85rem, 2.8vw, 1.35rem) clamp(1rem, 3vw, 1.05rem) 0;

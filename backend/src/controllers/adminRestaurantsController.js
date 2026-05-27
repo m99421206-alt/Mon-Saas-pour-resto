@@ -2,6 +2,7 @@
  * Liste et gestion des restaurants — admin plateforme.
  */
 
+var jwt = require("jsonwebtoken");
 var { getPool } = require("../config/database");
 var { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
 
@@ -18,6 +19,41 @@ function parsePositiveInt(value, fallback) {
 function normalizeSub(raw) {
   var s = String(raw || "").trim().toLowerCase();
   return ALLOWED_SUB.indexOf(s) !== -1 ? s : "trial";
+}
+
+function signOwnerToken(userId) {
+  var secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET manquant");
+  }
+  return jwt.sign({ userId: userId }, secret, {
+    expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+  });
+}
+
+function mapRestaurantSession(row) {
+  if (!row) return null;
+  var locality =
+    row.city != null && String(row.city).trim() !== "" ? String(row.city).trim() : null;
+  return {
+    id: row.id,
+    name: row.name,
+    city: locality,
+    quartier: locality,
+    country:
+      row.country != null && String(row.country).trim() !== "" ? String(row.country).trim() : null,
+    whatsapp: row.whatsapp,
+    subscription_status: normalizeSub(row.subscription_status),
+    subscription_started_at: row.subscription_started_at
+      ? new Date(row.subscription_started_at).toISOString()
+      : null,
+    subscription_ends_at: row.subscription_ends_at
+      ? new Date(row.subscription_ends_at).toISOString()
+      : null,
+    subscription_plan_key: row.subscription_plan_key || "trial",
+    onboarding_seen: Boolean(row.onboarding_seen),
+    needs_setup_help: Boolean(row.needs_setup_help),
+  };
 }
 
 function mapRow(r) {
@@ -195,6 +231,74 @@ async function patchMenuSuspended(req, res) {
   }
 }
 
+async function postRestaurantDashboardAccess(req, res) {
+  try {
+    var id = Number(req.params.id);
+    if (!Number.isInteger(id) || id < 1) {
+      return res.status(400).json({ message: "Identifiant invalide." });
+    }
+
+    var pool = getPool();
+    var adminId = Number(req.user.id);
+
+    var [rows] = await pool.query(
+      "SELECT r.id, r.name, r.city, r.country, r.whatsapp, r.subscription_status, r.subscription_started_at, " +
+        "r.subscription_ends_at, r.subscription_plan_key, COALESCE(r.onboarding_seen, 0) AS onboarding_seen, " +
+        "COALESCE(r.needs_setup_help, 0) AS needs_setup_help, " +
+        "u.id AS owner_user_id, u.email AS owner_email, u.full_name AS owner_full_name, u.phone AS owner_phone " +
+        "FROM restaurants r INNER JOIN users u ON u.id = r.user_id WHERE r.id = ? LIMIT 1",
+      [id],
+    );
+
+    if (!rows.length) {
+      return res.status(404).json({ message: "Restaurant introuvable." });
+    }
+
+    var raw = rows[0];
+    var ownerUserId = Number(raw.owner_user_id);
+    if (!Number.isInteger(ownerUserId) || ownerUserId < 1) {
+      return res.status(404).json({ message: "Propriétaire introuvable." });
+    }
+
+    var token = signOwnerToken(ownerUserId);
+
+    await appendAudit({
+      userId: adminId,
+      restaurantId: id,
+      action: AUDIT_ACTIONS.ADMIN_RESTAURANT_DASHBOARD,
+      detail:
+        "Accès tableau de bord pour installation — « " +
+        String(raw.name || id) +
+        " » (propriétaire : " +
+        String(raw.owner_email || "") +
+        ")",
+    });
+
+    return res.json({
+      token: token,
+      user: {
+        id: ownerUserId,
+        email: raw.owner_email,
+        full_name:
+          raw.owner_full_name != null && String(raw.owner_full_name).trim() !== "" ?
+            String(raw.owner_full_name).trim()
+          : null,
+        phone:
+          raw.owner_phone != null && String(raw.owner_phone).trim() !== "" ?
+            String(raw.owner_phone).trim()
+          : null,
+      },
+      restaurant: mapRestaurantSession(raw),
+    });
+  } catch (err) {
+    console.error(err);
+    if (String(err.message || "").indexOf("JWT_SECRET") !== -1) {
+      return res.status(500).json({ message: "Configuration serveur : JWT_SECRET manquant." });
+    }
+    return res.status(500).json({ message: "Impossible d’ouvrir le tableau de bord du restaurant." });
+  }
+}
+
 async function deleteRestaurant(req, res) {
   try {
     var id = Number(req.params.id);
@@ -229,6 +333,7 @@ async function deleteRestaurant(req, res) {
 module.exports = {
   listRestaurants: listRestaurants,
   getRestaurantDetail: getRestaurantDetail,
+  postRestaurantDashboardAccess: postRestaurantDashboardAccess,
   patchMenuSuspended: patchMenuSuspended,
   deleteRestaurant: deleteRestaurant,
 };

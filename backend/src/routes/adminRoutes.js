@@ -21,6 +21,12 @@ router.delete("/users/:id", requireAuth, requirePlatformAdmin, adminUsersControl
 
 router.get("/restaurants", requireAuth, requirePlatformAdmin, adminRestaurantsController.listRestaurants);
 router.get("/restaurants/:id", requireAuth, requirePlatformAdmin, adminRestaurantsController.getRestaurantDetail);
+router.post(
+  "/restaurants/:id/dashboard-access",
+  requireAuth,
+  requirePlatformAdmin,
+  adminRestaurantsController.postRestaurantDashboardAccess,
+);
 router.patch(
   "/restaurants/:id/menu",
   requireAuth,
