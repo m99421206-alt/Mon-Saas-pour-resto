@@ -1,5 +1,5 @@
--- AfricaMenu — schéma initial (MySQL 8+ / InnoDB, utf8mb4)
--- Prérequis : base créée (ex. CREATE DATABASE africamenu CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;)
+﻿-- MenuGo — schéma initial (MySQL 8+ / InnoDB, utf8mb4)
+-- Prérequis : base créée (ex. CREATE DATABASE MenuGo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;)
 -- Le nom doit correspondre à DB_NAME dans .env
 
 SET NAMES utf8mb4;

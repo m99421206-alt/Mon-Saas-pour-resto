@@ -1,10 +1,10 @@
-/**
+﻿/**
  * Page « Mon abonnement » — espace restaurant.
  */
 (function () {
   "use strict";
 
-  var TOKEN_KEY = "africamenu_token";
+  var TOKEN_KEY = "MenuGo_token";
 
   /** @returns {HTMLElement|null} */
   function el(id) {
@@ -17,8 +17,8 @@
 
   function clearSession() {
     localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem("africamenu_user");
-    localStorage.removeItem("africamenu_restaurant");
+    localStorage.removeItem("MenuGo_user");
+    localStorage.removeItem("MenuGo_restaurant");
   }
 
   async function readJson(response) {
@@ -67,10 +67,10 @@
 
     try {
       var apiUrl =
-        window.AFRICAMENU_CONFIG && window.AFRICAMENU_CONFIG.API_URL ?
-          window.AFRICAMENU_CONFIG.API_URL
+        window.MenuGo_CONFIG && window.MenuGo_CONFIG.API_URL ?
+          window.MenuGo_CONFIG.API_URL
         : "";
-      if (!root || !window.AfricaMenuRestaurantSubscription || !window.AfricaMenuRestaurantSubscription.renderInto) return;
+      if (!root || !window.MenuGoRestaurantSubscription || !window.MenuGoRestaurantSubscription.renderInto) return;
 
       var me = await apiGetMe(apiUrl);
       if (!me) return;
@@ -89,7 +89,7 @@
         }
       }
 
-      window.AfricaMenuRestaurantSubscription.renderInto(root, me);
+      window.MenuGoRestaurantSubscription.renderInto(root, me);
     } catch (e) {
       if (titleMain) titleMain.textContent = "Impossible de charger votre abonnement";
       if (subtitle) {

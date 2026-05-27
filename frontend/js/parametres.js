@@ -1,13 +1,13 @@
-/**
+﻿/**
  * Page Paramètres — chargement et sauvegarde du restaurant.
  */
 (function () {
   "use strict";
 
-  var API_URL = window.AFRICAMENU_CONFIG.API_URL;
-  var TOKEN_KEY = "africamenu_token";
-  var USER_KEY = "africamenu_user";
-  var RESTAURANT_KEY = "africamenu_restaurant";
+  var API_URL = window.MenuGo_CONFIG.API_URL;
+  var TOKEN_KEY = "MenuGo_token";
+  var USER_KEY = "MenuGo_user";
+  var RESTAURANT_KEY = "MenuGo_restaurant";
 
   var form = document.getElementById("parametres-form");
   var feedback = document.getElementById("parametres-feedback");

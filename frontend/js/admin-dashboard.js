@@ -1,12 +1,12 @@
-/**
+﻿/**
  * Admin dashboard — shell UI + stats / activité (API uniquement si connecté).
  */
 (function () {
   "use strict";
 
-  var TOKEN_KEY = "africamenu_token";
-  var USER_KEY = "africamenu_user";
-  var RESTAURANT_KEY = "africamenu_restaurant";
+  var TOKEN_KEY = "MenuGo_token";
+  var USER_KEY = "MenuGo_user";
+  var RESTAURANT_KEY = "MenuGo_restaurant";
   var LOGIN_NEXT = "admin-dashboard.html";
 
   function escapeHtml(value) {
@@ -42,7 +42,7 @@
   }
 
   function getApiBase() {
-    var cfg = window.AFRICAMENU_CONFIG || {};
+    var cfg = window.MenuGo_CONFIG || {};
     return String(cfg.API_URL || "").replace(/\/$/, "");
   }
 
@@ -211,7 +211,7 @@
   function buildRestaurantWaUrl(digits, restaurantName) {
     if (!digits) return "#";
     var msg =
-      "Bonjour, nous vous contactons concernant votre demande d’installation AfricaMenu pour : " +
+      "Bonjour, nous vous contactons concernant votre demande d’installation MenuGo pour : " +
       String(restaurantName || "votre restaurant") +
       ".";
     return "https://wa.me/" + digits.replace(/^0+/, "") + "?text=" + encodeURIComponent(msg);

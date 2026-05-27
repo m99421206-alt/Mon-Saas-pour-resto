@@ -1,15 +1,15 @@
-/**
- * Dashboard AfricaMenu
+﻿/**
+ * Dashboard MenuGo
  * - Drawer : ouverture / fermeture, overlay, Escape, aria-expanded
  * - Données : profil, restaurant, catégories et produits depuis l’API.
  */
 (function () {
   "use strict";
 
-  const API_URL = window.AFRICAMENU_CONFIG.API_URL;
-  const TOKEN_KEY = "africamenu_token";
-  const USER_KEY = "africamenu_user";
-  const RESTAURANT_KEY = "africamenu_restaurant";
+  const API_URL = window.MenuGo_CONFIG.API_URL;
+  const TOKEN_KEY = "MenuGo_token";
+  const USER_KEY = "MenuGo_user";
+  const RESTAURANT_KEY = "MenuGo_restaurant";
 
   const openBtn = document.getElementById("open-drawer");
   const closeBtn = document.getElementById("close-drawer");
@@ -88,7 +88,7 @@
   }
 
   function resolvePublicSiteOrigin() {
-    var cfg = window.AFRICAMENU_CONFIG || {};
+    var cfg = window.MenuGo_CONFIG || {};
     var raw =
       typeof cfg.PUBLIC_SITE_ORIGIN === "string" ? cfg.PUBLIC_SITE_ORIGIN.trim().replace(/\/+$/, "") : "";
     return raw.length ? raw : window.location.origin;
@@ -138,7 +138,7 @@
     var rn = restaurantName ? String(restaurantName).trim() : "Mon restaurant";
     var pl = planLabel ? String(planLabel).trim() : "Basic";
     return (
-      "Bonjour, je souhaite activer mon abonnement AfricaMenu.\n\n" +
+      "Bonjour, je souhaite activer mon abonnement MenuGo.\n\n" +
       "Nom du restaurant : " +
       rn +
       "\n" +
@@ -158,7 +158,7 @@
       return;
     }
 
-    var cfg = window.AFRICAMENU_CONFIG || {};
+    var cfg = window.MenuGo_CONFIG || {};
     var digits = whatsappDigitsDash(cfg.SUPPORT_WHATSAPP) || DEFAULT_PAYMENT_WHATSAPP;
     var rest = me.restaurant || getStoredRestaurant();
     var restName =

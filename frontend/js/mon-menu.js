@@ -1,4 +1,4 @@
-﻿const API_BASE_URL = window.AFRICAMENU_CONFIG.API_URL;
+﻿const API_BASE_URL = window.MenuGo_CONFIG.API_URL;
 const DEFAULT_PRODUCT_IMAGE =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='420' viewBox='0 0 600 420'%3E%3Crect width='600' height='420' fill='%23f3f4f6'/%3E%3Ctext x='300' y='210' text-anchor='middle' dominant-baseline='middle' font-family='Arial,sans-serif' font-size='24' fill='%239ca3af'%3EImage indisponible%3C/text%3E%3C/svg%3E";
 
@@ -56,14 +56,14 @@ let favoriteIds = loadFavoriteIds();
 
 function loadFavoriteIds() {
   try {
-    return JSON.parse(localStorage.getItem("africamenu_favorites")) || [];
+    return JSON.parse(localStorage.getItem("MenuGo_favorites")) || [];
   } catch (error) {
     return [];
   }
 }
 
 function saveFavoriteIds() {
-  localStorage.setItem("africamenu_favorites", JSON.stringify(favoriteIds));
+  localStorage.setItem("MenuGo_favorites", JSON.stringify(favoriteIds));
 }
 
 function escapeHtml(value) {
@@ -126,7 +126,7 @@ function getRestaurantIdFromUrl() {
   }
 
   try {
-    const storedRestaurant = JSON.parse(localStorage.getItem("africamenu_restaurant") || "null");
+    const storedRestaurant = JSON.parse(localStorage.getItem("MenuGo_restaurant") || "null");
     return storedRestaurant && storedRestaurant.id ? String(storedRestaurant.id) : null;
   } catch (error) {
     return null;
@@ -201,7 +201,7 @@ function applyRestaurantData(restaurant) {
 
   if (restaurant.name && restaurantNameEl) {
     restaurantNameEl.textContent = restaurant.name;
-    document.title = `${restaurant.name} - AfricaMenu`;
+    document.title = `${restaurant.name} - MenuGo`;
   }
 
   if (restaurantDescriptionEl) {

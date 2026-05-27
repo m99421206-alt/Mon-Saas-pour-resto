@@ -1,14 +1,14 @@
-(function () {
+﻿(function () {
 
   "use strict";
 
 
 
-  var TOKEN_KEY = "africamenu_token";
+  var TOKEN_KEY = "MenuGo_token";
 
-  var USER_KEY = "africamenu_user";
+  var USER_KEY = "MenuGo_user";
 
-  var RESTAURANT_KEY = "africamenu_restaurant";
+  var RESTAURANT_KEY = "MenuGo_restaurant";
 
   var LOGIN_NEXT = "admin-settings.html";
 
@@ -16,7 +16,7 @@
 
   function getApiBase() {
 
-    var c = window.AFRICAMENU_CONFIG || {};
+    var c = window.MenuGo_CONFIG || {};
 
     return String(c.API_URL || "").replace(/\/$/, "");
 

@@ -1,12 +1,12 @@
-/**
+﻿/**
  * Admin — page Utilisateurs (liste, recherche, filtre statut, pagination, actions).
  */
 (function () {
   "use strict";
 
-  var TOKEN_KEY = "africamenu_token";
-  var USER_KEY = "africamenu_user";
-  var RESTAURANT_KEY = "africamenu_restaurant";
+  var TOKEN_KEY = "MenuGo_token";
+  var USER_KEY = "MenuGo_user";
+  var RESTAURANT_KEY = "MenuGo_restaurant";
   var LOGIN_NEXT = "admin-users.html";
   var PAGE_SIZE = 12;
   var DEBOUNCE_MS = 340;
@@ -30,7 +30,7 @@
   }
 
   function getApiBase() {
-    var cfg = window.AFRICAMENU_CONFIG || {};
+    var cfg = window.MenuGo_CONFIG || {};
     return String(cfg.API_URL || "").replace(/\/$/, "");
   }
 

@@ -1,5 +1,5 @@
-/**
- * Serveur Express — AfricaMenu API
+﻿/**
+ * Serveur Express — MenuGo API
  * Étape 2 : JSON body, CORS, variables d’environnement, port configurable.
  */
 
@@ -99,7 +99,7 @@ app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 /* Route de santé : utile pour vérifier que le serveur tourne */
 app.get("/health", function (req, res) {
-  res.json({ ok: true, service: "africamenu-api" });
+  res.json({ ok: true, service: "MenuGo-api" });
 });
 
 /* Authentification (étape 5) */
@@ -125,6 +125,6 @@ platformSettings.refresh().catch(function (e) {
 });
 
 app.listen(PORT, HOST, function () {
-  console.log("AfricaMenu API — http://localhost:" + PORT);
-  console.log("AfricaMenu API réseau — " + LAN_URL);
+  console.log("MenuGo API — http://localhost:" + PORT);
+  console.log("MenuGo API réseau — " + LAN_URL);
 });

@@ -1,16 +1,16 @@
-/**
+﻿/**
  * Onboarding — première connexion : marque la page vue, actions WhatsApp / aide / dashboard.
  */
 (function () {
   "use strict";
 
-  var API_URL = String((window.AFRICAMENU_CONFIG && window.AFRICAMENU_CONFIG.API_URL) || "").replace(
+  var API_URL = String((window.MenuGo_CONFIG && window.MenuGo_CONFIG.API_URL) || "").replace(
     /\/$/,
     "",
   );
-  var TOKEN_KEY = "africamenu_token";
-  var USER_KEY = "africamenu_user";
-  var RESTAURANT_KEY = "africamenu_restaurant";
+  var TOKEN_KEY = "MenuGo_token";
+  var USER_KEY = "MenuGo_user";
+  var RESTAURANT_KEY = "MenuGo_restaurant";
   var DEFAULT_SUPPORT_WA = "22399421206";
 
   var waBtn = document.getElementById("onb-btn-wa");
@@ -43,7 +43,7 @@
   }
 
   function supportDigits() {
-    var cfg = window.AFRICAMENU_CONFIG || {};
+    var cfg = window.MenuGo_CONFIG || {};
     var w = typeof cfg.SUPPORT_WHATSAPP === "string" ? cfg.SUPPORT_WHATSAPP.trim() : "";
     var d = w.replace(/\D/g, "");
     return d || DEFAULT_SUPPORT_WA;

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Page « Votre QR Code »
  * - Génère le QR depuis le lien public du menu
  * - Téléchargement PNG du canvas
@@ -7,10 +7,10 @@
 (function () {
   "use strict";
 
-  var API_URL = window.AFRICAMENU_CONFIG.API_URL;
-  var TOKEN_KEY = "africamenu_token";
-  var USER_KEY = "africamenu_user";
-  var RESTAURANT_KEY = "africamenu_restaurant";
+  var API_URL = window.MenuGo_CONFIG.API_URL;
+  var TOKEN_KEY = "MenuGo_token";
+  var USER_KEY = "MenuGo_user";
+  var RESTAURANT_KEY = "MenuGo_restaurant";
 
   var canvas = document.getElementById("qr-code-canvas");
   var downloadBtn = document.getElementById("qr-code-download");
@@ -83,7 +83,7 @@
   }
 
   function resolvePublicSiteOrigin() {
-    var cfg = window.AFRICAMENU_CONFIG || {};
+    var cfg = window.MenuGo_CONFIG || {};
     var raw =
       typeof cfg.PUBLIC_SITE_ORIGIN === "string" ? cfg.PUBLIC_SITE_ORIGIN.trim().replace(/\/+$/, "") : "";
     return raw.length ? raw : window.location.origin;
@@ -153,7 +153,7 @@
         currentRestaurant && currentRestaurant.id
           ? currentRestaurant.id
           : "menu";
-      link.download = "qrcode-africamenu-" + id + ".png";
+      link.download = "qrcode-MenuGo-" + id + ".png";
       link.href = canvas.toDataURL("image/png");
       link.rel = "noopener";
       document.body.appendChild(link);
@@ -208,7 +208,7 @@
   async function init() {
     var storedRestaurant = null;
     try {
-      var cfg = window.AFRICAMENU_CONFIG || {};
+      var cfg = window.MenuGo_CONFIG || {};
       var pub = typeof cfg.PUBLIC_SITE_ORIGIN === "string" ? cfg.PUBLIC_SITE_ORIGIN.trim() : "";
       var host = String(window.location.hostname || "").toLowerCase();
       var warnEl = document.getElementById("qr-phone-scan-warning");

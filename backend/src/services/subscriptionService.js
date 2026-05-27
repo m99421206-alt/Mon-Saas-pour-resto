@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Cycle de vie abonnement par restaurant (essai gratuit, expiration, droits d’édition menu).
  * Données stockées sur la ligne `restaurants` (pas de table séparée — MVP scalable).
  */
@@ -89,7 +89,7 @@ async function assertCanEditRestaurantMenu(userId) {
       ok: false,
       code: "SUBSCRIPTION_SUSPENDED",
       message:
-        "Votre abonnement est suspendu. Contactez l’administrateur AfricaMenu pour réactiver l’édition du menu.",
+        "Votre abonnement est suspendu. Contactez l’administrateur MenuGo pour réactiver l’édition du menu.",
     };
   }
   if (st === "expired") {

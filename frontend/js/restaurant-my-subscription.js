@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Rendu UI « Mon abonnement » (restaurant) pour une page dédiée.
  * Données : réponse GET /api/me ({ subscription, plans_catalog, restaurant, user }).
  */
@@ -88,7 +88,7 @@
     if (!rootEl) return;
     rootEl.textContent = "";
 
-    var cfg = window.AFRICAMENU_CONFIG || {};
+    var cfg = window.MenuGo_CONFIG || {};
 
     /** @type {object|null} */
     var subscription = me && me.subscription ? me.subscription : null;
@@ -378,7 +378,7 @@
     var waTarget = supportWa;
     if (waTarget) {
       var msg =
-        "Bonjour,%20je%20contacte%20l%27administration%20AfricaMenu%20concernant%20mon%20abonnement%20(" +
+        "Bonjour,%20je%20contacte%20l%27administration%20MenuGo%20concernant%20mon%20abonnement%20(" +
         encodeURIComponent(restoName) +
         ")";
       var whats = document.createElement("a");
@@ -476,5 +476,5 @@
     rootEl.appendChild(section);
   }
 
-  window.AfricaMenuRestaurantSubscription = { renderInto: renderInto };
+  window.MenuGoRestaurantSubscription = { renderInto: renderInto };
 })();

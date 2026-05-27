@@ -1,13 +1,13 @@
-/**
+﻿/**
  * Page Mes plats — CRUD connecté à l'API.
  */
 (function () {
   "use strict";
 
-  const API_URL = window.AFRICAMENU_CONFIG.API_URL;
-  const TOKEN_KEY = "africamenu_token";
-  const USER_KEY = "africamenu_user";
-  const RESTAURANT_KEY = "africamenu_restaurant";
+  const API_URL = window.MenuGo_CONFIG.API_URL;
+  const TOKEN_KEY = "MenuGo_token";
+  const USER_KEY = "MenuGo_user";
+  const RESTAURANT_KEY = "MenuGo_restaurant";
 
   const form = document.getElementById("plats-form");
   const nameInput = document.getElementById("plats-name");
