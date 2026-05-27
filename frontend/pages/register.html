@@ -45,6 +45,49 @@
           </div>
 
           <div class="auth-field">
+            <label for="full-name">Nom </label>
+            <input
+              id="full-name"
+              name="fullName"
+              type="text"
+              autocomplete="name"
+              placeholder="Ex : Moussa Coulibaly"
+              required
+              maxlength="160"
+            />
+          </div>
+
+          <div class="auth-field">
+            <label for="whatsapp">Téléphone principal (WhatsApp pour les commandes)</label>
+            <input
+              id="whatsapp"
+              name="whatsapp"
+              type="tel"
+              autocomplete="tel"
+              placeholder="+223 00 00 00 00"
+              required
+            />
+            <span class="auth-field-hint">Ce numéro est enregistré comme contact principal du compte et pour recevoir les commandes.</span>
+          </div>
+
+          <div class="auth-field">
+            <label for="registration-quartier">Quartier</label>
+            <input
+              id="registration-quartier"
+              name="quartier"
+              type="text"
+              autocomplete="off"
+              autocorrect="off"
+              spellcheck="false"
+              data-lpignore="true"
+              placeholder="Ex. : Hamdallaye, Hippodrome, Badalabougou…"
+              required
+              maxlength="120"
+            />
+           
+          </div>
+
+          <div class="auth-field">
             <label for="email">Adresse email</label>
             <input
               id="email"
@@ -52,18 +95,6 @@
               type="email"
               autocomplete="email"
               placeholder="Restaurant@gmail.com"
-              required
-            />
-          </div>
-
-          <div class="auth-field">
-            <label for="whatsapp">Numéro WhatsApp (pour les commandes)</label>
-            <input
-              id="whatsapp"
-              name="whatsapp"
-              type="tel"
-              autocomplete="tel"
-              placeholder="+223 00 00 00 00"
               required
             />
           </div>

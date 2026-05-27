@@ -8,9 +8,16 @@ const { isPlatformAdminEmail } = require("../utils/platformAdmin");
 
 function mapRestaurantAuth(row) {
   if (!row) return null;
+  const locality =
+    row.city != null && String(row.city).trim() !== "" ? String(row.city).trim() : null;
   return {
     id: row.id,
     name: row.name,
+    /** Stocké dans `restaurants.city` (colonne BD = quartier du restaurant). */
+    city: locality,
+    /** Alias lisible (« quartier ») — égale à `city`. */
+    quartier: locality,
+    country: row.country != null && String(row.country).trim() !== "" ? String(row.country).trim() : null,
     whatsapp: row.whatsapp,
     subscription_status: row.subscription_status,
     subscription_started_at: row.subscription_started_at
@@ -58,13 +65,51 @@ async function register(req, res) {
     return res.status(400).json({ message: "Le mot de passe doit contenir au moins 8 caractères." });
   }
 
-  const whatsappNormalized = normalizeWhatsapp(req.body.whatsapp);
+  const rawMobile =
+    typeof req.body.whatsapp === "string" && req.body.whatsapp.trim() !== ""
+      ? req.body.whatsapp
+      : typeof req.body.phone === "string" && req.body.phone.trim() !== ""
+        ? req.body.phone
+        : "";
+  const whatsappNormalized = normalizeWhatsapp(rawMobile || null);
   if (whatsappNormalized === null) {
-    return res.status(400).json({ message: "Le numéro WhatsApp pour les commandes est obligatoire." });
+    return res.status(400).json({
+      message: "Le numéro de téléphone principal (WhatsApp pour les commandes) est obligatoire.",
+    });
   }
   if (whatsappNormalized === false) {
     return res.status(400).json({ message: "Numéro WhatsApp invalide. Exemple : +22370000000" });
   }
+
+  /** Même valeur : contact principal utilisateur (`users.phone`) + commandes (`restaurants.whatsapp`). */
+  const principalPhoneDb = whatsappNormalized;
+
+  const fullName = String(req.body.fullName || "").trim();
+  /** Quartier / zone géographique : enregistré dans la colonne `restaurants.city` (clés corps possibles city, location ou quartier). */
+  const fromCity =
+    typeof req.body.city === "string" && req.body.city.trim() !== "" ? req.body.city.trim() : "";
+  const fromLocation =
+    typeof req.body.location === "string" && req.body.location.trim() !== ""
+      ? req.body.location.trim()
+      : "";
+  const fromQuartier =
+    typeof req.body.quartier === "string" && req.body.quartier.trim() !== "" ?
+      req.body.quartier.trim()
+    : "";
+  const cityVal = fromCity || fromLocation || fromQuartier;
+
+  if (!fullName) {
+    return res.status(400).json({ message: "Le nom du gérant est obligatoire." });
+  }
+  if (fullName.length > 160) {
+    return res.status(400).json({ message: "Le nom ne doit pas dépasser 160 caractères." });
+  }
+  if (!cityVal) {
+    return res.status(400).json({ message: "Indiquez le quartier où se trouve votre restaurant." });
+  }
+
+  /** Valeur BD : même nom de colonne `city`, contenu métier = quartier. */
+  const cityDb = cityVal.slice(0, 120);
 
   const pool = getPool();
   const connection = await pool.getConnection();
@@ -81,24 +126,24 @@ async function register(req, res) {
     const rounds = Number(process.env.BCRYPT_SALT_ROUNDS) || 10;
     const passwordHash = await bcrypt.hash(password, rounds);
 
-    const [userResult] = await connection.query("INSERT INTO users (email, password) VALUES (?, ?)", [
-      email,
-      passwordHash,
-    ]);
+    const [userResult] = await connection.query(
+      "INSERT INTO users (email, full_name, phone, password) VALUES (?, ?, ?, ?)",
+      [email, fullName, principalPhoneDb, passwordHash],
+    );
 
     const userId = userResult.insertId;
 
     const trialDays = platformSettings.getTrialPeriodDays();
     const [restaurantResult] = await connection.query(
       "INSERT INTO restaurants " +
-        "(user_id, name, description, whatsapp, subscription_status, subscription_started_at, subscription_ends_at, subscription_amount_cfa, subscription_plan_key) " +
-        "VALUES (?, ?, ?, ?, 'trial', NOW(), DATE_ADD(NOW(), INTERVAL ? DAY), 0, 'trial')",
-      [userId, restaurantName, null, whatsappNormalized, trialDays],
+        "(user_id, name, city, country, description, whatsapp, subscription_status, subscription_started_at, subscription_ends_at, subscription_amount_cfa, subscription_plan_key) " +
+        "VALUES (?, ?, ?, ?, ?, ?, 'trial', NOW(), DATE_ADD(NOW(), INTERVAL ? DAY), 0, 'trial')",
+      [userId, restaurantName, cityDb, null, null, principalPhoneDb, trialDays],
     );
 
     const restaurantId = restaurantResult.insertId;
     const [[restaurantRow]] = await connection.query(
-      "SELECT id, name, whatsapp, subscription_status, subscription_started_at, subscription_ends_at, subscription_plan_key, " +
+      "SELECT id, name, city, country, whatsapp, subscription_status, subscription_started_at, subscription_ends_at, subscription_plan_key, " +
         "COALESCE(onboarding_seen, 0) AS onboarding_seen, COALESCE(needs_setup_help, 0) AS needs_setup_help " +
         "FROM restaurants WHERE id = ? LIMIT 1",
       [restaurantId],
@@ -110,7 +155,7 @@ async function register(req, res) {
       userId: userId,
       restaurantId: restaurantId,
       action: AUDIT_ACTIONS.USER_REGISTER,
-      detail: "Inscription nouveau compte (« " + restaurantName + " »)",
+      detail: "Inscription nouveau compte (« " + restaurantName + " », quartier : " + cityDb + ")",
     });
 
     const token = signToken({ userId: userId });
@@ -122,6 +167,8 @@ async function register(req, res) {
       user: {
         id: userId,
         email: email,
+        full_name: fullName,
+        phone: principalPhoneDb,
       },
       restaurant: mapRestaurantAuth(restaurantRow),
     });
@@ -143,9 +190,10 @@ async function login(req, res) {
 
   try {
     const pool = getPool();
-    const [rows] = await pool.query("SELECT id, email, password, account_status FROM users WHERE email = ? LIMIT 1", [
-      email,
-    ]);
+    const [rows] = await pool.query(
+      "SELECT id, email, full_name, phone, password, account_status FROM users WHERE email = ? LIMIT 1",
+      [email],
+    );
 
     if (!rows.length) {
       return res.status(401).json({ message: "Email ou mot de passe incorrect." });
@@ -166,9 +214,9 @@ async function login(req, res) {
     }
 
     const [restaurants] = await pool.query(
-      "SELECT id, name, whatsapp, subscription_status, subscription_started_at, subscription_ends_at, subscription_plan_key, subscription_amount_cfa, " +
-        "COALESCE(onboarding_seen, 0) AS onboarding_seen, COALESCE(needs_setup_help, 0) AS needs_setup_help " +
-        "FROM restaurants WHERE user_id = ? ORDER BY id ASC LIMIT 1",
+      "SELECT r.id, r.name, r.city, r.country, r.whatsapp, r.subscription_status, r.subscription_started_at, r.subscription_ends_at, r.subscription_plan_key, r.subscription_amount_cfa, " +
+        "COALESCE(r.onboarding_seen, 0) AS onboarding_seen, COALESCE(r.needs_setup_help, 0) AS needs_setup_help " +
+        "FROM restaurants r WHERE r.user_id = ? ORDER BY r.id ASC LIMIT 1",
       [user.id],
     );
 
@@ -188,6 +236,8 @@ async function login(req, res) {
       user: {
         id: user.id,
         email: user.email,
+        full_name: user.full_name != null && String(user.full_name).trim() !== "" ? String(user.full_name).trim() : null,
+        phone: user.phone != null && String(user.phone).trim() !== "" ? String(user.phone).trim() : null,
       },
       restaurant: restaurants[0] ? mapRestaurantAuth(restaurants[0]) : null,
     });

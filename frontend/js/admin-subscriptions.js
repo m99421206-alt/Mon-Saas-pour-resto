@@ -800,7 +800,7 @@
     }
 
     document.getElementById("subs-d-id").textContent = String(s.restaurant_id);
-    document.getElementById("subs-d-city").textContent = s.city || "—";
+    document.getElementById("subs-d-city").textContent = s.quartier || s.city || "—";
     var planDdEl = document.getElementById("subs-d-plan");
     if (planDdEl) planDdEl.textContent = s.subscription_plan_label || "—";
 

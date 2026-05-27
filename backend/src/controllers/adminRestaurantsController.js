@@ -23,11 +23,13 @@ function normalizeSub(raw) {
 function mapRow(r) {
   var ms = r.menu_suspended;
   var menuSuspended = ms === 1 || ms === true || ms === "1";
+  var locality = r.city != null && String(r.city).trim() !== "" ? String(r.city).trim() : null;
   return {
     id: r.id,
     name: String(r.name || "").trim() || "—",
     logo_url: r.logo_url ? String(r.logo_url) : null,
-    city: r.city != null && String(r.city).trim() !== "" ? String(r.city).trim() : null,
+    city: locality,
+    quartier: locality,
     phone: r.whatsapp != null ? String(r.whatsapp) : null,
     subscription_status: normalizeSub(r.subscription_status),
     menu_suspended: menuSuspended,

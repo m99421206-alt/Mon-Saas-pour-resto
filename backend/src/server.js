@@ -28,12 +28,6 @@ const allowedOrigins = (process.env.CORS_ORIGIN || "")
     return origin.trim();
   })
   .filter(Boolean);
-const devFrontendPorts = (process.env.DEV_FRONTEND_PORTS || "5500,5501,5173,3000")
-  .split(",")
-  .map(function (port) {
-    return port.trim();
-  })
-  .filter(Boolean);
 
 function isPrivateNetworkHost(hostname) {
   return (
@@ -46,6 +40,11 @@ function isPrivateNetworkHost(hostname) {
   );
 }
 
+/**
+ * Hors production : tout origine HTTP/HTTPS depuis localhost ou LAN privé est acceptée,
+ * quel que soit le port (5500 mais aussi 8080, 63342 Live Server variant, etc.).
+ * Sinon l’inscription / login peuvent « échouer » alors que le seul problème était le CORS.
+ */
 function isAllowedDevOrigin(origin) {
   if (process.env.NODE_ENV === "production") {
     return false;
@@ -54,9 +53,8 @@ function isAllowedDevOrigin(origin) {
   try {
     var url = new URL(origin);
     return (
-      url.protocol === "http:" &&
-      isPrivateNetworkHost(url.hostname) &&
-      devFrontendPorts.includes(url.port)
+      (url.protocol === "http:" || url.protocol === "https:") &&
+      isPrivateNetworkHost(url.hostname)
     );
   } catch (error) {
     return false;
@@ -79,13 +77,7 @@ function isAllowedCorsOrigin(origin) {
   return false;
 }
 
-/* Corps des requêtes en JSON (POST / PUT) */
-app.use(express.json());
-
-/* Images uploadées par les restaurants */
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
-
-/* Autoriser le frontend (autre origine) à appeler l’API — affiné à l’étape 10 */
+/* CORS avant les routes — préflight inclus (évite blocages inscription / login en dev). */
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -98,6 +90,12 @@ app.use(
     credentials: true,
   })
 );
+
+/* Corps des requêtes en JSON (POST / PUT) */
+app.use(express.json());
+
+/* Images uploadées par les restaurants */
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 /* Route de santé : utile pour vérifier que le serveur tourne */
 app.get("/health", function (req, res) {

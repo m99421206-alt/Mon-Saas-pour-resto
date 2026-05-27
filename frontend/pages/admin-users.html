@@ -131,7 +131,7 @@
                     class="adm-toolbar__search"
                     type="search"
                     autocomplete="off"
-                    placeholder="Rechercher (nom restaurant, email)…"
+                    placeholder="Rechercher (nom restaurant, email, téléphone…)…"
                   />
                 </div>
                 <div class="adm-toolbar__filter">
@@ -192,6 +192,10 @@
           </button>
         </div>
         <dl>
+          <div class="adm-detail-kv-row">
+            <dt>Téléphone principal <span class="adm-muted-inline">(colonnes BD&nbsp;: <code>users.phone</code>)</span></dt>
+            <dd id="adm-user-detail-phone"></dd>
+          </div>
           <div class="adm-detail-kv-row">
             <dt>Statut</dt>
             <dd id="adm-user-detail-status"></dd>

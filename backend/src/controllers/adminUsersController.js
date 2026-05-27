@@ -31,9 +31,9 @@ async function listUsers(req, res) {
     if (qRaw) {
       var like = "%" + qRaw + "%";
       conditions.push(
-        "(u.email LIKE ? OR EXISTS (SELECT 1 FROM restaurants r WHERE r.user_id = u.id AND r.name LIKE ?))",
+        "(u.email LIKE ? OR IFNULL(TRIM(u.phone),'') LIKE ? OR EXISTS (SELECT 1 FROM restaurants r WHERE r.user_id = u.id AND r.name LIKE ?))",
       );
-      vals.push(like, like);
+      vals.push(like, like, like);
     }
 
     if (statusFilter === "active") {
@@ -60,6 +60,7 @@ async function listUsers(req, res) {
       "SELECT " +
         "  u.id, " +
         "  u.email, " +
+        "  u.phone AS phone, " +
         "  CASE WHEN LOWER(TRIM(COALESCE(u.account_status, 'active'))) = 'suspended' THEN 'suspended' ELSE 'active' END AS status, " +
         "  u.created_at AS created_at, " +
         "  COALESCE((SELECT r.name FROM restaurants r WHERE r.user_id = u.id ORDER BY r.id ASC LIMIT 1), SUBSTRING_INDEX(u.email, ?, 1)) AS nom " +
@@ -78,6 +79,7 @@ async function listUsers(req, res) {
         id: r.id,
         nom: String(r.nom || "").trim() || "—",
         email: String(r.email || ""),
+        phone: r.phone != null && String(r.phone).trim() !== "" ? String(r.phone).trim() : null,
         status: st,
         created_at: r.created_at ? new Date(r.created_at).toISOString() : null,
       };
@@ -105,7 +107,7 @@ async function getUserDetail(req, res) {
 
     var pool = getPool();
     var [users] = await pool.query(
-      "SELECT id, email, CASE WHEN LOWER(TRIM(COALESCE(account_status, 'active'))) = 'suspended' THEN 'suspended' ELSE 'active' END AS status, created_at FROM users WHERE id = ? LIMIT 1",
+      "SELECT id, email, phone, CASE WHEN LOWER(TRIM(COALESCE(account_status, 'active'))) = 'suspended' THEN 'suspended' ELSE 'active' END AS status, created_at FROM users WHERE id = ? LIMIT 1",
       [id],
     );
 
@@ -128,6 +130,7 @@ async function getUserDetail(req, res) {
       user: {
         id: u.id,
         email: u.email,
+        phone: u.phone != null && String(u.phone).trim() !== "" ? String(u.phone).trim() : null,
         status: st,
         created_at: u.created_at ? new Date(u.created_at).toISOString() : null,
       },

@@ -142,10 +142,11 @@
   }
 
   function cityCell(row) {
-    if (row.city) {
-      return '<span class="resto-city">' + escapeHtml(row.city) + "</span>";
+    var q = row.quartier || row.city;
+    if (q) {
+      return '<span class="resto-city">' + escapeHtml(q) + "</span>";
     }
-    return '<span class="resto-city resto-city--soon">Ville à venir (création de compte)</span>';
+    return '<span class="resto-city resto-city--soon">Quartier non renseigné</span>';
   }
 
   async function fetchJson(method, path, token, opts) {
@@ -562,9 +563,9 @@
 
     document.getElementById("adm-resto-id").textContent = String(r.id);
     document.getElementById("adm-resto-city").innerHTML =
-      r.city ?
-        escapeHtml(r.city) :
-        '<span class="resto-city--soon">Ville à venir (formulaire d’inscription)</span>';
+      r.quartier || r.city ?
+        escapeHtml(String(r.quartier || r.city)) :
+        '<span class="resto-city--soon">Non renseigné (formulaire d’inscription)</span>';
     document.getElementById("adm-resto-phone").textContent = r.phone || "—";
 
     var subDd = document.getElementById("adm-resto-sub");

@@ -92,9 +92,18 @@ body.onb-page {
 }
 
 .onb-hero-icon {
-  font-size: 3rem;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 0.75rem;
+}
+
+.onb-hero-icon img {
+  width: clamp(3.25rem, 14vw, 4.5rem);
+  height: auto;
+  max-height: 4.75rem;
+  object-fit: contain;
+  display: block;
 }
 
 .onb-title {
@@ -142,7 +151,17 @@ body.onb-page {
 
 .onb-check {
   flex-shrink: 0;
-  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.onb-check img {
+  width: 1.25rem;
+  height: 1.25rem;
+  object-fit: contain;
+  display: block;
 }
 
 .onb-actions {

@@ -13,6 +13,9 @@
   const err = document.getElementById("register-error");
   const submitBtn = form.querySelector('button[type="submit"]');
   const restaurantName = document.getElementById("restaurant-name");
+  const fullName = document.getElementById("full-name");
+  /** Quartier physique du restaurant → API / BD : propriété technique `city` (+ alias `quartier` dans certaines réponses). */
+  const quartierInput = document.getElementById("registration-quartier");
   const email = document.getElementById("email");
   const whatsapp = document.getElementById("whatsapp");
   const pwd = document.getElementById("password");
@@ -51,9 +54,29 @@
       return;
     }
 
-    if (!whatsapp.value.trim()) {
-      showError("Le numéro WhatsApp pour les commandes est obligatoire.");
-      whatsapp.focus();
+    if (!fullName.value.trim()) {
+      showError("Indiquez votre nom.");
+      fullName.focus();
+      return;
+    }
+
+    if (!whatsapp || !whatsapp.value.trim()) {
+      showError("Indiquez votre numéro principal (WhatsApp pour les commandes).");
+      if (whatsapp) whatsapp.focus();
+      return;
+    }
+
+    var phoneTrim = whatsapp.value.trim();
+
+    if (!quartierInput) {
+      showError("Erreur de page : champ quartier introuvable. Rechargez la page.");
+      return;
+    }
+
+    var cityTrim = quartierInput.value.trim();
+    if (!cityTrim) {
+      showError("Indiquez le quartier où se trouve votre restaurant.");
+      quartierInput.focus();
       return;
     }
 
@@ -80,9 +103,14 @@
         },
         body: JSON.stringify({
           restaurantName: restaurantName.value.trim(),
+          fullName: fullName.value.trim(),
+          city: cityTrim,
+          location: cityTrim,
+          quartier: cityTrim,
           email: email.value.trim(),
           password: pwd.value,
-          whatsapp: whatsapp.value.trim(),
+          whatsapp: phoneTrim,
+          phone: phoneTrim,
         }),
       });
 

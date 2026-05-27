@@ -98,6 +98,9 @@ async function updateMyRestaurant(req, res) {
       return res.status(404).json({ message: "Aucun restaurant associé à ce compte." });
     }
 
+    /** Garde users.phone aligné avec le WhatsApp commandes (= contact principal du compte). */
+    await pool.query("UPDATE users SET phone = ? WHERE id = ?", [whatsapp, req.user.id]);
+
     var restaurant = await getRestaurantForUser(req.user.id);
     await removeUnusedUploads(oldImages);
     return res.json({ restaurant: restaurant });

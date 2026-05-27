@@ -185,14 +185,14 @@ function buildSubscriptionPayload(row) {
 async function getMe(req, res) {
   try {
     var pool = getPool();
-    var [users] = await pool.query("SELECT id, email FROM users WHERE id = ? LIMIT 1", [req.user.id]);
+    var [users] = await pool.query("SELECT id, email, full_name, phone FROM users WHERE id = ? LIMIT 1", [req.user.id]);
 
     if (!users.length) {
       return res.status(404).json({ message: "Utilisateur introuvable." });
     }
 
     var [restaurants] = await pool.query(
-      "SELECT r.id, r.name, r.description, r.whatsapp, r.logo_url, r.banner_url, r.theme_color, " +
+      "SELECT r.id, r.name, r.city, r.country, r.description, r.whatsapp, r.logo_url, r.banner_url, r.theme_color, " +
         "r.subscription_status, r.subscription_plan_key, r.subscription_started_at, r.subscription_ends_at, r.subscription_amount_cfa, " +
         "COALESCE(r.onboarding_seen, 0) AS onboarding_seen, COALESCE(r.needs_setup_help, 0) AS needs_setup_help, " +
         "CASE WHEN r.subscription_ends_at IS NULL THEN NULL ELSE GREATEST(0, DATEDIFF(DATE(r.subscription_ends_at), CURDATE())) END AS days_remaining " +
@@ -206,7 +206,7 @@ async function getMe(req, res) {
     if (baseRestaurant) {
       await subscriptionService.refreshRestaurantSubscriptionState(baseRestaurant.id);
       var [again] = await pool.query(
-        "SELECT r.id, r.name, r.description, r.whatsapp, r.logo_url, r.banner_url, r.theme_color, " +
+        "SELECT r.id, r.name, r.city, r.country, r.description, r.whatsapp, r.logo_url, r.banner_url, r.theme_color, " +
           "r.subscription_status, r.subscription_plan_key, r.subscription_started_at, r.subscription_ends_at, r.subscription_amount_cfa, " +
           "COALESCE(r.onboarding_seen, 0) AS onboarding_seen, COALESCE(r.needs_setup_help, 0) AS needs_setup_help, " +
           "CASE WHEN r.subscription_ends_at IS NULL THEN NULL ELSE GREATEST(0, DATEDIFF(DATE(r.subscription_ends_at), CURDATE())) END AS days_remaining " +
@@ -218,17 +218,30 @@ async function getMe(req, res) {
     }
 
     var restaurantPublic = baseRestaurant ?
-      {
-        id: baseRestaurant.id,
-        name: baseRestaurant.name,
-        description: baseRestaurant.description,
-        whatsapp: baseRestaurant.whatsapp,
-        logo_url: baseRestaurant.logo_url,
-        banner_url: baseRestaurant.banner_url,
-        theme_color: baseRestaurant.theme_color,
-        onboarding_seen: Boolean(baseRestaurant.onboarding_seen),
-        needs_setup_help: Boolean(baseRestaurant.needs_setup_help),
-      }
+      (function () {
+        var locality =
+          baseRestaurant.city != null && String(baseRestaurant.city).trim() !== "" ?
+            String(baseRestaurant.city).trim()
+          : null;
+        return {
+          id: baseRestaurant.id,
+          name: baseRestaurant.name,
+          /** Colonne BD `restaurants.city` (quartier). */
+          city: locality,
+          quartier: locality,
+          country:
+            baseRestaurant.country != null && String(baseRestaurant.country).trim() !== "" ?
+              String(baseRestaurant.country).trim()
+            : null,
+          description: baseRestaurant.description,
+          whatsapp: baseRestaurant.whatsapp,
+          logo_url: baseRestaurant.logo_url,
+          banner_url: baseRestaurant.banner_url,
+          theme_color: baseRestaurant.theme_color,
+          onboarding_seen: Boolean(baseRestaurant.onboarding_seen),
+          needs_setup_help: Boolean(baseRestaurant.needs_setup_help),
+        };
+      })()
     : null;
 
     return res.json({

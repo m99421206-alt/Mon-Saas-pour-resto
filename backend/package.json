@@ -16,7 +16,8 @@
     "db:admin-subscriptions": "node scripts/migrate-admin-subscriptions.js",
     "db:admin-platform-settings": "node scripts/migrate-admin-platform-settings.js",
     "db:subscription-plan-key": "node scripts/migrate-subscription-plan-key.js",
-    "db:onboarding": "node scripts/migrate-onboarding-flags.js"
+    "db:onboarding": "node scripts/migrate-onboarding-flags.js",
+    "db:registration-fields": "node scripts/migrate-registration-fields.js"
   },
   "engines": {
     "node": ">=18"

@@ -7,6 +7,8 @@ SET NAMES utf8mb4;
 CREATE TABLE IF NOT EXISTS `users` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `email` VARCHAR(255) NOT NULL,
+  `full_name` VARCHAR(160) NULL,
+  `phone` VARCHAR(32) NULL COMMENT 'Téléphone principal (souvent le même que restaurant.whatsapp à l’inscription)',
   `password` VARCHAR(255) NOT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `account_status` VARCHAR(20) NOT NULL DEFAULT 'active',
@@ -19,7 +21,9 @@ CREATE TABLE IF NOT EXISTS `restaurants` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` INT UNSIGNED NOT NULL,
   `name` VARCHAR(255) NOT NULL,
-  `city` VARCHAR(120) NULL,
+  -- Champ technique `city` = quartier / zone du restaurant (même valeur que `restaurant.city` ou `restaurant.quartier` dans l’API).
+  `city` VARCHAR(120) NULL COMMENT 'Quartier ou zone géographique du restaurant',
+  `country` VARCHAR(100) NULL,
   `subscription_status` VARCHAR(20) NOT NULL DEFAULT 'trial',
   `subscription_started_at` TIMESTAMP NULL DEFAULT NULL,
   `subscription_ends_at` TIMESTAMP NULL DEFAULT NULL,

@@ -157,9 +157,11 @@ async function getSubscriptionDetail(req, res) {
     var ms = raw.menu_suspended;
     var menuSuspended = ms === 1 || ms === true || ms === "1";
 
+    var cityStr = raw.city ? String(raw.city) : null;
     return res.json({
       subscription: Object.assign({}, mapSubscriptionRow(raw), {
-        city: raw.city ? String(raw.city) : null,
+        city: cityStr,
+        quartier: cityStr,
         description: raw.description ? String(raw.description) : "",
         menu_suspended: menuSuspended,
         product_count: Number(raw.product_count) || 0,

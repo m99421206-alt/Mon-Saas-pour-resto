@@ -585,6 +585,7 @@
     var statusEl = document.getElementById("adm-user-detail-status");
     var createdEl = document.getElementById("adm-user-detail-created");
     var idEl = document.getElementById("adm-user-detail-id");
+    var phoneEl = document.getElementById("adm-user-detail-phone");
     var listEl = document.getElementById("adm-user-detail-restaurants");
     var emptyEl = document.getElementById("adm-user-detail-restaurants-empty");
 
@@ -594,6 +595,9 @@
     }
     if (emailEl) {
       emailEl.textContent = "";
+    }
+    if (phoneEl) {
+      phoneEl.textContent = "";
     }
 
     var res = await fetchJson("GET", "/api/admin/users/" + encodeURIComponent(idStr), token);
@@ -626,6 +630,9 @@
     }
     if (emailEl) {
       emailEl.textContent = u.email || "—";
+    }
+    if (phoneEl) {
+      phoneEl.textContent = u.phone || "—";
     }
     if (statusEl) {
       statusEl.innerHTML = statusBadge(u.status);
