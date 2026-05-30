@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS `products` (
   `price` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
   `image` VARCHAR(512) NULL,
   `has_sizes` TINYINT(1) NOT NULL DEFAULT 1,
+  `is_visible` TINYINT(1) NOT NULL DEFAULT 1,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_products_restaurant_id` (`restaurant_id`),

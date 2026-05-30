@@ -20,6 +20,7 @@
   const dropzone = document.getElementById("plats-dropzone");
   const dropzoneContent = document.getElementById("plats-dropzone-content");
   const hasSizesInput = document.getElementById("plats-has-sizes");
+  const visibleInput = document.getElementById("plats-is-visible");
   const variantsSection = document.getElementById("plats-variants");
   const variantsList = document.getElementById("plats-variants-list");
   const addVariantBtn = document.getElementById("plats-variant-add");
@@ -235,6 +236,42 @@
     return product.has_sizes === true || product.has_sizes === 1 || product.has_sizes === "1";
   }
 
+  function productIsVisible(product) {
+    if (!product || product.is_visible === undefined || product.is_visible === null) {
+      return true;
+    }
+    return (
+      product.is_visible === true || product.is_visible === 1 || product.is_visible === "1"
+    );
+  }
+
+  function buildProductBody(product, overrides) {
+    const payload = {
+      name: product.name,
+      price: Number(product.price),
+      category_id: Number(product.category_id),
+      description: product.description || null,
+      image: product.image || null,
+      has_sizes: productHasSizes(product) ? 1 : 0,
+      is_visible: productIsVisible(product) ? 1 : 0,
+      variants: productHasSizes(product) && product.variants ? product.variants : [],
+    };
+    if (overrides) {
+      Object.keys(overrides).forEach(function (key) {
+        payload[key] = overrides[key];
+      });
+    }
+    return payload;
+  }
+
+  async function saveProductVisibility(product, isVisible) {
+    await apiRequest("/api/products/" + encodeURIComponent(product.id), {
+      method: "PUT",
+      body: buildProductBody(product, { is_visible: isVisible ? 1 : 0 }),
+    });
+    product.is_visible = isVisible ? 1 : 0;
+  }
+
   function getDefaultVariants(product) {
     if (product && product.variants && product.variants.length) {
       return product.variants;
@@ -344,13 +381,19 @@
 
     products.forEach(function (product) {
       const article = document.createElement("article");
-      article.className = "plats-card plats-card--no-media";
+      const visible = productIsVisible(product);
+      article.className =
+        "plats-card plats-card--no-media" + (visible ? "" : " plats-card--hidden");
       const descHtml = product.description
         ? '<p class="plats-card__desc">' + escapeHtml(product.description) + "</p>"
         : "";
+      const hiddenBadge = visible
+        ? ""
+        : '<span class="plats-card__hidden-badge">Masqué du menu</span>';
 
       article.innerHTML =
         '<div class="plats-card__body">' +
+        hiddenBadge +
         '<span class="plats-card__category">' +
         escapeHtml(findCategoryName(product.category_id)) +
         "</span>" +
@@ -362,6 +405,15 @@
         "</p>" +
         descHtml +
         "</div>" +
+        '<div class="plats-card__footer">' +
+        '<label class="plats-card__visible">' +
+        '<input type="checkbox" data-action="toggle-visible" data-id="' +
+        product.id +
+        '"' +
+        (visible ? " checked" : "") +
+        " />" +
+        "<span>Visible</span>" +
+        "</label>" +
         '<div class="plats-card__actions">' +
         '<button type="button" class="plats-card__btn" data-action="edit-plat" data-id="' +
         product.id +
@@ -369,7 +421,7 @@
         '<button type="button" class="plats-card__btn plats-card__btn--danger" data-action="delete-plat" data-id="' +
         product.id +
         '">Supprimer</button>' +
-        "</div>";
+        "</div></div>";
       list.appendChild(article);
     });
   }
@@ -390,6 +442,9 @@
     imageFileInput.value = "";
     setImagePreview(imagePreview, imageInput.value);
     hasSizesInput.checked = product ? productHasSizes(product) : false;
+    if (visibleInput) {
+      visibleInput.checked = product ? productIsVisible(product) : true;
+    }
     renderVariantRows(getDefaultVariants(product));
     setVariantsVisible(hasSizesInput.checked, product);
     submitBtn.textContent = product ? "Modifier" : "Enregistrer";
@@ -533,6 +588,7 @@
         description: description || null,
         image: uploadedImage || null,
         has_sizes: hasSizesInput.checked ? 1 : 0,
+        is_visible: visibleInput && visibleInput.checked ? 1 : 0,
         variants: variants,
       };
 
@@ -583,6 +639,37 @@
     const removeBtn = event.target.closest("[data-action='remove-variant']");
     if (!removeBtn) return;
     removeBtn.closest(".plats-variant").remove();
+  });
+
+  list.addEventListener("change", async function (event) {
+    const checkbox = event.target.closest("[data-action='toggle-visible']");
+    if (!checkbox) return;
+
+    const id = Number(checkbox.getAttribute("data-id"));
+    const product = products.find(function (item) {
+      return item.id === id;
+    });
+    if (!product) return;
+
+    const nextVisible = checkbox.checked;
+    const previousVisible = productIsVisible(product);
+
+    try {
+      checkbox.disabled = true;
+      setStatus(nextVisible ? "Affichage sur le menu client…" : "Masquage du plat…");
+      await saveProductVisibility(product, nextVisible);
+      renderProducts();
+      setStatus(
+        nextVisible ?
+          "Plat visible sur le menu client."
+        : "Plat masqué du menu client (toujours modifiable ici).",
+      );
+    } catch (error) {
+      checkbox.checked = previousVisible;
+      setStatus(error.message || "Impossible de mettre à jour la visibilité.", true);
+    } finally {
+      checkbox.disabled = false;
+    }
   });
 
   list.addEventListener("click", async function (event) {

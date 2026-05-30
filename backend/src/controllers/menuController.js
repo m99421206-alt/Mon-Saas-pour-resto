@@ -42,10 +42,23 @@ async function getPublicMenu(req, res) {
       [restaurantId]
     );
 
-    var [products] = await pool.query(
-      "SELECT id, restaurant_id, category_id, name, description, price, image, has_sizes FROM products WHERE restaurant_id = ? ORDER BY id DESC",
-      [restaurantId]
-    );
+    var products;
+    try {
+      var productRows = await pool.query(
+        "SELECT id, restaurant_id, category_id, name, description, price, image, has_sizes FROM products WHERE restaurant_id = ? AND COALESCE(is_visible, 1) = 1 ORDER BY id DESC",
+        [restaurantId],
+      );
+      products = productRows[0];
+    } catch (productErr) {
+      if (!(productErr && productErr.code === "ER_BAD_FIELD_ERROR")) {
+        throw productErr;
+      }
+      var legacyProductRows = await pool.query(
+        "SELECT id, restaurant_id, category_id, name, description, price, image, has_sizes FROM products WHERE restaurant_id = ? ORDER BY id DESC",
+        [restaurantId],
+      );
+      products = legacyProductRows[0];
+    }
 
     var variantsByProduct = {};
     if (products.length) {

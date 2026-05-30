@@ -4311,6 +4311,55 @@ a.dash-qr-btn {
   overflow: hidden;
 }
 
+.plats-card--hidden {
+  opacity: 0.82;
+  border-style: dashed;
+  border-color: rgba(148, 163, 184, 0.55);
+  background: rgba(248, 250, 252, 0.92);
+}
+
+.plats-card__hidden-badge {
+  display: inline-block;
+  margin-bottom: 0.45rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: rgb(100, 116, 139);
+  background: rgba(226, 232, 240, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.45);
+}
+
+.plats-card__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem 1rem;
+  border-top: 1px solid rgba(17, 24, 39, 0.06);
+}
+
+.plats-card__visible {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(17, 24, 39, 0.72);
+  cursor: pointer;
+  user-select: none;
+}
+
+.plats-card__visible input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--dash-accent, #ff6b00);
+  cursor: pointer;
+}
+
 .plats-card__actions {
   display: grid;
   grid-template-columns: 1fr 1fr;

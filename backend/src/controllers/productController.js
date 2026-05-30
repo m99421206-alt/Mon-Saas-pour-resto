@@ -55,6 +55,13 @@ function normalizeHasSizes(body) {
   return body.has_sizes === true || body.has_sizes === 1 || body.has_sizes === "1" ? 1 : 0;
 }
 
+function normalizeIsVisible(body) {
+  if (!body || body.is_visible == null) {
+    return 1;
+  }
+  return body.is_visible === true || body.is_visible === 1 || body.is_visible === "1" ? 1 : 0;
+}
+
 function normalizeCategoryId(body) {
   var id = Number(body && body.category_id);
   if (!Number.isInteger(id) || id < 1) {
@@ -156,7 +163,7 @@ async function listProducts(req, res) {
 
     var pool = getPool();
     var [rows] = await pool.query(
-      "SELECT id, restaurant_id, category_id, name, description, price, image, has_sizes FROM products WHERE restaurant_id = ? ORDER BY id DESC",
+      "SELECT id, restaurant_id, category_id, name, description, price, image, has_sizes, is_visible FROM products WHERE restaurant_id = ? ORDER BY id DESC",
       [restaurantId]
     );
     rows = await attachVariants(pool, rows);
@@ -174,6 +181,7 @@ async function createProduct(req, res) {
     var image = normalizeImage(req.body);
     var description = normalizeDescription(req.body);
     var hasSizes = normalizeHasSizes(req.body);
+    var isVisible = normalizeIsVisible(req.body);
     var variants = normalizeVariants(req.body);
     if (hasSizes && !variants.length) {
       hasSizes = 0;
@@ -212,8 +220,8 @@ async function createProduct(req, res) {
       await connection.beginTransaction();
 
       var [result] = await connection.query(
-        "INSERT INTO products (restaurant_id, category_id, name, description, price, image, has_sizes) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        [restaurantId, categoryId, name, description, price, image, hasSizes]
+        "INSERT INTO products (restaurant_id, category_id, name, description, price, image, has_sizes, is_visible) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        [restaurantId, categoryId, name, description, price, image, hasSizes, isVisible]
       );
       productId = result.insertId;
 
@@ -243,6 +251,7 @@ async function createProduct(req, res) {
         price: price,
         image: image,
         has_sizes: hasSizes,
+        is_visible: isVisible,
         variants: hasSizes ? variants : [],
       },
     });
@@ -265,6 +274,7 @@ async function updateProduct(req, res) {
     var image = normalizeImage(req.body);
     var description = normalizeDescription(req.body);
     var hasSizes = normalizeHasSizes(req.body);
+    var isVisible = normalizeIsVisible(req.body);
     var variants = normalizeVariants(req.body);
     if (hasSizes && !variants.length) {
       hasSizes = 0;
@@ -320,8 +330,8 @@ async function updateProduct(req, res) {
       });
 
       var [result] = await connection.query(
-        "UPDATE products SET category_id = ?, name = ?, description = ?, price = ?, image = ?, has_sizes = ? WHERE id = ? AND restaurant_id = ?",
-        [categoryId, name, description, price, image, hasSizes, productId, restaurantId]
+        "UPDATE products SET category_id = ?, name = ?, description = ?, price = ?, image = ?, has_sizes = ?, is_visible = ? WHERE id = ? AND restaurant_id = ?",
+        [categoryId, name, description, price, image, hasSizes, isVisible, productId, restaurantId]
       );
 
       if (result.affectedRows === 0) {
@@ -359,6 +369,7 @@ async function updateProduct(req, res) {
         price: price,
         image: image,
         has_sizes: hasSizes,
+        is_visible: isVisible,
         variants: hasSizes ? variants : [],
       },
     });
