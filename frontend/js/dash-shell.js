@@ -244,6 +244,10 @@
   initAdminImpersonationBanner();
   initNotificationsPlaceholder();
 
+  if (window.MenuGo_SubscriptionAlerts && window.MenuGo_SubscriptionAlerts.fetchAndMountClientBanner) {
+    window.MenuGo_SubscriptionAlerts.fetchAndMountClientBanner();
+  }
+
   DESKTOP_MQ.addEventListener("change", syncDesktopDrawerState);
 
   window.MenuGo_DashShell = {

@@ -37,6 +37,12 @@ router.delete("/restaurants/:id", requireAuth, requirePlatformAdmin, adminRestau
 
 router.get("/subscriptions", requireAuth, requirePlatformAdmin, adminSubscriptionsController.listSubscriptions);
 router.get(
+  "/subscriptions/expiring",
+  requireAuth,
+  requirePlatformAdmin,
+  adminSubscriptionsController.listExpiringSubscriptions,
+);
+router.get(
   "/subscriptions/:restaurantId",
   requireAuth,
   requirePlatformAdmin,

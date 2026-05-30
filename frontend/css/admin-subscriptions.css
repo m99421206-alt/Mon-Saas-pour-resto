@@ -148,6 +148,44 @@
   justify-content: flex-end;
 }
 
+.subs-wa-empty {
+  color: var(--adm-text-muted, rgba(100, 116, 139, 0.85));
+  font-size: 0.82rem;
+}
+
+.subs-wa-relance {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.85rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.71rem;
+  font-weight: 700;
+  text-decoration: none;
+  color: rgb(154, 52, 18);
+  background: rgba(255, 237, 213, 0.95);
+  border: 1px solid rgba(249, 115, 22, 0.48);
+  white-space: nowrap;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.subs-wa-relance:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.18);
+}
+
+.subs-wa-relance:focus-visible {
+  outline: 2px solid rgba(249, 115, 22, 0.65);
+  outline-offset: 2px;
+}
+
+.subs-card__wa {
+  margin-top: 0.45rem;
+}
+
 .adm-btn {
   border: 1px solid var(--adm-border);
   background: var(--adm-surface);

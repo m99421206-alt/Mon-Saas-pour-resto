@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -35,12 +35,14 @@
         </button>
       </header>
 
-      <header class="plats-page-head">
-        <h1 class="plats-page-title" id="mon-abonnement-page-title">Mon abonnement</h1>
-        <p class="plats-page-sub" id="mon-abonnement-page-sub" hidden>
-          Chargement de votre formule et des options de renouvellement…
-        </p>
-      </header>
+      <section class="dash-hero dash-page-hero">
+        <div class="dash-hero__text">
+          <h1 class="plats-page-title" id="mon-abonnement-page-title">Mon abonnement</h1>
+          <p class="plats-page-sub" id="mon-abonnement-page-sub" hidden>
+            Chargement de votre formule et des options de renouvellement…
+          </p>
+        </div>
+      </section>
 
       <div id="subscription-root" class="mon-abonnement-root" aria-live="polite"></div>
     </main>
@@ -135,6 +137,7 @@
     </aside>
 
     <script src="../js/config.js"></script>
+    <script src="../js/subscription-alerts.js"></script>
     <script src="../js/dash-shell.js"></script>
     <script src="../js/dashboard.js"></script>
     <script src="../js/restaurant-my-subscription.js"></script>

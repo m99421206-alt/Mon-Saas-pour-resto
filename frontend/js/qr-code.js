@@ -261,6 +261,14 @@
   if (downloadBtn) {
     downloadBtn.addEventListener("click", downloadPng);
   }
+
+  var heroDownloadBtn = document.getElementById("qr-hero-download");
+  if (heroDownloadBtn && downloadBtn) {
+    heroDownloadBtn.addEventListener("click", function () {
+      downloadBtn.click();
+    });
+  }
+
   if (copyBtn) {
     copyBtn.addEventListener("click", copyUrl);
   }

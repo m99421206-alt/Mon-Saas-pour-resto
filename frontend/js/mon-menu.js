@@ -142,14 +142,19 @@ function formatApiPrice(price) {
   return `${Math.round(value).toLocaleString("fr-FR")} CFA`;
 }
 
+function productHasImage(product) {
+  if (!product || !product.image) return false;
+  return String(product.image).trim().length > 0;
+}
+
 function normalizeImageUrl(imageUrl, fallbackUrl) {
   if (!imageUrl || typeof imageUrl !== "string") {
-    return fallbackUrl;
+    return fallbackUrl || "";
   }
 
   const url = imageUrl.trim();
   if (!url) {
-    return fallbackUrl;
+    return fallbackUrl || "";
   }
   return url.indexOf("/uploads/") === 0 ? API_BASE_URL + url : url;
 }
@@ -269,7 +274,8 @@ function mapPublicMenuData(data) {
     const categoryProducts = Array.isArray(category.products) ? category.products : [];
 
     return categoryProducts.map(function (product) {
-      const image = normalizeImageUrl(product.image, DEFAULT_PRODUCT_IMAGE);
+      const rawImage = product.image ? String(product.image).trim() : "";
+      const image = rawImage ? normalizeImageUrl(rawImage, "") : "";
 
       return {
         id: product.id,
@@ -340,18 +346,18 @@ function createProductCard(product) {
   if (!hasVisibleDescription(product.meta)) {
     card.classList.add("product-card--no-meta");
   }
+  if (!productHasImage(product)) {
+    card.classList.add("product-card--no-image");
+  }
   const productName = escapeHtml(product.name);
   const productMeta = escapeHtml(product.meta);
   const productPrice = escapeHtml(product.price);
-  const productImage = escapeHtml(product.image);
   const productAlt = escapeHtml(product.alt);
   const favorite = isFavorite(product.id);
   const metaBlock = hasVisibleDescription(product.meta)
     ? `<p class="product-card__meta">${productMeta}</p>`
     : "";
-  card.innerHTML = `
-    <div class="product-card__media">
-      <img class="product-card__image" src="${productImage}" alt="${productAlt}" loading="lazy" />
+  const heartBtn = `
       <button
         class="product-card__heart ${favorite ? "is-favorite" : ""}"
         type="button"
@@ -359,8 +365,19 @@ function createProductCard(product) {
         aria-pressed="${favorite}"
       >
         <i class="${getFavoriteIconClass(product.id)} fa-heart" aria-hidden="true"></i>
-      </button>
-    </div>
+      </button>`;
+  const mediaBlock = productHasImage(product)
+    ? `
+    <div class="product-card__media">
+      <img class="product-card__image" src="${escapeHtml(product.image)}" alt="${productAlt}" loading="lazy" />
+      ${heartBtn}
+    </div>`
+    : `
+    <div class="product-card__top">
+      ${heartBtn}
+    </div>`;
+  card.innerHTML = `
+    ${mediaBlock}
     <div class="product-card__body">
       <h3 class="product-card__name">${productName}</h3>
       <p class="product-card__price">${productPrice}</p>
@@ -387,12 +404,17 @@ function createSimilarProductCard(product) {
   const productName = escapeHtml(product.name);
   const productMeta = escapeHtml(product.meta);
   const productPrice = escapeHtml(product.price);
-  const productImage = escapeHtml(product.image);
   const productAlt = escapeHtml(product.alt);
   const favorite = isFavorite(product.id);
   const similarMetaBlock = hasVisibleDescription(product.meta)
     ? `<span class="similar-card__meta">${productMeta}</span>`
     : "";
+  const imageBlock = productHasImage(product)
+    ? `<img class="similar-card__image" src="${escapeHtml(product.image)}" alt="${productAlt}" loading="lazy" />`
+    : "";
+  if (!productHasImage(product)) {
+    card.classList.add("similar-card--no-image");
+  }
   card.innerHTML = `
     <span
       class="similar-card__heart ${favorite ? "is-favorite" : ""}"
@@ -403,7 +425,7 @@ function createSimilarProductCard(product) {
     >
       <i class="${getFavoriteIconClass(product.id)} fa-heart" aria-hidden="true"></i>
     </span>
-    <img class="similar-card__image" src="${productImage}" alt="${productAlt}" loading="lazy" />
+    ${imageBlock}
     <span class="similar-card__body">
       <span class="similar-card__name">${productName}</span>
       ${similarMetaBlock}
@@ -611,8 +633,15 @@ function getProductVariants(product) {
 function setSelectedVariant(variant) {
   selectedVariant = variant;
   detailPriceEl.textContent = variant ? variant.price : selectedProduct.price;
-  detailImageEl.src = selectedProduct.detailImage || selectedProduct.image;
-  detailImageEl.alt = variant ? `${selectedProduct.name} - ${variant.name}` : selectedProduct.alt;
+  if (productHasImage(selectedProduct)) {
+    detailImageEl.hidden = false;
+    detailImageEl.src = selectedProduct.detailImage || selectedProduct.image;
+    detailImageEl.alt = variant ? `${selectedProduct.name} - ${variant.name}` : selectedProduct.alt;
+  } else {
+    detailImageEl.hidden = true;
+    detailImageEl.removeAttribute("src");
+    detailImageEl.alt = "";
+  }
 
   document.querySelectorAll(".size-option").forEach(function (button) {
     button.classList.toggle("active", variant && button.dataset.variantId === variant.id);
@@ -656,8 +685,15 @@ function updateQuantity(value) {
 
 function showProductDetail(product) {
   selectedProduct = product;
-  detailImageEl.src = product.detailImage || product.image;
-  detailImageEl.alt = product.alt;
+  if (productHasImage(product)) {
+    detailImageEl.hidden = false;
+    detailImageEl.src = product.detailImage || product.image;
+    detailImageEl.alt = product.alt;
+  } else {
+    detailImageEl.hidden = true;
+    detailImageEl.removeAttribute("src");
+    detailImageEl.alt = "";
+  }
   detailTitleEl.textContent = product.name;
   detailPriceEl.textContent = product.price;
   if (hasVisibleDescription(product.meta)) {

@@ -217,6 +217,118 @@
     return "https://wa.me/" + digits.replace(/^0+/, "") + "?text=" + encodeURIComponent(msg);
   }
 
+  function formatDateShort(iso) {
+    if (!iso) return "—";
+    try {
+      return new Date(iso).toLocaleDateString("fr-FR", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+    } catch (e) {
+      return "—";
+    }
+  }
+
+  function adminWatchUrgencyClass(daysRemaining) {
+    var dr = Number(daysRemaining);
+    if (!Number.isFinite(dr)) return "";
+    if (dr <= 3) return "adm-sub-watch-row--red";
+    if (dr <= 7) return "adm-sub-watch-row--orange";
+    return "adm-sub-watch-row--yellow";
+  }
+
+  function buildAdminSubWatchWaUrl(restaurantName, endsAtIso, daysRemaining, phoneRaw) {
+    var digits = waDigits(phoneRaw);
+    if (!digits) return "#";
+    var exp = formatDateShort(endsAtIso);
+    var dr = Number(daysRemaining);
+    var daysText =
+      Number.isFinite(dr) ?
+        dr === 0 ?
+          "aujourd’hui"
+        : dr === 1 ?
+          "demain (1 jour)"
+        : "dans " + dr + " jours"
+      : "prochainement";
+    var msg =
+      "Bonjour " +
+      String(restaurantName || "restaurant") +
+      ",\n\n" +
+      "Votre abonnement MenuGo expire le " +
+      exp +
+      " (" +
+      daysText +
+      ").\n\n" +
+      "Souhaitez-vous renouveler votre accès ? Nous restons disponibles pour vous accompagner.\n\n" +
+      "L’équipe MenuGo";
+    return "https://wa.me/" + digits.replace(/^0+/, "") + "?text=" + encodeURIComponent(msg);
+  }
+
+  function renderSubWatchRows(items, forbidden) {
+    var tbody = document.getElementById("adm-sub-watch-body");
+    if (!tbody) {
+      return;
+    }
+    tbody.innerHTML = "";
+
+    if (forbidden) {
+      var tr0 = document.createElement("tr");
+      tr0.className = "adm-table__placeholder";
+      tr0.innerHTML =
+        "<td colspan=\"5\">Liste réservée aux administrateurs.</td>";
+      tbody.appendChild(tr0);
+      return;
+    }
+
+    if (!items || !items.length) {
+      var trE = document.createElement("tr");
+      trE.className = "adm-table__placeholder";
+      trE.innerHTML =
+        "<td colspan=\"5\">Aucun abonnement à surveiller dans les 15 prochains jours.</td>";
+      tbody.appendChild(trE);
+      return;
+    }
+
+    items.forEach(function (row) {
+      var tr = document.createElement("tr");
+      tr.className = adminWatchUrgencyClass(row.days_remaining);
+
+      var waUrl = buildAdminSubWatchWaUrl(
+        row.name,
+        row.subscription_ends_at,
+        row.days_remaining,
+        row.owner_phone,
+      );
+
+      var daysCell =
+        row.days_remaining === null || row.days_remaining === undefined ?
+          "—"
+        : escapeHtml(String(row.days_remaining));
+
+      var waBtn =
+        '<a class="adm-mini-btn adm-mini-btn--wa"' +
+        (waUrl === "#" ?
+          ' href="#" role="button" aria-disabled="true" title="Numéro WhatsApp restaurant indisponible"'
+        : ' href="' + waUrl + '" target="_blank" rel="noopener noreferrer"') +
+        ">WhatsApp</a>";
+
+      tr.innerHTML =
+        "<td>" +
+        escapeHtml(row.name || "—") +
+        "</td><td>" +
+        escapeHtml(row.subscription_plan_label || "—") +
+        "</td><td>" +
+        escapeHtml(formatDateShort(row.subscription_ends_at)) +
+        "</td><td>" +
+        daysCell +
+        "</td><td>" +
+        waBtn +
+        "</td>";
+      tbody.appendChild(tr);
+    });
+  }
+
   function renderSetupHelpRows(items, forbidden) {
     var tbody = document.getElementById("adm-setup-help-body");
     if (!tbody) {
@@ -292,6 +404,7 @@
       );
       clearStatsDisplay();
       renderActivity([]);
+      renderSubWatchRows([], true);
       return;
     }
 
@@ -311,6 +424,7 @@
       clearStatsDisplay();
       renderActivity([]);
       renderSetupHelpRows([], true);
+      renderSubWatchRows([], true);
       return;
     }
     var statsData = statsRes.data || {};
@@ -345,6 +459,7 @@
       );
       renderActivity([]);
       renderSetupHelpRows([], true);
+      renderSubWatchRows([], true);
       return;
     }
 
@@ -371,6 +486,19 @@
       renderSetupHelpRows(setupRes.data.items, false);
     } else {
       renderSetupHelpRows([], false);
+    }
+
+    var watchRes = await fetchAdminJson("/api/admin/subscriptions/expiring", token);
+    if (watchRes.status === 401) {
+      clearSessionAndRedirectLogin();
+      return;
+    }
+    if (watchRes.status === 403) {
+      renderSubWatchRows([], true);
+    } else if (watchRes.ok && watchRes.data && Array.isArray(watchRes.data.items)) {
+      renderSubWatchRows(watchRes.data.items, false);
+    } else {
+      renderSubWatchRows([], false);
     }
   }
 

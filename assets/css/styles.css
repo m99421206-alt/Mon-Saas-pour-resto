@@ -139,6 +139,10 @@ p {
   .container--narrow {
     max-width: 36rem;
   }
+
+  .steps .container--narrow {
+    max-width: var(--max-content);
+  }
 }
 
 /* ----------------------------------------------------------------------------- Header */
@@ -1470,6 +1474,20 @@ p {
   line-height: 1.55;
 }
 
+@media (min-width: 48rem) {
+  .steps__list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(1.25rem, 3vw, 2rem);
+    align-items: start;
+  }
+
+  .steps__item {
+    max-width: none;
+    margin-inline: 0;
+  }
+}
+
 /* ----------------------------------------------------------------------------- Tarifs (section SaaS) */
 
 .pricing {
@@ -2383,18 +2401,18 @@ p {
     margin-inline: auto;
   }
 
+  .cta-band__text {
+    max-width: 36rem;
+  }
+}
+
+@media (min-width: 80rem) {
   .steps__list {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1.25rem;
+    gap: 2.25rem;
   }
 
   .steps__item {
-    max-width: none;
-  }
-
-  .cta-band__text {
-    max-width: 36rem;
+    padding: 0.25rem 1rem;
   }
 }
 

@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -14,7 +14,6 @@
     <link rel="stylesheet" href="../css/dashboard.css" />
   </head>
   <body class="dashboard-page plats-page">
-    <!-- Même chrome que le tableau de bord : entête + drawer -->
     <main class="dashboard-main" id="mes-plats-main">
       <header class="dash-topbar">
         <a href="../../index.html" class="dash-brand" aria-label="Retour accueil MenuGo">
@@ -36,65 +35,109 @@
         </button>
       </header>
 
-      <!-- Titre de page -->
-      <header class="plats-page-head">
-        <h1 class="plats-page-title">Mes Plats</h1>
-        <p class="plats-page-sub">Gérez les plats de votre menu</p>
-      </header>
-
-      <!-- CTA principal (pleine largeur) -->
-      <button type="button" class="plats-add-btn" id="plats-add-main" data-action="add-plat">
-        <span class="plats-add-btn__plus" aria-hidden="true">+</span>
-        <span>Ajouter un plat</span>
-      </button>
+      <section class="dash-hero dash-page-hero">
+        <div class="dash-hero__text">
+          <h1 class="plats-page-title">Mes Plats</h1>
+          <p class="plats-page-sub">
+            Gérez facilement les plats affichés dans votre menu digital.
+          </p>
+        </div>
+        <div class="dash-hero__cta">
+          <button type="button" class="plats-add-btn" id="plats-add-main" data-action="add-plat">
+            <span class="plats-add-btn__plus" aria-hidden="true">+</span>
+            <span>Ajouter un plat</span>
+          </button>
+        </div>
+      </section>
 
       <p class="plats-status" id="plats-status" role="status"></p>
 
       <form class="plats-form" id="plats-form" hidden>
-        <label class="plats-form__label" for="plats-name">Nom du plat</label>
-        <input
-          class="plats-form__input"
-          id="plats-name"
-          name="name"
-          type="text"
-          placeholder="Ex : Poulet braisé"
-          autocomplete="off"
-          required
-        />
+        <section class="plats-form__section" aria-labelledby="plats-info-title">
+          <header class="plats-form__section-head">
+            <span class="plats-form__section-icon" aria-hidden="true">
+              <img src="../../assets/images/icone/coutellerie.png" alt="" width="22" height="22" />
+            </span>
+            <div>
+              <h2 class="plats-form__section-title" id="plats-info-title">Informations du plat</h2>
+              <p class="plats-form__section-desc">
+                Nom, prix, description et visuel affichés sur votre menu public.
+              </p>
+            </div>
+          </header>
 
-        <label class="plats-form__label" for="plats-price">Prix</label>
-        <input
-          class="plats-form__input"
-          id="plats-price"
-          name="price"
-          type="number"
-          min="0"
-          step="0.01"
-          placeholder="Ex : 12.50"
-          required
-        />
+          <div class="plats-form__grid plats-form__grid--duo">
+            <div class="plats-form__field">
+              <label class="plats-form__label" for="plats-name">Nom du plat</label>
+              <input
+                class="plats-form__input"
+                id="plats-name"
+                name="name"
+                type="text"
+                placeholder="Ex : Poulet braisé"
+                autocomplete="off"
+                required
+              />
+            </div>
+            <div class="plats-form__field">
+              <label class="plats-form__label" for="plats-price">Prix</label>
+              <input
+                class="plats-form__input"
+                id="plats-price"
+                name="price"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Ex : 3500"
+                required
+              />
+            </div>
+          </div>
 
-        <label class="plats-form__label" for="plats-description">Description du plat</label>
-        <textarea
-          class="plats-form__input plats-form__textarea"
-          id="plats-description"
-          name="description"
-          rows="3"
-          placeholder="Ex : Sauce tomate, fromage, basilic frais"
-        ></textarea>
+          <div class="plats-form__field plats-form__field--full">
+            <label class="plats-form__label" for="plats-description">Description du plat</label>
+            <textarea
+              class="plats-form__input plats-form__textarea"
+              id="plats-description"
+              name="description"
+              rows="3"
+              placeholder="Ex : Sauce tomate, fromage, basilic frais"
+            ></textarea>
+          </div>
 
-        <label class="plats-form__label" for="plats-category">Catégorie</label>
-        <select class="plats-form__input" id="plats-category" name="category_id" required></select>
+          <div class="plats-form__grid plats-form__grid--duo">
+            <div class="plats-form__field">
+              <label class="plats-form__label" for="plats-category">Catégorie</label>
+              <select class="plats-form__input plats-form__select" id="plats-category" name="category_id" required></select>
+            </div>
+            <div class="plats-form__field">
+              <span class="plats-form__label" id="plats-image-label">Image du plat</span>
+              <div class="plats-dropzone" id="plats-dropzone" role="group" aria-labelledby="plats-image-label">
+                <input
+                  class="plats-dropzone__input"
+                  id="plats-image-file"
+                  name="imageFile"
+                  type="file"
+                  accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                  tabindex="-1"
+                />
+                <div class="plats-dropzone__content" id="plats-dropzone-content">
+                  <span class="plats-dropzone__icon" aria-hidden="true">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                      <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.5" />
+                      <circle cx="8.5" cy="10" r="1.5" fill="currentColor" />
+                      <path d="M21 16l-5-5-4 4-3-3-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </span>
+                  <p class="plats-dropzone__text">Glissez une image ou cliquez pour sélectionner</p>
+                  <p class="plats-dropzone__hint">JPG ou PNG</p>
+                </div>
+                <img class="plats-dropzone__preview" id="plats-image-preview" alt="Aperçu du plat" hidden />
+              </div>
+            </div>
+          </div>
+        </section>
 
-        <label class="plats-form__label" for="plats-image-file">Image du plat</label>
-        <input
-          class="plats-form__input"
-          id="plats-image-file"
-          name="imageFile"
-          type="file"
-          accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-        />
-        <img class="plats-image-preview" id="plats-image-preview" alt="Aperçu du plat" hidden />
         <input
           class="plats-form__input"
           id="plats-image"
@@ -112,13 +155,22 @@
 
         <section class="plats-variants" id="plats-variants" aria-label="Variantes du plat">
           <div class="plats-variants__header">
-            <div>
-              <h3 class="plats-variants__title">Tailles / options</h3>
-              <p class="plats-variants__hint">
-                Chaque option a son propre prix. Exemple : Petit, Moyen, Grand.
-              </p>
+            <div class="plats-variants__head-copy">
+              <span class="plats-variants__icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M4 7h16M4 12h10M4 17h16" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+                </svg>
+              </span>
+              <div>
+                <h3 class="plats-variants__title">Tailles / options</h3>
+                <p class="plats-variants__hint">
+                  Chaque option a son propre prix.
+                </p>
+              </div>
             </div>
-            <button class="plats-variants__add" id="plats-variant-add" type="button">+ Option</button>
+            <button class="plats-variants__add" id="plats-variant-add" type="button">
+              + Ajouter une option
+            </button>
           </div>
           <div class="plats-variants__list" id="plats-variants-list"></div>
         </section>
@@ -131,13 +183,12 @@
 
       <section class="plats-list" id="plats-list" aria-label="Liste des plats" hidden></section>
 
-      <!-- État vide : liste des plats vide -->
       <section class="plats-empty" id="plats-empty" aria-labelledby="plats-empty-title">
         <div class="plats-empty__icon-wrap" aria-hidden="true">
-          <img src="../../assets/images/icone/logo.png" alt="" width="50" height="50" />
+          <img src="../../assets/images/icone/coutellerie.png" alt="" width="44" height="44" />
         </div>
         <h2 id="plats-empty-title" class="plats-empty__title">Aucun plat</h2>
-        <p class="plats-empty__desc">Commencez par ajouter des plats à votre menu</p>
+        <p class="plats-empty__desc">Commencez par ajouter des plats à votre menu digital.</p>
         <button type="button" class="plats-empty__cta" id="plats-add-empty" data-action="add-plat">
           + Ajouter un plat
         </button>
@@ -234,6 +285,7 @@
     </aside>
 
     <script src="../js/config.js"></script>
+    <script src="../js/subscription-alerts.js"></script>
     <script src="../js/dash-shell.js"></script>
     <script src="../js/dashboard.js"></script>
     <script src="../js/mes-plats.js"></script>

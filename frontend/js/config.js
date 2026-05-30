@@ -13,7 +13,9 @@
       typeof existingConfig.SUPPORT_EMAIL === "string" ? existingConfig.SUPPORT_EMAIL : "",
     /** Numéro WhatsApp du support plateforme (vous, administration / abonnements). Forme internationale, chiffres seuls sans + dans l’URL wa.me — distinct du WhatsApp restaurant (commandes, Paramètres). */
     SUPPORT_WHATSAPP:
-      typeof existingConfig.SUPPORT_WHATSAPP === "string" ? existingConfig.SUPPORT_WHATSAPP : "",
+      typeof existingConfig.SUPPORT_WHATSAPP === "string" && existingConfig.SUPPORT_WHATSAPP.trim() !== "" ?
+        existingConfig.SUPPORT_WHATSAPP
+      : "22399421206",
     /**
      * URL de base du site (sans slash final) telle qu’un téléphone sur le Wi‑Fi peut l’ouvrir.
      * Ex. http://192.168.1.12:5500 si Live Server ouvre le dossier depuis ce port sur votre PC.

@@ -17,6 +17,8 @@
   const imageInput = document.getElementById("plats-image");
   const imageFileInput = document.getElementById("plats-image-file");
   const imagePreview = document.getElementById("plats-image-preview");
+  const dropzone = document.getElementById("plats-dropzone");
+  const dropzoneContent = document.getElementById("plats-dropzone-content");
   const hasSizesInput = document.getElementById("plats-has-sizes");
   const variantsSection = document.getElementById("plats-variants");
   const variantsList = document.getElementById("plats-variants-list");
@@ -161,10 +163,14 @@
     if (!url) {
       preview.hidden = true;
       preview.removeAttribute("src");
+      if (dropzone) dropzone.classList.remove("has-preview");
+      if (dropzoneContent) dropzoneContent.hidden = false;
       return;
     }
     preview.src = resolveImageUrl(url);
     preview.hidden = false;
+    if (dropzone) dropzone.classList.add("has-preview");
+    if (dropzoneContent) dropzoneContent.hidden = true;
   }
 
   function previewSelectedFile(input, preview) {
@@ -186,6 +192,43 @@
       return "0.00";
     }
     return number.toFixed(2);
+  }
+
+  function formatPriceDisplay(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) {
+      return "0 F CFA";
+    }
+    if (Number.isInteger(number)) {
+      return number.toLocaleString("fr-FR") + " F CFA";
+    }
+    return (
+      number.toLocaleString("fr-FR", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      }) + " F CFA"
+    );
+  }
+
+  function formatProductPriceLabel(product) {
+    if (productHasSizes(product) && product.variants && product.variants.length) {
+      const prices = product.variants
+        .map(function (variant) {
+          return Number(variant.price);
+        })
+        .filter(function (price) {
+          return Number.isFinite(price);
+        });
+      if (prices.length) {
+        const min = Math.min.apply(null, prices);
+        const max = Math.max.apply(null, prices);
+        if (min === max) {
+          return formatPriceDisplay(min);
+        }
+        return formatPriceDisplay(min) + " – " + formatPriceDisplay(max);
+      }
+    }
+    return formatPriceDisplay(product.price);
   }
 
   function productHasSizes(product) {
@@ -301,26 +344,29 @@
 
     products.forEach(function (product) {
       const article = document.createElement("article");
-      article.className = "plats-item";
+      article.className = "plats-card plats-card--no-media";
+      const descHtml = product.description
+        ? '<p class="plats-card__desc">' + escapeHtml(product.description) + "</p>"
+        : "";
+
       article.innerHTML =
-        '<div class="cats-item__copy">' +
-        '<p class="plats-item__name">' +
-        escapeHtml(product.name) +
-        "</p>" +
-        '<p class="plats-item__meta">' +
+        '<div class="plats-card__body">' +
+        '<span class="plats-card__category">' +
         escapeHtml(findCategoryName(product.category_id)) +
-        " · " +
-        escapeHtml(formatPrice(product.price)) +
-        (productHasSizes(product) ? " · Tailles disponibles" : " · Sans tailles") +
-        (product.variants && product.variants.length ? " · " + product.variants.length + " option(s)" : "") +
-        (product.description ? "<br>" + escapeHtml(product.description) : "") +
+        "</span>" +
+        '<h3 class="plats-card__name">' +
+        escapeHtml(product.name) +
+        "</h3>" +
+        '<p class="plats-card__price">' +
+        escapeHtml(formatProductPriceLabel(product)) +
         "</p>" +
+        descHtml +
         "</div>" +
-        '<div class="plats-item__actions">' +
-        '<button type="button" class="plats-item__btn" data-action="edit-plat" data-id="' +
+        '<div class="plats-card__actions">' +
+        '<button type="button" class="plats-card__btn" data-action="edit-plat" data-id="' +
         product.id +
         '">Modifier</button>' +
-        '<button type="button" class="plats-item__btn plats-item__btn--danger" data-action="delete-plat" data-id="' +
+        '<button type="button" class="plats-card__btn plats-card__btn--danger" data-action="delete-plat" data-id="' +
         product.id +
         '">Supprimer</button>' +
         "</div>";
@@ -356,6 +402,48 @@
     form.reset();
     variantsList.innerHTML = "";
     setImagePreview(imagePreview, "");
+    if (dropzone) dropzone.classList.remove("is-dragover");
+  }
+
+  function initDropzone() {
+    if (!dropzone || !imageFileInput) return;
+
+    dropzone.addEventListener("click", function (event) {
+      if (event.target === imageFileInput) return;
+      imageFileInput.click();
+    });
+
+    dropzone.addEventListener("keydown", function (event) {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        imageFileInput.click();
+      }
+    });
+
+    ["dragenter", "dragover"].forEach(function (eventName) {
+      dropzone.addEventListener(eventName, function (event) {
+        event.preventDefault();
+        dropzone.classList.add("is-dragover");
+      });
+    });
+
+    ["dragleave", "drop"].forEach(function (eventName) {
+      dropzone.addEventListener(eventName, function (event) {
+        event.preventDefault();
+        dropzone.classList.remove("is-dragover");
+      });
+    });
+
+    dropzone.addEventListener("drop", function (event) {
+      const file = event.dataTransfer && event.dataTransfer.files ? event.dataTransfer.files[0] : null;
+      if (!file) return;
+      const transfer = new DataTransfer();
+      transfer.items.add(file);
+      imageFileInput.files = transfer.files;
+      previewSelectedFile(imageFileInput, imagePreview);
+      if (dropzone) dropzone.classList.add("has-preview");
+      if (dropzoneContent) dropzoneContent.hidden = true;
+    });
   }
 
   function onAddPlat() {
@@ -477,6 +565,10 @@
 
   imageFileInput.addEventListener("change", function () {
     previewSelectedFile(imageFileInput, imagePreview);
+    if (imageFileInput.files && imageFileInput.files[0]) {
+      if (dropzone) dropzone.classList.add("has-preview");
+      if (dropzoneContent) dropzoneContent.hidden = true;
+    }
   });
 
   hasSizesInput.addEventListener("change", function () {
@@ -531,4 +623,5 @@
   });
 
   loadPage();
+  initDropzone();
 })();

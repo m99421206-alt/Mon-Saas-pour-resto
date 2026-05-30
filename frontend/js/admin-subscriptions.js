@@ -366,6 +366,65 @@
     }
   }
 
+  function formatDateFrLong(iso) {
+    if (!iso) return "—";
+    try {
+      return new Date(iso).toLocaleDateString("fr-FR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    } catch (e) {
+      return "—";
+    }
+  }
+
+  function waDigits(raw) {
+    return String(raw || "").replace(/\D/g, "");
+  }
+
+  function isRowExpired(row) {
+    var st = String(row.subscription_status || "").toLowerCase();
+    if (st === "expired") return true;
+    if (!row.subscription_ends_at) return false;
+    var dr = row.days_remaining;
+    return dr !== null && dr !== undefined && Number(dr) <= 0;
+  }
+
+  function buildExpiredRelanceWaUrl(row) {
+    var digits = waDigits(row.owner_phone);
+    if (!digits) return "#";
+    var name = String(row.name || "restaurant").trim();
+    var exp = formatDateFrLong(row.subscription_ends_at);
+    var msg =
+      "Bonjour " +
+      name +
+      "\n\n" +
+      "Nous constatons que votre abonnement MenuGo a expiré le " +
+      exp +
+      ".\n\n" +
+      "Votre menu reste visible pour vos clients, mais certaines fonctionnalités sont actuellement limitées.\n\n" +
+      "Pour réactiver votre abonnement et continuer à gérer votre menu normalement, merci de nous contacter.";
+    return "https://wa.me/" + digits.replace(/^0+/, "") + "?text=" + encodeURIComponent(msg);
+  }
+
+  function buildWhatsAppCell(row) {
+    if (!isRowExpired(row)) {
+      return '<span class="subs-wa-empty">—</span>';
+    }
+    var url = buildExpiredRelanceWaUrl(row);
+    if (url === "#") {
+      return (
+        '<span class="subs-wa-empty" title="Numéro WhatsApp restaurant indisponible">—</span>'
+      );
+    }
+    return (
+      '<a class="subs-wa-relance" href="' +
+      escapeHtml(url) +
+      '" target="_blank" rel="noopener noreferrer">Relancer</a>'
+    );
+  }
+
   function labelStatus(s) {
     var z = String(s || "").toLowerCase();
     if (z === "active") return "Actif";
@@ -532,7 +591,7 @@
   }
 
   function tbodyPlaceholder(m) {
-    return '<tr class="adm-table__placeholder"><td colspan="9">' + escapeHtml(m) + "</td></tr>";
+    return '<tr class="adm-table__placeholder"><td colspan="10">' + escapeHtml(m) + "</td></tr>";
   }
 
   async function loadSubscriptions() {
@@ -640,6 +699,8 @@
           escapeHtml(formatCFA(row.subscription_amount_cfa)) +
           "</span></td><td>" +
           statusBadge(row.subscription_status) +
+          "</td><td>" +
+          buildWhatsAppCell(row) +
           "</td><td><div class=\"subs-actions\">" +
           buildButtons(row) +
           "</div></td>";
@@ -679,6 +740,9 @@
           '<div class="subs-card__days">' +
           "Jours restants : " +
           daysCell(row.days_remaining, row.subscription_status) +
+          "</div>" +
+          '<div class="subs-card__wa">' +
+          buildWhatsAppCell(row) +
           "</div>" +
           '<div class="subs-actions subs-actions--card">' +
           buildButtons(row) +

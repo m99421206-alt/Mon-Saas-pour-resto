@@ -28,11 +28,6 @@
   const logoutLink = document.getElementById("dashboard-logout");
   const addProductBtn = document.getElementById("dashboard-add-product");
   const addCategoryBtn = document.getElementById("dashboard-add-category");
-  const trialExpiredBanner = document.getElementById("dash-trial-expired-banner");
-  const trialExpiredWhatsApp = document.getElementById("dash-trial-expired-whatsapp");
-
-  /** WhatsApp paiement/abonnement (Mali indicatif inclus) si non défini dans config */
-  var DEFAULT_PAYMENT_WHATSAPP = "22399421206";
 
   const TRANSITION_MS = 320;
   let closeTimer = null;
@@ -109,11 +104,24 @@
     return resolvePublicSiteOrigin() + menuPath + "?id=" + encodeURIComponent(restaurantId);
   }
 
+  function getDashboardQrDisplaySize() {
+    if (window.matchMedia("(min-width: 80rem)").matches) {
+      return 120;
+    }
+    if (window.matchMedia("(min-width: 64rem)").matches) {
+      return 112;
+    }
+    if (window.matchMedia("(min-width: 48rem)").matches) {
+      return 84;
+    }
+    return 72;
+  }
+
   function renderDashboardQrPreview(url) {
     var canvas = document.getElementById("dashboard-qr-preview");
     if (!canvas || !url) return;
 
-    var display = 88;
+    var display = getDashboardQrDisplaySize();
     var dpr = Math.min(2, window.devicePixelRatio || 1);
     canvas.width = Math.round(display * dpr);
     canvas.height = Math.round(display * dpr);
@@ -142,103 +150,6 @@
     img.src =
       "https://api.qrserver.com/v1/create-qr-code/?size=176x176&margin=8&data=" +
       encodeURIComponent(url);
-  }
-
-  function whatsappDigitsDash(value) {
-    return String(value || "").replace(/\D/g, "").replace(/^0+/, "");
-  }
-
-  /** Essai terminé ou abonnement à renouveler : afficher le CTA WhatsApp paiement. */
-  function shouldShowTrialExpiredPaymentBanner(subscription) {
-    if (!subscription) return false;
-    var st = String(subscription.status || "").toLowerCase();
-    if (st === "expired") return true;
-    if (st !== "trial") return false;
-    var dr = subscription.days_remaining;
-    if (dr !== undefined && dr !== null && Number(dr) <= 0) return true;
-    if (subscription.ends_at) {
-      var endMs = new Date(subscription.ends_at).getTime();
-      return Number.isFinite(endMs) && Date.now() > endMs;
-    }
-    return false;
-  }
-
-  /** Libellé « Plan » du message (priorité offre post-essai renvoyée par l’API). */
-  function pickPlanLabelForWhatsApp(me) {
-    var sub = (me && me.subscription) || {};
-    var offer = sub.post_trial_offer;
-    if (offer && String(offer.plan_label || "").trim()) {
-      return String(offer.plan_label).trim();
-    }
-    var pl = String(sub.plan_label || "").trim();
-    if (pl) {
-      var low = pl.toLowerCase();
-      if (low !== "essai gratuit" && low !== "trial") return pl;
-    }
-    return "Basic";
-  }
-
-  function buildTrialExpiredWhatsAppMessage(restaurantName, planLabel) {
-    var rn = restaurantName ? String(restaurantName).trim() : "Mon restaurant";
-    var pl = planLabel ? String(planLabel).trim() : "Basic";
-    return (
-      "Bonjour, je souhaite activer mon abonnement MenuGo.\n\n" +
-      "Nom du restaurant : " +
-      rn +
-      "\n" +
-      "Plan : " +
-      pl +
-      "\n"
-    );
-  }
-
-  function updateTrialExpiredBanner(me) {
-    if (!trialExpiredBanner || !trialExpiredWhatsApp) return;
-
-    var sub = me.subscription;
-    if (!shouldShowTrialExpiredPaymentBanner(sub)) {
-      trialExpiredBanner.hidden = true;
-      trialExpiredWhatsApp.setAttribute("href", "#");
-      return;
-    }
-
-    var cfg = window.MenuGo_CONFIG || {};
-    var digits = whatsappDigitsDash(cfg.SUPPORT_WHATSAPP) || DEFAULT_PAYMENT_WHATSAPP;
-    var rest = me.restaurant || getStoredRestaurant();
-    var restName =
-      rest && rest.name ?
-        rest.name
-      : "Mon restaurant";
-
-    trialExpiredBanner.hidden = false;
-    trialExpiredWhatsApp.setAttribute(
-      "href",
-      "https://wa.me/" +
-        digits +
-        "?text=" +
-        encodeURIComponent(
-          buildTrialExpiredWhatsAppMessage(restName, pickPlanLabelForWhatsApp(me)),
-        ),
-    );
-
-    var titleEl = document.getElementById("dash-trial-expired-title");
-    var subtitleEl = document.getElementById("dash-trial-expired-subtitle");
-    if (titleEl && sub) {
-      var stLo = String(sub.status || "").toLowerCase();
-      var pkLo = String(sub.plan_key || "").toLowerCase();
-      var looksLikePaidExpired =
-        stLo === "expired" &&
-        pkLo &&
-        pkLo !== "trial" &&
-        pkLo !== "";
-      titleEl.textContent = looksLikePaidExpired ?
-        "Votre abonnement a expiré"
-      : "Votre période d’essai a expiré";
-    }
-    if (subtitleEl) {
-      subtitleEl.textContent =
-        "Cliquez sur le bouton ci-dessous : WhatsApp s’ouvre avec votre message prérempli pour activer votre abonnement.";
-    }
   }
 
   function applyDashboardEditLocks(subscription) {
@@ -294,7 +205,9 @@
       renderDashboardQrPreview(publicUrl);
     }
 
-    updateTrialExpiredBanner(me);
+    if (window.MenuGo_SubscriptionAlerts && window.MenuGo_SubscriptionAlerts.mountClientBanner) {
+      window.MenuGo_SubscriptionAlerts.mountClientBanner(me);
+    }
   }
 
   function setCopyFeedback(message, isError) {
@@ -389,6 +302,15 @@
     return window.MenuGo_DashShell && window.MenuGo_DashShell.isDesktop();
   }
 
+  function toggleDrawer() {
+    if (isDesktopNav()) return;
+    if (isOpen()) {
+      closeDrawer();
+    } else {
+      openDrawer();
+    }
+  }
+
   function openDrawer() {
     if (isDesktopNav()) return;
     if (closeTimer) {
@@ -401,19 +323,15 @@
 
     overlay.hidden = false;
     overlay.setAttribute("aria-hidden", "false");
-    closeBtn.hidden = false;
 
     window.requestAnimationFrame(function () {
       overlay.classList.add("is-visible");
-      closeBtn.classList.add("is-visible");
     });
 
     openBtn?.setAttribute("aria-expanded", "true");
     openBtn?.classList.add("is-active");
     document.body.classList.add("dash-drawer-open");
     document.body.style.overflow = "hidden";
-
-    closeBtn?.focus({ preventScroll: true });
   }
 
   function closeDrawer() {
@@ -421,7 +339,6 @@
     if (!isOpen()) return;
 
     overlay.classList.remove("is-visible");
-    closeBtn.classList.remove("is-visible");
     drawer.classList.remove("is-open");
     drawer.setAttribute("aria-hidden", "true");
     overlay.setAttribute("aria-hidden", "true");
@@ -434,7 +351,6 @@
     closeTimer = window.setTimeout(function () {
       if (!drawer.classList.contains("is-open")) {
         overlay.hidden = true;
-        closeBtn.hidden = true;
       }
       closeTimer = null;
     }, TRANSITION_MS);
@@ -442,7 +358,7 @@
     openBtn?.focus({ preventScroll: true });
   }
 
-  openBtn?.addEventListener("click", openDrawer);
+  openBtn?.addEventListener("click", toggleDrawer);
   closeBtn?.addEventListener("click", closeDrawer);
   overlay?.addEventListener("click", closeDrawer);
 
@@ -464,14 +380,24 @@
     window.location.href = "categories.html";
   });
 
-  viewMenuBtn?.addEventListener("click", function () {
-    const explicitUrl = viewMenuBtn.getAttribute("data-menu-url");
+  function openPublicMenu() {
+    const explicitUrl =
+      viewMenuBtn?.getAttribute("data-menu-url") ||
+      (menuUrlInput ? menuUrlInput.value : "");
     if (explicitUrl) {
       window.location.href = explicitUrl;
     }
-  });
+  }
+
+  viewMenuBtn?.addEventListener("click", openPublicMenu);
 
   copyMenuBtn?.addEventListener("click", copyMenuUrl);
+
+  window.addEventListener("resize", function () {
+    if (menuUrlInput && menuUrlInput.value) {
+      renderDashboardQrPreview(menuUrlInput.value);
+    }
+  });
 
   loadDashboard();
 })();

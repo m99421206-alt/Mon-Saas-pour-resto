@@ -815,6 +815,34 @@ body.adm-sidebar-open {
   pointer-events: none;
 }
 
+/* Abonnements à surveiller — couleurs d’urgence */
+.adm-table--sub-watch tr.adm-sub-watch-row--red td:first-child {
+  box-shadow: inset 4px 0 0 0 rgb(239, 68, 68);
+}
+
+.adm-table--sub-watch tr.adm-sub-watch-row--orange td:first-child {
+  box-shadow: inset 4px 0 0 0 rgb(249, 115, 22);
+}
+
+.adm-table--sub-watch tr.adm-sub-watch-row--yellow td:first-child {
+  box-shadow: inset 4px 0 0 0 rgb(234, 179, 8);
+}
+
+.adm-table--sub-watch tr.adm-sub-watch-row--red td:nth-child(4) {
+  color: rgb(153, 27, 27);
+  font-weight: 700;
+}
+
+.adm-table--sub-watch tr.adm-sub-watch-row--orange td:nth-child(4) {
+  color: rgb(154, 52, 18);
+  font-weight: 700;
+}
+
+.adm-table--sub-watch tr.adm-sub-watch-row--yellow td:nth-child(4) {
+  color: rgb(161, 98, 7);
+  font-weight: 700;
+}
+
 @media (hover: hover) {
   .adm-mini-btn:hover:not([aria-disabled="true"]) {
     transform: translateY(-1px);
@@ -887,6 +915,25 @@ body.adm-sidebar-open {
 @media (min-width: 64rem) {
   .adm-main__inner {
     padding-inline: clamp(1.25rem, 2.5vw, 2rem);
+  }
+
+  .adm-page-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .adm-page-title {
+    font-size: 1.85rem;
+    letter-spacing: -0.035em;
+  }
+
+  .adm-page-subtitle {
+    max-width: 42rem;
+    font-size: 0.9375rem;
+    line-height: 1.5;
   }
 
   .adm-table th,

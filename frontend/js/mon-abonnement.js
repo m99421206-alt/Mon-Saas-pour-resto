@@ -97,6 +97,10 @@
       }
 
       window.MenuGoRestaurantSubscription.renderInto(root, me);
+
+      if (window.MenuGo_SubscriptionAlerts && window.MenuGo_SubscriptionAlerts.mountClientBanner) {
+        window.MenuGo_SubscriptionAlerts.mountClientBanner(me);
+      }
     } catch (e) {
       if (titleMain) titleMain.textContent = "Impossible de charger votre abonnement";
       if (subtitle) {

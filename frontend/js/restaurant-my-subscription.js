@@ -61,7 +61,32 @@
     if (st === "active") return "dash-my-sub-badge--active";
     if (st === "expired") return "dash-my-sub-badge--expired";
     if (st === "suspended") return "dash-my-sub-badge--suspended";
+    if (st === "warning") return "dash-my-sub-badge--warning";
     return "dash-my-sub-badge--trial";
+  }
+
+  /** @param {object} subscription */
+  function resolveDisplayBadge(subscription) {
+    var alerts = window.MenuGo_SubscriptionAlerts;
+    var dr =
+      alerts && alerts.resolveDaysRemaining ?
+        alerts.resolveDaysRemaining(subscription)
+      : subscription.days_remaining !== undefined && subscription.days_remaining !== null ?
+        Number(subscription.days_remaining)
+      : null;
+
+    if (alerts && alerts.isSubscriptionExpired && alerts.isSubscriptionExpired(subscription)) {
+      return { key: "expired", label: "Expiré" };
+    }
+
+    var st = String(subscription.status || "").toLowerCase();
+    if (st === "expired") return { key: "expired", label: "Expiré" };
+    if (st === "suspended") return { key: "suspended", label: "Suspendu" };
+    if (dr !== null && dr >= 1 && dr <= 7) {
+      return { key: "warning", label: "Bientôt expiré" };
+    }
+    if (st === "active") return { key: "active", label: "Actif" };
+    return { key: "trial", label: "Essai gratuit" };
   }
 
   function wrapperClass(status) {
@@ -77,6 +102,18 @@
     var open = catalogPanelRef.hasAttribute("hidden");
     catalogPanelRef.toggleAttribute("hidden", !open);
     button.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  function fillContactMenuGoButton(el) {
+    var img = document.createElement("img");
+    img.src = "../../assets/images/icone/phone-receiver-silhouette.png";
+    img.alt = "";
+    img.width = 18;
+    img.height = 18;
+    img.className = "dash-my-sub__btn-ico";
+    img.setAttribute("aria-hidden", "true");
+    el.appendChild(img);
+    el.appendChild(document.createTextNode("Contacter MenuGo"));
   }
 
   /**
@@ -107,6 +144,7 @@
     }
 
     var status = String(subscription.status || "trial").toLowerCase();
+    var displayBadge = resolveDisplayBadge(subscription);
 
     var rawPlanLabel =
       status === "trial" ?
@@ -145,9 +183,9 @@
       "</h2>" +
       '<div class="dash-my-sub__badge-line">' +
       '<span class="dash-my-sub-badge ' +
-      badgeClass(status) +
+      badgeClass(displayBadge.key) +
       '" data-sub-role="badge">' +
-      escapeHtml(statusLabel(status)) +
+      escapeHtml(displayBadge.label) +
       "</span>" +
       (status !== "trial" ?
         '<span class="dash-my-sub__muted">' + planHeaderMuted + "</span>"
@@ -266,49 +304,47 @@
     var billingMonths = subscription.billing_period_months;
     if (!Number.isFinite(Number(billingMonths)) || Number(billingMonths) < 1)
       billingMonths = 1;
-    var bm = Math.round(Number(billingMonths));
+
+    var alertsApi = window.MenuGo_SubscriptionAlerts;
+    var daysLeft =
+      alertsApi && alertsApi.resolveDaysRemaining ?
+        alertsApi.resolveDaysRemaining(subscription)
+      : subscription.days_remaining !== undefined && subscription.days_remaining !== null ?
+        Number(subscription.days_remaining)
+      : null;
+    if (daysLeft === null || !Number.isFinite(daysLeft)) daysLeft = 0;
+
+    var amountLine =
+      status === "trial" ?
+        formatCFA(0) + " — période d’essai"
+      : formatCFA(subscription.display_price_cfa || subscription.subscription_amount_cfa || 0);
 
     var gridItems = [];
 
     gridItems.push({
-      label: "Statut",
-      val: escapeHtml(statusLabel(status)),
+      label: "Plan actuel",
+      val: escapeHtml(rawPlanLabel || "—"),
     });
     gridItems.push({
-      label: "Début",
+      label: "Statut",
+      val: escapeHtml(displayBadge.label),
+    });
+    gridItems.push({
+      label: "Date de début",
       val: escapeHtml(formatDateFr(subscription.started_at)),
     });
     gridItems.push({
-      label: "Fin",
+      label: "Date d’expiration",
       val: escapeHtml(formatDateFr(subscription.ends_at)),
     });
-
-    var priceLine =
-      status === "trial" ?
-        "0 — période d’essai"
-      : escapeHtml(formatCFA(subscription.display_price_cfa || 0));
     gridItems.push({
-      label: "Tarif affiché",
-      val: priceLine,
+      label: "Nombre de jours restants",
+      val: escapeHtml(String(daysLeft)),
     });
-
     gridItems.push({
-      label: "Période facturée",
-      val:
-        bm <= 1 ? "Renouvellement mensuel (~1 mois)" : "Tous les " + bm + " mois",
+      label: "Montant de l’abonnement",
+      val: escapeHtml(amountLine),
     });
-
-    if (
-      subscription.days_remaining !== undefined &&
-      subscription.days_remaining !== null &&
-      subscription.ends_at &&
-      status !== "expired"
-    ) {
-      gridItems.push({
-        label: "Jours avant échéance",
-        val: escapeHtml(String(subscription.days_remaining)),
-      });
-    }
 
     var grid = document.createElement("div");
     grid.className = "dash-my-sub__grid";
@@ -374,28 +410,33 @@
       }
     }
 
-    /** WhatsApp réservé au contact plateforme (admin / service abonnements), jamais au numéro du restaurant (commandes clients). */
-    var waTarget = supportWa;
-    if (waTarget) {
-      var msg =
-        "Bonjour,%20je%20contacte%20l%27administration%20MenuGo%20concernant%20mon%20abonnement%20(" +
-        encodeURIComponent(restoName) +
-        ")";
+    /** WhatsApp MenuGo (support abonnements) — message prérempli, ouverture manuelle. */
+    var waUrl =
+      alertsApi && alertsApi.buildWhatsAppUrl ?
+        alertsApi.buildWhatsAppUrl(restoName, subscription.ends_at)
+      : supportWa ?
+        "https://wa.me/" +
+        supportWa +
+        "?text=" +
+        encodeURIComponent("Bonjour MenuGo, concernant mon abonnement (" + restoName + ").")
+      : "#";
+
+    if (waUrl !== "#") {
       var whats = document.createElement("a");
       whats.className = "dash-my-sub__btn dash-my-sub__btn--whatsapp";
       whats.rel = "noopener noreferrer";
       whats.target = "_blank";
-      whats.href = "https://wa.me/" + waTarget + "?text=" + msg;
-      whats.textContent = "Écrire à l’administrateur (WhatsApp)";
+      whats.href = waUrl;
+      fillContactMenuGoButton(whats);
       appendBtn(whats);
-    } else if (!supportMail && (status === "expired" || status === "suspended")) {
+    } else if (!supportMail) {
       var gh = document.createElement("button");
       gh.type = "button";
       gh.className = "dash-my-sub__btn dash-my-sub__btn--ghost";
       gh.disabled = true;
-      gh.textContent = "Contact administration (à configurer)";
+      fillContactMenuGoButton(gh);
       gh.title =
-        "Indiquez dans frontend/js/config.js votre SUPPORT_EMAIL ou SUPPORT_WHATSAPP pour que les restaurateurs vous contactent sur l’abonnement.";
+        "Indiquez SUPPORT_WHATSAPP dans frontend/js/config.js pour activer le contact WhatsApp.";
       appendBtn(gh);
     }
 

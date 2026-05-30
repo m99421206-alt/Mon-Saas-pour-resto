@@ -57,6 +57,10 @@ function mapSubscriptionRow(r) {
       Math.round(Number(r.subscription_amount_cfa !== undefined ? r.subscription_amount_cfa : 0)) || 0,
     days_remaining: dr !== null ? dr : null,
     owner_email: r.owner_email ? String(r.owner_email) : "",
+    owner_phone:
+      r.whatsapp != null && String(r.whatsapp).trim() !== "" ?
+        String(r.whatsapp).trim()
+      : "",
     logo_url: r.logo_url ? String(r.logo_url) : null,
   };
 }
@@ -102,7 +106,7 @@ async function listSubscriptions(req, res) {
     listVals.push(pageSize, offset);
 
     var [rows] = await pool.query(
-      "SELECT r.id, r.name, r.logo_url, r.subscription_plan_key, r.subscription_status, r.subscription_started_at, " +
+      "SELECT r.id, r.name, r.logo_url, r.whatsapp, r.subscription_plan_key, r.subscription_status, r.subscription_started_at, " +
         "r.subscription_ends_at, r.subscription_amount_cfa, u.email AS owner_email, " +
         "CASE WHEN r.subscription_ends_at IS NULL THEN NULL ELSE GREATEST(0, DATEDIFF(DATE(r.subscription_ends_at), CURDATE())) END AS days_remaining " +
         "FROM restaurants r " +
@@ -453,8 +457,46 @@ async function patchAdjustSubscription(req, res) {
   }
 }
 
+/** Abonnements à surveiller (échéance ≤ 15 jours). */
+async function listExpiringSubscriptions(req, res) {
+  try {
+    var pool = getPool();
+    await subscriptionService.expireAllPastDueGlobally();
+
+    var maxDays = 15;
+    var [rows] = await pool.query(
+      "SELECT r.id, r.name, r.logo_url, r.whatsapp, r.subscription_plan_key, r.subscription_status, " +
+        "r.subscription_started_at, r.subscription_ends_at, r.subscription_amount_cfa, u.email AS owner_email, " +
+        "CASE WHEN r.subscription_ends_at IS NULL THEN NULL ELSE GREATEST(0, DATEDIFF(DATE(r.subscription_ends_at), CURDATE())) END AS days_remaining " +
+        "FROM restaurants r " +
+        "INNER JOIN users u ON u.id = r.user_id " +
+        "WHERE r.subscription_ends_at IS NOT NULL " +
+        "AND GREATEST(0, DATEDIFF(DATE(r.subscription_ends_at), CURDATE())) <= ? " +
+        "AND LOWER(TRIM(COALESCE(NULLIF(TRIM(r.subscription_status), ''), 'trial'))) <> 'suspended' " +
+        "ORDER BY days_remaining ASC, r.name ASC " +
+        "LIMIT 60",
+      [maxDays],
+    );
+
+    var items = rows.map(function (r) {
+      var mapped = mapSubscriptionRow(r);
+      mapped.owner_phone =
+        r.whatsapp != null && String(r.whatsapp).trim() !== "" ?
+          String(r.whatsapp).trim()
+        : "";
+      return mapped;
+    });
+
+    return res.json({ items: items });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Impossible de charger les abonnements à surveiller." });
+  }
+}
+
 module.exports = {
   listSubscriptions: listSubscriptions,
+  listExpiringSubscriptions: listExpiringSubscriptions,
   getSubscriptionDetail: getSubscriptionDetail,
   postActivate: postActivate,
   postSuspend: postSuspend,

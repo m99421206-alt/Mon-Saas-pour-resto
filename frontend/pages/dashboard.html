@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -46,130 +46,104 @@
         </button>
       </header>
 
-      <section class="dash-intro">
-        <h1 class="dash-title" id="dashboard-title">Bonjour</h1>
-        <p class="dash-subtitle">Gérez votre établissement : stats, actions rapides, lien public et QR code.</p>
-      </section>
-
-      <!-- Visible si l’essai est terminé ou l’abonnement expiré : CTA paiement WhatsApp -->
-      <section
-        id="dash-trial-expired-banner"
-        class="dash-trial-expired-banner"
-        hidden
-        role="alert"
-        aria-labelledby="dash-trial-expired-title"
-      >
-        <div class="dash-trial-expired-banner__inner">
-          <p class="dash-trial-expired-banner__glyph" aria-hidden="true">⚠</p>
-          <div class="dash-trial-expired-banner__content">
-            <h2 id="dash-trial-expired-title" class="dash-trial-expired-banner__title">
-              Votre période d’essai a expiré
-            </h2>
-            <p class="dash-trial-expired-banner__subtitle" id="dash-trial-expired-subtitle">
-              Activez votre abonnement en un clic&nbsp;: nous vous envoyons un message prérempli sur WhatsApp pour finaliser votre paiement.
-            </p>
-            <div class="dash-trial-expired-banner__cta-wrap">
-              <a
-                id="dash-trial-expired-whatsapp"
-                class="dash-trial-expired-banner__cta"
-                href="#"
-                rel="noopener noreferrer"
-                target="_blank"
-                >Activer mon abonnement</a>
-            </div>
-            <p class="dash-trial-expired-banner__footer">
-              <a class="dash-trial-expired-banner__link" href="mon-abonnement.html">Voir les détails de mon abonnement</a>
-            </p>
-          </div>
+      <section class="dash-hero">
+        <div class="dash-hero__text">
+          <h1 class="dash-title" id="dashboard-title">Bonjour</h1>
+          <p class="dash-subtitle">Vue d’ensemble de votre menu : contenu, lien public et QR code.</p>
         </div>
       </section>
 
-      <section class="dash-grid" aria-label="Tableau de bord">
-        <!-- Carte stat : Catégories -->
-        <article class="dash-card dash-card--stat">
-          <div class="dash-row">
-            <div class="dash-icon-tile dash-icon-tile--purple" aria-hidden="true">
-              <img src="../../assets/images/icone/categorie.png" alt="Logo MenuGo" width="30" height="30" />
+      <section class="dash-board" aria-label="Tableau de bord">
+        <!-- Stats compactes -->
+        <div class="dash-stats-row">
+          <article class="dash-card dash-card--stat">
+            <div class="dash-stat-inner">
+              <div class="dash-icon-tile dash-icon-tile--purple" aria-hidden="true">
+                <img src="../../assets/images/icone/categorie.png" alt="" width="30" height="30" />
+              </div>
+              <div class="dash-stat-copy">
+                <p class="dash-label">Catégories</p>
+                <p class="dash-value" id="dashboard-categories-count">0</p>
+              </div>
             </div>
-            <div class="dash-stat-copy">
-              <p class="dash-label">Catégories</p>
-              <p class="dash-value" id="dashboard-categories-count">0</p>
-            </div>
-          </div>
-        </article>
+          </article>
 
-        <!-- Carte stat : plats -->
-        <article class="dash-card dash-card--stat">
-          <div class="dash-row">
-            <div class="dash-icon-tile dash-icon-tile--orange" aria-hidden="true">
-              <img src ="../../assets/images/icone/coutellerie.png" alt="Logo MenuGo" width="40" height="40" />
+          <article class="dash-card dash-card--stat">
+            <div class="dash-stat-inner">
+              <div class="dash-icon-tile dash-icon-tile--orange" aria-hidden="true">
+                <img src="../../assets/images/icone/coutellerie.png" alt="" width="40" height="40" />
+              </div>
+              <div class="dash-stat-copy">
+                <p class="dash-label">Plats</p>
+                <p class="dash-value" id="dashboard-products-count">0</p>
+              </div>
             </div>
-            <div class="dash-stat-copy">
-              <p class="dash-label">plats</p>
-              <p class="dash-value" id="dashboard-products-count">0</p>
-            </div>
-          </div>
-        </article>
+          </article>
+        </div>
 
-        <!-- Actions rapides -->
-        <article class="dash-card dash-card--actions" aria-label="Actions rapides">
-          <button class="dash-action" type="button" id="dashboard-add-product">
-            <span class="dash-action__disc dash-action__disc--accent" aria-hidden="true">+</span>
-            <span class="dash-action__label dash-action__label--accent">Ajouter un plat</span>
-          </button>
-          <div class="dash-action-divider" aria-hidden="true"></div>
-          <button class="dash-action" type="button" id="dashboard-add-category">
-            <span class="dash-action__disc dash-action__disc--dark" aria-hidden="true">+</span>
-            <span class="dash-action__label">Ajouter une catégorie</span>
-          </button>
-        </article>
-
-        <!-- Lien public du menu -->
-        <article class="dash-card dash-card--link">
-          <h2 class="dash-card-title">Lien de votre menu</h2>
-          <div class="dash-link-row">
-            <input
-              class="dash-link-input"
-              type="url"
-              name="menuUrl"
-              id="dashboard-menu-url"
-              placeholder="https://"
-              inputmode="url"
-              autocomplete="off"
-              readonly
-            />
-            <button type="button" class="dash-copy-btn" id="dashboard-copy-menu" aria-label="Copier le lien du menu">
-              <span class="dash-copy-btn__label">Copier</span>
+        <!-- Actions rapides (édition du menu uniquement) -->
+        <section class="dash-panel dash-panel--actions" aria-labelledby="dash-quick-title">
+          <h2 class="dash-section-title" id="dash-quick-title">Actions rapides</h2>
+          <div class="dash-quick-grid dash-quick-grid--duo">
+            <button class="dash-quick-tile" type="button" id="dashboard-add-product">
+              <span class="dash-quick-tile__icon dash-quick-tile__icon--accent" aria-hidden="true">+</span>
+              <span class="dash-quick-tile__label">Ajouter un plat</span>
+            </button>
+            <button class="dash-quick-tile" type="button" id="dashboard-add-category">
+              <span class="dash-quick-tile__icon dash-quick-tile__icon--dark" aria-hidden="true">+</span>
+              <span class="dash-quick-tile__label">Ajouter une catégorie</span>
             </button>
           </div>
-          <p class="dash-copy-feedback" id="dashboard-copy-feedback" role="status" aria-live="polite" hidden></p>
-          <button type="button" class="dash-link-btn" data-action="view-public-menu" id="dashboard-view-menu">
-            <span>Voir le menu</span>
-            <span class="dash-link-btn__icon" aria-hidden="true" title=""></span>
-          </button>
-        </article>
+        </section>
 
-        <!-- Bloc QR (CTA) -->
-        <article class="dash-qr-card">
-          <div class="dash-qr-card__layout">
-            <div class="dash-qr-card__body">
-              <span class="dash-qr-card__icon" aria-hidden="true">
-                <img src="../../assets/images/icone/balayage-du-code-qr.png" alt="" width="22" height="22" />
-              </span>
-              <h2 class="dash-qr-title">Votre QR Code prêt !</h2>
-              <p class="dash-qr-text">
-                Téléchargez-le et imprimez-le pour vos tables. Vos clients scanneront et accéderont à votre menu.
-              </p>
-              <a href="qr-code.html" class="dash-qr-btn">
-                <img src="../../assets/images/icone/qrcode.png" alt="" width="20" height="20" />
-                <span class="dash-qr-btn__label">Obtenir mon QR Code</span>
-              </a>
+        <!-- Lien menu + QR code -->
+        <div class="dash-share-row">
+          <article class="dash-card dash-card--link">
+            <h2 class="dash-card-title">Lien de votre menu</h2>
+            <p class="dash-card-desc">Partagez ce lien avec vos clients ou sur vos réseaux sociaux.</p>
+            <div class="dash-link-row">
+              <input
+                class="dash-link-input"
+                type="url"
+                name="menuUrl"
+                id="dashboard-menu-url"
+                placeholder="https://"
+                inputmode="url"
+                autocomplete="off"
+                readonly
+              />
+              <button type="button" class="dash-copy-btn" id="dashboard-copy-menu" aria-label="Copier le lien du menu">
+                <span class="dash-copy-btn__label">Copier</span>
+              </button>
             </div>
-            <div class="dash-qr-preview" aria-hidden="true">
-              <canvas id="dashboard-qr-preview" width="88" height="88" aria-label="Aperçu du QR code"></canvas>
+            <p class="dash-copy-feedback" id="dashboard-copy-feedback" role="status" aria-live="polite" hidden></p>
+            <button type="button" class="dash-link-btn" data-action="view-public-menu" id="dashboard-view-menu">
+              <span>Voir le menu public</span>
+              <span class="dash-link-btn__icon" aria-hidden="true"></span>
+            </button>
+          </article>
+
+          <article class="dash-qr-card">
+            <div class="dash-qr-card__layout">
+              <div class="dash-qr-card__body">
+                <span class="dash-qr-card__icon" aria-hidden="true">
+                  <img src="../../assets/images/icone/balayage-du-code-qr.png" alt="" width="22" height="22" />
+                </span>
+                <h2 class="dash-qr-title">Votre QR Code</h2>
+                <p class="dash-qr-text">
+                  Imprimez-le pour vos tables. Vos clients scanneront et accéderont à votre menu.
+                </p>
+                <a href="qr-code.html" class="dash-qr-btn">
+                  <img src="../../assets/images/icone/qrcode.png" alt="" width="20" height="20" />
+                  <span class="dash-qr-btn__label">Télécharger le QR</span>
+                </a>
+              </div>
+              <div class="dash-qr-preview" aria-hidden="true">
+                <canvas id="dashboard-qr-preview" width="88" height="88" aria-label="Aperçu du QR code"></canvas>
+              </div>
             </div>
-          </div>
-        </article>
+          </article>
+        </div>
       </section>
     </main>
 
@@ -283,6 +257,7 @@
     </aside>
 
     <script src="../js/config.js"></script>
+    <script src="../js/subscription-alerts.js"></script>
     <script src="../js/dash-shell.js"></script>
     <script src="../js/dashboard.js"></script>
   </body>

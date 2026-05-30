@@ -120,9 +120,7 @@
         <div class="adm-main__inner">
           <header class="adm-page-head">
             <h1 class="adm-page-title">Tableau de bord</h1>
-            <p class="adm-page-subtitle">
-              Indicateurs plateforme — connexion et droits admin requis pour les données réelles.
-            </p>
+           
           </header>
 
           <div
@@ -174,14 +172,43 @@
             </ul>
           </section>
 
+          <section class="adm-section" aria-labelledby="adm-sub-watch-heading">
+            <div class="adm-section-head">
+              <h2 id="adm-sub-watch-heading" class="adm-section-title">Abonnements à surveiller</h2>
+              <p class="adm-section-desc">
+                Échéances dans les 15 prochains jours — contact WhatsApp restaurant.
+              </p>
+            </div>
+
+            <div class="adm-table-wrap">
+              <table class="adm-table adm-table--sub-watch">
+                <caption class="visually-hidden">
+                  Restaurants dont l’abonnement expire bientôt
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Restaurant</th>
+                    <th scope="col">Plan</th>
+                    <th scope="col">Date d’expiration</th>
+                    <th scope="col">Jours restants</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adm-sub-watch-body">
+                  <tr class="adm-table__placeholder">
+                    <td colspan="5">Chargement…</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
           <section class="adm-section" aria-labelledby="adm-setup-help-heading">
             <div class="adm-section-head">
               <h2 id="adm-setup-help-heading" class="adm-section-title">
                 Restaurants demandant assistance
               </h2>
-              <p class="adm-section-desc">
-                Ces établissements ont signalé souhaiter une installation accompagnée par l’équipe MenuGo.
-              </p>
+              
             </div>
 
             <div class="adm-table-wrap">
@@ -211,7 +238,7 @@
           <section class="adm-section" aria-labelledby="adm-activity-heading">
             <div class="adm-section-head">
               <h2 id="adm-activity-heading" class="adm-section-title">Activité récente</h2>
-              <p class="adm-section-desc">Dernières actions utilisateurs (ex. ajout produit, upload image, connexion).</p>
+              <p class="adm-section-desc">Dernières actions utilisateurs.</p>
             </div>
 
             <div class="adm-table-wrap">
