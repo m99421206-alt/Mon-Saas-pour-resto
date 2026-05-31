@@ -5,6 +5,7 @@ const { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
 const platformSettings = require("../services/platformSettings");
 const { normalizeWhatsapp } = require("../utils/whatsappNormalize");
 const { isPlatformAdminEmail } = require("../utils/platformAdmin");
+const { isValidEmail, emailFormatMessage } = require("../utils/emailValidate");
 
 function mapRestaurantAuth(row) {
   if (!row) return null;
@@ -32,10 +33,6 @@ function mapRestaurantAuth(row) {
   };
 }
 
-function isValidEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").toLowerCase());
-}
-
 function getJwtSecret() {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
@@ -59,7 +56,7 @@ async function register(req, res) {
     return res.status(400).json({ message: "Email et mot de passe sont obligatoires." });
   }
   if (!isValidEmail(email)) {
-    return res.status(400).json({ message: "Format d'email invalide." });
+    return res.status(400).json({ message: emailFormatMessage() });
   }
   if (password.length < 8) {
     return res.status(400).json({ message: "Le mot de passe doit contenir au moins 8 caractères." });
@@ -186,6 +183,9 @@ async function login(req, res) {
 
   if (!email || !password) {
     return res.status(400).json({ message: "Email et mot de passe sont obligatoires." });
+  }
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ message: emailFormatMessage() });
   }
 
   try {

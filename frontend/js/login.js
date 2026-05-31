@@ -60,6 +60,12 @@
       return;
     }
 
+    if (window.MenuGo_EmailValidate && !window.MenuGo_EmailValidate.isValidEmail(email)) {
+      showError(window.MenuGo_EmailValidate.emailFormatMessage());
+      document.getElementById("login-email").focus();
+      return;
+    }
+
     submitBtn.disabled = true;
     submitBtn.textContent = "Connexion...";
 

@@ -60,6 +60,13 @@
       return;
     }
 
+    var emailTrim = email.value.trim();
+    if (window.MenuGo_EmailValidate && !window.MenuGo_EmailValidate.isValidEmail(emailTrim)) {
+      showError(window.MenuGo_EmailValidate.emailFormatMessage());
+      email.focus();
+      return;
+    }
+
     if (!whatsapp || !whatsapp.value.trim()) {
       showError("Indiquez votre numéro principal (WhatsApp pour les commandes).");
       if (whatsapp) whatsapp.focus();
