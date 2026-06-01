@@ -171,6 +171,78 @@ body.onb-page {
   margin-top: 1.75rem;
 }
 
+.onb-help-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.onb-help-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.85rem;
+  text-align: left;
+  border: 1px solid transparent;
+  opacity: 0;
+  transform: translateY(0.5rem) scale(0.98);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.onb-help-notice.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.onb-help-notice--ok {
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+  border-color: rgba(34, 197, 94, 0.45);
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.14);
+  animation: onb-notice-glow 1.2s ease-out 1;
+}
+
+.onb-help-notice--err {
+  background: linear-gradient(135deg, #fef2f2 0%, #fff 100%);
+  border-color: rgba(239, 68, 68, 0.4);
+  animation: onb-notice-shake 0.45s ease;
+}
+
+.onb-help-notice__icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+  background: #16a34a;
+  animation: onb-check-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.onb-help-notice--err .onb-help-notice__icon {
+  background: #dc2626;
+}
+
+.onb-help-notice__text {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #14532d;
+}
+
+.onb-help-notice--err .onb-help-notice__text {
+  color: #991b1b;
+  font-weight: 500;
+}
+
 .onb-btn {
   display: inline-flex;
   align-items: center;
@@ -225,6 +297,34 @@ body.onb-page {
   .onb-btn--primary:hover {
     filter: brightness(1.05);
   }
+}
+
+.onb-btn--success {
+  background: linear-gradient(160deg, #22c55e 0%, #16a34a 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 12px 32px rgba(22, 163, 74, 0.38) !important;
+  cursor: default;
+}
+
+@media (hover: hover) {
+  .onb-btn--success:hover {
+    transform: none;
+    filter: none;
+  }
+}
+
+.onb-btn--success.onb-btn--pulse {
+  animation: onb-btn-success-pulse 0.65s ease-out 1;
+}
+
+.onb-btn--loading {
+  opacity: 0.88;
+  cursor: wait;
+  filter: saturate(0.92);
+}
+
+.onb-btn--error {
+  animation: onb-notice-shake 0.4s ease;
 }
 
 .onb-btn--ghost {
@@ -282,5 +382,71 @@ body.onb-page {
 
   .onb-btn:hover {
     transform: none;
+  }
+
+  .onb-help-notice,
+  .onb-btn--success.onb-btn--pulse,
+  .onb-help-notice__icon,
+  .onb-help-notice--ok {
+    animation: none;
+    transition: none;
+  }
+
+  .onb-help-notice {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes onb-btn-success-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 12px 32px rgba(22, 163, 74, 0.38);
+  }
+  45% {
+    transform: scale(1.03);
+    box-shadow: 0 16px 40px rgba(22, 163, 74, 0.5);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 12px 32px rgba(22, 163, 74, 0.38);
+  }
+}
+
+@keyframes onb-check-pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes onb-notice-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.35);
+  }
+  100% {
+    box-shadow: 0 8px 24px rgba(22, 163, 74, 0.14);
+  }
+}
+
+@keyframes onb-notice-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-4px);
+  }
+  40%,
+  80% {
+    transform: translateX(4px);
   }
 }

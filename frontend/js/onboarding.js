@@ -15,8 +15,16 @@
 
   var waBtn = document.getElementById("onb-btn-wa");
   var helpBtn = document.getElementById("onb-btn-help");
+  var helpBlock = document.getElementById("onb-help-block");
+  var helpNotice = document.getElementById("onb-help-notice");
+  var helpNoticeText = document.getElementById("onb-help-notice-text");
   var soloBtn = document.getElementById("onb-btn-solo");
   var feedback = document.getElementById("onb-feedback");
+
+  var HELP_BTN_LABEL = "Demander une installation accompagnée";
+  var HELP_SUCCESS_MSG =
+    "Demande envoyée avec succès ! Notre équipe vous contactera très rapidement.";
+  var HELP_SUCCESS_BTN = "Demande envoyée";
 
   function redirectLogin() {
     window.location.href = "login.html?next=" + encodeURIComponent("onboarding.html");
@@ -64,6 +72,78 @@
     feedback.classList.remove("onb-feedback--ok", "onb-feedback--err");
     if (kind === "ok") feedback.classList.add("onb-feedback--ok");
     if (kind === "err") feedback.classList.add("onb-feedback--err");
+  }
+
+  function setHelpButtonState(state) {
+    if (!helpBtn) return;
+    helpBtn.classList.remove(
+      "onb-btn--success",
+      "onb-btn--loading",
+      "onb-btn--error",
+      "onb-btn--pulse",
+    );
+    if (state === "loading") {
+      helpBtn.disabled = true;
+      helpBtn.classList.add("onb-btn--loading");
+      helpBtn.textContent = "Envoi en cours…";
+      return;
+    }
+    if (state === "success") {
+      helpBtn.disabled = true;
+      helpBtn.classList.add("onb-btn--success", "onb-btn--pulse");
+      helpBtn.textContent = "✓ " + HELP_SUCCESS_BTN;
+      return;
+    }
+    if (state === "error") {
+      helpBtn.disabled = false;
+      helpBtn.classList.add("onb-btn--error");
+      helpBtn.textContent = HELP_BTN_LABEL;
+      return;
+    }
+    helpBtn.disabled = false;
+    helpBtn.textContent = HELP_BTN_LABEL;
+  }
+
+  function showHelpNotice(msg, kind) {
+    if (!helpNotice || !helpNoticeText) return;
+    helpNoticeText.textContent = msg || "";
+    helpNotice.hidden = !msg;
+    helpNotice.classList.remove(
+      "onb-help-notice--ok",
+      "onb-help-notice--err",
+      "is-visible",
+    );
+    var iconEl = helpNotice.querySelector(".onb-help-notice__icon");
+    if (iconEl) {
+      iconEl.textContent = kind === "err" ? "!" : "✓";
+    }
+    if (!msg) return;
+    if (kind === "ok") helpNotice.classList.add("onb-help-notice--ok");
+    if (kind === "err") helpNotice.classList.add("onb-help-notice--err");
+    window.requestAnimationFrame(function () {
+      helpNotice.classList.add("is-visible");
+    });
+    if (helpBlock) {
+      helpBlock.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }
+
+  function showHelpSuccess() {
+    setHelpButtonState("success");
+    showHelpNotice(HELP_SUCCESS_MSG, "ok");
+  }
+
+  function showHelpError(msg) {
+    setHelpButtonState("error");
+    showHelpNotice(
+      msg || "Impossible d’envoyer la demande. Réessayez dans un instant.",
+      "err",
+    );
+  }
+
+  function resetHelpNotice() {
+    showHelpNotice("", "");
+    setHelpButtonState("idle");
   }
 
   async function readJson(response) {
@@ -125,8 +205,8 @@
 
     if (helpBtn) {
       helpBtn.addEventListener("click", async function () {
-        helpBtn.disabled = true;
-        showFeedback("");
+        resetHelpNotice();
+        setHelpButtonState("loading");
         var res = await apiPost("/api/me/onboarding/request-help");
         if (res.status === 401) {
           redirectLogin();
@@ -134,17 +214,12 @@
         }
         if (res.ok) {
           patchStoredRestaurant({ onboarding_seen: true, needs_setup_help: true });
-          showFeedback(
-            "Votre demande a été envoyée avec succès. Notre équipe vous contactera rapidement.",
-            "ok",
-          );
+          showHelpSuccess();
         } else {
-          showFeedback(
+          showHelpError(
             (res.data && res.data.message) || "Impossible d’envoyer la demande. Réessayez.",
-            "err",
           );
         }
-        helpBtn.disabled = false;
       });
     }
 

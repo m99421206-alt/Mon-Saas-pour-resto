@@ -76,9 +76,21 @@
         </ul>
 
         <div class="onb-actions">
-          <button type="button" class="onb-btn onb-btn--primary" id="onb-btn-help">
-            Demander une installation accompagnée
-          </button>
+          <div class="onb-help-block" id="onb-help-block">
+            <button type="button" class="onb-btn onb-btn--primary" id="onb-btn-help">
+              Demander une installation accompagnée
+            </button>
+            <div
+              class="onb-help-notice"
+              id="onb-help-notice"
+              role="status"
+              aria-live="polite"
+              hidden
+            >
+              <span class="onb-help-notice__icon" aria-hidden="true">✓</span>
+              <p class="onb-help-notice__text" id="onb-help-notice-text"></p>
+            </div>
+          </div>
 
           <a
             id="onb-btn-wa"
