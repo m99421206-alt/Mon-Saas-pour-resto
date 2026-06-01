@@ -18,9 +18,13 @@
   var logoInput = document.getElementById("logo-url");
   var logoFileInput = document.getElementById("logo-file");
   var logoPreview = document.getElementById("logo-preview");
+  var logoDropzone = document.getElementById("logo-dropzone");
+  var logoDropzoneContent = document.getElementById("logo-dropzone-content");
   var bannerInput = document.getElementById("banner-url");
   var bannerFileInput = document.getElementById("banner-file");
   var bannerPreview = document.getElementById("banner-preview");
+  var bannerDropzone = document.getElementById("banner-dropzone");
+  var bannerDropzoneContent = document.getElementById("banner-dropzone-content");
   var themeColorTextInput = document.getElementById("theme-color-text");
   var themeChoiceButtons = Array.from(document.querySelectorAll("[data-theme-color]"));
   var drawerRestaurant = document.getElementById("param-drawer-restaurant");
@@ -125,22 +129,69 @@
     return url.indexOf("/uploads/") === 0 ? API_URL + url : url;
   }
 
-  function setImagePreview(preview, url) {
+  function setImagePreview(preview, url, dropzone, content) {
     if (!preview) return;
     if (!url) {
       preview.hidden = true;
       preview.removeAttribute("src");
+      if (dropzone) dropzone.classList.remove("has-preview");
+      if (content) content.hidden = false;
       return;
     }
 
     preview.src = resolveImageUrl(url);
     preview.hidden = false;
+    if (dropzone) dropzone.classList.add("has-preview");
+    if (content) content.hidden = true;
   }
 
-  function previewSelectedFile(input, preview) {
+  function previewSelectedFile(input, preview, dropzone, content) {
     var file = input && input.files ? input.files[0] : null;
     if (!file) return;
-    setImagePreview(preview, URL.createObjectURL(file));
+    setImagePreview(preview, URL.createObjectURL(file), dropzone, content);
+  }
+
+  function initDropzone(dropzone, fileInput, preview, content) {
+    if (!dropzone || !fileInput) return;
+
+    dropzone.addEventListener("click", function (event) {
+      if (event.target === fileInput) return;
+      fileInput.click();
+    });
+
+    dropzone.addEventListener("keydown", function (event) {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        fileInput.click();
+      }
+    });
+
+    ["dragenter", "dragover"].forEach(function (eventName) {
+      dropzone.addEventListener(eventName, function (event) {
+        event.preventDefault();
+        dropzone.classList.add("is-dragover");
+      });
+    });
+
+    ["dragleave", "drop"].forEach(function (eventName) {
+      dropzone.addEventListener(eventName, function (event) {
+        event.preventDefault();
+        dropzone.classList.remove("is-dragover");
+      });
+    });
+
+    dropzone.addEventListener("drop", function (event) {
+      var file = event.dataTransfer && event.dataTransfer.files ? event.dataTransfer.files[0] : null;
+      if (!file || !/^image\/(jpeg|png)$/i.test(file.type)) return;
+      var transfer = new DataTransfer();
+      transfer.items.add(file);
+      fileInput.files = transfer.files;
+      previewSelectedFile(fileInput, preview, dropzone, content);
+    });
+
+    fileInput.addEventListener("change", function () {
+      previewSelectedFile(fileInput, preview, dropzone, content);
+    });
   }
 
   function normalizeThemeColor(value) {
@@ -173,8 +224,8 @@
     whatsappInput.value = restaurant.whatsapp || "";
     logoInput.value = restaurant.logo_url || "";
     bannerInput.value = restaurant.banner_url || "";
-    setImagePreview(logoPreview, restaurant.logo_url || "");
-    setImagePreview(bannerPreview, restaurant.banner_url || "");
+    setImagePreview(logoPreview, restaurant.logo_url || "", logoDropzone, logoDropzoneContent);
+    setImagePreview(bannerPreview, restaurant.banner_url || "", bannerDropzone, bannerDropzoneContent);
     setThemeColor(restaurant.theme_color || "#FF7A00");
   }
 
@@ -257,13 +308,8 @@
     logoutLink.addEventListener("click", clearSession);
   }
 
-  logoFileInput.addEventListener("change", function () {
-    previewSelectedFile(logoFileInput, logoPreview);
-  });
-
-  bannerFileInput.addEventListener("change", function () {
-    previewSelectedFile(bannerFileInput, bannerPreview);
-  });
+  initDropzone(logoDropzone, logoFileInput, logoPreview, logoDropzoneContent);
+  initDropzone(bannerDropzone, bannerFileInput, bannerPreview, bannerDropzoneContent);
 
   themeChoiceButtons.forEach(function (button) {
     button.addEventListener("click", function () {

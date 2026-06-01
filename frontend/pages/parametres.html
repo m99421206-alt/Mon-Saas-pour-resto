@@ -91,15 +91,41 @@
           </div>
 
           <div class="param-field">
-            <label class="param-field__label" for="logo-file">Image de votre logo</label>
-            <input
-              class="param-field__input"
-              id="logo-file"
-              name="logoFile"
-              type="file"
-              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-            />
-            <img class="param-image-preview" id="logo-preview" alt="Aperçu du logo" hidden />
+            <span class="param-field__label" id="logo-file-label">Image de votre logo</span>
+            <div
+              class="param-dropzone param-dropzone--logo"
+              id="logo-dropzone"
+              role="group"
+              aria-labelledby="logo-file-label"
+              tabindex="0"
+            >
+              <input
+                class="param-dropzone__input"
+                id="logo-file"
+                name="logoFile"
+                type="file"
+                accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                tabindex="-1"
+              />
+              <div class="param-dropzone__content" id="logo-dropzone-content">
+                <span class="param-dropzone__icon" aria-hidden="true">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                    <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.5" />
+                    <circle cx="8.5" cy="10" r="1.5" fill="currentColor" />
+                    <path
+                      d="M21 16l-5-5-4 4-3-3-6 6"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </span>
+                <p class="param-dropzone__text">Glissez une image ou cliquez pour sélectionner</p>
+                <p class="param-dropzone__hint">JPG ou PNG</p>
+              </div>
+              <img class="param-dropzone__preview" id="logo-preview" alt="Aperçu du logo" hidden />
+            </div>
             <input
               class="param-field__input"
               id="logo-url"
@@ -113,15 +139,41 @@
           </div>
 
           <div class="param-field">
-            <label class="param-field__label" for="banner-file">Photo de bannière du restaurant</label>
-            <input
-              class="param-field__input"
-              id="banner-file"
-              name="bannerFile"
-              type="file"
-              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-            />
-            <img class="param-image-preview param-image-preview--banner" id="banner-preview" alt="Aperçu de la bannière" hidden />
+            <span class="param-field__label" id="banner-file-label">Photo de bannière du restaurant</span>
+            <div
+              class="param-dropzone param-dropzone--banner"
+              id="banner-dropzone"
+              role="group"
+              aria-labelledby="banner-file-label"
+              tabindex="0"
+            >
+              <input
+                class="param-dropzone__input"
+                id="banner-file"
+                name="bannerFile"
+                type="file"
+                accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                tabindex="-1"
+              />
+              <div class="param-dropzone__content" id="banner-dropzone-content">
+                <span class="param-dropzone__icon" aria-hidden="true">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                    <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.5" />
+                    <circle cx="8.5" cy="10" r="1.5" fill="currentColor" />
+                    <path
+                      d="M21 16l-5-5-4 4-3-3-6 6"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </span>
+                <p class="param-dropzone__text">Glissez une image ou cliquez pour sélectionner</p>
+                <p class="param-dropzone__hint">JPG ou PNG · format paysage recommandé</p>
+              </div>
+              <img class="param-dropzone__preview" id="banner-preview" alt="Aperçu de la bannière" hidden />
+            </div>
             <input
               class="param-field__input"
               id="banner-url"

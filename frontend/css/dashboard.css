@@ -2133,7 +2133,6 @@ a.dash-qr-btn {
   outline-offset: 1px;
 }
 
-.param-image-preview,
 .plats-image-preview {
   display: block;
   width: 5.5rem;
@@ -2145,9 +2144,119 @@ a.dash-qr-btn {
   background: #ffffff;
 }
 
-.param-image-preview--banner {
+.param-dropzone {
+  position: relative;
+  margin-top: 0.5rem;
+  border: 1.5px dashed rgba(255, 107, 0, 0.28);
+  border-radius: 1rem;
+  background: linear-gradient(180deg, #fffaf6 0%, #fff 100%);
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    border-color var(--dash-transition),
+    background var(--dash-transition),
+    box-shadow var(--dash-transition);
+}
+
+.param-dropzone:focus-visible {
+  outline: none;
+  border-color: var(--dash-accent);
+  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.18);
+}
+
+.param-dropzone:hover,
+.param-dropzone.is-dragover {
+  border-color: var(--dash-accent);
+  background: var(--dash-accent-soft);
+  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.1);
+}
+
+.param-dropzone--logo {
   width: 100%;
-  height: 9rem;
+  max-width: 11.5rem;
+  aspect-ratio: 1;
+  min-height: 11.5rem;
+}
+
+.param-dropzone--banner {
+  width: 100%;
+  min-height: 14rem;
+  aspect-ratio: 3 / 1;
+}
+
+.param-dropzone__input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.param-dropzone__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 100%;
+  min-height: inherit;
+  padding: 1.15rem 1rem;
+  text-align: center;
+  pointer-events: none;
+}
+
+.param-dropzone__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.85rem;
+  background: rgba(255, 107, 0, 0.1);
+  color: var(--dash-accent);
+  margin-bottom: 0.2rem;
+}
+
+.param-dropzone__text {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--dash-text);
+  max-width: 16rem;
+}
+
+.param-dropzone__hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--dash-muted);
+}
+
+.param-dropzone__preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: calc(1rem - 1px);
+}
+
+.param-dropzone.has-preview .param-dropzone__input {
+  pointer-events: none;
+}
+
+.param-dropzone.has-preview:hover::after {
+  content: "Cliquer pour remplacer";
+  position: absolute;
+  inset: auto 0 0;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  color: #fff;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.62) 100%);
+  pointer-events: none;
 }
 
 .param-field__textarea {
@@ -2621,10 +2730,18 @@ a.dash-qr-btn {
     grid-template-columns: 1fr 1fr;
   }
 
-  .plats-image-preview,
-  .param-image-preview {
+  .plats-image-preview {
     width: 7rem;
     height: 7rem;
+  }
+
+  .param-dropzone--logo {
+    max-width: 12.5rem;
+    min-height: 12.5rem;
+  }
+
+  .param-dropzone--banner {
+    min-height: 16rem;
   }
 
   .qr-code-card__inner {
@@ -2637,10 +2754,6 @@ a.dash-qr-btn {
 
   .qr-share-row {
     gap: 0.75rem;
-  }
-
-  .param-image-preview--banner {
-    height: 12rem;
   }
 
   .param-theme-choice {
@@ -2671,8 +2784,9 @@ a.dash-qr-btn {
 
 /* ——— Bannière abonnement (essai / actif / expiré) ——— */
 .dash-sub-banner {
-  margin: clamp(1rem, 3vw, 1.75rem) 1.05rem 0;
+  margin: clamp(1rem, 3vw, 1.75rem) auto 0;
   max-width: 48rem;
+  width: 100%;
   padding: clamp(1rem, 3vw, 1.35rem);
   border-radius: 18px;
   border: 1px solid rgba(17, 24, 39, 0.08);
@@ -2812,8 +2926,9 @@ a.dash-qr-btn {
 
 /* ——— Bannière dashboard : essai / abonnement expiré → WhatsApp ——— */
 .dash-trial-expired-banner {
-  margin: clamp(0.85rem, 2.8vw, 1.35rem) clamp(1rem, 3vw, 1.05rem) 0;
+  margin: clamp(0.85rem, 2.8vw, 1.35rem) auto 0;
   max-width: 48rem;
+  width: 100%;
 }
 
 .dash-trial-expired-banner[hidden] {
@@ -2919,8 +3034,9 @@ a.dash-qr-btn {
 
 /* ——— Bannières prévention expiration abonnement ——— */
 .dash-sub-expiry-banner {
-  margin: clamp(0.85rem, 2.8vw, 1.35rem) clamp(1rem, 3vw, 1.05rem) 0;
+  margin: clamp(0.85rem, 2.8vw, 1.35rem) auto 0;
   max-width: 48rem;
+  width: 100%;
 }
 
 .dash-sub-expiry-banner__inner {
@@ -3369,7 +3485,7 @@ a.dash-qr-btn {
 
 :root {
   --dash-sidebar-w: 17.5rem;
-  --dash-content-max: 84rem;
+  --dash-content-max: 60rem;
   --dash-header-h: 4.25rem;
 }
 
@@ -3500,8 +3616,11 @@ a.dash-qr-btn {
 
   .dash-layout {
     margin-left: var(--dash-sidebar-w);
+    width: calc(100% - var(--dash-sidebar-w));
+    max-width: calc(100vw - var(--dash-sidebar-w));
     display: flex;
     flex-direction: column;
+    align-items: center;
     min-height: 100vh;
     min-height: 100dvh;
   }
@@ -3512,6 +3631,7 @@ a.dash-qr-btn {
     top: 0;
     z-index: 120;
     flex-shrink: 0;
+    width: 100%;
     min-height: var(--dash-header-h);
     background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(10px);
@@ -3519,13 +3639,15 @@ a.dash-qr-btn {
   }
 
   .dash-desktop-header__inner {
+    width: min(100%, var(--dash-content-max));
     max-width: var(--dash-content-max);
-    margin: 0 auto;
-    padding: 0.85rem 2rem;
+    margin-inline: auto;
+    padding: 0.85rem clamp(1.5rem, 3vw, 2.5rem);
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1.25rem;
+    box-sizing: border-box;
   }
 
   .dash-desktop-header__left {
@@ -3651,11 +3773,21 @@ a.dash-qr-btn {
   }
 
   .dashboard-main {
-    width: 100%;
+    width: min(100%, var(--dash-content-max));
     max-width: var(--dash-content-max);
-    margin: 0 auto;
-    padding: 1.35rem 2rem 2.25rem;
+    margin-inline: auto;
+    padding: 1.35rem clamp(1.5rem, 3vw, 2.5rem) 2.25rem;
     flex: 1;
+    align-self: center;
+    box-sizing: border-box;
+  }
+
+  .dash-sub-expiry-banner,
+  .dash-trial-expired-banner,
+  .dash-sub-banner {
+    margin-inline: 0;
+    max-width: none;
+    width: 100%;
   }
 
   .dash-hero {
@@ -3912,7 +4044,9 @@ a.dash-qr-btn {
   }
 
   .mon-abonnement-root .dash-my-sub {
-    max-width: 52rem;
+    max-width: none;
+    width: 100%;
+    margin-inline: auto;
   }
 
   .dash-sub-banner {
@@ -3927,7 +4061,11 @@ a.dash-qr-btn {
 
 @media (min-width: 80rem) {
   .dashboard-main {
-    padding-inline: 2.5rem;
+    padding-inline: clamp(1.75rem, 3vw, 2.75rem);
+  }
+
+  .dash-desktop-header__inner {
+    padding-inline: clamp(1.75rem, 3vw, 2.75rem);
   }
 
   .plats-list,
