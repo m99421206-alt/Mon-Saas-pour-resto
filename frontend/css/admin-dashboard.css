@@ -141,18 +141,17 @@ button {
 }
 
 .adm-sidebar__logo {
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 0.5rem;
-  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(255, 107, 0, 0.2);
+  line-height: 0;
 }
 
 .adm-sidebar__logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 2.25rem;
+  height: 2.25rem;
+  object-fit: contain;
 }
 
 .adm-sidebar__brand-text {

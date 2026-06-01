@@ -208,9 +208,9 @@ p {
   }
 
   .brand__logo img {
-    display: block;
-    max-width: 100%;
-    height: auto;
+    width: 2.25rem;
+    height: 2.25rem;
+    object-fit: contain;
   }
 
   .site-header__bar-tools {
@@ -647,16 +647,21 @@ p {
   gap: 0.625rem;
 }
 
-/* Logo placeholder : fond orange + picto blanc (fourchette / couteau simplifiés SVG) */
+/* Logo MenuGo — image seule (sans fond orange placeholder) */
 .brand__logo {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 0.5rem;
-  background: var(--color-accent);
-  color: #fff;
+  flex-shrink: 0;
+  line-height: 0;
+  background: transparent;
+}
+
+.brand__logo img {
+  display: block;
+  width: 2.75rem;
+  height: 2.75rem;
+  object-fit: contain;
 }
 
 .brand__name {
@@ -2208,19 +2213,16 @@ p {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 0.55rem;
-  overflow: hidden;
   flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  line-height: 0;
+  background: transparent;
+  border: none;
 }
 
 .site-footer__logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
 }
 
 .site-footer__brand-name {

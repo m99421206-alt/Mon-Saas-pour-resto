@@ -135,37 +135,70 @@
             <p class="param-field__hint">Cette image apparaîtra en haut du menu client.</p>
           </div>
 
-          <div class="param-field">
-            <label class="param-field__label" for="theme-color">Couleur du thème</label>
-            <div class="param-theme-choices" id="theme-choices" aria-label="Choix du thème">
-              <button class="param-theme-choice" type="button" data-theme-color="#FF7A00" style="--choice-color: #FF7A00">
-                Orange
-              </button>
-              <button class="param-theme-choice" type="button" data-theme-color="#7F8C8D" style="--choice-color: #7F8C8D">
-                Gris
-              </button>
-              <button class="param-theme-choice" type="button" data-theme-color="#E74C3C" style="--choice-color: #E74C3C">
-                Rouge
-              </button>
-              <button class="param-theme-choice" type="button" data-theme-color="#3498DB" style="--choice-color: #3498DB">
-                Bleu
-              </button>
-              <button class="param-theme-choice" type="button" data-theme-color="#111111" style="--choice-color: #111111">
-                Noir
-              </button>
+          <div class="param-field param-field--theme">
+            <div class="param-theme-panel">
+              <div class="param-theme-panel__head">
+                <label class="param-theme-panel__title" id="theme-color-label" for="theme-choices">
+                  Couleur du thème
+                </label>
+                <p class="param-theme-panel__desc">
+                  Choisissez la couleur principale de votre menu.
+                </p>
+              </div>
+              <div
+                class="param-theme-choices"
+                id="theme-choices"
+                role="radiogroup"
+                aria-labelledby="theme-color-label"
+              >
+                <button
+                  type="button"
+                  class="param-theme-choice"
+                  role="radio"
+                  aria-checked="false"
+                  aria-label="Orange"
+                  data-theme-color="#FF7A00"
+                  style="--choice-color: #FF7A00"
+                ></button>
+                <button
+                  type="button"
+                  class="param-theme-choice"
+                  role="radio"
+                  aria-checked="false"
+                  aria-label="Gris"
+                  data-theme-color="#7F8C8D"
+                  style="--choice-color: #7F8C8D"
+                ></button>
+                <button
+                  type="button"
+                  class="param-theme-choice"
+                  role="radio"
+                  aria-checked="false"
+                  aria-label="Rouge"
+                  data-theme-color="#E74C3C"
+                  style="--choice-color: #E74C3C"
+                ></button>
+                <button
+                  type="button"
+                  class="param-theme-choice"
+                  role="radio"
+                  aria-checked="false"
+                  aria-label="Bleu"
+                  data-theme-color="#3498DB"
+                  style="--choice-color: #3498DB"
+                ></button>
+                <button
+                  type="button"
+                  class="param-theme-choice"
+                  role="radio"
+                  aria-checked="false"
+                  aria-label="Noir"
+                  data-theme-color="#111111"
+                  style="--choice-color: #111111"
+                ></button>
+              </div>
+              <input type="hidden" id="theme-color-text" name="themeColor" value="#FF7A00" />
             </div>
-            <div class="param-color-row">
-              <input class="param-field__color" id="theme-color" name="themeColor" type="color" value="#FF7A00" />
-              <input
-                class="param-field__input"
-                id="theme-color-text"
-                type="text"
-                inputmode="text"
-                value="#FF7A00"
-                aria-label="Code couleur du thème"
-              />
-            </div>
-            <p class="param-field__hint">Couleur utilisée pour les boutons et accents du menu client.</p>
           </div>
 
           <button type="submit" class="param-save-btn" id="parametres-save">

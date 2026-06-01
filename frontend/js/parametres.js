@@ -21,7 +21,6 @@
   var bannerInput = document.getElementById("banner-url");
   var bannerFileInput = document.getElementById("banner-file");
   var bannerPreview = document.getElementById("banner-preview");
-  var themeColorInput = document.getElementById("theme-color");
   var themeColorTextInput = document.getElementById("theme-color-text");
   var themeChoiceButtons = Array.from(document.querySelectorAll("[data-theme-color]"));
   var drawerRestaurant = document.getElementById("param-drawer-restaurant");
@@ -150,10 +149,11 @@
 
   function setThemeColor(value) {
     var color = normalizeThemeColor(value);
-    themeColorInput.value = color;
-    themeColorTextInput.value = color;
+    if (themeColorTextInput) themeColorTextInput.value = color;
     themeChoiceButtons.forEach(function (button) {
-      button.classList.toggle("is-active", button.dataset.themeColor.toUpperCase() === color);
+      var isActive = button.dataset.themeColor.toUpperCase() === color;
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-checked", isActive ? "true" : "false");
     });
   }
 
@@ -263,17 +263,6 @@
 
   bannerFileInput.addEventListener("change", function () {
     previewSelectedFile(bannerFileInput, bannerPreview);
-  });
-
-  themeColorInput.addEventListener("input", function () {
-    setThemeColor(themeColorInput.value);
-  });
-
-  themeColorTextInput.addEventListener("input", function () {
-    var value = themeColorTextInput.value.trim();
-    if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
-      setThemeColor(value);
-    }
   });
 
   themeChoiceButtons.forEach(function (button) {
