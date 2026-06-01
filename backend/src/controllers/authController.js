@@ -6,6 +6,7 @@ const platformSettings = require("../services/platformSettings");
 const { normalizeWhatsapp } = require("../utils/whatsappNormalize");
 const { isPlatformAdminEmail } = require("../utils/platformAdmin");
 const { isValidEmail, emailFormatMessage } = require("../utils/emailValidate");
+const loginLockout = require("../utils/loginLockout");
 
 function mapRestaurantAuth(row) {
   if (!row) return null;
@@ -180,12 +181,18 @@ async function register(req, res) {
 async function login(req, res) {
   const email = String(req.body.email || "").trim().toLowerCase();
   const password = String(req.body.password || "");
+  const clientIp = loginLockout.getClientIp(req);
 
   if (!email || !password) {
     return res.status(400).json({ message: "Email et mot de passe sont obligatoires." });
   }
   if (!isValidEmail(email)) {
     return res.status(400).json({ message: emailFormatMessage() });
+  }
+
+  var lockCheck = loginLockout.checkLockout(email, clientIp);
+  if (!lockCheck.allowed) {
+    return loginLockout.sendLockoutResponse(res, lockCheck.retryAfterSeconds);
   }
 
   try {
@@ -196,14 +203,24 @@ async function login(req, res) {
     );
 
     if (!rows.length) {
+      var failUnknown = loginLockout.recordFailure(email, clientIp);
+      if (!failUnknown.allowed) {
+        return loginLockout.sendLockoutResponse(res, failUnknown.retryAfterSeconds);
+      }
       return res.status(401).json({ message: "Email ou mot de passe incorrect." });
     }
 
     const user = rows[0];
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) {
+      var failBadPassword = loginLockout.recordFailure(email, clientIp);
+      if (!failBadPassword.allowed) {
+        return loginLockout.sendLockoutResponse(res, failBadPassword.retryAfterSeconds);
+      }
       return res.status(401).json({ message: "Email ou mot de passe incorrect." });
     }
+
+    loginLockout.recordSuccess(email, clientIp);
 
     var accountStatus =
       user.account_status != null && String(user.account_status).trim() !== ""

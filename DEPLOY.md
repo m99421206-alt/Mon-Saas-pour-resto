@@ -131,7 +131,8 @@ Comportements activés en production :
 
 - CORS LAN désactivé (seules les origines `CORS_ORIGIN` sont acceptées)
 - Admin **bloqué** si `ADMIN_EMAILS` est vide
-- Rate limit login/register (10 req/min/IP)
+- Rate limit inscription (10 req/min/IP en prod)
+- **Login : 5 échecs → blocage 15 min** (par email + IP, configurable via `LOGIN_MAX_ATTEMPTS` / `LOGIN_LOCKOUT_MINUTES`)
 - Headers sécurité (`helmet`)
 - Erreurs 500 génériques (pas de stack trace exposée)
 

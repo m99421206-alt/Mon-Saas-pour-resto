@@ -21,11 +21,14 @@ const restaurantRoutes = require("./routes/restaurantRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 var platformSettings = require("./services/platformSettings");
 
+const isProduction = process.env.NODE_ENV === "production";
 const app = express();
+if (isProduction) {
+  app.set("trust proxy", 1);
+}
 const PORT = Number(process.env.PORT) || 4000;
 const HOST = process.env.HOST || "0.0.0.0";
 const LAN_URL = process.env.LAN_URL || "http://localhost:" + PORT;
-const isProduction = process.env.NODE_ENV === "production";
 const allowedOrigins = (process.env.CORS_ORIGIN || "")
   .split(",")
   .map(function (origin) {
@@ -81,7 +84,7 @@ function isAllowedCorsOrigin(origin) {
   return false;
 }
 
-var authRateLimiter = rateLimit({
+var registerRateLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: isProduction ? 10 : 30,
   standardHeaders: true,
@@ -130,9 +133,8 @@ app.get("/health", async function (req, res) {
   }
 });
 
-/* Limitation des tentatives login / inscription */
-app.post("/login", authRateLimiter);
-app.post("/register", authRateLimiter);
+/* Limitation globale inscription ; login : 5 échecs → blocage (loginLockout.js) */
+app.post("/register", registerRateLimiter);
 
 /* Authentification (étape 5) */
 app.use("/", authRoutes);
