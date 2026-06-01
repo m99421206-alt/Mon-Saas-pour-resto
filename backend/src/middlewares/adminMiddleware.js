@@ -26,6 +26,11 @@ async function requirePlatformAdmin(req, res, next) {
       .filter(Boolean);
 
     if (allow.length === 0) {
+      if (process.env.NODE_ENV === "production") {
+        return res.status(503).json({
+          message: "Administration indisponible : ADMIN_EMAILS non configuré.",
+        });
+      }
       return next();
     }
 

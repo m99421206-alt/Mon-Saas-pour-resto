@@ -8,6 +8,9 @@ require("dotenv").config();
 const path = require("path");
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const { ping } = require("./config/database");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
@@ -22,6 +25,7 @@ const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 const HOST = process.env.HOST || "0.0.0.0";
 const LAN_URL = process.env.LAN_URL || "http://localhost:" + PORT;
+const isProduction = process.env.NODE_ENV === "production";
 const allowedOrigins = (process.env.CORS_ORIGIN || "")
   .split(",")
   .map(function (origin) {
@@ -77,6 +81,14 @@ function isAllowedCorsOrigin(origin) {
   return false;
 }
 
+var authRateLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: isProduction ? 10 : 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Trop de tentatives. Réessayez dans une minute." },
+});
+
 /* CORS avant les routes — préflight inclus (évite blocages inscription / login en dev). */
 app.use(
   cors({
@@ -91,16 +103,36 @@ app.use(
   })
 );
 
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
+
 /* Corps des requêtes en JSON (POST / PUT) */
-app.use(express.json());
+app.use(express.json({ limit: "256kb" }));
 
 /* Images uploadées par les restaurants */
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-/* Route de santé : utile pour vérifier que le serveur tourne */
-app.get("/health", function (req, res) {
-  res.json({ ok: true, service: "MenuGo-api" });
+/* Route de santé : serveur + base de données */
+app.get("/health", async function (req, res) {
+  try {
+    await ping();
+    return res.json({ ok: true, service: "MenuGo-api", db: "up" });
+  } catch (error) {
+    return res.status(503).json({
+      ok: false,
+      service: "MenuGo-api",
+      db: "down",
+      message: isProduction ? "Service indisponible." : error.message,
+    });
+  }
 });
+
+/* Limitation des tentatives login / inscription */
+app.post("/login", authRateLimiter);
+app.post("/register", authRateLimiter);
 
 /* Authentification (étape 5) */
 app.use("/", authRoutes);
@@ -122,6 +154,32 @@ app.use("/api/admin", adminRoutes);
 
 platformSettings.refresh().catch(function (e) {
   console.warn("[platform_settings]", e.message || e);
+});
+
+app.use(function (req, res) {
+  res.status(404).json({ message: "Route introuvable." });
+});
+
+app.use(function (err, req, res, next) {
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  var status = err.status || err.statusCode || 500;
+  if (status < 400 || status >= 600) {
+    status = 500;
+  }
+
+  var message =
+    isProduction && status >= 500 ?
+      "Erreur serveur."
+    : err.message || "Erreur serveur.";
+
+  if (!isProduction && status >= 500) {
+    console.error(err);
+  }
+
+  res.status(status).json({ message: message });
 });
 
 app.listen(PORT, HOST, function () {

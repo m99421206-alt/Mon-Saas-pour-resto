@@ -8,20 +8,25 @@
   var existingConfig = window.MenuGo_CONFIG || {};
 
   window.MenuGo_CONFIG = Object.assign({}, existingConfig, {
+    /**
+     * URL de l’API MenuGo.
+     * Laisser vide (ou ne pas définir) si l’API est sur le même domaine via reverse proxy.
+     * Sinon, ex. https://api.votredomaine.com (sans slash final).
+     */
     API_URL: existingConfig.API_URL || defaultApiUrl,
     SUPPORT_EMAIL:
       typeof existingConfig.SUPPORT_EMAIL === "string" ? existingConfig.SUPPORT_EMAIL : "",
-    /** Numéro WhatsApp du support plateforme (vous, administration / abonnements). Forme internationale, chiffres seuls sans + dans l’URL wa.me — distinct du WhatsApp restaurant (commandes, Paramètres). */
+    /** Numéro WhatsApp du support plateforme (administration / abonnements). Chiffres internationaux sans +. */
     SUPPORT_WHATSAPP:
       typeof existingConfig.SUPPORT_WHATSAPP === "string" && existingConfig.SUPPORT_WHATSAPP.trim() !== "" ?
         existingConfig.SUPPORT_WHATSAPP
       : "22399421206",
     /**
-     * URL de base du site (sans slash final) telle qu’un téléphone sur le Wi‑Fi peut l’ouvrir.
-     * Ex. http://192.168.1.12:5500 si Live Server ouvre le dossier depuis ce port sur votre PC.
-     * Laissez vide pour utiliser window.location.origin (OK en prod ; KO pour scan mobile si vous êtes en 127.0.0.1).
+     * URL publique du site (sans slash final) pour QR code et liens menu.
+     * Laisser vide en production : window.location.origin sera utilisé.
+     * En dev local uniquement : ex. http://192.168.1.12:5500 pour tester le scan QR depuis un téléphone.
      */
-    PUBLIC_SITE_ORIGIN:"http://192.168.100.16:5500",
-      
+    PUBLIC_SITE_ORIGIN:
+      typeof existingConfig.PUBLIC_SITE_ORIGIN === "string" ? existingConfig.PUBLIC_SITE_ORIGIN : "",
   });
 })();

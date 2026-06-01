@@ -20,7 +20,7 @@ async function main() {
   }
 
   var sqlPath = path.join(__dirname, "..", "sql", "schema.sql");
-  var sql = fs.readFileSync(sqlPath, "utf8");
+  var sql = fs.readFileSync(sqlPath, "utf8").replace(/^\uFEFF/, "");
 
   var connection = await mysql.createConnection({
     host: host,
