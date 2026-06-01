@@ -5,6 +5,7 @@
   "description": "API MenuGo (Express + MySQL)",
   "main": "src/server.js",
   "scripts": {
+    "test": "node --test",
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "db:schema": "node scripts/init-db.js",
