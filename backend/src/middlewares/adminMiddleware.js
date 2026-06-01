@@ -1,6 +1,6 @@
 /**
  * Accès routes /api/admin/* — liste d’emails dans ADMIN_EMAILS (env).
- * Si ADMIN_EMAILS est vide : tout utilisateur authentifié est accepté (mode dev uniquement).
+ * ADMIN_EMAILS doit être configuré explicitement pour activer l'administration.
  */
 
 const { getPool } = require("../config/database");
@@ -26,7 +26,7 @@ async function requirePlatformAdmin(req, res, next) {
       .filter(Boolean);
 
     if (allow.length === 0) {
-      return next();
+      return res.status(403).json({ message: "Accès administration non configuré." });
     }
 
     if (allow.indexOf(email) === -1) {
