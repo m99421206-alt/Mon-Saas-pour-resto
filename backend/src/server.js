@@ -139,6 +139,8 @@ app.post("/register", registerRateLimiter);
 /* Authentification (étape 5) */
 app.use("/", authRoutes);
 
+/* Administration plateforme — avant /api (évite middleware compte resto sur /api/admin/*) */
+app.use("/api/admin", adminRoutes);
 /* Routes protégées sous /api (étape 6 — middleware JWT) */
 app.use("/api", userRoutes);
 /* CRUD catégories (étape 7) — JWT requis */
@@ -151,8 +153,6 @@ app.use("/api/restaurant", restaurantRoutes);
 app.use("/upload", uploadRoutes);
 /* Menu public client (étape 9) — sans JWT */
 app.use("/menu", menuRoutes);
-/* Administration plateforme — JWT + contrôle ADMIN_EMAILS (optionnel) */
-app.use("/api/admin", adminRoutes);
 
 platformSettings.refresh().catch(function (e) {
   console.warn("[platform_settings]", e.message || e);

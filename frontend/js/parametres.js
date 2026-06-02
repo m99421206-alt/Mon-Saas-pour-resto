@@ -129,6 +129,50 @@
     return url.indexOf("/uploads/") === 0 ? API_URL + url : url;
   }
 
+  var UPLOAD_REJECT_MESSAGE =
+    "Type de fichier non autorisé. Formats acceptés : JPG, JPEG, PNG, WEBP.";
+
+  function isAllowedImageFile(file) {
+    if (!file) return false;
+    var name = String(file.name || "").toLowerCase();
+    var blocked = [
+      ".php",
+      ".phtml",
+      ".phar",
+      ".exe",
+      ".js",
+      ".mjs",
+      ".cjs",
+      ".html",
+      ".htm",
+      ".svg",
+      ".sh",
+      ".bat",
+      ".cmd",
+      ".com",
+      ".dll",
+      ".msi",
+      ".vbs",
+      ".ps1",
+      ".asp",
+      ".aspx",
+      ".jsp",
+    ];
+    if (
+      blocked.some(function (ext) {
+        return name.indexOf(ext) !== -1;
+      })
+    ) {
+      return false;
+    }
+    var dot = name.lastIndexOf(".");
+    var extension = dot >= 0 ? name.slice(dot) : "";
+    var allowedExt = [".jpg", ".jpeg", ".png", ".webp"];
+    if (allowedExt.indexOf(extension) === -1) return false;
+    if (!/^image\/(jpeg|png|webp)$/i.test(file.type || "")) return false;
+    return true;
+  }
+
   function setImagePreview(preview, url, dropzone, content) {
     if (!preview) return;
     if (!url) {
@@ -147,7 +191,17 @@
 
   function previewSelectedFile(input, preview, dropzone, content) {
     var file = input && input.files ? input.files[0] : null;
-    if (!file) return;
+    if (!file) {
+      setImagePreview(preview, "", dropzone, content);
+      return;
+    }
+    if (!isAllowedImageFile(file)) {
+      input.value = "";
+      setImagePreview(preview, "", dropzone, content);
+      setStatus(UPLOAD_REJECT_MESSAGE, true);
+      return;
+    }
+    setStatus("");
     setImagePreview(preview, URL.createObjectURL(file), dropzone, content);
   }
 
@@ -182,7 +236,12 @@
 
     dropzone.addEventListener("drop", function (event) {
       var file = event.dataTransfer && event.dataTransfer.files ? event.dataTransfer.files[0] : null;
-      if (!file || !/^image\/(jpeg|png)$/i.test(file.type)) return;
+      if (!file || !isAllowedImageFile(file)) {
+        if (file) {
+          setStatus(UPLOAD_REJECT_MESSAGE, true);
+        }
+        return;
+      }
       var transfer = new DataTransfer();
       transfer.items.add(file);
       fileInput.files = transfer.files;

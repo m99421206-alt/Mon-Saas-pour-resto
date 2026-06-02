@@ -159,6 +159,56 @@
     return String(url).indexOf("/uploads/") === 0 ? API_URL + url : url;
   }
 
+  var UPLOAD_REJECT_MESSAGE =
+    "Type de fichier non autorisé. Formats acceptés : JPG, JPEG, PNG, WEBP.";
+
+  function isAllowedImageFile(file) {
+    if (!file) return false;
+    var name = String(file.name || "").toLowerCase();
+    var blocked = [
+      ".php",
+      ".phtml",
+      ".phar",
+      ".exe",
+      ".js",
+      ".mjs",
+      ".cjs",
+      ".html",
+      ".htm",
+      ".svg",
+      ".sh",
+      ".bat",
+      ".cmd",
+      ".com",
+      ".dll",
+      ".msi",
+      ".vbs",
+      ".ps1",
+      ".asp",
+      ".aspx",
+      ".jsp",
+    ];
+    if (
+      blocked.some(function (ext) {
+        return name.indexOf(ext) !== -1;
+      })
+    ) {
+      return false;
+    }
+    var dot = name.lastIndexOf(".");
+    var extension = dot >= 0 ? name.slice(dot) : "";
+    var allowedExt = [".jpg", ".jpeg", ".png", ".webp"];
+    if (allowedExt.indexOf(extension) === -1) return false;
+    if (!/^image\/(jpeg|png|webp)$/i.test(file.type || "")) return false;
+    return true;
+  }
+
+  function clearImageFileInput() {
+    if (imageFileInput) {
+      imageFileInput.value = "";
+    }
+  }
+
   function setImagePreview(preview, url) {
     if (!preview) return;
     if (!url) {
@@ -176,7 +226,17 @@
 
   function previewSelectedFile(input, preview) {
     const file = input && input.files ? input.files[0] : null;
-    if (!file) return;
+    if (!file) {
+      setImagePreview(preview, "");
+      return;
+    }
+    if (!isAllowedImageFile(file)) {
+      clearImageFileInput();
+      setImagePreview(preview, "");
+      setStatus(UPLOAD_REJECT_MESSAGE, true);
+      return;
+    }
+    setStatus("");
     setImagePreview(preview, URL.createObjectURL(file));
   }
 
@@ -492,12 +552,16 @@
     dropzone.addEventListener("drop", function (event) {
       const file = event.dataTransfer && event.dataTransfer.files ? event.dataTransfer.files[0] : null;
       if (!file) return;
+      if (!isAllowedImageFile(file)) {
+        clearImageFileInput();
+        setImagePreview(imagePreview, "");
+        setStatus(UPLOAD_REJECT_MESSAGE, true);
+        return;
+      }
       const transfer = new DataTransfer();
       transfer.items.add(file);
       imageFileInput.files = transfer.files;
       previewSelectedFile(imageFileInput, imagePreview);
-      if (dropzone) dropzone.classList.add("has-preview");
-      if (dropzoneContent) dropzoneContent.hidden = true;
     });
   }
 
@@ -621,10 +685,6 @@
 
   imageFileInput.addEventListener("change", function () {
     previewSelectedFile(imageFileInput, imagePreview);
-    if (imageFileInput.files && imageFileInput.files[0]) {
-      if (dropzone) dropzone.classList.add("has-preview");
-      if (dropzoneContent) dropzoneContent.hidden = true;
-    }
   });
 
   hasSizesInput.addEventListener("change", function () {

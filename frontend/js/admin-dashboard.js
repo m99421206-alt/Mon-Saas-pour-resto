@@ -427,6 +427,28 @@
       renderSubWatchRows([], true);
       return;
     }
+    if (statsRes.status === 404 && statsRes.data && statsRes.data.message) {
+      showAccessBanner(statsRes.data.message, "error");
+      clearStatsDisplay();
+      renderActivity([]);
+      renderSetupHelpRows([], true);
+      renderSubWatchRows([], true);
+      return;
+    }
+
+    if (statsRes.status === 503) {
+      showAccessBanner(
+        (statsRes.data && statsRes.data.message) ||
+          "Administration temporairement indisponible (configuration serveur).",
+        "error",
+      );
+      clearStatsDisplay();
+      renderActivity([]);
+      renderSetupHelpRows([], true);
+      renderSubWatchRows([], true);
+      return;
+    }
+
     var statsData = statsRes.data || {};
     if (statsRes.ok && Number.isFinite(Number(statsData.total_users))) {
       applyStats({
@@ -438,7 +460,8 @@
       });
     } else {
       showAccessBanner(
-        "Les statistiques plateforme n’ont pas pu être chargées (serveur injoignable ou erreur).",
+        (statsRes.data && statsRes.data.message) ||
+          "Les statistiques plateforme n’ont pas pu être chargées (serveur injoignable ou erreur).",
         "error",
       );
       clearStatsDisplay();

@@ -7,11 +7,10 @@ const requireRestaurantOwner = require("../middlewares/requireRestaurantOwner");
 const requireRestaurantMenuEdit = require("../middlewares/subscriptionEditMiddleware");
 var platformSettings = require("../services/platformSettings");
 const { appendAudit, AUDIT_ACTIONS, getRestaurantIdForUserAudit } = require("../utils/auditLog");
+const uploadImageValidation = require("../utils/uploadImageValidation");
 
 const router = express.Router();
 const uploadsDir = path.join(__dirname, "../../uploads");
-const allowedMimeTypes = ["image/jpeg", "image/png"];
-const allowedExtensions = [".jpg", ".jpeg", ".png"];
 
 fs.mkdirSync(uploadsDir, { recursive: true });
 
@@ -21,28 +20,19 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const extension = path.extname(file.originalname).toLowerCase();
+    if (uploadImageValidation.ALLOWED_EXTENSIONS.indexOf(extension) === -1) {
+      return cb(new Error(uploadImageValidation.REJECT_MESSAGE));
+    }
     const uniqueName = Date.now() + "-" + Math.round(Math.random() * 1e9) + extension;
     cb(null, uniqueName);
   },
 });
 
-function imageFileFilter(req, file, cb) {
-  const extension = path.extname(file.originalname).toLowerCase();
-  const validType = allowedMimeTypes.includes(file.mimetype);
-  const validExtension = allowedExtensions.includes(extension);
-
-  if (!validType || !validExtension) {
-    return cb(new Error("Seules les images JPG et PNG sont acceptées."));
-  }
-
-  return cb(null, true);
-}
-
 function buildUploadMw() {
   var max = platformSettings.getUploadMaxBytes();
   return multer({
     storage: storage,
-    fileFilter: imageFileFilter,
+    fileFilter: uploadImageValidation.createImageFileFilter(),
     limits: {
       fileSize: max,
     },
@@ -68,6 +58,11 @@ router.post("/", requireRestaurantMenuEdit, function (req, res) {
 
       if (!req.file) {
         return res.status(400).json({ message: "Aucune image reçue." });
+      }
+
+      var imageCheck = await uploadImageValidation.validateUploadedImageFile(req.file);
+      if (!imageCheck.ok) {
+        return res.status(400).json({ message: imageCheck.message });
       }
 
       var rid = req.restaurantId || (await getRestaurantIdForUserAudit(req.user.id));
