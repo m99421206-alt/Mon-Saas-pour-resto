@@ -1,11 +1,13 @@
 const express = require("express");
 const requireAuth = require("../middlewares/authMiddleware");
+const requireRestaurantOwner = require("../middlewares/requireRestaurantOwner");
 const requireRestaurantMenuEdit = require("../middlewares/subscriptionEditMiddleware");
 const categoryController = require("../controllers/categoryController");
 
 const router = express.Router();
 
 router.use(requireAuth);
+router.use(requireRestaurantOwner);
 
 router.get("/", categoryController.listCategories);
 router.post("/", requireRestaurantMenuEdit, categoryController.createCategory);

@@ -1,23 +1,13 @@
 const { getPool } = require("../config/database");
 const { removeUnusedUploads } = require("../utils/uploadCleanup");
 const { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
+const ownership = require("../utils/restaurantOwnership");
 
-async function getRestaurantIdForUser(userId) {
-  var pool = getPool();
-  var [rows] = await pool.query(
-    "SELECT id FROM restaurants WHERE user_id = ? ORDER BY id ASC LIMIT 1",
-    [userId]
-  );
-  return rows.length ? rows[0].id : null;
-}
-
-async function categoryBelongsToRestaurant(categoryId, restaurantId) {
-  var pool = getPool();
-  var [rows] = await pool.query(
-    "SELECT id FROM categories WHERE id = ? AND restaurant_id = ? LIMIT 1",
-    [categoryId, restaurantId]
-  );
-  return rows.length > 0;
+function resolveRestaurantId(req) {
+  if (req.restaurantId) {
+    return req.restaurantId;
+  }
+  return null;
 }
 
 function normalizeName(body) {
@@ -156,7 +146,7 @@ async function replaceProductVariants(pool, productId, variants) {
 
 async function listProducts(req, res) {
   try {
-    var restaurantId = await getRestaurantIdForUser(req.user.id);
+    var restaurantId = resolveRestaurantId(req);
     if (!restaurantId) {
       return res.status(404).json({ message: "Aucun restaurant associé à ce compte." });
     }
@@ -200,14 +190,18 @@ async function createProduct(req, res) {
       return res.status(400).json({ message: "category_id est requis et doit être valide." });
     }
 
-    var restaurantId = await getRestaurantIdForUser(req.user.id);
+    var restaurantId = resolveRestaurantId(req);
     if (!restaurantId) {
       await removeUnusedUploads(collectProductUploadUrls(image, variants));
       return res.status(404).json({ message: "Aucun restaurant associé à ce compte." });
     }
 
-    var allowedCategory = await categoryBelongsToRestaurant(categoryId, restaurantId);
-    if (!allowedCategory) {
+    var categoryOwnership = await ownership.assertCategoryOwnedByRestaurant(categoryId, restaurantId);
+    if (categoryOwnership === "forbidden") {
+      await removeUnusedUploads(collectProductUploadUrls(image, variants));
+      return ownership.sendForbidden(res);
+    }
+    if (categoryOwnership === "not_found") {
       await removeUnusedUploads(collectProductUploadUrls(image, variants));
       return res.status(400).json({ message: "La catégorie n'appartient pas à votre restaurant." });
     }
@@ -293,14 +287,28 @@ async function updateProduct(req, res) {
       return res.status(400).json({ message: "category_id est requis et doit être valide." });
     }
 
-    var restaurantId = await getRestaurantIdForUser(req.user.id);
+    var restaurantId = resolveRestaurantId(req);
     if (!restaurantId) {
       await removeUnusedUploads(collectProductUploadUrls(image, variants));
       return res.status(404).json({ message: "Aucun restaurant associé à ce compte." });
     }
 
-    var allowedCategory = await categoryBelongsToRestaurant(categoryId, restaurantId);
-    if (!allowedCategory) {
+    var productOwnership = await ownership.assertProductOwnedByRestaurant(productId, restaurantId);
+    if (productOwnership === "forbidden") {
+      await removeUnusedUploads(collectProductUploadUrls(image, variants));
+      return ownership.sendForbidden(res);
+    }
+    if (productOwnership === "not_found") {
+      await removeUnusedUploads(collectProductUploadUrls(image, variants));
+      return res.status(404).json({ message: "Produit introuvable." });
+    }
+
+    var categoryOwnership = await ownership.assertCategoryOwnedByRestaurant(categoryId, restaurantId);
+    if (categoryOwnership === "forbidden") {
+      await removeUnusedUploads(collectProductUploadUrls(image, variants));
+      return ownership.sendForbidden(res);
+    }
+    if (categoryOwnership === "not_found") {
       await removeUnusedUploads(collectProductUploadUrls(image, variants));
       return res.status(400).json({ message: "La catégorie n'appartient pas à votre restaurant." });
     }
@@ -386,9 +394,17 @@ async function deleteProduct(req, res) {
       return res.status(400).json({ message: "Identifiant de produit invalide." });
     }
 
-    var restaurantId = await getRestaurantIdForUser(req.user.id);
+    var restaurantId = resolveRestaurantId(req);
     if (!restaurantId) {
       return res.status(404).json({ message: "Aucun restaurant associé à ce compte." });
+    }
+
+    var productOwnership = await ownership.assertProductOwnedByRestaurant(productId, restaurantId);
+    if (productOwnership === "forbidden") {
+      return ownership.sendForbidden(res);
+    }
+    if (productOwnership === "not_found") {
+      return res.status(404).json({ message: "Produit introuvable." });
     }
 
     var pool = getPool();

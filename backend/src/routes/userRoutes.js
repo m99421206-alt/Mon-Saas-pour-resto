@@ -1,12 +1,16 @@
 const express = require("express");
 const requireAuth = require("../middlewares/authMiddleware");
+const requireRestaurantOwner = require("../middlewares/requireRestaurantOwner");
 const userController = require("../controllers/userController");
 
 const router = express.Router();
 
-router.get("/me", requireAuth, userController.getMe);
+router.use(requireAuth);
+router.use(requireRestaurantOwner);
 
-router.post("/me/onboarding/mark-seen", requireAuth, userController.postOnboardingMarkSeen);
-router.post("/me/onboarding/request-help", requireAuth, userController.postOnboardingRequestHelp);
+router.get("/me", userController.getMe);
+
+router.post("/me/onboarding/mark-seen", userController.postOnboardingMarkSeen);
+router.post("/me/onboarding/request-help", userController.postOnboardingRequestHelp);
 
 module.exports = router;

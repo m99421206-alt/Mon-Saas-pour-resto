@@ -133,6 +133,7 @@ Comportements activés en production :
 - Admin **bloqué** si `ADMIN_EMAILS` est vide
 - Rate limit inscription (10 req/min/IP en prod)
 - **Login : 5 échecs → blocage 15 min** (par email + IP, configurable via `LOGIN_MAX_ATTEMPTS` / `LOGIN_LOCKOUT_MINUTES`)
+- **Isolation restaurant** : middleware `requireRestaurantOwner` sur `/api/products`, `/api/categories`, `/api/restaurant`, `/api/me`, `/upload` — refus **403** si `restaurant_id` étranger ou accès à un produit/catégorie d'un autre restaurant
 - Headers sécurité (`helmet`)
 - Erreurs 500 génériques (pas de stack trace exposée)
 

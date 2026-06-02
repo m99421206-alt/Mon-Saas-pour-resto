@@ -1,13 +1,9 @@
 const { getPool } = require("../config/database");
 const { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
+const ownership = require("../utils/restaurantOwnership");
 
-async function getRestaurantIdForUser(userId) {
-  var pool = getPool();
-  var [rows] = await pool.query(
-    "SELECT id FROM restaurants WHERE user_id = ? ORDER BY id ASC LIMIT 1",
-    [userId]
-  );
-  return rows.length ? rows[0].id : null;
+function resolveRestaurantId(req) {
+  return req.restaurantId || null;
 }
 
 function normalizeName(body) {
@@ -20,7 +16,7 @@ function normalizeName(body) {
 
 async function listCategories(req, res) {
   try {
-    var restaurantId = await getRestaurantIdForUser(req.user.id);
+    var restaurantId = resolveRestaurantId(req);
     if (!restaurantId) {
       return res.status(404).json({ message: "Aucun restaurant associé à ce compte." });
     }
@@ -43,7 +39,7 @@ async function createCategory(req, res) {
       return res.status(400).json({ message: "Le nom de la catégorie est requis." });
     }
 
-    var restaurantId = await getRestaurantIdForUser(req.user.id);
+    var restaurantId = resolveRestaurantId(req);
     if (!restaurantId) {
       return res.status(404).json({ message: "Aucun restaurant associé à ce compte." });
     }
@@ -85,9 +81,17 @@ async function updateCategory(req, res) {
       return res.status(400).json({ message: "Identifiant de catégorie invalide." });
     }
 
-    var restaurantId = await getRestaurantIdForUser(req.user.id);
+    var restaurantId = resolveRestaurantId(req);
     if (!restaurantId) {
       return res.status(404).json({ message: "Aucun restaurant associé à ce compte." });
+    }
+
+    var categoryOwnership = await ownership.assertCategoryOwnedByRestaurant(categoryId, restaurantId);
+    if (categoryOwnership === "forbidden") {
+      return ownership.sendForbidden(res);
+    }
+    if (categoryOwnership === "not_found") {
+      return res.status(404).json({ message: "Catégorie introuvable." });
     }
 
     var pool = getPool();
@@ -126,9 +130,17 @@ async function deleteCategory(req, res) {
       return res.status(400).json({ message: "Identifiant de catégorie invalide." });
     }
 
-    var restaurantId = await getRestaurantIdForUser(req.user.id);
+    var restaurantId = resolveRestaurantId(req);
     if (!restaurantId) {
       return res.status(404).json({ message: "Aucun restaurant associé à ce compte." });
+    }
+
+    var categoryOwnership = await ownership.assertCategoryOwnedByRestaurant(categoryId, restaurantId);
+    if (categoryOwnership === "forbidden") {
+      return ownership.sendForbidden(res);
+    }
+    if (categoryOwnership === "not_found") {
+      return res.status(404).json({ message: "Catégorie introuvable." });
     }
 
     var pool = getPool();
@@ -136,10 +148,7 @@ async function deleteCategory(req, res) {
       categoryId,
       restaurantId,
     ]);
-    if (!cats.length) {
-      return res.status(404).json({ message: "Catégorie introuvable." });
-    }
-    var catName = cats[0].name ? String(cats[0].name) : "";
+    var catName = cats.length && cats[0].name ? String(cats[0].name) : "";
 
     var [result] = await pool.query("DELETE FROM categories WHERE id = ? AND restaurant_id = ?", [
       categoryId,

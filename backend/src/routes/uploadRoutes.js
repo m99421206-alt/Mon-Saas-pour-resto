@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
 const requireAuth = require("../middlewares/authMiddleware");
+const requireRestaurantOwner = require("../middlewares/requireRestaurantOwner");
 const requireRestaurantMenuEdit = require("../middlewares/subscriptionEditMiddleware");
 var platformSettings = require("../services/platformSettings");
 const { appendAudit, AUDIT_ACTIONS, getRestaurantIdForUserAudit } = require("../utils/auditLog");
@@ -49,6 +50,7 @@ function buildUploadMw() {
 }
 
 router.use(requireAuth);
+router.use(requireRestaurantOwner);
 
 router.post("/", requireRestaurantMenuEdit, function (req, res) {
   var maxBytes = platformSettings.getUploadMaxBytes();
@@ -68,7 +70,7 @@ router.post("/", requireRestaurantMenuEdit, function (req, res) {
         return res.status(400).json({ message: "Aucune image reçue." });
       }
 
-      var rid = await getRestaurantIdForUserAudit(req.user.id);
+      var rid = req.restaurantId || (await getRestaurantIdForUserAudit(req.user.id));
       await appendAudit({
         userId: req.user.id,
         restaurantId: rid,

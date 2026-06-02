@@ -1,6 +1,7 @@
 const { getPool } = require("../config/database");
 const { removeUnusedUploads } = require("../utils/uploadCleanup");
 const { normalizeWhatsapp: normalizeWhatsappField } = require("../utils/whatsappNormalize");
+const ownership = require("../utils/restaurantOwnership");
 
 function normalizeText(value) {
   if (value == null) {
@@ -33,17 +34,12 @@ function collectRestaurantUploadUrls(logoUrl, bannerUrl) {
 }
 
 async function getRestaurantForUser(userId) {
-  var pool = getPool();
-  var [rows] = await pool.query(
-    "SELECT id, name, description, whatsapp, logo_url, banner_url, theme_color FROM restaurants WHERE user_id = ? ORDER BY id ASC LIMIT 1",
-    [userId]
-  );
-  return rows[0] || null;
+  return ownership.getRestaurantForUser(userId);
 }
 
 async function getMyRestaurant(req, res) {
   try {
-    var restaurant = await getRestaurantForUser(req.user.id);
+    var restaurant = req.restaurant || (await getRestaurantForUser(req.user.id));
     if (!restaurant) {
       return res.status(404).json({ message: "Aucun restaurant associé à ce compte." });
     }
@@ -78,7 +74,7 @@ async function updateMyRestaurant(req, res) {
 
     var pool = getPool();
     var oldImages = [];
-    var previousRestaurant = await getRestaurantForUser(req.user.id);
+    var previousRestaurant = req.restaurant || (await getRestaurantForUser(req.user.id));
     if (previousRestaurant) {
       if (previousRestaurant.logo_url && previousRestaurant.logo_url !== logoUrl) {
         oldImages.push(previousRestaurant.logo_url);
