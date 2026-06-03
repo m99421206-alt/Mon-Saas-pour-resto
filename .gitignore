@@ -13,6 +13,10 @@ backend/.env
 # Images uploadées par les restaurants
 backend/uploads/
 
+# Sauvegardes automatiques (données clients — ne pas committer)
+backups/*
+!backups/.gitkeep
+
 # Assets de démo locaux (non nécessaires en production)
 dossier de resto/
 

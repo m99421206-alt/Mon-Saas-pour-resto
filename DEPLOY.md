@@ -172,21 +172,69 @@ Redémarrez l’API. Cochez chaque parcours :
 
 ---
 
-## Sauvegardes MySQL (jour du déploiement)
+## Sauvegardes automatiques (données clients)
 
-Planifier des sauvegardes automatiques avant le go-live :
+Chaque restaurant MenuGo repose sur **deux éléments** à sauvegarder ensemble :
+
+| Élément | Contenu |
+|---------|---------|
+| **Base MySQL** | Comptes, restaurants, catégories, plats, abonnements, journal d’audit |
+| **`backend/uploads/`** | Logos, bannières, photos des plats (URLs `/uploads/…` en base) |
+
+### Lancer une sauvegarde manuelle
+
+Depuis `backend/` :
 
 ```bash
-mysqldump -u USER -p MenuGo > backup_menugo_$(date +%Y%m%d).sql
+npm run backup
 ```
 
-Restauration :
+Résultat dans `backups/menugo_YYYYMMDD_HHMMSS/` :
+
+- `database.sql.gz` — export MySQL compressé
+- `uploads.zip` (Windows) ou `uploads.tar.gz` (Linux/macOS)
+- `manifest.json` — métadonnées
+
+Variables optionnelles dans `.env` :
+
+| Variable | Défaut | Rôle |
+|----------|--------|------|
+| `BACKUP_DIR` | `../backups` | Dossier de sortie |
+| `BACKUP_RETENTION_DAYS` | `14` | Suppression auto des sauvegardes plus anciennes |
+| `MYSQLDUMP_PATH` | auto | Chemin `mysqldump` si absent du PATH |
+
+### Planifier (automatique)
+
+**Windows — Planificateur de tâches**
+
+1. Créer une tâche quotidienne (ex. 02:00)
+2. Action : `powershell.exe -ExecutionPolicy Bypass -File "C:\chemin\backend\scripts\backup.ps1"`
+3. Stocker les sauvegardes hors du projet (ex. `D:\Backups\MenuGo`) via `BACKUP_DIR` dans `.env`
+
+**Linux — cron**
+
+```cron
+0 2 * * * /chemin/vers/backend/scripts/backup.sh >> /var/log/menugo-backup.log 2>&1
+```
+
+En production : copier les sauvegardes **hors site** (rsync, S3, snapshot disque).
+
+### Restaurer une sauvegarde
 
 ```bash
-mysql -u USER -p MenuGo < backup_menugo_YYYYMMDD.sql
+npm run backup:restore -- ../backups/menugo_YYYYMMDD_HHMMSS
 ```
 
-Fréquence recommandée en prod : quotidienne + avant chaque migration majeure.
+Confirmer avec `oui` quand demandé (ou `--yes` pour script).  
+**Attention :** écrase la base courante et le dossier `uploads/`.
+
+Restauration manuelle SQL :
+
+```bash
+gunzip -c backup/database.sql.gz | mysql -u USER -p MenuGo
+```
+
+Fréquence recommandée en prod : **quotidienne** + avant chaque migration majeure.
 
 ---
 

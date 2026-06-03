@@ -18,7 +18,9 @@
     "db:subscription-plan-key": "node scripts/migrate-subscription-plan-key.js",
     "db:onboarding": "node scripts/migrate-onboarding-flags.js",
     "db:registration-fields": "node scripts/migrate-registration-fields.js",
-    "db:product-is-visible": "node scripts/migrate-product-is-visible.js"
+    "db:product-is-visible": "node scripts/migrate-product-is-visible.js",
+    "backup": "node scripts/backup.js",
+    "backup:restore": "node scripts/restore-backup.js"
   },
   "engines": {
     "node": ">=18"

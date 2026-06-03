@@ -789,7 +789,7 @@
     window.addEventListener(
       "resize",
       function () {
-        if (window.matchMedia("(min-width: 768px)").matches) close();
+        if (window.matchMedia("(min-width: 900px)").matches) close();
       },
       { passive: true },
     );
