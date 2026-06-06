@@ -97,8 +97,28 @@ function runCommand(command, args, options) {
 }
 
 async function gzipFile(sourcePath, targetPath) {
-  await pipeline(fs.createReadStream(sourcePath), zlib.createGzip(), fs.createWriteStream(targetPath));
-  await fs.promises.unlink(sourcePath);
+  var tempPath = targetPath + ".tmp";
+  var completed = false;
+
+  try {
+    await pipeline(fs.createReadStream(sourcePath), zlib.createGzip(), fs.createWriteStream(tempPath, { flags: "wx" }));
+    await fs.promises.rename(tempPath, targetPath);
+    completed = true;
+  } finally {
+    await fs.promises.unlink(sourcePath).catch(function (error) {
+      if (error && error.code !== "ENOENT") {
+        throw error;
+      }
+    });
+
+    if (!completed) {
+      await fs.promises.unlink(tempPath).catch(function (error) {
+        if (error && error.code !== "ENOENT") {
+          throw error;
+        }
+      });
+    }
+  }
 }
 
 async function dumpDatabase(sqlPath) {
@@ -234,7 +254,13 @@ async function main() {
   await rotateBackups(backupRoot, retentionDays);
 }
 
-main().catch(function (err) {
-  console.error("[backup] Échec :", err.message || err);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch(function (err) {
+    console.error("[backup] Échec :", err.message || err);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  gzipFile: gzipFile,
+};
