@@ -15,6 +15,15 @@ var { pipeline } = require("stream/promises");
 var backendRoot = path.join(__dirname, "..");
 var uploadsDir = path.join(backendRoot, "uploads");
 
+function getRestorePaths(options) {
+  var opts = options || {};
+  var root = opts.backendRoot || backendRoot;
+  return {
+    backendRoot: root,
+    uploadsDir: opts.uploadsDir || path.join(root, "uploads"),
+  };
+}
+
 function requiredEnv(name) {
   var value = process.env[name];
   if (!value) {
@@ -115,9 +124,18 @@ async function restoreDatabase(sqlPath) {
   });
 }
 
-async function restoreUploads(backupFolder, uploadsFileName) {
+async function replaceUploadsDir(targetUploadsDir) {
+  await fs.promises.rm(targetUploadsDir, { recursive: true, force: true });
+  await fs.promises.mkdir(targetUploadsDir, { recursive: true });
+}
+
+async function restoreUploads(backupFolder, uploadsFileName, options) {
+  var restorePaths = getRestorePaths(options);
+  var commandRunner = (options && options.runCommand) || runCommand;
+
   if (!uploadsFileName) {
-    console.log("[restore] Aucune archive uploads dans cette sauvegarde.");
+    console.log("[restore] Aucune archive uploads dans cette sauvegarde — uploads/ remis à zéro.");
+    await replaceUploadsDir(restorePaths.uploadsDir);
     return;
   }
 
@@ -126,7 +144,7 @@ async function restoreUploads(backupFolder, uploadsFileName) {
     throw new Error("Archive uploads introuvable : " + archivePath);
   }
 
-  await fs.promises.mkdir(uploadsDir, { recursive: true });
+  await replaceUploadsDir(restorePaths.uploadsDir);
 
   console.log("[restore] Extraction uploads/…");
 
@@ -135,13 +153,13 @@ async function restoreUploads(backupFolder, uploadsFileName) {
       "Expand-Archive -Path '" +
       archivePath.replace(/'/g, "''") +
       "' -DestinationPath '" +
-      backendRoot.replace(/'/g, "''") +
+      restorePaths.uploadsDir.replace(/'/g, "''") +
       "' -Force";
-    await runCommand("powershell.exe", ["-NoProfile", "-Command", psScript], { shell: false });
+    await commandRunner("powershell.exe", ["-NoProfile", "-Command", psScript], { shell: false });
     return;
   }
 
-  await runCommand("tar", ["-xzf", archivePath, "-C", backendRoot], { shell: false });
+  await commandRunner("tar", ["-xzf", archivePath, "-C", restorePaths.backendRoot], { shell: false });
 }
 
 function askConfirmation(message) {
@@ -202,7 +220,13 @@ async function main() {
   console.log("[restore] Restauration terminée.");
 }
 
-main().catch(function (err) {
-  console.error("[restore] Échec :", err.message || err);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch(function (err) {
+    console.error("[restore] Échec :", err.message || err);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  restoreUploads: restoreUploads,
+};
