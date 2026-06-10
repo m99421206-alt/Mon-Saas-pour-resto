@@ -13,7 +13,9 @@ var readline = require("readline");
 var { pipeline } = require("stream/promises");
 
 var backendRoot = path.join(__dirname, "..");
-var uploadsDir = path.join(backendRoot, "uploads");
+function getUploadsDir(root) {
+  return path.join(root || backendRoot, "uploads");
+}
 
 function requiredEnv(name) {
   var value = process.env[name];
@@ -115,33 +117,87 @@ async function restoreDatabase(sqlPath) {
   });
 }
 
-async function restoreUploads(backupFolder, uploadsFileName) {
-  if (!uploadsFileName) {
-    console.log("[restore] Aucune archive uploads dans cette sauvegarde.");
-    return;
+async function createRestoreTempRoot(root) {
+  var parent = path.dirname(root || backendRoot);
+  return fs.promises.mkdtemp(path.join(parent, ".uploads-restore-"));
+}
+
+async function normalizePreparedUploads(tempRoot) {
+  var extractedUploadsDir = path.join(tempRoot, "uploads");
+  if (fs.existsSync(extractedUploadsDir)) {
+    return extractedUploadsDir;
   }
 
-  var archivePath = path.join(backupFolder, uploadsFileName);
-  if (!fs.existsSync(archivePath)) {
-    throw new Error("Archive uploads introuvable : " + archivePath);
+  await fs.promises.mkdir(extractedUploadsDir, { recursive: true });
+  var entries = await fs.promises.readdir(tempRoot);
+  for (var i = 0; i < entries.length; i += 1) {
+    var entry = entries[i];
+    if (entry === "uploads") {
+      continue;
+    }
+    await fs.promises.rename(path.join(tempRoot, entry), path.join(extractedUploadsDir, entry));
   }
+  return extractedUploadsDir;
+}
 
-  await fs.promises.mkdir(uploadsDir, { recursive: true });
+async function prepareUploadsRestore(backupFolder, uploadsFileName, root) {
+  var targetRoot = root || backendRoot;
+  var tempRoot = await createRestoreTempRoot(targetRoot);
 
-  console.log("[restore] Extraction uploads/…");
+  try {
+    if (!uploadsFileName) {
+      console.log("[restore] Aucune archive uploads dans cette sauvegarde — uploads/ sera restauré vide.");
+      await fs.promises.mkdir(path.join(tempRoot, "uploads"), { recursive: true });
+      return { tempRoot: tempRoot, uploadsDir: path.join(tempRoot, "uploads") };
+    }
 
-  if (archivePath.toLowerCase().endsWith(".zip")) {
-    var psScript =
-      "Expand-Archive -Path '" +
-      archivePath.replace(/'/g, "''") +
-      "' -DestinationPath '" +
-      backendRoot.replace(/'/g, "''") +
-      "' -Force";
-    await runCommand("powershell.exe", ["-NoProfile", "-Command", psScript], { shell: false });
-    return;
+    var archivePath = path.join(backupFolder, uploadsFileName);
+    if (!fs.existsSync(archivePath)) {
+      throw new Error("Archive uploads introuvable : " + archivePath);
+    }
+
+    console.log("[restore] Vérification et préparation uploads/…");
+
+    if (archivePath.toLowerCase().endsWith(".zip")) {
+      var psScript =
+        "Expand-Archive -Path '" +
+        archivePath.replace(/'/g, "''") +
+        "' -DestinationPath '" +
+        tempRoot.replace(/'/g, "''") +
+        "' -Force";
+      await runCommand("powershell.exe", ["-NoProfile", "-Command", psScript], { shell: false });
+    } else {
+      await runCommand("tar", ["-xzf", archivePath, "-C", tempRoot], { shell: false });
+    }
+
+    return { tempRoot: tempRoot, uploadsDir: await normalizePreparedUploads(tempRoot) };
+  } catch (err) {
+    await fs.promises.rm(tempRoot, { recursive: true, force: true }).catch(function () {});
+    throw err;
   }
+}
 
-  await runCommand("tar", ["-xzf", archivePath, "-C", backendRoot], { shell: false });
+async function replaceUploadsDirectory(prepared, root) {
+  var targetRoot = root || backendRoot;
+  var targetUploadsDir = getUploadsDir(targetRoot);
+  var previousUploadsDir = path.join(targetRoot, ".uploads-before-restore-" + Date.now());
+  var hadPreviousUploads = fs.existsSync(targetUploadsDir);
+
+  await fs.promises.mkdir(targetRoot, { recursive: true });
+
+  try {
+    if (hadPreviousUploads) {
+      await fs.promises.rename(targetUploadsDir, previousUploadsDir);
+    }
+    await fs.promises.rename(prepared.uploadsDir, targetUploadsDir);
+    await fs.promises.rm(previousUploadsDir, { recursive: true, force: true }).catch(function () {});
+    await fs.promises.rm(prepared.tempRoot, { recursive: true, force: true }).catch(function () {});
+  } catch (err) {
+    if (!fs.existsSync(targetUploadsDir) && hadPreviousUploads && fs.existsSync(previousUploadsDir)) {
+      await fs.promises.rename(previousUploadsDir, targetUploadsDir).catch(function () {});
+    }
+    throw err;
+  }
 }
 
 function askConfirmation(message) {
@@ -175,20 +231,6 @@ async function main() {
     throw new Error("Fichier SQL introuvable : " + sqlGzPath);
   }
 
-  console.warn("[restore] ATTENTION : cette opération écrase la base « " + process.env.DB_NAME + " » et uploads/.");
-  var confirmed = await askConfirmation("Confirmer la restauration");
-  if (!confirmed) {
-    console.log("[restore] Annulé.");
-    return;
-  }
-
-  var tempSql = await gunzipToTemp(sqlGzPath);
-  try {
-    await restoreDatabase(tempSql);
-  } finally {
-    await fs.promises.unlink(tempSql).catch(function () {});
-  }
-
   var uploadsFile = manifest && manifest.files ? manifest.files.uploads : null;
   if (!uploadsFile) {
     if (fs.existsSync(path.join(backupFolder, "uploads.zip"))) {
@@ -198,11 +240,37 @@ async function main() {
     }
   }
 
-  await restoreUploads(backupFolder, uploadsFile);
+  console.warn("[restore] ATTENTION : cette opération écrase la base « " + process.env.DB_NAME + " » et uploads/.");
+  var confirmed = await askConfirmation("Confirmer la restauration");
+  if (!confirmed) {
+    console.log("[restore] Annulé.");
+    return;
+  }
+
+  var preparedUploads = await prepareUploadsRestore(backupFolder, uploadsFile, backendRoot);
+  var tempSql = null;
+  try {
+    tempSql = await gunzipToTemp(sqlGzPath);
+    await restoreDatabase(tempSql);
+    await replaceUploadsDirectory(preparedUploads, backendRoot);
+  } finally {
+    if (tempSql) {
+      await fs.promises.unlink(tempSql).catch(function () {});
+    }
+    await fs.promises.rm(preparedUploads.tempRoot, { recursive: true, force: true }).catch(function () {});
+  }
+
   console.log("[restore] Restauration terminée.");
 }
 
-main().catch(function (err) {
-  console.error("[restore] Échec :", err.message || err);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch(function (err) {
+    console.error("[restore] Échec :", err.message || err);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  prepareUploadsRestore: prepareUploadsRestore,
+  replaceUploadsDirectory: replaceUploadsDirectory,
+};

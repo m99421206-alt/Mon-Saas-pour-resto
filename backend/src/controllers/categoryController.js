@@ -150,6 +150,20 @@ async function deleteCategory(req, res) {
     ]);
     var catName = cats.length && cats[0].name ? String(cats[0].name) : "";
 
+    var [[productCount]] = await pool.query(
+      "SELECT COUNT(*) AS total FROM products WHERE category_id = ? AND restaurant_id = ?",
+      [categoryId, restaurantId],
+    );
+    var totalProducts = Number(productCount && productCount.total) || 0;
+    if (totalProducts > 0) {
+      return res.status(409).json({
+        message:
+          "Impossible de supprimer cette catégorie : elle contient " +
+          totalProducts +
+          " plat(s). Déplacez ou supprimez les plats avant de supprimer la catégorie.",
+      });
+    }
+
     var [result] = await pool.query("DELETE FROM categories WHERE id = ? AND restaurant_id = ?", [
       categoryId,
       restaurantId,
