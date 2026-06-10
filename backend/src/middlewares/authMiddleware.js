@@ -5,8 +5,9 @@
  */
 
 const jwt = require("jsonwebtoken");
+const { getPool } = require("../config/database");
 
-function requireAuth(req, res, next) {
+async function requireAuth(req, res, next) {
   var header = req.headers.authorization || "";
   var parts = header.split(" ");
   var scheme = parts[0];
@@ -27,10 +28,34 @@ function requireAuth(req, res, next) {
     if (!userId) {
       return res.status(401).json({ message: "Token invalide." });
     }
-    req.user = { id: userId };
-    next();
   } catch (err) {
     return res.status(401).json({ message: "Token invalide ou expiré." });
+  }
+
+  try {
+    var pool = getPool();
+    var [rows] = await pool.query(
+      "SELECT id, account_status FROM users WHERE id = ? LIMIT 1",
+      [userId],
+    );
+
+    if (!rows.length) {
+      return res.status(401).json({ message: "Token invalide." });
+    }
+
+    var accountStatus =
+      rows[0].account_status != null && String(rows[0].account_status).trim() !== "" ?
+        String(rows[0].account_status).trim().toLowerCase()
+      : "active";
+
+    if (accountStatus === "suspended") {
+      return res.status(403).json({ message: "Ce compte a été suspendu. Contactez l'administrateur." });
+    }
+
+    req.user = { id: rows[0].id };
+    return next();
+  } catch (err) {
+    return next(err);
   }
 }
 
