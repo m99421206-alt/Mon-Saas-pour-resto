@@ -20,7 +20,8 @@
     "db:registration-fields": "node scripts/migrate-registration-fields.js",
     "db:product-is-visible": "node scripts/migrate-product-is-visible.js",
     "backup": "node scripts/backup.js",
-    "backup:restore": "node scripts/restore-backup.js"
+    "backup:restore": "node scripts/restore-backup.js",
+    "test": "node --test"
   },
   "engines": {
     "node": ">=18"
