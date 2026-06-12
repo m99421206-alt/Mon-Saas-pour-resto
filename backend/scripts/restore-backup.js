@@ -72,6 +72,29 @@ function runCommand(command, args, options) {
   });
 }
 
+function resolveBackupFile(backupFolder, fileName, fallbackName, label) {
+  var rawName =
+    fileName != null && String(fileName).trim() !== "" ?
+      String(fileName).trim()
+    : fallbackName;
+  if (!rawName) {
+    return null;
+  }
+
+  var name = String(rawName).trim();
+  if (path.isAbsolute(name) || name !== path.basename(name)) {
+    throw new Error(label + " invalide dans manifest.json : " + name);
+  }
+
+  var backupRoot = path.resolve(backupFolder);
+  var resolved = path.resolve(backupRoot, name);
+  if (path.dirname(resolved) !== backupRoot) {
+    throw new Error(label + " invalide dans manifest.json : " + name);
+  }
+
+  return resolved;
+}
+
 async function gunzipToTemp(gzPath) {
   var tempPath = gzPath.replace(/\.gz$/i, ".restore.tmp.sql");
   await pipeline(fs.createReadStream(gzPath), zlib.createGunzip(), fs.createWriteStream(tempPath));
@@ -121,7 +144,7 @@ async function restoreUploads(backupFolder, uploadsFileName) {
     return;
   }
 
-  var archivePath = path.join(backupFolder, uploadsFileName);
+  var archivePath = resolveBackupFile(backupFolder, uploadsFileName, null, "Archive uploads");
   if (!fs.existsSync(archivePath)) {
     throw new Error("Archive uploads introuvable : " + archivePath);
   }
@@ -170,7 +193,12 @@ async function main() {
     manifest = JSON.parse(await fs.promises.readFile(manifestPath, "utf8"));
   }
 
-  var sqlGzPath = path.join(backupFolder, (manifest && manifest.files && manifest.files.database) || "database.sql.gz");
+  var sqlGzPath = resolveBackupFile(
+    backupFolder,
+    manifest && manifest.files && manifest.files.database,
+    "database.sql.gz",
+    "Fichier SQL",
+  );
   if (!fs.existsSync(sqlGzPath)) {
     throw new Error("Fichier SQL introuvable : " + sqlGzPath);
   }
@@ -202,7 +230,14 @@ async function main() {
   console.log("[restore] Restauration terminée.");
 }
 
-main().catch(function (err) {
-  console.error("[restore] Échec :", err.message || err);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch(function (err) {
+    console.error("[restore] Échec :", err.message || err);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  resolveBackupFile: resolveBackupFile,
+  restoreUploads: restoreUploads,
+};
