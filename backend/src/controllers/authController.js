@@ -220,15 +220,19 @@ async function login(req, res) {
       return res.status(401).json({ message: "Email ou mot de passe incorrect." });
     }
 
-    loginLockout.recordSuccess(email, clientIp);
-
     var accountStatus =
       user.account_status != null && String(user.account_status).trim() !== ""
         ? String(user.account_status).trim().toLowerCase()
         : "active";
     if (accountStatus === "suspended") {
-      return res.status(403).json({ message: "Ce compte a été suspendu. Contactez l'administrateur." });
+      var failSuspended = loginLockout.recordFailure(email, clientIp);
+      if (!failSuspended.allowed) {
+        return loginLockout.sendLockoutResponse(res, failSuspended.retryAfterSeconds);
+      }
+      return res.status(401).json({ message: "Email ou mot de passe incorrect." });
     }
+
+    loginLockout.recordSuccess(email, clientIp);
 
     const [restaurants] = await pool.query(
       "SELECT r.id, r.name, r.city, r.country, r.whatsapp, r.subscription_status, r.subscription_started_at, r.subscription_ends_at, r.subscription_plan_key, r.subscription_amount_cfa, " +
