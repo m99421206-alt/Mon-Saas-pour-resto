@@ -162,6 +162,9 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      if (window.MenuGo_Toast) {
+        window.MenuGo_Toast.success("QR code téléchargé.");
+      }
     } catch (error) {
       window.open(
         "https://api.qrserver.com/v1/create-qr-code/?size=440x440&margin=16&data=" +
@@ -177,6 +180,10 @@
     feedback.textContent = msg;
     feedback.hidden = false;
     feedback.classList.toggle("qr-copy-feedback--ok", !!ok);
+    if (msg && window.MenuGo_Toast) {
+      if (ok) window.MenuGo_Toast.success(msg);
+      else window.MenuGo_Toast.error(msg);
+    }
     window.setTimeout(function () {
       feedback.hidden = true;
       feedback.textContent = "";

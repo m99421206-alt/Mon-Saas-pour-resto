@@ -57,7 +57,7 @@
       if (!form.hidden) {
         closeForm();
       }
-      setStatus(EDIT_LOCK_MESSAGE, true);
+      setStatus(EDIT_LOCK_MESSAGE, true, { toast: true });
     }
   }
 
@@ -71,9 +71,13 @@
     localStorage.removeItem(RESTAURANT_KEY);
   }
 
-  function setStatus(message, isError) {
+  function setStatus(message, isError, options) {
     status.textContent = message || "";
     status.classList.toggle("is-error", Boolean(isError));
+    if (options && options.toast && message && window.MenuGo_Toast) {
+      if (isError) window.MenuGo_Toast.error(message);
+      else window.MenuGo_Toast.success(message);
+    }
   }
 
   async function readJson(response) {
@@ -264,7 +268,7 @@
     if (!isAllowedImageFile(file)) {
       clearImageFileInput();
       setImagePreview(preview, "");
-      setStatus(UPLOAD_REJECT_MESSAGE, true);
+      setStatus(UPLOAD_REJECT_MESSAGE, true, { toast: true });
       return;
     }
     setStatus("");
@@ -519,7 +523,7 @@
 
   function openForm(product) {
     if (!categories.length) {
-      setStatus("Ajoutez d'abord une catégorie avant de créer un plat.", true);
+      setStatus("Ajoutez d'abord une catégorie avant de créer un plat.", true, { toast: true });
       return;
     }
 
@@ -586,7 +590,7 @@
       if (!isAllowedImageFile(file)) {
         clearImageFileInput();
         setImagePreview(imagePreview, "");
-        setStatus(UPLOAD_REJECT_MESSAGE, true);
+        setStatus(UPLOAD_REJECT_MESSAGE, true, { toast: true });
         return;
       }
       const transfer = new DataTransfer();
@@ -598,7 +602,7 @@
 
   function onAddPlat() {
     if (menuEditLocked) {
-      setStatus(EDIT_LOCK_MESSAGE, true);
+      setStatus(EDIT_LOCK_MESSAGE, true, { toast: true });
       return;
     }
     setStatus("");
@@ -627,14 +631,14 @@
       applyEditLock(me && me.subscription);
 
       if (menuEditLocked) {
-        setStatus(EDIT_LOCK_MESSAGE, true);
+        setStatus(EDIT_LOCK_MESSAGE, true, { toast: true });
       } else if (!categories.length) {
-        setStatus("Ajoutez une catégorie avant de créer votre premier plat.", true);
+        setStatus("Ajoutez une catégorie avant de créer votre premier plat.", true, { toast: true });
       } else {
         setStatus(products.length ? "" : "Aucun plat pour le moment.");
       }
     } catch (error) {
-      setStatus(error.message || "Impossible de charger les plats.", true);
+      setStatus(error.message || "Impossible de charger les plats.", true, { toast: true });
     }
   }
 
@@ -652,24 +656,24 @@
     const image = imageInput.value.trim();
 
     if (!name) {
-      setStatus("Le nom du plat est requis.", true);
+      setStatus("Le nom du plat est requis.", true, { toast: true });
       nameInput.focus();
       return;
     }
     if (!Number.isFinite(price) || price < 0) {
-      setStatus("Le prix doit être un nombre positif ou nul.", true);
+      setStatus("Le prix doit être un nombre positif ou nul.", true, { toast: true });
       priceInput.focus();
       return;
     }
     if (!Number.isInteger(categoryId) || categoryId < 1) {
-      setStatus("Sélectionnez une catégorie valide.", true);
+      setStatus("Sélectionnez une catégorie valide.", true, { toast: true });
       categorySelect.focus();
       return;
     }
 
     let variants = hasSizesInput.checked ? readVariants() : [];
     if (hasSizesInput.checked && !variants.length) {
-      setStatus("Ajoutez au moins une option avec un nom et un prix.", true);
+      setStatus("Ajoutez au moins une option avec un nom et un prix.", true, { toast: true });
       const firstVariantInput = variantsList.querySelector("[data-variant-field='price']");
       if (firstVariantInput) {
         firstVariantInput.focus();
@@ -709,9 +713,9 @@
 
       closeForm();
       await loadPage();
-      setStatus(wasEditing ? "Plat modifié." : "Plat ajouté.");
+      setStatus(wasEditing ? "Plat modifié." : "Plat ajouté.", false, { toast: true });
     } catch (error) {
-      setStatus(error.message || "Enregistrement impossible.", true);
+      setStatus(error.message || "Enregistrement impossible.", true, { toast: true });
     } finally {
       submitBtn.disabled = false;
     }
@@ -752,7 +756,7 @@
 
     if (menuEditLocked) {
       checkbox.checked = productIsVisible(product);
-      setStatus(EDIT_LOCK_MESSAGE, true);
+      setStatus(EDIT_LOCK_MESSAGE, true, { toast: true });
       return;
     }
 
@@ -768,10 +772,12 @@
         nextVisible ?
           "Plat visible sur le menu client."
         : "Plat masqué du menu client (toujours modifiable ici).",
+        false,
+        { toast: true },
       );
     } catch (error) {
       checkbox.checked = previousVisible;
-      setStatus(error.message || "Impossible de mettre à jour la visibilité.", true);
+      setStatus(error.message || "Impossible de mettre à jour la visibilité.", true, { toast: true });
     } finally {
       checkbox.disabled = false;
     }
@@ -788,7 +794,7 @@
     if (!product) return;
 
     if (menuEditLocked) {
-      setStatus(EDIT_LOCK_MESSAGE, true);
+      setStatus(EDIT_LOCK_MESSAGE, true, { toast: true });
       return;
     }
 
@@ -808,9 +814,9 @@
           method: "DELETE",
         });
         await loadPage();
-        setStatus("Plat supprimé.");
+        setStatus("Plat supprimé.", false, { toast: true });
       } catch (error) {
-        setStatus(error.message || "Suppression impossible.", true);
+        setStatus(error.message || "Suppression impossible.", true, { toast: true });
       }
     }
   });

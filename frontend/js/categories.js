@@ -54,9 +54,13 @@
     localStorage.removeItem(RESTAURANT_KEY);
   }
 
-  function setStatus(message, isError) {
+  function setStatus(message, isError, options) {
     status.textContent = message || "";
     status.classList.toggle("is-error", Boolean(isError));
+    if (options && options.toast && message && window.MenuGo_Toast) {
+      if (isError) window.MenuGo_Toast.error(message);
+      else window.MenuGo_Toast.success(message);
+    }
   }
 
   async function readJson(response) {
@@ -177,7 +181,7 @@
 
   function onAddCategory() {
     if (menuEditLocked) {
-      setStatus(EDIT_LOCK_MESSAGE, true);
+      setStatus(EDIT_LOCK_MESSAGE, true, { toast: true });
       return;
     }
     setStatus("");
@@ -201,12 +205,12 @@
       renderCategories();
       applyEditLock(me && me.subscription);
       if (menuEditLocked) {
-        setStatus(EDIT_LOCK_MESSAGE, true);
+        setStatus(EDIT_LOCK_MESSAGE, true, { toast: true });
       } else {
         setStatus(categories.length ? "" : "Aucune catégorie pour le moment.");
       }
     } catch (error) {
-      setStatus(error.message || "Impossible de charger les catégories.", true);
+      setStatus(error.message || "Impossible de charger les catégories.", true, { toast: true });
     }
   }
 
@@ -219,7 +223,7 @@
 
     const name = nameInput.value.trim();
     if (!name) {
-      setStatus("Le nom de la catégorie est requis.", true);
+      setStatus("Le nom de la catégorie est requis.", true, { toast: true });
       nameInput.focus();
       return;
     }
@@ -243,9 +247,9 @@
 
       closeForm();
       await loadPage();
-      setStatus(wasEditing ? "Catégorie modifiée." : "Catégorie ajoutée.");
+      setStatus(wasEditing ? "Catégorie modifiée." : "Catégorie ajoutée.", false, { toast: true });
     } catch (error) {
-      setStatus(error.message || "Enregistrement impossible.", true);
+      setStatus(error.message || "Enregistrement impossible.", true, { toast: true });
     } finally {
       submitBtn.disabled = false;
     }
@@ -267,7 +271,7 @@
     if (!category) return;
 
     if (menuEditLocked) {
-      setStatus(EDIT_LOCK_MESSAGE, true);
+      setStatus(EDIT_LOCK_MESSAGE, true, { toast: true });
       return;
     }
 
@@ -287,9 +291,9 @@
           method: "DELETE",
         });
         await loadPage();
-        setStatus("Catégorie supprimée.");
+        setStatus("Catégorie supprimée.", false, { toast: true });
       } catch (error) {
-        setStatus(error.message || "Suppression impossible.", true);
+        setStatus(error.message || "Suppression impossible.", true, { toast: true });
       }
     }
   });

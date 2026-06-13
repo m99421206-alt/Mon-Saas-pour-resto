@@ -217,6 +217,11 @@
     copyFeedback.hidden = !message;
     copyFeedback.classList.toggle("is-error", Boolean(isError));
 
+    if (message && window.MenuGo_Toast) {
+      if (isError) window.MenuGo_Toast.error(message);
+      else window.MenuGo_Toast.success(message);
+    }
+
     window.setTimeout(function () {
       copyFeedback.hidden = true;
       copyFeedback.textContent = "";

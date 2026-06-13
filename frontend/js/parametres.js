@@ -43,11 +43,15 @@
     localStorage.removeItem(RESTAURANT_KEY);
   }
 
-  function setFeedback(message, isError) {
+  function setFeedback(message, isError, options) {
     if (!feedback) return;
     feedback.textContent = message || "";
     feedback.hidden = !message;
     feedback.classList.toggle("is-error", Boolean(isError));
+    if (options && options.toast && message && window.MenuGo_Toast) {
+      if (isError) window.MenuGo_Toast.error(message);
+      else window.MenuGo_Toast.success(message);
+    }
   }
 
   function getStoredJson(key) {
@@ -205,7 +209,7 @@
     if (!isAllowedImageFile(file)) {
       input.value = "";
       setImagePreview(preview, "", dropzone, content);
-      setFeedback(UPLOAD_REJECT_MESSAGE, true);
+      setFeedback(UPLOAD_REJECT_MESSAGE, true, { toast: true });
       return;
     }
     setFeedback("");
@@ -245,7 +249,7 @@
       var file = event.dataTransfer && event.dataTransfer.files ? event.dataTransfer.files[0] : null;
       if (!file || !isAllowedImageFile(file)) {
         if (file) {
-          setFeedback(UPLOAD_REJECT_MESSAGE, true);
+          setFeedback(UPLOAD_REJECT_MESSAGE, true, { toast: true });
         }
         return;
       }
@@ -314,7 +318,7 @@
       fillForm(restaurant);
       setFeedback("");
     } catch (error) {
-      setFeedback(error.message || "Impossible de charger les paramètres.", true);
+      setFeedback(error.message || "Impossible de charger les paramètres.", true, { toast: true });
     }
   }
 
@@ -323,7 +327,7 @@
 
     var name = nameInput.value.trim();
     if (!name) {
-      setFeedback("Le nom du restaurant est requis.", true);
+      setFeedback("Le nom du restaurant est requis.", true, { toast: true });
       nameInput.focus();
       return;
     }
@@ -362,9 +366,9 @@
       localStorage.setItem(RESTAURANT_KEY, JSON.stringify(data.restaurant || null));
       renderAccountInfo(getStoredJson(USER_KEY), data.restaurant);
       fillForm(data.restaurant);
-      setFeedback("Paramètres enregistrés.");
+      setFeedback("Paramètres enregistrés.", false, { toast: true });
     } catch (error) {
-      setFeedback(error.message || "Enregistrement impossible.", true);
+      setFeedback(error.message || "Enregistrement impossible.", true, { toast: true });
     } finally {
       saveBtn.disabled = false;
     }

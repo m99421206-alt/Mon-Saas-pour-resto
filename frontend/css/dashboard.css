@@ -4691,6 +4691,129 @@ a.dash-qr-btn {
   }
 }
 
+/* Notifications toast — dashboard client */
+.dash-toast-root {
+  position: fixed;
+  z-index: 9999;
+  left: 50%;
+  bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 0.55rem;
+  width: min(calc(100vw - 1.5rem), 22rem);
+  pointer-events: none;
+}
+
+.dash-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.85rem 0.9rem;
+  border-radius: 1rem;
+  background: #ffffff;
+  color: var(--dash-text);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  opacity: 0;
+  transform: translateY(0.75rem) scale(0.98);
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease;
+  pointer-events: auto;
+}
+
+.dash-toast.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.dash-toast.is-leaving {
+  opacity: 0;
+  transform: translateY(0.5rem) scale(0.98);
+}
+
+.dash-toast__icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+}
+
+.dash-toast--success .dash-toast__icon {
+  color: #15803d;
+  background: #dcfce7;
+}
+
+.dash-toast--error .dash-toast__icon {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+.dash-toast--info .dash-toast__icon {
+  color: #1d4ed8;
+  background: #dbeafe;
+}
+
+.dash-toast__text {
+  margin: 0.15rem 0 0;
+  flex: 1;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.dash-toast__close {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: -0.15rem -0.1rem 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--dash-muted);
+  cursor: pointer;
+}
+
+.dash-toast__close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--dash-text);
+}
+
+@media (min-width: 64rem) {
+  .dash-toast-root {
+    left: auto;
+    right: 1.25rem;
+    top: 1.25rem;
+    bottom: auto;
+    transform: none;
+    align-items: flex-end;
+  }
+
+  .dash-toast {
+    min-width: 18rem;
+    max-width: 22rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-toast,
+  .dash-toast.is-visible,
+  .dash-toast.is-leaving {
+    transition: none;
+    transform: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .plats-card:hover,
   .plats-page .plats-form__submit:hover,
