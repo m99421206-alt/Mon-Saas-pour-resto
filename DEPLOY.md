@@ -250,6 +250,31 @@ Fréquence recommandée en prod : **quotidienne** + avant chaque migration majeu
 
 ---
 
+## Performance / cache navigateur
+
+Optimisations déjà en place dans le code :
+
+- **Images uploadées** : compressées et converties automatiquement en **WebP** à l’upload (`sharp`), redimensionnées à 1600px max. En-têtes de cache long (`Cache-Control: public, max-age=2592000, immutable`) servis par l’API sur `/uploads` (sûr car noms de fichiers uniques).
+- **Polices & Font Awesome** : chargées en **non bloquant** (`media="print" onload`) sur toutes les pages → meilleur FCP/LCP.
+- **Scripts** : tous chargés avec `defer`.
+- **Menu client** : un seul appel API (`/menu/:id`), images `loading="lazy"`, bannière `fetchpriority="high"`.
+
+À configurer côté **hébergeur statique** (nginx, Netlify, Vercel…) pour le CSS/JS du dossier `frontend/` :
+
+```nginx
+# Exemple nginx — cache long pour les assets statiques
+location ~* \.(css|js)$ {
+  add_header Cache-Control "public, max-age=604800";
+}
+location ~* \.(png|jpg|jpeg|webp|svg|woff2)$ {
+  add_header Cache-Control "public, max-age=2592000, immutable";
+}
+```
+
+> Note : si tu modifies un fichier CSS/JS, pense à versionner l’URL (`dashboard.css?v=2`) ou à vider le cache CDN, sinon les visiteurs garderont l’ancienne version en cache.
+
+---
+
 ## Stockage des uploads
 
 Les images sont enregistrées dans `backend/uploads/`.

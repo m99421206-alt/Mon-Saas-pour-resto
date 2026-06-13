@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS `users` (
   `account_status` VARCHAR(20) NOT NULL DEFAULT 'active',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_users_email` (`email`),
-  KEY `idx_users_account_status` (`account_status`)
+  KEY `idx_users_account_status` (`account_status`),
+  KEY `idx_users_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS `restaurants` (
@@ -41,7 +42,11 @@ CREATE TABLE IF NOT EXISTS `restaurants` (
   PRIMARY KEY (`id`),
   KEY `idx_restaurants_user_id` (`user_id`),
   KEY `idx_restaurants_subscription` (`subscription_status`),
+  KEY `idx_restaurants_subscription_ends_at` (`subscription_ends_at`),
+  KEY `idx_restaurants_sub_status_ends` (`subscription_status`, `subscription_ends_at`),
   KEY `idx_restaurants_menu_suspended` (`menu_suspended`),
+  KEY `idx_restaurants_created_at` (`created_at`),
+  KEY `idx_restaurants_needs_setup_help` (`needs_setup_help`),
   CONSTRAINT `fk_restaurants_user`
     FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
     ON DELETE CASCADE ON UPDATE CASCADE
@@ -72,6 +77,8 @@ CREATE TABLE IF NOT EXISTS `products` (
   PRIMARY KEY (`id`),
   KEY `idx_products_restaurant_id` (`restaurant_id`),
   KEY `idx_products_category_id` (`category_id`),
+  KEY `idx_products_public_menu` (`restaurant_id`, `is_visible`, `category_id`, `id`),
+  KEY `idx_products_created_at` (`created_at`),
   CONSTRAINT `fk_products_restaurant`
     FOREIGN KEY (`restaurant_id`) REFERENCES `restaurants` (`id`)
     ON DELETE CASCADE ON UPDATE CASCADE,
@@ -89,6 +96,7 @@ CREATE TABLE IF NOT EXISTS `product_variants` (
   `sort_order` INT UNSIGNED NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `idx_product_variants_product_id` (`product_id`),
+  KEY `idx_product_variants_menu_order` (`product_id`, `sort_order`, `id`),
   CONSTRAINT `fk_product_variants_product`
     FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
     ON DELETE CASCADE ON UPDATE CASCADE
@@ -104,11 +112,33 @@ CREATE TABLE IF NOT EXISTS `audit_logs` (
   PRIMARY KEY (`id`),
   KEY `idx_audit_logs_created_at` (`created_at`),
   KEY `idx_audit_logs_user_id` (`user_id`),
+  KEY `idx_audit_logs_restaurant_id` (`restaurant_id`),
+  KEY `idx_audit_logs_restaurant_created` (`restaurant_id`, `created_at`),
+  KEY `idx_audit_logs_action_created` (`action`, `created_at`),
   CONSTRAINT `fk_audit_logs_user`
     FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
     ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_audit_logs_restaurant`
     FOREIGN KEY (`restaurant_id`) REFERENCES `restaurants` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `upload_files` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `restaurant_id` INT UNSIGNED NOT NULL,
+  `user_id` INT UNSIGNED NULL,
+  `filename` VARCHAR(255) NOT NULL,
+  `url` VARCHAR(512) NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_upload_files_filename` (`filename`),
+  KEY `idx_upload_files_restaurant_id` (`restaurant_id`),
+  KEY `idx_upload_files_user_id` (`user_id`),
+  CONSTRAINT `fk_upload_files_restaurant`
+    FOREIGN KEY (`restaurant_id`) REFERENCES `restaurants` (`id`)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_upload_files_user`
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
     ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

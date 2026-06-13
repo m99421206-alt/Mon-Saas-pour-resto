@@ -36,6 +36,30 @@
   let products = [];
   let categories = [];
   let editingId = null;
+  let menuEditLocked = false;
+
+  var EDIT_LOCK_MESSAGE =
+    "Votre abonnement a expiré. La modification du menu est désactivée — votre menu public reste visible. Ouvrez « Mon abonnement » pour le réactiver.";
+
+  function applyEditLock(subscription) {
+    menuEditLocked =
+      !!subscription &&
+      Object.prototype.hasOwnProperty.call(subscription, "can_edit_menu") &&
+      subscription.can_edit_menu === false;
+
+    document.querySelectorAll("[data-action='add-plat']").forEach(function (btn) {
+      btn.disabled = menuEditLocked;
+      btn.setAttribute("aria-disabled", menuEditLocked ? "true" : "false");
+      btn.title = menuEditLocked ? EDIT_LOCK_MESSAGE : "";
+    });
+
+    if (menuEditLocked) {
+      if (!form.hidden) {
+        closeForm();
+      }
+      setStatus(EDIT_LOCK_MESSAGE, true);
+    }
+  }
 
   function redirectToLogin() {
     window.location.href = "login.html";
@@ -199,7 +223,14 @@
     var extension = dot >= 0 ? name.slice(dot) : "";
     var allowedExt = [".jpg", ".jpeg", ".png", ".webp"];
     if (allowedExt.indexOf(extension) === -1) return false;
-    if (!/^image\/(jpeg|png|webp)$/i.test(file.type || "")) return false;
+    var mime = String(file.type || "").toLowerCase();
+    if (
+      mime &&
+      mime !== "application/octet-stream" &&
+      !/^(image\/(jpeg|jpg|pjpeg|png|x-png|webp))$/i.test(mime)
+    ) {
+      return false;
+    }
     return true;
   }
 
@@ -566,6 +597,10 @@
   }
 
   function onAddPlat() {
+    if (menuEditLocked) {
+      setStatus(EDIT_LOCK_MESSAGE, true);
+      return;
+    }
     setStatus("");
     openForm(null);
   }
@@ -589,7 +624,11 @@
       renderCategoryOptions();
       renderProducts();
 
-      if (!categories.length) {
+      applyEditLock(me && me.subscription);
+
+      if (menuEditLocked) {
+        setStatus(EDIT_LOCK_MESSAGE, true);
+      } else if (!categories.length) {
         setStatus("Ajoutez une catégorie avant de créer votre premier plat.", true);
       } else {
         setStatus(products.length ? "" : "Aucun plat pour le moment.");
@@ -711,6 +750,12 @@
     });
     if (!product) return;
 
+    if (menuEditLocked) {
+      checkbox.checked = productIsVisible(product);
+      setStatus(EDIT_LOCK_MESSAGE, true);
+      return;
+    }
+
     const nextVisible = checkbox.checked;
     const previousVisible = productIsVisible(product);
 
@@ -741,6 +786,11 @@
       return item.id === id;
     });
     if (!product) return;
+
+    if (menuEditLocked) {
+      setStatus(EDIT_LOCK_MESSAGE, true);
+      return;
+    }
 
     if (target.getAttribute("data-action") === "edit-plat") {
       setStatus("");

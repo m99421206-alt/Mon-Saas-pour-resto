@@ -45,7 +45,7 @@ async function getPublicMenu(req, res) {
     var products;
     try {
       var productRows = await pool.query(
-        "SELECT id, restaurant_id, category_id, name, description, price, image, has_sizes FROM products WHERE restaurant_id = ? AND COALESCE(is_visible, 1) = 1 ORDER BY id DESC",
+        "SELECT id, restaurant_id, category_id, name, description, price, image, has_sizes FROM products WHERE restaurant_id = ? AND is_visible = 1 ORDER BY id DESC",
         [restaurantId],
       );
       products = productRows[0];

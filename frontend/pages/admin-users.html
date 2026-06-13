@@ -13,7 +13,15 @@
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
     />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
     <link rel="stylesheet" href="../css/admin-dashboard.css" />
     <link rel="stylesheet" href="../css/admin-users.css" />
   </head>
@@ -222,7 +230,7 @@
       </div>
     </div>
 
-    <script src="../js/config.js"></script>
-    <script src="../js/admin-users.js"></script>
+    <script src="../js/config.js" defer></script>
+    <script src="../js/admin-users.js" defer></script>
   </body>
 </html>

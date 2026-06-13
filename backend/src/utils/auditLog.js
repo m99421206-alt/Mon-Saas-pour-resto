@@ -6,11 +6,13 @@ const { getPool } = require("../config/database");
 
 var AUDIT_ACTIONS = {
   USER_LOGIN: "user.login",
+  USER_LOGIN_FAILED: "user.login_failed",
   USER_REGISTER: "user.register",
   USER_SUSPEND: "user.suspend",
   USER_ACTIVATE: "user.activate",
   USER_DELETE: "user.delete",
   UPLOAD_IMAGE: "media.upload",
+  UPLOAD_IMAGE_FAILED: "media.upload_failed",
   PRODUCT_CREATE: "product.create",
   PRODUCT_UPDATE: "product.update",
   PRODUCT_DELETE: "product.delete",
@@ -32,11 +34,13 @@ var AUDIT_ACTIONS = {
 
 var LABEL_FALLBACK = {
   "user.login": "Connexion utilisateur",
+  "user.login_failed": "Échec connexion utilisateur",
   "user.register": "Inscription nouveau compte",
   "user.suspend": "Suspension utilisateur",
   "user.activate": "Réactivation utilisateur",
   "user.delete": "Suppression utilisateur",
   "media.upload": "Upload image",
+  "media.upload_failed": "Upload image refusé",
   "product.create": "Ajout produit",
   "product.update": "Modification produit",
   "product.delete": "Suppression produit",

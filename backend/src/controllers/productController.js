@@ -2,6 +2,7 @@ const { getPool } = require("../config/database");
 const { removeUnusedUploads } = require("../utils/uploadCleanup");
 const { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
 const ownership = require("../utils/restaurantOwnership");
+const { normalizeStoredImageUrl } = require("../utils/imageUrlValidation");
 
 function resolveRestaurantId(req) {
   if (req.restaurantId) {
@@ -19,13 +20,7 @@ function normalizeName(body) {
 }
 
 function normalizeImage(body) {
-  if (!body || body.image == null || body.image === "") {
-    return null;
-  }
-  if (typeof body.image !== "string") {
-    return null;
-  }
-  return body.image.trim() || null;
+  return normalizeStoredImageUrl(body && body.image);
 }
 
 function normalizeDescription(body) {
@@ -189,6 +184,9 @@ async function createProduct(req, res) {
       await removeUnusedUploads(collectProductUploadUrls(image, variants));
       return res.status(400).json({ message: "category_id est requis et doit être valide." });
     }
+    if (image === false) {
+      return res.status(400).json({ message: "Image invalide. Utilisez une image uploadée par MenuGo." });
+    }
 
     var restaurantId = resolveRestaurantId(req);
     if (!restaurantId) {
@@ -285,6 +283,9 @@ async function updateProduct(req, res) {
     if (!categoryId) {
       await removeUnusedUploads(collectProductUploadUrls(image, variants));
       return res.status(400).json({ message: "category_id est requis et doit être valide." });
+    }
+    if (image === false) {
+      return res.status(400).json({ message: "Image invalide. Utilisez une image uploadée par MenuGo." });
     }
 
     var restaurantId = resolveRestaurantId(req);

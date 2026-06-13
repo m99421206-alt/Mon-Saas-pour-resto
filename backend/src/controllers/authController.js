@@ -45,7 +45,20 @@ function getJwtSecret() {
 function signToken(payload) {
   const secret = getJwtSecret();
   const expiresIn = process.env.JWT_EXPIRES_IN || "7d";
-  return jwt.sign(payload, secret, { expiresIn });
+  return jwt.sign(payload, secret, { expiresIn: expiresIn, algorithm: "HS256" });
+}
+
+async function logLoginFailure(params) {
+  var email = String((params && params.email) || "").trim().toLowerCase();
+  var reason = String((params && params.reason) || "invalid_credentials").slice(0, 80);
+  var ip = String((params && params.ip) || "unknown").slice(0, 80);
+
+  await appendAudit({
+    userId: params && params.userId ? params.userId : null,
+    restaurantId: null,
+    action: AUDIT_ACTIONS.USER_LOGIN_FAILED,
+    detail: "Échec connexion (" + reason + ") email=" + email.slice(0, 160) + " ip=" + ip,
+  });
 }
 
 async function register(req, res) {
@@ -192,6 +205,7 @@ async function login(req, res) {
 
   var lockCheck = loginLockout.checkLockout(email, clientIp);
   if (!lockCheck.allowed) {
+    await logLoginFailure({ email: email, ip: clientIp, reason: "locked" });
     return loginLockout.sendLockoutResponse(res, lockCheck.retryAfterSeconds);
   }
 
@@ -204,6 +218,7 @@ async function login(req, res) {
 
     if (!rows.length) {
       var failUnknown = loginLockout.recordFailure(email, clientIp);
+      await logLoginFailure({ email: email, ip: clientIp, reason: "unknown_email" });
       if (!failUnknown.allowed) {
         return loginLockout.sendLockoutResponse(res, failUnknown.retryAfterSeconds);
       }
@@ -214,6 +229,7 @@ async function login(req, res) {
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) {
       var failBadPassword = loginLockout.recordFailure(email, clientIp);
+      await logLoginFailure({ userId: user.id, email: email, ip: clientIp, reason: "bad_password" });
       if (!failBadPassword.allowed) {
         return loginLockout.sendLockoutResponse(res, failBadPassword.retryAfterSeconds);
       }

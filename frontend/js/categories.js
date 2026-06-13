@@ -22,6 +22,27 @@
 
   let categories = [];
   let editingId = null;
+  let menuEditLocked = false;
+
+  var EDIT_LOCK_MESSAGE =
+    "Votre abonnement a expiré. La modification des catégories est désactivée — votre menu public reste visible. Ouvrez « Mon abonnement » pour le réactiver.";
+
+  function applyEditLock(subscription) {
+    menuEditLocked =
+      !!subscription &&
+      Object.prototype.hasOwnProperty.call(subscription, "can_edit_menu") &&
+      subscription.can_edit_menu === false;
+
+    document.querySelectorAll("[data-action='add-category']").forEach(function (btn) {
+      btn.disabled = menuEditLocked;
+      btn.setAttribute("aria-disabled", menuEditLocked ? "true" : "false");
+      btn.title = menuEditLocked ? EDIT_LOCK_MESSAGE : "";
+    });
+
+    if (menuEditLocked && !form.hidden) {
+      closeForm();
+    }
+  }
 
   function redirectToLogin() {
     window.location.href = "login.html";
@@ -126,9 +147,9 @@
       const article = document.createElement("article");
       article.className = "cats-item";
       article.innerHTML =
-        '<p class="cats-item__name">' +
+        '<div class="cats-item__copy"><p class="cats-item__name">' +
         escapeHtml(category.name) +
-        '</p><div class="cats-item__actions">' +
+        '</p></div><div class="cats-item__actions">' +
         '<button type="button" class="cats-item__btn" data-action="edit-category" data-id="' +
         category.id +
         '">Modifier</button>' +
@@ -155,6 +176,10 @@
   }
 
   function onAddCategory() {
+    if (menuEditLocked) {
+      setStatus(EDIT_LOCK_MESSAGE, true);
+      return;
+    }
     setStatus("");
     openForm(null);
   }
@@ -174,7 +199,12 @@
       renderAccountInfo(me);
       categories = categoriesData.categories || [];
       renderCategories();
-      setStatus(categories.length ? "" : "Aucune catégorie pour le moment.");
+      applyEditLock(me && me.subscription);
+      if (menuEditLocked) {
+        setStatus(EDIT_LOCK_MESSAGE, true);
+      } else {
+        setStatus(categories.length ? "" : "Aucune catégorie pour le moment.");
+      }
     } catch (error) {
       setStatus(error.message || "Impossible de charger les catégories.", true);
     }
@@ -235,6 +265,11 @@
       return item.id === id;
     });
     if (!category) return;
+
+    if (menuEditLocked) {
+      setStatus(EDIT_LOCK_MESSAGE, true);
+      return;
+    }
 
     if (target.getAttribute("data-action") === "edit-category") {
       setStatus("");

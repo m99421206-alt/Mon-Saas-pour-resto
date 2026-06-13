@@ -169,7 +169,14 @@
     var extension = dot >= 0 ? name.slice(dot) : "";
     var allowedExt = [".jpg", ".jpeg", ".png", ".webp"];
     if (allowedExt.indexOf(extension) === -1) return false;
-    if (!/^image\/(jpeg|png|webp)$/i.test(file.type || "")) return false;
+    var mime = String(file.type || "").toLowerCase();
+    if (
+      mime &&
+      mime !== "application/octet-stream" &&
+      !/^(image\/(jpeg|jpg|pjpeg|png|x-png|webp))$/i.test(mime)
+    ) {
+      return false;
+    }
     return true;
   }
 
@@ -198,10 +205,10 @@
     if (!isAllowedImageFile(file)) {
       input.value = "";
       setImagePreview(preview, "", dropzone, content);
-      setStatus(UPLOAD_REJECT_MESSAGE, true);
+      setFeedback(UPLOAD_REJECT_MESSAGE, true);
       return;
     }
-    setStatus("");
+    setFeedback("");
     setImagePreview(preview, URL.createObjectURL(file), dropzone, content);
   }
 
@@ -238,7 +245,7 @@
       var file = event.dataTransfer && event.dataTransfer.files ? event.dataTransfer.files[0] : null;
       if (!file || !isAllowedImageFile(file)) {
         if (file) {
-          setStatus(UPLOAD_REJECT_MESSAGE, true);
+          setFeedback(UPLOAD_REJECT_MESSAGE, true);
         }
         return;
       }

@@ -1813,6 +1813,7 @@ a.dash-qr-btn {
   border-radius: 0.75rem;
   background: #ffffff;
   box-shadow: var(--dash-shadow-card);
+  min-width: 0;
 }
 
 .cats-item__copy {
@@ -1825,6 +1826,7 @@ a.dash-qr-btn {
   color: var(--dash-text);
   font-weight: 700;
   line-height: 1.35;
+  word-break: break-word;
 }
 
 .plats-item__meta {
@@ -1840,6 +1842,8 @@ a.dash-qr-btn {
   align-items: center;
   gap: 0.45rem;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .cats-item__btn,
@@ -1853,12 +1857,40 @@ a.dash-qr-btn {
   font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
+  max-width: 100%;
+  white-space: nowrap;
 }
 
 .cats-item__btn--danger,
 .plats-item__btn--danger {
   background: #fff0f0;
   color: #b00020;
+}
+
+/* Grille PC / tablette : nom au-dessus, boutons côte à côte sans débordement */
+@media (min-width: 48rem) {
+  .cats-list .cats-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  .cats-list .cats-item__copy {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .cats-list .cats-item__actions {
+    width: 100%;
+    justify-content: stretch;
+    flex-wrap: nowrap;
+  }
+
+  .cats-list .cats-item__btn {
+    flex: 1 1 0;
+    min-width: 0;
+    text-align: center;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

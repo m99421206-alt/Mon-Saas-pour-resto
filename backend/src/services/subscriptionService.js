@@ -32,7 +32,7 @@ async function markExpiredIfPast(connection, restaurantId) {
   await connection.query(
     "UPDATE restaurants SET subscription_status = 'expired' " +
       "WHERE id = ? AND subscription_status IN ('trial', 'active') " +
-      "AND subscription_ends_at IS NOT NULL AND DATE(subscription_ends_at) < CURDATE()",
+      "AND subscription_ends_at IS NOT NULL AND subscription_ends_at < CURDATE()",
     [restaurantId],
   );
 }
@@ -108,7 +108,7 @@ async function expireAllPastDueGlobally() {
   var pool = getPool();
   await pool.query(
     "UPDATE restaurants SET subscription_status = 'expired' WHERE subscription_status IN ('trial', 'active') " +
-      "AND subscription_ends_at IS NOT NULL AND DATE(subscription_ends_at) < CURDATE()",
+      "AND subscription_ends_at IS NOT NULL AND subscription_ends_at < CURDATE()",
   );
 }
 

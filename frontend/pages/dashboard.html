@@ -13,11 +13,19 @@
     <title>Dashboard — MenuGo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="../css/dashboard.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
     />
-    <link rel="stylesheet" href="../css/dashboard.css" />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
   </head>
   <!-- data-menu-id : id du restaurant pour le lien public du menu -->
   <body class="dashboard-page" data-menu-id="">
@@ -256,9 +264,9 @@
       </footer>
     </aside>
 
-    <script src="../js/config.js"></script>
-    <script src="../js/subscription-alerts.js"></script>
-    <script src="../js/dash-shell.js"></script>
-    <script src="../js/dashboard.js"></script>
+    <script src="../js/config.js" defer></script>
+    <script src="../js/subscription-alerts.js" defer></script>
+    <script src="../js/dash-shell.js" defer></script>
+    <script src="../js/dashboard.js" defer></script>
   </body>
 </html>

@@ -36,6 +36,25 @@ const allowedOrigins = (process.env.CORS_ORIGIN || "")
   })
   .filter(Boolean);
 
+function assertProductionConfig() {
+  if (!isProduction) {
+    return;
+  }
+
+  var jwtSecret = String(process.env.JWT_SECRET || "");
+  if (!jwtSecret || jwtSecret === "changez_moi_cle_longue_aleatoire" || jwtSecret.length < 32) {
+    throw new Error("Configuration production invalide : JWT_SECRET doit être une clé forte (32+ caractères).");
+  }
+  if (allowedOrigins.length === 0 || allowedOrigins.indexOf("*") !== -1) {
+    throw new Error("Configuration production invalide : CORS_ORIGIN doit contenir les origines exactes du frontend.");
+  }
+  if (!process.env.DB_PASSWORD) {
+    throw new Error("Configuration production invalide : DB_PASSWORD doit être renseigné.");
+  }
+}
+
+assertProductionConfig();
+
 function isPrivateNetworkHost(hostname) {
   return (
     hostname === "localhost" ||
@@ -74,7 +93,7 @@ function isAllowedCorsOrigin(origin) {
   }
 
   if (
-    allowedOrigins.includes("*") ||
+    (!isProduction && allowedOrigins.includes("*")) ||
     allowedOrigins.includes(origin) ||
     isAllowedDevOrigin(origin)
   ) {
@@ -90,6 +109,14 @@ var registerRateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: "Trop de tentatives. Réessayez dans une minute." },
+});
+
+var loginRateLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: isProduction ? 20 : 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Trop de tentatives de connexion. Réessayez dans une minute." },
 });
 
 /* CORS avant les routes — préflight inclus (évite blocages inscription / login en dev). */
@@ -115,8 +142,21 @@ app.use(
 /* Corps des requêtes en JSON (POST / PUT) */
 app.use(express.json({ limit: "256kb" }));
 
-/* Images uploadées par les restaurants */
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+/* Images uploadées par les restaurants.
+   Les noms de fichiers sont uniques (timestamp + aléatoire), le contenu ne change
+   jamais : on peut donc activer un cache navigateur long + immutable. */
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "../uploads"), {
+    maxAge: "30d",
+    immutable: true,
+    etag: true,
+    lastModified: true,
+    setHeaders: function (res) {
+      res.setHeader("Cache-Control", "public, max-age=2592000, immutable");
+    },
+  })
+);
 
 /* Route de santé : serveur + base de données */
 app.get("/health", async function (req, res) {
@@ -135,6 +175,7 @@ app.get("/health", async function (req, res) {
 
 /* Limitation globale inscription ; login : 5 échecs → blocage (loginLockout.js) */
 app.post("/register", registerRateLimiter);
+app.post("/login", loginRateLimiter);
 
 /* Authentification (étape 5) */
 app.use("/", authRoutes);

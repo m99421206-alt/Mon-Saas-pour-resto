@@ -37,6 +37,17 @@ var BLOCKED_EXTENSIONS = [
 var REJECT_MESSAGE =
   "Type de fichier non autorisé. Formats acceptés : JPG, JPEG, PNG, WEBP.";
 
+function isAllowedMimeType(mimetype) {
+  var mime = String(mimetype || "").toLowerCase();
+  if (!mime || mime === "application/octet-stream") {
+    return true;
+  }
+  if (mime === "image/jpg" || mime === "image/pjpeg" || mime === "image/x-png") {
+    return true;
+  }
+  return ALLOWED_MIME_TYPES.indexOf(mime) !== -1;
+}
+
 function hasBlockedExtensionInName(originalname) {
   var lower = String(originalname || "").toLowerCase();
   if (!lower) {
@@ -58,7 +69,7 @@ function isAllowedUploadMeta(originalname, mimetype) {
     return false;
   }
 
-  if (ALLOWED_MIME_TYPES.indexOf(String(mimetype || "").toLowerCase()) === -1) {
+  if (!isAllowedMimeType(mimetype)) {
     return false;
   }
 
@@ -182,6 +193,7 @@ module.exports = {
   ALLOWED_MIME_TYPES: ALLOWED_MIME_TYPES,
   REJECT_MESSAGE: REJECT_MESSAGE,
   isAllowedUploadMeta: isAllowedUploadMeta,
+  isAllowedMimeType: isAllowedMimeType,
   createImageFileFilter: createImageFileFilter,
   validateUploadedImageFile: validateUploadedImageFile,
 };

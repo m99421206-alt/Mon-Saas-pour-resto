@@ -88,7 +88,7 @@ async function listSubscriptions(req, res) {
     }
 
     if (statusFilter !== "all" && ALLOWED_SUB.indexOf(statusFilter) !== -1) {
-      conditions.push("LOWER(TRIM(COALESCE(NULLIF(TRIM(r.subscription_status),''), 'trial'))) = ?");
+      conditions.push("r.subscription_status = ?");
       vals.push(statusFilter);
     }
 
@@ -471,11 +471,12 @@ async function listExpiringSubscriptions(req, res) {
         "FROM restaurants r " +
         "INNER JOIN users u ON u.id = r.user_id " +
         "WHERE r.subscription_ends_at IS NOT NULL " +
-        "AND GREATEST(0, DATEDIFF(DATE(r.subscription_ends_at), CURDATE())) <= ? " +
-        "AND LOWER(TRIM(COALESCE(NULLIF(TRIM(r.subscription_status), ''), 'trial'))) <> 'suspended' " +
+        "AND r.subscription_ends_at >= CURDATE() " +
+        "AND r.subscription_ends_at < DATE_ADD(CURDATE(), INTERVAL ? DAY) " +
+        "AND r.subscription_status <> 'suspended' " +
         "ORDER BY days_remaining ASC, r.name ASC " +
         "LIMIT 60",
-      [maxDays],
+      [maxDays + 1],
     );
 
     var items = rows.map(function (r) {

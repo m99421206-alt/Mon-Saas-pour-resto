@@ -2,6 +2,7 @@ const { getPool } = require("../config/database");
 const { removeUnusedUploads } = require("../utils/uploadCleanup");
 const { normalizeWhatsapp: normalizeWhatsappField } = require("../utils/whatsappNormalize");
 const ownership = require("../utils/restaurantOwnership");
+const { normalizeStoredImageUrl } = require("../utils/imageUrlValidation");
 
 function normalizeText(value) {
   if (value == null) {
@@ -55,8 +56,8 @@ async function updateMyRestaurant(req, res) {
     var name = normalizeText(req.body.name || req.body.restaurantName);
     var description = normalizeText(req.body.description);
     var whatsapp = normalizeWhatsappField(req.body.whatsapp);
-    var logoUrl = normalizeText(req.body.logo_url || req.body.logoUrl);
-    var bannerUrl = normalizeText(req.body.banner_url || req.body.bannerUrl);
+    var logoUrl = normalizeStoredImageUrl(req.body.logo_url || req.body.logoUrl);
+    var bannerUrl = normalizeStoredImageUrl(req.body.banner_url || req.body.bannerUrl);
     var themeColor = normalizeThemeColor(req.body.theme_color || req.body.themeColor);
 
     if (!name) {
@@ -70,6 +71,9 @@ async function updateMyRestaurant(req, res) {
     if (themeColor === false) {
       await removeUnusedUploads(collectRestaurantUploadUrls(logoUrl, bannerUrl));
       return res.status(400).json({ message: "Couleur de thème invalide. Exemple : #FF7A00" });
+    }
+    if (logoUrl === false || bannerUrl === false) {
+      return res.status(400).json({ message: "Image invalide. Utilisez une image uploadée par MenuGo." });
     }
 
     var pool = getPool();

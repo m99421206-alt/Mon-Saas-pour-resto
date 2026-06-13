@@ -4,7 +4,13 @@
   var API_PORT = "4000";
   var hostname = window.location.hostname || "127.0.0.1";
   var protocol = window.location.protocol === "https:" ? "https:" : "http:";
-  var defaultApiUrl = protocol + "//" + hostname + ":" + API_PORT;
+  var isLocalHost =
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname.indexOf("192.168.") === 0 ||
+    hostname.indexOf("10.") === 0 ||
+    /^172\.(1[6-9]|2\d|3[0-1])\./.test(hostname);
+  var defaultApiUrl = isLocalHost ? protocol + "//" + hostname + ":" + API_PORT : window.location.origin;
   var existingConfig = window.MenuGo_CONFIG || {};
 
   window.MenuGo_CONFIG = Object.assign({}, existingConfig, {

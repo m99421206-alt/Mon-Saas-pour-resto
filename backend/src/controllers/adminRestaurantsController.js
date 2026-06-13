@@ -26,8 +26,9 @@ function signOwnerToken(userId) {
   if (!secret) {
     throw new Error("JWT_SECRET manquant");
   }
-  return jwt.sign({ userId: userId }, secret, {
-    expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+  return jwt.sign({ userId: userId, purpose: "admin_dashboard_access" }, secret, {
+    expiresIn: process.env.ADMIN_DASHBOARD_ACCESS_EXPIRES_IN || "30m",
+    algorithm: "HS256",
   });
 }
 

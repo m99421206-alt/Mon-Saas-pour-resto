@@ -1,6 +1,5 @@
-﻿const API_BASE_URL = window.MenuGo_CONFIG.API_URL;
-const DEFAULT_PRODUCT_IMAGE =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='420' viewBox='0 0 600 420'%3E%3Crect width='600' height='420' fill='%23f3f4f6'/%3E%3Ctext x='300' y='210' text-anchor='middle' dominant-baseline='middle' font-family='Arial,sans-serif' font-size='24' fill='%239ca3af'%3EImage indisponible%3C/text%3E%3C/svg%3E";
+const API_BASE_URL = window.MenuGo_CONFIG.API_URL;
+const NO_IMAGE_LABEL = "Aucune image disponible";
 
 function getTrimmedDescription(value) {
   if (value == null) {
@@ -24,9 +23,11 @@ const homeNavEl = document.getElementById("home-nav");
 const cartNavEl = document.getElementById("cart-nav");
 const favoritesNavEl = document.getElementById("favorites-nav");
 const cartToastEl = document.getElementById("cart-toast");
+const cartToastMsgEl = document.getElementById("cart-toast-msg");
 const productDetailEl = document.getElementById("product-detail");
 const detailBackEl = document.getElementById("detail-back");
 const detailImageEl = document.getElementById("detail-image");
+const detailImagePlaceholderEl = document.getElementById("detail-image-placeholder");
 const detailTitleEl = document.getElementById("detail-title");
 const detailPriceEl = document.getElementById("detail-price");
 const detailDescriptionEl = document.getElementById("detail-description");
@@ -145,6 +146,37 @@ function formatApiPrice(price) {
 function productHasImage(product) {
   if (!product || !product.image) return false;
   return String(product.image).trim().length > 0;
+}
+
+function getDetailImageUrl(product, variant) {
+  if (variant && variant.image && String(variant.image).trim()) {
+    return String(variant.image).trim();
+  }
+  if (productHasImage(product)) {
+    return product.detailImage || product.image;
+  }
+  return "";
+}
+
+function updateDetailMedia(product, variant) {
+  if (!detailImageEl || !detailImagePlaceholderEl) {
+    return;
+  }
+
+  const imageUrl = getDetailImageUrl(product, variant);
+  const altText = variant ? `${product.name} - ${variant.name}` : product.alt || product.name;
+
+  if (imageUrl) {
+    detailImageEl.hidden = false;
+    detailImageEl.src = imageUrl;
+    detailImageEl.alt = altText;
+    detailImagePlaceholderEl.hidden = true;
+  } else {
+    detailImageEl.hidden = true;
+    detailImageEl.removeAttribute("src");
+    detailImageEl.alt = "";
+    detailImagePlaceholderEl.hidden = false;
+  }
 }
 
 function normalizeImageUrl(imageUrl, fallbackUrl) {
@@ -369,11 +401,12 @@ function createProductCard(product) {
   const mediaBlock = productHasImage(product)
     ? `
     <div class="product-card__media">
-      <img class="product-card__image" src="${escapeHtml(product.image)}" alt="${productAlt}" loading="lazy" />
+      <img class="product-card__image" src="${escapeHtml(product.image)}" alt="${productAlt}" loading="lazy" decoding="async" />
       ${heartBtn}
     </div>`
     : `
-    <div class="product-card__top">
+    <div class="product-card__media product-card__media--empty">
+      <div class="product-card__placeholder" role="img" aria-label="${escapeHtml(NO_IMAGE_LABEL)}">${escapeHtml(NO_IMAGE_LABEL)}</div>
       ${heartBtn}
     </div>`;
   card.innerHTML = `
@@ -410,8 +443,8 @@ function createSimilarProductCard(product) {
     ? `<span class="similar-card__meta">${productMeta}</span>`
     : "";
   const imageBlock = productHasImage(product)
-    ? `<img class="similar-card__image" src="${escapeHtml(product.image)}" alt="${productAlt}" loading="lazy" />`
-    : "";
+    ? `<img class="similar-card__image" src="${escapeHtml(product.image)}" alt="${productAlt}" loading="lazy" decoding="async" />`
+    : `<div class="similar-card__placeholder" role="img" aria-label="${escapeHtml(NO_IMAGE_LABEL)}"><span>${escapeHtml(NO_IMAGE_LABEL)}</span></div>`;
   if (!productHasImage(product)) {
     card.classList.add("similar-card--no-image");
   }
@@ -606,7 +639,11 @@ function normalizeVariant(variant, index, product) {
   const name = variant && variant.name ? String(variant.name) : fallbackNames[index] || `Option ${index + 1}`;
   const value = variant && variant.price != null ? variant.price : product.price;
   const image =
-    variant && variant.image ? normalizeImageUrl(variant.image, product.detailImage || product.image) : product.detailImage || product.image;
+    variant && variant.image && String(variant.image).trim() ?
+      normalizeImageUrl(variant.image, "")
+    : productHasImage(product) ?
+      product.detailImage || product.image
+    : "";
 
   return {
     id: variant && variant.id != null ? String(variant.id) : name.toLowerCase(),
@@ -633,15 +670,7 @@ function getProductVariants(product) {
 function setSelectedVariant(variant) {
   selectedVariant = variant;
   detailPriceEl.textContent = variant ? variant.price : selectedProduct.price;
-  if (productHasImage(selectedProduct)) {
-    detailImageEl.hidden = false;
-    detailImageEl.src = selectedProduct.detailImage || selectedProduct.image;
-    detailImageEl.alt = variant ? `${selectedProduct.name} - ${variant.name}` : selectedProduct.alt;
-  } else {
-    detailImageEl.hidden = true;
-    detailImageEl.removeAttribute("src");
-    detailImageEl.alt = "";
-  }
+  updateDetailMedia(selectedProduct, variant);
 
   document.querySelectorAll(".size-option").forEach(function (button) {
     button.classList.toggle("active", variant && button.dataset.variantId === variant.id);
@@ -685,15 +714,7 @@ function updateQuantity(value) {
 
 function showProductDetail(product) {
   selectedProduct = product;
-  if (productHasImage(product)) {
-    detailImageEl.hidden = false;
-    detailImageEl.src = product.detailImage || product.image;
-    detailImageEl.alt = product.alt;
-  } else {
-    detailImageEl.hidden = true;
-    detailImageEl.removeAttribute("src");
-    detailImageEl.alt = "";
-  }
+  updateDetailMedia(product, null);
   detailTitleEl.textContent = product.name;
   detailPriceEl.textContent = product.price;
   if (hasVisibleDescription(product.meta)) {
@@ -719,12 +740,32 @@ function hideProductDetail() {
 }
 
 function showCartToast(productName) {
+  if (!cartToastEl) {
+    return;
+  }
+
   window.clearTimeout(toastTimeout);
-  cartToastEl.textContent = `${productName} ajouté au panier`;
+
+  if (cartToastMsgEl) {
+    cartToastMsgEl.textContent = (productName || "Produit") + " ajouté au panier";
+  }
+
+  cartToastEl.classList.remove("is-leaving");
   cartToastEl.hidden = false;
+
+  window.requestAnimationFrame(function () {
+    cartToastEl.classList.add("is-visible");
+  });
+
   toastTimeout = window.setTimeout(function () {
-    cartToastEl.hidden = true;
-  }, 2200);
+    cartToastEl.classList.remove("is-visible");
+    cartToastEl.classList.add("is-leaving");
+
+    toastTimeout = window.setTimeout(function () {
+      cartToastEl.classList.remove("is-leaving");
+      cartToastEl.hidden = true;
+    }, 260);
+  }, 2400);
 }
 
 function getSelectedOrderLine() {

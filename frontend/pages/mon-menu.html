@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -6,16 +6,40 @@
     <title>Menu client - MenuGo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+
+    <!-- CSS critique du design : bloquant (nécessaire au premier rendu) -->
+    <link rel="stylesheet" href="../css/menu-client.css" />
+
+    <!-- Police principale : chargement non bloquant (display=swap évite le FOIT) -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+      media="print"
+      onload="this.media='all'"
     />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+      />
+    </noscript>
+
+    <!-- Font Awesome : non bloquant (les icônes ne font pas partie du contenu LCP) -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       referrerpolicy="no-referrer"
+      media="print"
+      onload="this.media='all'"
     />
-    <link rel="stylesheet" href="../css/menu-client.css" />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        referrerpolicy="no-referrer"
+      />
+    </noscript>
   </head>
   <body>
     <div class="app">
@@ -27,6 +51,7 @@
               id="hero-cover"
               alt=""
               decoding="async"
+              fetchpriority="high"
               hidden
             />
           </div>
@@ -60,12 +85,13 @@
         </button>
 
         <div class="product-detail__scroll">
-          <img
-            class="detail-image"
-            id="detail-image"
-            src="../../assets/images/icone/logo.png"
-            alt="Image du produit"
-          />
+          <div class="detail-media">
+            <img class="detail-image" id="detail-image" alt="Image du produit" hidden />
+            <div class="detail-image-placeholder" id="detail-image-placeholder" role="img" hidden>
+              <i class="fa-regular fa-image" aria-hidden="true"></i>
+              <span>Aucune image disponible</span>
+            </div>
+          </div>
 
           <div class="detail-content">
             <h2 class="detail-title" id="detail-title">Produit</h2>
@@ -163,11 +189,11 @@
       </nav>
 
       <div class="cart-toast" id="cart-toast" role="status" aria-live="polite" hidden>
-        Produit ajouté au panier
+        <span class="cart-toast__msg" id="cart-toast-msg"></span>
       </div>
     </div>
 
-    <script src="../js/config.js"></script>
-    <script src="../js/mon-menu.js"></script>
+    <script src="../js/config.js" defer></script>
+    <script src="../js/mon-menu.js" defer></script>
   </body>
 </html>

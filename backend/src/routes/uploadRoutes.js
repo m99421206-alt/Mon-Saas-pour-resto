@@ -8,6 +8,8 @@ const requireRestaurantMenuEdit = require("../middlewares/subscriptionEditMiddle
 var platformSettings = require("../services/platformSettings");
 const { appendAudit, AUDIT_ACTIONS, getRestaurantIdForUserAudit } = require("../utils/auditLog");
 const uploadImageValidation = require("../utils/uploadImageValidation");
+const { optimizeUploadedImage } = require("../utils/optimizeUploadedImage");
+const { registerUploadForRestaurant } = require("../utils/uploadOwnership");
 
 const router = express.Router();
 const uploadsDir = path.join(__dirname, "../../uploads");
@@ -39,6 +41,15 @@ function buildUploadMw() {
   });
 }
 
+async function logUploadFailure(req, reason) {
+  await appendAudit({
+    userId: req.user && req.user.id ? req.user.id : null,
+    restaurantId: req.restaurantId || (req.user && req.user.id ? await getRestaurantIdForUserAudit(req.user.id) : null),
+    action: AUDIT_ACTIONS.UPLOAD_IMAGE_FAILED,
+    detail: "Upload image refusé : " + String(reason || "raison inconnue").slice(0, 240),
+  });
+}
+
 router.use(requireAuth);
 router.use(requireRestaurantOwner);
 
@@ -53,31 +64,56 @@ router.post("/", requireRestaurantMenuEdit, function (req, res) {
           err.code === "LIMIT_FILE_SIZE" ?
             "L’image dépasse la limite configurée (~" + maxMb + " Mo)."
           : err.message || "Upload impossible.";
+        await logUploadFailure(req, message);
         return res.status(400).json({ message: message });
       }
 
       if (!req.file) {
+        await logUploadFailure(req, "Aucune image reçue.");
         return res.status(400).json({ message: "Aucune image reçue." });
       }
 
       var imageCheck = await uploadImageValidation.validateUploadedImageFile(req.file);
       if (!imageCheck.ok) {
+        await logUploadFailure(req, imageCheck.message);
         return res.status(400).json({ message: imageCheck.message });
       }
 
+      // Compression + conversion WebP (réduit fortement le poids, sans changer le rendu).
+      var optimized = await optimizeUploadedImage(req.file);
+      if (optimized.rejected) {
+        await logUploadFailure(req, optimized.message);
+        return res.status(400).json({ message: optimized.message });
+      }
+      var finalFilename = optimized.filename || req.file.filename;
+
       var rid = req.restaurantId || (await getRestaurantIdForUserAudit(req.user.id));
+      await registerUploadForRestaurant({
+        restaurantId: rid,
+        userId: req.user.id,
+        filename: finalFilename,
+      });
+
       await appendAudit({
         userId: req.user.id,
         restaurantId: rid,
         action: AUDIT_ACTIONS.UPLOAD_IMAGE,
-        detail: "Upload image (« " + req.file.filename + " »)",
+        detail: "Upload image (« " + finalFilename + " »)",
       });
 
       return res.status(201).json({
-        url: "/uploads/" + req.file.filename,
+        url: "/uploads/" + finalFilename,
       });
     } catch (innerErr) {
-      return res.status(500).json({ message: "Erreur lors de l’enregistrement de l’image." });
+      if (process.env.NODE_ENV !== "production") {
+        console.error("[upload]", innerErr);
+      }
+      return res.status(500).json({
+        message:
+          process.env.NODE_ENV !== "production" && innerErr && innerErr.message
+            ? "Erreur upload : " + innerErr.message
+            : "Erreur lors de l’enregistrement de l’image.",
+      });
     }
   });
 });
