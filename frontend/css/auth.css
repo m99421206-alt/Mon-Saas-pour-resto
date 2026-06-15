@@ -1,4 +1,6 @@
-﻿/* MenuGo — pages authentification (inscription / connexion) */
+/* MenuGo — pages authentification (inscription / connexion) */
+
+@import url("responsive-guard.css");
 
 :root {
   --color-accent: #ff6b00;
@@ -26,7 +28,8 @@ body.auth-page {
   min-height: 100vh;
   min-height: 100dvh;
   width: 100%;
-  overflow-x: hidden;
+  max-width: 100%;
+  overflow-x: clip;
   font-family: var(--font-sans);
   font-size: 1rem;
   color: var(--color-text);

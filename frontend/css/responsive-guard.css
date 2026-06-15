@@ -1,0 +1,43 @@
+/**
+ * MenuGo — protections responsive mobile
+ * Scroll horizontal involontaire + double-tap zoom sur éléments interactifs
+ */
+
+html {
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
+img,
+video,
+svg,
+canvas,
+iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+button,
+a,
+input,
+select,
+textarea,
+label,
+summary,
+[role="button"] {
+  touch-action: manipulation;
+}
+
+/* iOS : éviter le zoom au focus sur les champs trop petits */
+@media (max-width: 47.99rem) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="hidden"]),
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
+}

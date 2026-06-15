@@ -1,4 +1,4 @@
-﻿/* =============================================================================
+/* =============================================================================
    MenuGo — Landing (mobile-first)
    Couleurs et espacements calqués sur les maquettes fournies.
    ============================================================================= */
@@ -48,6 +48,8 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
   /* Ancres lisibles sous le sticky header + encoche téléphone */
   scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 4.75rem);
 }
@@ -60,12 +62,25 @@ html {
 
 body {
   margin: 0;
+  max-width: 100%;
+  overflow-x: clip;
   font-family: var(--font-sans);
   font-size: 1rem;
   line-height: 1.55;
   color: var(--color-text);
   background: var(--color-bg);
   -webkit-font-smoothing: antialiased;
+}
+
+button,
+a,
+input,
+select,
+textarea,
+label,
+summary,
+[role="button"] {
+  touch-action: manipulation;
 }
 
 img {
@@ -367,7 +382,8 @@ p {
     right: 0;
     bottom: auto;
     left: auto;
-    width: min(21.5rem, calc(100vw - 2rem));
+    width: min(21.5rem, calc(100% - 2rem));
+    max-width: calc(100% - 2rem);
     /* Panneau clair : hauteur max ~50 % du viewport (sans dépasser l’espace sous le header) */
     height: min(
       50vh,

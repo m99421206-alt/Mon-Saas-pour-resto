@@ -197,7 +197,7 @@ async function getActivity(req, res) {
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Impossible de charger l’activité." });
+    return res.status(500).json({ message: "Impossible de charger l'activité." });
   }
 }
 

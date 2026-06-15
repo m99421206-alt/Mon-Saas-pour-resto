@@ -1,4 +1,6 @@
-﻿/* MenuGo — page onboarding (post-inscription) */
+/* MenuGo — page onboarding (post-inscription) */
+
+@import url("responsive-guard.css");
 
 :root {
   --onb-accent: #ff6b00;
@@ -39,7 +41,9 @@ body.onb-page {
   position: relative;
   z-index: 1;
   max-width: 32rem;
+  min-width: 0;
   margin: 0 auto;
+  overflow-x: clip;
   padding: clamp(1.25rem, 4vw, 2rem) clamp(1rem, 4vw, 1.5rem) 2.5rem;
   display: flex;
   flex-direction: column;

@@ -1,4 +1,6 @@
-﻿/* Dashboard MenuGo (mobile-first) — aligné maquette SaaS */
+@import url("responsive-guard.css");
+
+/* Dashboard MenuGo (mobile-first) — aligné maquette SaaS */
 
 :root {
   --dash-bg: #fafafa;
@@ -43,6 +45,8 @@ body.dashboard-page {
   margin: 0;
   min-height: 100vh;
   min-height: 100dvh;
+  max-width: 100%;
+  overflow-x: clip;
   background: var(--dash-page);
   color: var(--dash-text);
   font-family: var(--font-sans);
@@ -51,7 +55,9 @@ body.dashboard-page {
 .dashboard-main {
   width: 100%;
   max-width: 30rem;
+  min-width: 0;
   margin: 0 auto;
+  overflow-x: clip;
   padding: 1.25rem 1.1rem max(1.75rem, env(safe-area-inset-bottom, 0px));
 }
 
@@ -1174,7 +1180,7 @@ a.dash-qr-btn {
   position: fixed;
   inset: 0 auto 0 0;
   width: var(--drawer-width);
-  max-width: 86vw;
+  max-width: min(86vw, var(--drawer-width));
   background: var(--drawer-surface);
   border-radius: 0 var(--drawer-radius) var(--drawer-radius) 0;
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08);
@@ -2490,8 +2496,8 @@ a.dash-qr-btn {
 
 @media (max-width: 47.99rem) {
   .dashboard-main {
-    max-width: 27rem;
-    overflow-x: hidden;
+    max-width: 100%;
+    overflow-x: clip;
   }
 
   .plats-page-head,
@@ -3649,7 +3655,8 @@ a.dash-qr-btn {
   .dash-layout {
     margin-left: var(--dash-sidebar-w);
     width: calc(100% - var(--dash-sidebar-w));
-    max-width: calc(100vw - var(--dash-sidebar-w));
+    max-width: 100%;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -4702,7 +4709,8 @@ a.dash-qr-btn {
   flex-direction: column-reverse;
   align-items: center;
   gap: 0.55rem;
-  width: min(calc(100vw - 1.5rem), 22rem);
+  width: min(22rem, calc(100% - 1.5rem));
+  max-width: calc(100% - 1.5rem);
   pointer-events: none;
 }
 

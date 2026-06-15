@@ -42,7 +42,7 @@
     </noscript>
   </head>
   <body>
-    <div class="app">
+    <div class="app menu-enter-pending">
       <main class="page">
         <section class="hero" aria-labelledby="restaurant-name">
           <div class="hero__banner-frame is-empty" id="hero-banner-frame">
@@ -117,7 +117,7 @@
             </div>
 
             <section class="similar-section" aria-labelledby="similar-title">
-              <h3 class="similar-title" id="similar-title">Produit similaire</h3>
+              <h3 class="similar-title" id="similar-title">Produits similaires</h3>
               <div class="similar-list" id="similar-products"></div>
             </section>
           </div>
@@ -184,7 +184,10 @@
           <i class="fa-regular fa-heart" aria-hidden="true"></i>
         </a>
         <a class="bottom-nav__item" id="cart-nav" href="#" aria-label="Panier">
-          <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
+          <span class="bottom-nav__icon-wrap">
+            <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
+            <span class="cart-badge" id="cart-badge" hidden>0</span>
+          </span>
         </a>
       </nav>
 

@@ -526,7 +526,8 @@
 }
 
 .subs-plan-picker__panel {
-  width: min(400px, 100vw - 2rem);
+  width: min(400px, calc(100% - 2rem));
+  max-width: calc(100% - 2rem);
   padding: clamp(18px, 4vw, 22px);
   border-radius: 18px;
   background: #f9fafb;

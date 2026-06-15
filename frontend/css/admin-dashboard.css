@@ -1,7 +1,9 @@
-﻿/**
+/**
  * MenuGo — Admin plateforme
  * Layout SaaS : sidebar fixe, header, cartes stats, tableau activité, responsive.
  */
+
+@import url("responsive-guard.css");
 
 :root {
   --adm-bg: #f0f2f5;
@@ -234,6 +236,8 @@ button {
   margin-left: var(--adm-sidebar-w);
   min-height: 100vh;
   min-height: 100dvh;
+  min-width: 0;
+  overflow-x: clip;
   display: flex;
   flex-direction: column;
 }
@@ -499,11 +503,14 @@ body.adm-sidebar-open .adm-header__menu-icon::after,
 
 .adm-main {
   flex: 1;
+  min-width: 0;
+  overflow-x: clip;
   padding: clamp(1rem, 3vw, 1.75rem);
 }
 
 .adm-main__inner {
   max-width: 90rem;
+  min-width: 0;
   margin: 0 auto;
 }
 
