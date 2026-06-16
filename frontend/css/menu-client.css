@@ -1395,6 +1395,25 @@ img {
   cursor: pointer;
 }
 
+.order-remove-btn {
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.order-remove-btn img {
+  width: 1.15rem;
+  height: 1.15rem;
+  object-fit: contain;
+  pointer-events: none;
+}
+
 .order-item__price {
   min-width: 5.4rem;
   font-weight: 700;
@@ -1573,6 +1592,16 @@ img {
   .order-qty-btn {
     width: 1.5rem;
     height: 1.5rem;
+  }
+
+  .order-remove-btn {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .order-remove-btn img {
+    width: 1rem;
+    height: 1rem;
   }
 }
 

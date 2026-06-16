@@ -1,5 +1,6 @@
 const API_BASE_URL = window.MenuGo_CONFIG.API_URL;
 const NO_IMAGE_LABEL = "Aucune image disponible";
+const ORDER_DELETE_ICON_SRC = "../../assets/images/icone/supprimer.png";
 
 function getTrimmedDescription(value) {
   if (value == null) {
@@ -61,6 +62,48 @@ let favoriteIds = loadFavoriteIds();
 let detailEnterTimer;
 let menuEnterPlayed = false;
 let menuEnterTimer;
+let savedMenuScrollY = 0;
+
+/**
+ * Le menu principal défile via le document (window).
+ * .app a overflow:hidden et .page n'est pas un conteneur scrollable.
+ */
+function getMenuScrollY() {
+  return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+}
+
+/**
+ * Sauvegarde avant ouverture d'un overlay menu → détail/commande.
+ * .app:has(#product-detail) verrouille la hauteur et le navigateur remet le scroll document à 0.
+ */
+function saveMenuScrollPosition() {
+  savedMenuScrollY = getMenuScrollY();
+}
+
+/**
+ * Restaure la position après fermeture, une frame après le déverrouillage CSS de .app.
+ */
+function restoreMenuScrollPosition() {
+  var y = savedMenuScrollY;
+  requestAnimationFrame(function () {
+    try {
+      window.scrollTo({ top: y, left: 0, behavior: "instant" });
+    } catch (error) {
+      window.scrollTo(0, y);
+    }
+  });
+}
+
+/** Ferme l'overlay détail sans réafficher la barre WhatsApp (gérée par l'appelant). */
+function dismissProductDetailOverlay(restoreScroll) {
+  window.clearTimeout(detailEnterTimer);
+  productDetailEl.classList.remove("is-opening");
+  productDetailEl.classList.remove("is-layout-prep");
+  productDetailEl.hidden = true;
+  if (restoreScroll) {
+    restoreMenuScrollPosition();
+  }
+}
 
 function loadFavoriteIds() {
   try {
@@ -1111,6 +1154,12 @@ function showProductDetail(product) {
   window.clearTimeout(detailEnterTimer);
   productDetailEl.classList.remove("is-opening");
   productDetailEl.classList.remove("is-layout-prep");
+
+  /* Ne sauvegarder que depuis le menu (pas lors d'un changement via produits similaires). */
+  if (productDetailEl.hidden) {
+    saveMenuScrollPosition();
+  }
+
   selectedProduct = product;
   detailTitleEl.textContent = product.name;
   detailPriceEl.textContent = product.price;
@@ -1136,10 +1185,7 @@ function showProductDetail(product) {
 }
 
 function hideProductDetail() {
-  window.clearTimeout(detailEnterTimer);
-  productDetailEl.classList.remove("is-opening");
-  productDetailEl.classList.remove("is-layout-prep");
-  productDetailEl.hidden = true;
+  dismissProductDetailOverlay(true);
   whatsappEl.hidden = false;
   bottomNavEl.hidden = false;
 }
@@ -1259,6 +1305,9 @@ function createOrderItem(item) {
       </button>
     </span>
     <span class="order-item__price">${itemPrice}</span>
+    <button class="order-remove-btn" type="button" data-action="remove" aria-label="Supprimer ${itemLabel}">
+      <img src="${ORDER_DELETE_ICON_SRC}" alt="" width="18" height="18" decoding="async" />
+    </button>
   `;
 
   row.querySelector('[data-action="plus"]').addEventListener("click", function () {
@@ -1267,6 +1316,10 @@ function createOrderItem(item) {
 
   row.querySelector('[data-action="minus"]').addEventListener("click", function () {
     updateOrderItemQuantity(item.key, item.quantity - 1);
+  });
+
+  row.querySelector('[data-action="remove"]').addEventListener("click", function () {
+    updateOrderItemQuantity(item.key, 0);
   });
 
   return row;
@@ -1290,8 +1343,11 @@ function renderOrder() {
 }
 
 function showOrderPage() {
+  if (productDetailEl.hidden && orderPageEl.hidden) {
+    saveMenuScrollPosition();
+  }
   orderPreviousView = productDetailEl.hidden ? "menu" : "detail";
-  productDetailEl.hidden = true;
+  dismissProductDetailOverlay(false);
   orderPageEl.hidden = false;
   whatsappEl.hidden = true;
   bottomNavEl.hidden = false;
@@ -1310,10 +1366,11 @@ function hideOrderPage(targetView) {
     return;
   }
 
-  productDetailEl.hidden = true;
+  dismissProductDetailOverlay(false);
   whatsappEl.hidden = false;
   bottomNavEl.hidden = false;
   setActiveNav(homeNavEl);
+  restoreMenuScrollPosition();
 }
 
 function getWhatsappGreeting() {
@@ -1351,7 +1408,7 @@ detailBackEl.addEventListener("click", hideProductDetail);
 homeNavEl.addEventListener("click", function (event) {
   event.preventDefault();
   orderPageEl.hidden = true;
-  productDetailEl.hidden = true;
+  dismissProductDetailOverlay(true);
   whatsappEl.hidden = false;
   bottomNavEl.hidden = false;
   setActiveNav(homeNavEl);
@@ -1388,7 +1445,7 @@ cartNavEl.addEventListener("click", function (event) {
 favoritesNavEl.addEventListener("click", function (event) {
   event.preventDefault();
   orderPageEl.hidden = true;
-  productDetailEl.hidden = true;
+  dismissProductDetailOverlay(true);
   whatsappEl.hidden = false;
   bottomNavEl.hidden = false;
   showFavoriteProducts();
