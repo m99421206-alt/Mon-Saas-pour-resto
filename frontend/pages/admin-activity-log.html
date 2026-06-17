@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="Journal d'activité MenuGo — administration plateforme." />
+    <title>Journal d'activité — Admin MenuGo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
+    <link rel="stylesheet" href="../css/admin-dashboard.css" />
+    <link rel="stylesheet" href="../css/admin-activity-log.css" />
+  </head>
+  <body class="adm-app">
+    <a class="adm-skip-link" href="#admin-main">Aller au contenu principal</a>
+
+    <aside class="adm-sidebar" id="adm-sidebar-panel" aria-label="Navigation administration plateforme">
+      <div class="adm-sidebar__inner">
+        <header class="adm-sidebar__head">
+          <a href="../../index.html" class="adm-sidebar__brand">
+            <span class="adm-sidebar__logo" aria-hidden="true">
+              <img src="../../assets/images/icone/logo.webp" alt="MenuGo" width="36" height="36" />
+            </span>
+            <span class="adm-sidebar__brand-text">MenuGo <span class="adm-sidebar__badge">Admin</span></span>
+          </a>
+        </header>
+
+        <nav class="adm-sidebar__nav" aria-label="Sections admin">
+          <ul class="adm-sidebar__list">
+            <li><a href="admin-dashboard.html" class="adm-sidebar__link">Tableau de bord</a></li>
+            <li><a href="admin-users.html" class="adm-sidebar__link">Utilisateurs</a></li>
+            <li><a href="admin-restaurants.html" class="adm-sidebar__link">Restaurants</a></li>
+            <li><a href="admin-subscriptions.html" class="adm-sidebar__link">Abonnements</a></li>
+            <li><a href="admin-settings.html" class="adm-sidebar__link">Paramètres</a></li>
+            <li>
+              <a href="admin-activity-log.html" class="adm-sidebar__link is-active" aria-current="page">
+                <span class="adm-sidebar__link-icon" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                    <path d="M3 3v5h5" />
+                    <path d="M12 7v5l4 2" />
+                  </svg>
+                </span>
+                Journal d'activité
+              </a>
+            </li>
+          </ul>
+        </nav>
+
+        <footer class="adm-sidebar__foot">
+          <a href="login.html" class="adm-sidebar__link adm-sidebar__link--muted">Quitter l'admin</a>
+        </footer>
+      </div>
+    </aside>
+
+    <div class="adm-overlay" id="adm-overlay" aria-hidden="true"></div>
+
+    <div class="adm-layout">
+      <header class="adm-header">
+        <div class="adm-header__inner">
+          <button
+            type="button"
+            class="adm-header__menu-btn"
+            id="adm-open-sidebar"
+            aria-label="Ouvrir le menu"
+            aria-controls="adm-sidebar-panel"
+            aria-expanded="false"
+          >
+            <span class="adm-header__menu-icon" aria-hidden="true"></span>
+          </button>
+          <div class="adm-header__spacer" aria-hidden="true"></div>
+          <div class="adm-header__actions">
+            <button type="button" class="adm-header__icon-btn" aria-label="Notifications">
+              <span class="adm-header__notif-dot" aria-hidden="true"></span>
+            </button>
+            <div class="adm-profile">
+              <button type="button" class="adm-profile__trigger">
+                <span class="adm-profile__avatar" aria-hidden="true"></span>
+                <span class="adm-profile__meta">
+                  <span class="adm-profile__name">Admin</span>
+                  <span class="adm-profile__role">Plateforme</span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main id="admin-main" class="adm-main">
+        <div class="adm-main__inner adm-page--activity-log">
+          <header class="adm-page-head actlog-head">
+            <div>
+              <h1 class="adm-page-title">Journal d'activité</h1>
+              <p class="adm-page-subtitle">
+                Historique des actions sensibles : connexions, produits, catégories, menus et administration.
+              </p>
+            </div>
+            <div class="actlog-head__actions">
+              <button type="button" class="actlog-btn actlog-btn--outline" id="actlog-export">
+                Télécharger les logs
+              </button>
+              <button type="button" class="actlog-btn actlog-btn--danger" id="actlog-purge">
+                Supprimer les anciens logs
+              </button>
+            </div>
+          </header>
+
+          <div id="adm-access-banner" class="adm-banner" role="alert" hidden></div>
+          <div id="actlog-feedback" class="actlog-feedback" role="status" aria-live="polite" hidden></div>
+
+          <ul class="adm-stats-grid actlog-stats" aria-label="Statistiques du journal">
+            <li class="adm-stat-card">
+              <div class="adm-stat-card__inner">
+                <p class="adm-stat-card__label">Total logs</p>
+                <p class="adm-stat-card__value" id="actlog-stat-total">—</p>
+              </div>
+            </li>
+            <li class="adm-stat-card">
+              <div class="adm-stat-card__inner">
+                <p class="adm-stat-card__label">Connexions aujourd'hui</p>
+                <p class="adm-stat-card__value" id="actlog-stat-logins">—</p>
+              </div>
+            </li>
+            <li class="adm-stat-card">
+              <div class="adm-stat-card__inner">
+                <p class="adm-stat-card__label">Échecs aujourd'hui</p>
+                <p class="adm-stat-card__value" id="actlog-stat-failures">—</p>
+              </div>
+            </li>
+            <li class="adm-stat-card">
+              <div class="adm-stat-card__inner">
+                <p class="adm-stat-card__label">Réinitialisations mot de passe</p>
+                <p class="adm-stat-card__value" id="actlog-stat-pwd">—</p>
+              </div>
+            </li>
+          </ul>
+
+          <section class="actlog-panel" aria-label="Filtres et recherche">
+            <div class="actlog-toolbar">
+              <div class="actlog-search-wrap">
+                <label class="visually-hidden" for="actlog-q">Rechercher</label>
+                <input
+                  id="actlog-q"
+                  class="actlog-search"
+                  type="search"
+                  placeholder="Email, restaurant, action…"
+                  autocomplete="off"
+                />
+              </div>
+              <div class="actlog-filters" role="tablist" aria-label="Filtrer par type d'action" id="actlog-filters">
+                <button type="button" class="actlog-filter is-active" data-filter="all">Tous</button>
+                <button type="button" class="actlog-filter" data-filter="logins">Connexions</button>
+                <button type="button" class="actlog-filter" data-filter="login_failures">Échecs de connexion</button>
+                <button type="button" class="actlog-filter" data-filter="products">Produits</button>
+                <button type="button" class="actlog-filter" data-filter="categories">Catégories</button>
+                <button type="button" class="actlog-filter" data-filter="menus">Menus</button>
+                <button type="button" class="actlog-filter" data-filter="password_resets">Réinitialisations</button>
+                <button type="button" class="actlog-filter" data-filter="admin">Administrateur</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="adm-section" aria-labelledby="actlog-table-title">
+            <h2 id="actlog-table-title" class="visually-hidden">Liste des événements</h2>
+            <div class="adm-table-wrap actlog-table-wrap">
+              <table class="adm-table actlog-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Date et heure</th>
+                    <th scope="col">Utilisateur</th>
+                    <th scope="col">Restaurant</th>
+                    <th scope="col">Type d'action</th>
+                    <th scope="col">Détails</th>
+                  </tr>
+                </thead>
+                <tbody id="actlog-body">
+                  <tr class="adm-table__placeholder">
+                    <td colspan="5">Chargement…</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <ul id="actlog-cards" class="actlog-cards" hidden></ul>
+
+            <nav id="actlog-pagination" class="actlog-pagination" aria-label="Pagination du journal" hidden></nav>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script src="../js/config.js" defer></script>
+    <script src="../js/admin-guard.js" defer></script>
+    <script src="../js/admin-activity-log.js" defer></script>
+  </body>
+</html>

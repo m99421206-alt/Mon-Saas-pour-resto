@@ -7,12 +7,17 @@ const adminRestaurantsController = require("../controllers/adminRestaurantsContr
 const adminSubscriptionsController = require("../controllers/adminSubscriptionsController");
 const adminSettingsController = require("../controllers/adminSettingsController");
 const adminSetupHelpController = require("../controllers/adminSetupHelpController");
+const adminAuditLogsController = require("../controllers/adminAuditLogsController");
 
 var router = express.Router();
 
 
 router.get("/stats", requireAuth, requirePlatformAdmin, adminController.getStats);
 router.get("/activity", requireAuth, requirePlatformAdmin, adminController.getActivity);
+
+router.get("/audit-logs", requireAuth, requirePlatformAdmin, adminAuditLogsController.getAuditLogs);
+router.get("/audit-logs/export", requireAuth, requirePlatformAdmin, adminAuditLogsController.exportAuditLogsCsv);
+router.delete("/audit-logs/purge", requireAuth, requirePlatformAdmin, adminAuditLogsController.purgeAuditLogs);
 
 router.get("/users", requireAuth, requirePlatformAdmin, adminUsersController.listUsers);
 router.get("/users/:id", requireAuth, requirePlatformAdmin, adminUsersController.getUserDetail);

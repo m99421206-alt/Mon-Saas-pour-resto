@@ -1,0 +1,258 @@
+/**
+ * Admin — Journal d'activité
+ */
+
+.adm-page--activity-log {
+  padding-bottom: clamp(2rem, 5vw, 3rem);
+}
+
+.actlog-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.actlog-head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.actlog-btn {
+  border: 1px solid var(--adm-border);
+  background: var(--adm-surface);
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--adm-text);
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease;
+}
+
+.actlog-btn:hover:not(:disabled) {
+  border-color: #cbd5e1;
+  background: #f9fafb;
+}
+
+.actlog-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.actlog-btn--outline {
+  border-color: rgba(255, 107, 0, 0.45);
+  color: #c2410c;
+  background: var(--adm-accent-soft);
+}
+
+.actlog-btn--danger {
+  border-color: rgba(220, 38, 38, 0.35);
+  background: rgba(254, 226, 226, 0.65);
+  color: #b91c1c;
+}
+
+.actlog-feedback {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  border: 1px solid var(--adm-border);
+  background: var(--adm-surface);
+}
+
+.actlog-feedback--ok {
+  border-color: #86efac;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.actlog-feedback--err {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.actlog-stats {
+  margin-bottom: 1.25rem;
+}
+
+.actlog-panel {
+  margin-bottom: 1rem;
+}
+
+.actlog-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.actlog-search-wrap {
+  width: 100%;
+  max-width: 28rem;
+}
+
+.actlog-search {
+  width: 100%;
+  border: 1px solid var(--adm-border);
+  border-radius: 12px;
+  padding: 0.65rem 0.85rem;
+  font: inherit;
+  font-size: 0.9rem;
+  background: var(--adm-surface);
+}
+
+.actlog-search:focus-visible {
+  outline: none;
+  border-color: var(--adm-accent);
+  box-shadow: 0 0 0 3px var(--adm-accent-soft);
+}
+
+.actlog-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.actlog-filter {
+  border: 1px solid var(--adm-border);
+  background: var(--adm-surface);
+  border-radius: 999px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--adm-text-muted);
+}
+
+.actlog-filter.is-active {
+  border-color: rgba(255, 107, 0, 0.45);
+  background: var(--adm-accent-soft);
+  color: #c2410c;
+}
+
+.actlog-detail-cell {
+  max-width: 22rem;
+  word-break: break-word;
+}
+
+.actlog-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 1rem;
+  list-style: none;
+  padding: 0;
+}
+
+.actlog-pagination__info {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--adm-text-muted);
+  flex: 1 1 100%;
+}
+
+.actlog-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.actlog-card {
+  border: 1px solid var(--adm-border);
+  border-radius: 14px;
+  background: var(--adm-surface);
+  padding: 0.85rem 1rem;
+  box-shadow: var(--adm-shadow-card);
+}
+
+.actlog-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.actlog-card__head time {
+  font-size: 0.78rem;
+  color: var(--adm-text-muted);
+}
+
+.actlog-card__meta {
+  margin: 0.15rem 0;
+  font-size: 0.82rem;
+}
+
+.actlog-card__detail {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+  color: var(--adm-text);
+  word-break: break-word;
+}
+
+/* Badges partagés dashboard + journal */
+.adm-log-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.adm-log-badge--success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.adm-log-badge--danger {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.adm-log-badge--create {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.adm-log-badge--update {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.adm-log-badge--delete {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.adm-log-badge--password {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.adm-log-badge--neutral {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+@media (max-width: 899px) {
+  .actlog-head__actions {
+    width: 100%;
+  }
+
+  .actlog-head__actions .actlog-btn {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+}

@@ -3,8 +3,8 @@
  */
 
 const { getPool } = require("../config/database");
-const { labelForCode } = require("../utils/auditLog");
 const subscriptionService = require("../services/subscriptionService");
+const { listAuditLogs } = require("../utils/auditLogQuery");
 
 function isMissingColumnError(err) {
   return err && (err.code === "ER_BAD_FIELD_ERROR" || err.errno === 1054);
@@ -162,28 +162,33 @@ async function buildLegacyActivityItems(pool) {
 async function getActivity(req, res) {
   try {
     var pool = getPool();
+    var limit = Math.min(Number(req.query.limit) || 10, 40);
+    if (!Number.isInteger(limit) || limit < 1) {
+      limit = 10;
+    }
 
     try {
-      var [auditRows] = await pool.query(
-        "SELECT a.created_at AS at, a.action AS code, a.detail, u.email AS user_email " +
-          "FROM audit_logs a " +
-          "LEFT JOIN users u ON u.id = a.user_id " +
-          "ORDER BY a.created_at DESC, a.id DESC " +
-          "LIMIT 40"
-      );
+      var result = await listAuditLogs(pool, {
+        page: 1,
+        pageSize: limit,
+        filter: "all",
+        q: "",
+      });
 
-      var fromAudit = auditRows.map(function (r) {
-        var detail = String(r.detail || "").trim();
-        var actionText = detail.length ? detail.slice(0, 500) : labelForCode(r.code);
+      var items = result.items.map(function (row) {
         return {
-          user: r.user_email || "—",
-          action: actionText,
-          at: r.at ? new Date(r.at).toISOString() : null,
+          user: row.user,
+          restaurant: row.restaurant,
+          action: row.action,
+          action_code: row.action_code,
+          action_label: row.action_label,
+          badge: row.badge,
+          at: row.at,
         };
       });
 
       return res.json({
-        items: fromAudit,
+        items: items,
       });
     } catch (err) {
       if (!isMissingTableError(err)) {
@@ -193,7 +198,7 @@ async function getActivity(req, res) {
 
     var legacy = await buildLegacyActivityItems(pool);
     return res.json({
-      items: legacy,
+      items: legacy.slice(0, limit),
     });
   } catch (err) {
     console.error(err);

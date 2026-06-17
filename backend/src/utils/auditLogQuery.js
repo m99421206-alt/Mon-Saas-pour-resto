@@ -1,0 +1,243 @@
+/**
+ * Requêtes et classification du journal audit_logs (liste, filtres, badges).
+ */
+
+const { labelForCode } = require("./auditLog");
+
+var VALID_FILTERS = [
+  "all",
+  "logins",
+  "login_failures",
+  "products",
+  "categories",
+  "menus",
+  "password_resets",
+  "admin",
+];
+
+var BASE_FROM =
+  "FROM audit_logs a " +
+  "LEFT JOIN users u ON u.id = a.user_id " +
+  "LEFT JOIN restaurants r ON r.id = a.restaurant_id ";
+
+function parsePositiveInt(value, fallback) {
+  var n = Number(value);
+  if (!Number.isInteger(n) || n < 1) {
+    return fallback;
+  }
+  return n;
+}
+
+function normalizeFilter(value) {
+  var key = String(value || "all").trim().toLowerCase();
+  return VALID_FILTERS.indexOf(key) !== -1 ? key : "all";
+}
+
+function badgeVariantForCode(code) {
+  var c = String(code || "").toLowerCase();
+  if (c === "user.login") {
+    return "success";
+  }
+  if (c === "user.login_failed") {
+    return "danger";
+  }
+  if (c === "user.password_reset") {
+    return "password";
+  }
+  if (
+    c.endsWith(".delete") ||
+    c === "user.suspend" ||
+    c === "restaurant.menu_suspend" ||
+    c === "subscription.suspend"
+  ) {
+    return "delete";
+  }
+  if (
+    c.endsWith(".create") ||
+    c === "user.register" ||
+    c === "subscription.activate" ||
+    c === "subscription.renew"
+  ) {
+    return "create";
+  }
+  if (
+    c.endsWith(".update") ||
+    c.endsWith(".adjust") ||
+    c === "user.activate" ||
+    c === "restaurant.menu_resume" ||
+    c === "settings.update" ||
+    c.indexOf("admin.") === 0 ||
+    c.indexOf("subscription.") === 0
+  ) {
+    return "update";
+  }
+  return "neutral";
+}
+
+function buildWhereClause(filterKey, searchRaw) {
+  var parts = ["WHERE 1=1"];
+  var vals = [];
+
+  var filter = normalizeFilter(filterKey);
+  if (filter === "logins") {
+    parts.push("AND a.action = ?");
+    vals.push("user.login");
+  } else if (filter === "login_failures") {
+    parts.push("AND a.action = ?");
+    vals.push("user.login_failed");
+  } else if (filter === "products") {
+    parts.push("AND a.action IN (?, ?, ?)");
+    vals.push("product.create", "product.update", "product.delete");
+  } else if (filter === "categories") {
+    parts.push("AND a.action IN (?, ?, ?)");
+    vals.push("category.create", "category.update", "category.delete");
+  } else if (filter === "menus") {
+    parts.push("AND a.action IN (?, ?)");
+    vals.push("restaurant.menu_suspend", "restaurant.menu_resume");
+  } else if (filter === "password_resets") {
+    parts.push("AND a.action = ?");
+    vals.push("user.password_reset");
+  } else if (filter === "admin") {
+    parts.push(
+      "AND (a.action IN (?, ?, ?, ?, ?, ?, ?, ?) OR a.action LIKE 'subscription.%' OR a.action LIKE 'admin.%')",
+    );
+    vals.push(
+      "user.suspend",
+      "user.activate",
+      "user.delete",
+      "settings.update",
+      "restaurant.delete",
+      "onboarding.setup_request",
+      "admin.setup_help_complete",
+      "admin.restaurant_dashboard_access",
+    );
+  }
+
+  var q = typeof searchRaw === "string" ? searchRaw.trim().slice(0, 160) : "";
+  if (q) {
+    var like = "%" + q + "%";
+    parts.push("AND (u.email LIKE ? OR r.name LIKE ? OR a.action LIKE ? OR IFNULL(a.detail, '') LIKE ?)");
+    vals.push(like, like, like, like);
+  }
+
+  return {
+    whereSql: parts.join(" "),
+    vals: vals,
+    filter: filter,
+  };
+}
+
+function mapAuditRow(row) {
+  var code = String(row.code || row.action || "").trim();
+  var detail = String(row.detail || "").trim();
+  var actionText = detail.length ? detail.slice(0, 500) : labelForCode(code);
+  return {
+    id: row.id,
+    at: row.at ? new Date(row.at).toISOString() : null,
+    user: row.user_email ? String(row.user_email) : "—",
+    restaurant: row.restaurant_name ? String(row.restaurant_name) : "—",
+    action_code: code,
+    action_label: labelForCode(code),
+    action: actionText,
+    detail: detail || null,
+    badge: badgeVariantForCode(code),
+  };
+}
+
+async function listAuditLogs(pool, options) {
+  options = options || {};
+  var page = parsePositiveInt(options.page, 1);
+  var pageSize = Math.min(parsePositiveInt(options.pageSize, 20), 100);
+  var offset = (page - 1) * pageSize;
+  var built = buildWhereClause(options.filter, options.q);
+
+  var [[countRow]] = await pool.query(
+    "SELECT COUNT(*) AS n " + BASE_FROM + built.whereSql,
+    built.vals.slice(),
+  );
+  var total = Number(countRow.n) || 0;
+  var totalPages = total === 0 ? 0 : Math.ceil(total / pageSize);
+
+  var listVals = built.vals.slice();
+  listVals.push(pageSize, offset);
+
+  var [rows] = await pool.query(
+    "SELECT a.id, a.created_at AS at, a.action AS code, a.detail, u.email AS user_email, r.name AS restaurant_name " +
+      BASE_FROM +
+      built.whereSql +
+      " ORDER BY a.created_at DESC, a.id DESC LIMIT ? OFFSET ?",
+    listVals,
+  );
+
+  return {
+    items: rows.map(mapAuditRow),
+    total: total,
+    page: page,
+    pageSize: pageSize,
+    totalPages: totalPages,
+    filter: built.filter,
+  };
+}
+
+async function fetchAuditStats(pool) {
+  var [[totalRow]] = await pool.query("SELECT COUNT(*) AS n FROM audit_logs");
+  var [[loginsTodayRow]] = await pool.query(
+    "SELECT COUNT(*) AS n FROM audit_logs WHERE action = ? AND DATE(created_at) = CURDATE()",
+    ["user.login"],
+  );
+  var [[failuresTodayRow]] = await pool.query(
+    "SELECT COUNT(*) AS n FROM audit_logs WHERE action = ? AND DATE(created_at) = CURDATE()",
+    ["user.login_failed"],
+  );
+  var [[pwdRow]] = await pool.query("SELECT COUNT(*) AS n FROM audit_logs WHERE action = ?", [
+    "user.password_reset",
+  ]);
+
+  return {
+    total_logs: Number(totalRow.n) || 0,
+    logins_today: Number(loginsTodayRow.n) || 0,
+    login_failures_today: Number(failuresTodayRow.n) || 0,
+    password_resets: Number(pwdRow.n) || 0,
+  };
+}
+
+async function exportAuditLogs(pool, options) {
+  options = options || {};
+  var built = buildWhereClause(options.filter, options.q);
+  var maxRows = Math.min(parsePositiveInt(options.maxRows, 10000), 50000);
+  var listVals = built.vals.slice();
+  listVals.push(maxRows);
+
+  var [rows] = await pool.query(
+    "SELECT a.id, a.created_at AS at, a.action AS code, a.detail, u.email AS user_email, r.name AS restaurant_name " +
+      BASE_FROM +
+      built.whereSql +
+      " ORDER BY a.created_at DESC, a.id DESC LIMIT ?",
+    listVals,
+  );
+
+  return rows.map(mapAuditRow);
+}
+
+async function purgeOldAuditLogs(pool, retentionDays) {
+  var days = Math.min(Math.max(parsePositiveInt(retentionDays, 90), 1), 365);
+  var [result] = await pool.query(
+    "DELETE FROM audit_logs WHERE created_at < DATE_SUB(NOW(), INTERVAL ? DAY)",
+    [days],
+  );
+  return {
+    deleted: Number(result.affectedRows) || 0,
+    retention_days: days,
+  };
+}
+
+module.exports = {
+  VALID_FILTERS: VALID_FILTERS,
+  badgeVariantForCode: badgeVariantForCode,
+  normalizeFilter: normalizeFilter,
+  listAuditLogs: listAuditLogs,
+  fetchAuditStats: fetchAuditStats,
+  exportAuditLogs: exportAuditLogs,
+  purgeOldAuditLogs: purgeOldAuditLogs,
+  mapAuditRow: mapAuditRow,
+};

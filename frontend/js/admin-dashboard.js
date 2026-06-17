@@ -125,6 +125,18 @@
     });
   }
 
+  function badgeHtml(variant, label) {
+    var v = variant || "neutral";
+    var lbl = label || "Événement";
+    return (
+      '<span class="adm-log-badge adm-log-badge--' +
+      escapeHtml(v) +
+      '">' +
+      escapeHtml(lbl) +
+      "</span>"
+    );
+  }
+
   function renderActivity(rows) {
     var tbody = document.getElementById("adm-activity-body");
     if (!tbody) {
@@ -133,20 +145,25 @@
 
     tbody.innerHTML = "";
 
-    if (!rows.length) {
+    var limited = rows.slice(0, 10);
+
+    if (!limited.length) {
       var trEmpty = document.createElement("tr");
       trEmpty.className = "adm-table__placeholder";
       trEmpty.innerHTML =
-        '<td colspan="3">Aucune activité récente pour le moment.</td>';
+        '<td colspan="4">Aucune activité récente pour le moment.</td>';
       tbody.appendChild(trEmpty);
       return;
     }
 
-    rows.forEach(function (row) {
+    limited.forEach(function (row) {
       var tr = document.createElement("tr");
+      var typeBadge = badgeHtml(row.badge, row.action_label || row.action_code || "Événement");
       tr.innerHTML =
         "<td>" +
         escapeHtml(row.user) +
+        "</td><td>" +
+        typeBadge +
         "</td><td>" +
         escapeHtml(row.action) +
         "</td><td>" +
@@ -456,7 +473,7 @@
       clearStatsDisplay();
     }
 
-    var actRes = await fetchAdminJson("/api/admin/activity", token);
+    var actRes = await fetchAdminJson("/api/admin/activity?limit=10", token);
 
     if (guardApiStatus(actRes.status)) {
       return;
