@@ -9,6 +9,10 @@
   var RESTAURANT_KEY = "MenuGo_restaurant";
   var LOGIN_NEXT = "admin-dashboard.html";
 
+  function guardApiStatus(status) {
+    return window.MenuGo_AdminGuard.handleAdminApiStatus(status, { loginNext: LOGIN_NEXT });
+  }
+
   function escapeHtml(value) {
     return String(value == null ? "" : value)
       .replace(/&/g, "&amp;")
@@ -275,8 +279,7 @@
     if (forbidden) {
       var tr0 = document.createElement("tr");
       tr0.className = "adm-table__placeholder";
-      tr0.innerHTML =
-        "<td colspan=\"5\">Liste réservée aux administrateurs.</td>";
+      tr0.innerHTML = "<td colspan=\"5\">Données indisponibles.</td>";
       tbody.appendChild(tr0);
       return;
     }
@@ -339,8 +342,7 @@
     if (forbidden) {
       var tr0 = document.createElement("tr");
       tr0.className = "adm-table__placeholder";
-      tr0.innerHTML =
-        "<td colspan=\"5\">Liste réservée aux administrateurs (variable ADMIN_EMAILS sur le serveur).</td>";
+      tr0.innerHTML = "<td colspan=\"5\">Données indisponibles.</td>";
       tbody.appendChild(tr0);
       return;
     }
@@ -410,23 +412,10 @@
 
     var statsRes = await fetchAdminJson("/api/admin/stats", token);
 
-    if (statsRes.status === 401) {
-      clearSessionAndRedirectLogin();
+    if (guardApiStatus(statsRes.status)) {
       return;
     }
 
-    if (statsRes.status === 403) {
-      showAccessBanner(
-        (statsRes.data && statsRes.data.message) ||
-          "Accès administration réservé. Ajoutez votre email dans ADMIN_EMAILS sur le serveur ou contactez un administrateur.",
-        "warning",
-      );
-      clearStatsDisplay();
-      renderActivity([]);
-      renderSetupHelpRows([], true);
-      renderSubWatchRows([], true);
-      return;
-    }
     if (statsRes.status === 404 && statsRes.data && statsRes.data.message) {
       showAccessBanner(statsRes.data.message, "error");
       clearStatsDisplay();
@@ -469,20 +458,7 @@
 
     var actRes = await fetchAdminJson("/api/admin/activity", token);
 
-    if (actRes.status === 401) {
-      clearSessionAndRedirectLogin();
-      return;
-    }
-
-    if (actRes.status === 403) {
-      showAccessBanner(
-        (actRes.data && actRes.data.message) ||
-          "Accès administration réservé pour l’historique d’activité.",
-        "warning",
-      );
-      renderActivity([]);
-      renderSetupHelpRows([], true);
-      renderSubWatchRows([], true);
+    if (guardApiStatus(actRes.status)) {
       return;
     }
 
@@ -499,12 +475,8 @@
     }
 
     var setupRes = await fetchAdminJson("/api/admin/setup-help?pageSize=50", token);
-    if (setupRes.status === 401) {
-      clearSessionAndRedirectLogin();
+    if (guardApiStatus(setupRes.status)) {
       return;
-    }
-    if (setupRes.status === 403) {
-      renderSetupHelpRows([], true);
     } else if (setupRes.ok && setupRes.data && Array.isArray(setupRes.data.items)) {
       renderSetupHelpRows(setupRes.data.items, false);
     } else {
@@ -512,12 +484,8 @@
     }
 
     var watchRes = await fetchAdminJson("/api/admin/subscriptions/expiring", token);
-    if (watchRes.status === 401) {
-      clearSessionAndRedirectLogin();
+    if (guardApiStatus(watchRes.status)) {
       return;
-    }
-    if (watchRes.status === 403) {
-      renderSubWatchRows([], true);
     } else if (watchRes.ok && watchRes.data && Array.isArray(watchRes.data.items)) {
       renderSubWatchRows(watchRes.data.items, false);
     } else {
@@ -601,8 +569,7 @@
 
       fetchAdminPost("/api/admin/restaurants/" + id + "/setup-help/complete", token).then(
         function (res) {
-          if (res.status === 401) {
-            clearSessionAndRedirectLogin();
+          if (guardApiStatus(res.status)) {
             return;
           }
           if (!res.ok) {
@@ -629,8 +596,9 @@
     });
   }
 
-  function init() {
-    if (!requireAuthToken()) {
+  async function init() {
+    var allowed = await window.MenuGo_AdminGuard.enforceAdminAccess({ loginNext: LOGIN_NEXT });
+    if (!allowed) {
       return;
     }
     bindSetupHelpDelegation();

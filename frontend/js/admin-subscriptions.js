@@ -5,6 +5,10 @@
   var USER_KEY = "MenuGo_user";
   var RESTAURANT_KEY = "MenuGo_restaurant";
   var LOGIN_NEXT = "admin-subscriptions.html";
+
+  function guardApiStatus(status) {
+    return window.MenuGo_AdminGuard.handleAdminApiStatus(status, { loginNext: LOGIN_NEXT });
+  }
   var PAGE_SIZE = 12;
   var DEBOUNCE_MS = 320;
 
@@ -626,21 +630,7 @@
     var res = await fetchJson("GET", "/api/admin/subscriptions" + qs, token);
     state.loading = false;
 
-    if (res.status === 401) {
-      clearSessionAndRedirectLogin();
-      return;
-    }
-
-    if (res.status === 403) {
-      showAccessBanner(
-        (res.data && res.data.message) || "Accès administration réservé (ADMIN_EMAILS).",
-        "warning",
-      );
-      if (tbody) tbody.innerHTML = tbodyPlaceholder("Accès refusé.");
-      if (cards) cards.innerHTML = "";
-      var c = document.getElementById("subs-count-label");
-      if (c) c.textContent = "";
-      renderPagination();
+    if (guardApiStatus(res.status)) {
       return;
     }
 
@@ -837,14 +827,13 @@
       token,
     );
 
-    if (res.status === 401) {
-      clearSessionAndRedirectLogin();
+    if (guardApiStatus(res.status)) {
       return;
     }
 
-    if (res.status === 403 || !res.ok || !res.data || !res.data.subscription) {
+    if (!res.ok || !res.data || !res.data.subscription) {
       setModal(false);
-      showAccessBanner((res.data && res.data.message) || "Détail indisponible.", "warning");
+      showAccessBanner((res.data && res.data.message) || "Détail indisponible.", "error");
       return;
     }
 
@@ -953,7 +942,7 @@
       { body: body },
     );
 
-    if (res.status === 401) clearSessionAndRedirectLogin();
+    if (guardApiStatus(res.status)) return;
     else if (!res.ok)
       showAccessBanner((res.data && res.data.message) || "Ajustement impossible.", "error");
     else {
@@ -1025,7 +1014,7 @@
       { body: body },
     );
 
-    if (res.status === 401) clearSessionAndRedirectLogin();
+    if (guardApiStatus(res.status)) return;
     else if (!res.ok)
       showAccessBanner((res.data && res.data.message) || "Activation impossible.", "error");
     else {
@@ -1051,7 +1040,7 @@
       { body: {} },
     );
 
-    if (res.status === 401) clearSessionAndRedirectLogin();
+    if (guardApiStatus(res.status)) return;
     else if (!res.ok)
       showAccessBanner((res.data && res.data.message) || "Suspension impossible.", "error");
     else {
@@ -1112,7 +1101,7 @@
       { body: body },
     );
 
-    if (res.status === 401) clearSessionAndRedirectLogin();
+    if (guardApiStatus(res.status)) return;
     else if (!res.ok)
       showAccessBanner((res.data && res.data.message) || "Renouvellement impossible.", "error");
     else {
@@ -1171,8 +1160,11 @@
     });
   }
 
-  function init() {
-    if (!requireAuthToken()) return;
+  async function init() {
+    var allowed = await window.MenuGo_AdminGuard.enforceAdminAccess({ loginNext: LOGIN_NEXT });
+    if (!allowed) {
+      return;
+    }
     initShell();
     attachHandlers();
     bindModal();

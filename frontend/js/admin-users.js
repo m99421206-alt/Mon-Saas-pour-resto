@@ -11,6 +11,10 @@
   var PAGE_SIZE = 12;
   var DEBOUNCE_MS = 340;
 
+  function guardApiStatus(status) {
+    return window.MenuGo_AdminGuard.handleAdminApiStatus(status, { loginNext: LOGIN_NEXT });
+  }
+
   var state = {
     page: 1,
     q: "",
@@ -325,28 +329,7 @@
 
     state.loading = false;
 
-    if (res.status === 401) {
-      clearSessionAndRedirectLogin();
-      return;
-    }
-
-    if (res.status === 403) {
-      showAccessBanner(
-        (res.data && res.data.message) ||
-          "Accès administration réservé. Ajoutez votre email dans ADMIN_EMAILS sur le serveur.",
-        "warning",
-      );
-      if (tbody) {
-        tbody.innerHTML = tbodyPlaceholder("Accès refusé.");
-      }
-      if (cardsUl) {
-        cardsUl.innerHTML = "";
-      }
-      var countEl = document.getElementById("users-count-label");
-      if (countEl) {
-        countEl.textContent = "";
-      }
-      renderPagination();
+    if (guardApiStatus(res.status)) {
       return;
     }
 
@@ -628,14 +611,7 @@
 
     var res = await fetchJson("GET", "/api/admin/users/" + encodeURIComponent(idStr), token);
 
-    if (res.status === 401) {
-      clearSessionAndRedirectLogin();
-      return;
-    }
-
-    if (res.status === 403) {
-      setModalOpen(false);
-      showAccessBanner((res.data && res.data.message) || "Accès refusé.", "warning");
+    if (guardApiStatus(res.status)) {
       return;
     }
 
@@ -701,13 +677,7 @@
       body: { status: status },
     });
 
-    if (res.status === 401) {
-      clearSessionAndRedirectLogin();
-      return;
-    }
-
-    if (res.status === 403) {
-      showAccessBanner((res.data && res.data.message) || "Action refusée.", "warning");
+    if (guardApiStatus(res.status)) {
       return;
     }
 
@@ -730,13 +700,7 @@
       skipJsonHeaders: true,
     });
 
-    if (res.status === 401) {
-      clearSessionAndRedirectLogin();
-      return;
-    }
-
-    if (res.status === 403) {
-      showAccessBanner((res.data && res.data.message) || "Action refusée.", "warning");
+    if (guardApiStatus(res.status)) {
       return;
     }
 
@@ -751,8 +715,9 @@
     await loadUsers();
   }
 
-  function init() {
-    if (!requireAuthToken()) {
+  async function init() {
+    var allowed = await window.MenuGo_AdminGuard.enforceAdminAccess({ loginNext: LOGIN_NEXT });
+    if (!allowed) {
       return;
     }
     initShell();

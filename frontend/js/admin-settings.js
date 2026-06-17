@@ -12,6 +12,10 @@
 
   var LOGIN_NEXT = "admin-settings.html";
 
+  function guardApiStatus(status) {
+    return window.MenuGo_AdminGuard.handleAdminApiStatus(status, { loginNext: LOGIN_NEXT });
+  }
+
 
 
   function getApiBase() {
@@ -362,26 +366,15 @@
 
 
 
-    if (res.status === 401) {
-
-      clearSessionAndRedirectLogin();
-
+    if (guardApiStatus(res.status)) {
       return null;
-
     }
 
-
-
-    if (res.status === 403 || !res.ok) {
-
+    if (!res.ok) {
       var msg = (res.data && res.data.message) || "Enregistrement impossible.";
-
       showAccessBanner(msg, "error");
-
       showSnack(msg, "error");
-
       return null;
-
     }
 
 
@@ -444,28 +437,16 @@
 
 
 
-    if (res.status === 401) {
-
-      clearSessionAndRedirectLogin();
-
+    if (guardApiStatus(res.status)) {
       return;
-
     }
 
-
-
-    if (res.status === 403 || !res.ok || !res.data) {
-
+    if (!res.ok || !res.data) {
       showAccessBanner(
-
-        (res.data && res.data.message) || "Accès réservé (ADMIN_EMAILS) ou erreur chargement réglages.",
-
-        "warning",
-
+        (res.data && res.data.message) || "Impossible de charger les réglages.",
+        "error",
       );
-
       return;
-
     }
 
 
@@ -680,7 +661,9 @@
 
   async function init() {
 
-    if (!requireAuthToken()) return;
+    var allowed = await window.MenuGo_AdminGuard.enforceAdminAccess({ loginNext: LOGIN_NEXT });
+
+    if (!allowed) return;
 
     if (!getApiBase()) {
 

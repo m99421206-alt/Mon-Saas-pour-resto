@@ -14,6 +14,10 @@
   var PAGE_SIZE = 12;
   var DEBOUNCE_MS = 320;
 
+  function guardApiStatus(status) {
+    return window.MenuGo_AdminGuard.handleAdminApiStatus(status, { loginNext: LOGIN_NEXT });
+  }
+
   var state = {
     page: 1,
     q: "",
@@ -332,22 +336,7 @@
     var res = await fetchJson("GET", "/api/admin/restaurants" + qs, token);
     state.loading = false;
 
-    if (res.status === 401) {
-      clearSessionAndRedirectLogin();
-      return;
-    }
-
-    if (res.status === 403) {
-      showAccessBanner(
-        (res.data && res.data.message) ||
-          "Accès administration réservé. Complétez ADMIN_EMAILS sur le serveur si besoin.",
-        "warning",
-      );
-      if (tbody) tbody.innerHTML = tbodyPlaceholder("Accès refusé.");
-      if (cardsUl) cardsUl.innerHTML = "";
-      var cEl = document.getElementById("resto-count-label");
-      if (cEl) cEl.textContent = "";
-      renderPagination();
+    if (guardApiStatus(res.status)) {
       return;
     }
 
@@ -551,14 +540,13 @@
       token,
     );
 
-    if (res.status === 401) {
-      clearSessionAndRedirectLogin();
+    if (guardApiStatus(res.status)) {
       return;
     }
 
-    if (res.status === 403 || !res.ok || !res.data || !res.data.restaurant) {
+    if (!res.ok || !res.data || !res.data.restaurant) {
       setModalOpen(false);
-      showAccessBanner((res.data && res.data.message) || "Détail indisponible.", "warning");
+      showAccessBanner((res.data && res.data.message) || "Détail indisponible.", "error");
       return;
     }
 
@@ -633,16 +621,7 @@
       token,
     );
 
-    if (res.status === 401) {
-      clearSessionAndRedirectLogin();
-      return;
-    }
-
-    if (res.status === 403) {
-      showAccessBanner(
-        (res.data && res.data.message) || "Accès administration réservé.",
-        "warning",
-      );
+    if (guardApiStatus(res.status)) {
       return;
     }
 
@@ -676,8 +655,7 @@
       { body: { suspended: suspended } },
     );
 
-    if (res.status === 401) {
-      clearSessionAndRedirectLogin();
+    if (guardApiStatus(res.status)) {
       return;
     }
 
@@ -706,8 +684,7 @@
       { skipJsonHeaders: true },
     );
 
-    if (res.status === 401) {
-      clearSessionAndRedirectLogin();
+    if (guardApiStatus(res.status)) {
       return;
     }
 
@@ -784,8 +761,11 @@
     });
   }
 
-  function init() {
-    if (!requireAuthToken()) return;
+  async function init() {
+    var allowed = await window.MenuGo_AdminGuard.enforceAdminAccess({ loginNext: LOGIN_NEXT });
+    if (!allowed) {
+      return;
+    }
     initShell();
     attachHandlers();
     bindModalClose();
