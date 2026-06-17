@@ -1,6 +1,6 @@
 const API_BASE_URL = window.MenuGo_CONFIG.API_URL;
 const NO_IMAGE_LABEL = "Aucune image disponible";
-const ORDER_DELETE_ICON_SRC = "../../assets/images/icone/supprimer.png";
+const ORDER_DELETE_ICON_SRC = "../../assets/images/icone/supprimer.webp";
 
 function getTrimmedDescription(value) {
   if (value == null) {

@@ -21,6 +21,8 @@
     "db:product-is-visible": "node scripts/migrate-product-is-visible.js",
     "db:performance-indexes": "node scripts/migrate-performance-indexes.js",
     "db:upload-registry": "node scripts/migrate-upload-registry.js",
+    "db:uploads-webp": "node scripts/migrate-uploads-to-webp.js",
+    "assets:webp": "node scripts/convert-static-assets-webp.js",
     "backup": "node scripts/backup.js",
     "backup:restore": "node scripts/restore-backup.js"
   },

@@ -255,6 +255,7 @@ Fréquence recommandée en prod : **quotidienne** + avant chaque migration majeu
 Optimisations déjà en place dans le code :
 
 - **Images uploadées** : compressées et converties automatiquement en **WebP** à l’upload (`sharp`), redimensionnées à 1600px max. En-têtes de cache long (`Cache-Control: public, max-age=2592000, immutable`) servis par l’API sur `/uploads` (sûr car noms de fichiers uniques).
+- **Assets statiques** (`assets/images/`, `docs/img/`) : servis en **WebP** dans le HTML/CSS/JS. Les PNG/JPG d’origine restent sur disque en backup mais ne sont plus référencés.
 - **Polices & Font Awesome** : chargées en **non bloquant** (`media="print" onload`) sur toutes les pages → meilleur FCP/LCP.
 - **Scripts** : tous chargés avec `defer`.
 - **Menu client** : un seul appel API (`/menu/:id`), images `loading="lazy"`, bannière `fetchpriority="high"`.
@@ -272,6 +273,39 @@ location ~* \.(png|jpg|jpeg|webp|svg|woff2)$ {
 ```
 
 > Note : si tu modifies un fichier CSS/JS, pense à versionner l’URL (`dashboard.css?v=2`) ou à vider le cache CDN, sinon les visiteurs garderont l’ancienne version en cache.
+
+---
+
+## Migration WebP (uploads existants + assets statiques)
+
+**Avant toute migration** : sauvegarde obligatoire.
+
+```bash
+cd backend
+npm run backup
+```
+
+### Uploads déjà en base (`backend/uploads/`)
+
+Les **nouveaux** uploads sont déjà convertis à l’upload. Pour migrer les anciens PNG/JPG :
+
+```bash
+cd backend
+npm run db:uploads-webp              # simulation (dry-run)
+npm run db:uploads-webp -- --apply   # conversion + mise à jour MySQL
+```
+
+Met à jour : `restaurants.logo_url`, `restaurants.banner_url`, `products.image`, `product_variants.image`, et `upload_files` si présente. Les originaux PNG/JPG sont **conservés** sur disque.
+
+### Assets statiques (`assets/images/`, `docs/img/`)
+
+```bash
+cd backend
+npm run assets:webp                              # simulation
+npm run assets:webp -- --apply --update-refs   # conversion + MAJ index.html / frontend / docs
+```
+
+Un rapport des fichiers code modifiés est écrit dans `backend/scripts/assets-webp-ref-report.json`.
 
 ---
 

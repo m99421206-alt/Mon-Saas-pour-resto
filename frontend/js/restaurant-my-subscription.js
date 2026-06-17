@@ -106,7 +106,7 @@
 
   function fillContactMenuGoButton(el) {
     var img = document.createElement("img");
-    img.src = "../../assets/images/icone/phone-receiver-silhouette.png";
+    img.src = "../../assets/images/icone/phone-receiver-silhouette.webp";
     img.alt = "";
     img.width = 18;
     img.height = 18;
@@ -178,7 +178,7 @@
     header.innerHTML =
       '<div class="dash-my-sub__titlewrap">' +
       '<h2 id="dash-my-sub-title">' +
-      '<span class="dash-my-sub__icon" aria-hidden="true"><img src="../../assets/images/icone/abonnement.png" alt="" width="26" height="26" /></span>' +
+      '<span class="dash-my-sub__icon" aria-hidden="true"><img src="../../assets/images/icone/abonnement.webp" alt="" width="26" height="26" /></span>' +
       "Mon abonnement" +
       "</h2>" +
       '<div class="dash-my-sub__badge-line">' +
