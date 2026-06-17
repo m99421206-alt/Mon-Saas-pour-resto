@@ -48,6 +48,88 @@
     return r.onboarding_seen === false;
   }
 
+  var forgotBtn = document.getElementById("login-forgot-btn");
+  var forgotModal = document.getElementById("login-forgot-modal");
+  var forgotWa = document.getElementById("login-forgot-wa");
+  var forgotRestoInput = document.getElementById("forgot-resto-name");
+  var forgotPhoneInput = document.getElementById("forgot-phone");
+  var DEFAULT_SUPPORT_WA = "22399421206";
+  var FORGOT_PLACEHOLDER = "[à renseigner]";
+
+  function supportDigits() {
+    var cfg = window.MenuGo_CONFIG || {};
+    var w = typeof cfg.SUPPORT_WHATSAPP === "string" ? cfg.SUPPORT_WHATSAPP.trim() : "";
+    var d = w.replace(/\D/g, "");
+    return d || DEFAULT_SUPPORT_WA;
+  }
+
+  function buildForgotWaMessage() {
+    var resto =
+      forgotRestoInput && forgotRestoInput.value.trim() ?
+        forgotRestoInput.value.trim()
+      : FORGOT_PLACEHOLDER;
+    var phone =
+      forgotPhoneInput && forgotPhoneInput.value.trim() ?
+        forgotPhoneInput.value.trim()
+      : FORGOT_PLACEHOLDER;
+    return (
+      "Bonjour, je souhaite réinitialiser mon mot de passe.\n" +
+      "Nom du restaurant : " +
+      resto +
+      "\n" +
+      "Numéro de téléphone : " +
+      phone
+    );
+  }
+
+  function updateForgotWaLink() {
+    if (!forgotWa) {
+      return;
+    }
+    forgotWa.href =
+      "https://wa.me/" +
+      supportDigits() +
+      "?text=" +
+      encodeURIComponent(buildForgotWaMessage());
+  }
+
+  function setForgotModalOpen(open) {
+    if (!forgotModal) {
+      return;
+    }
+    forgotModal.setAttribute("aria-hidden", open ? "false" : "true");
+    document.body.classList.toggle("auth-forgot-open", open);
+    if (open) {
+      updateForgotWaLink();
+      if (forgotRestoInput) {
+        forgotRestoInput.focus();
+      }
+    }
+  }
+
+  if (forgotBtn && forgotModal) {
+    forgotBtn.addEventListener("click", function () {
+      setForgotModalOpen(true);
+    });
+    forgotModal.querySelectorAll("[data-close-forgot]").forEach(function (el) {
+      el.addEventListener("click", function () {
+        setForgotModalOpen(false);
+      });
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && forgotModal.getAttribute("aria-hidden") === "false") {
+        setForgotModalOpen(false);
+      }
+    });
+    [forgotRestoInput, forgotPhoneInput].forEach(function (input) {
+      if (!input) {
+        return;
+      }
+      input.addEventListener("input", updateForgotWaLink);
+    });
+    updateForgotWaLink();
+  }
+
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
     clearError();

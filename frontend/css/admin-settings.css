@@ -122,6 +122,25 @@
   box-shadow: var(--adm-shadow-card, 0 4px 14px rgba(17, 24, 39, 0.05));
 }
 
+.sett-card--info .sett-info-line {
+  margin: 0 0 0.65rem;
+  font-size: 0.92rem;
+}
+
+.sett-card--info .sett-info-hint {
+  margin: 0;
+}
+
+.adm-setting-section__titles a {
+  color: var(--adm-accent, #ff6b00);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.adm-setting-section__titles a:hover {
+  text-decoration: underline;
+}
+
 .adm-switch {
   position: relative;
   display: inline-flex;

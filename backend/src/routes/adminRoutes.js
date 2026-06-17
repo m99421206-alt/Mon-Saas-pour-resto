@@ -17,6 +17,7 @@ router.get("/activity", requireAuth, requirePlatformAdmin, adminController.getAc
 router.get("/users", requireAuth, requirePlatformAdmin, adminUsersController.listUsers);
 router.get("/users/:id", requireAuth, requirePlatformAdmin, adminUsersController.getUserDetail);
 router.patch("/users/:id/status", requireAuth, requirePlatformAdmin, adminUsersController.patchUserStatus);
+router.patch("/users/:id/password", requireAuth, requirePlatformAdmin, adminUsersController.patchUserPassword);
 router.delete("/users/:id", requireAuth, requirePlatformAdmin, adminUsersController.deleteUser);
 
 router.get("/restaurants", requireAuth, requirePlatformAdmin, adminRestaurantsController.listRestaurants);

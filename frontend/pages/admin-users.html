@@ -227,6 +227,51 @@
           <ul id="adm-user-detail-restaurants" class="adm-detail-list"></ul>
           <p id="adm-user-detail-restaurants-empty" class="adm-muted-inline" hidden>Aucun restaurant lié.</p>
         </div>
+        <div class="adm-detail-section adm-detail-section--pwd">
+          <h4>Réinitialisation des mots de passe</h4>
+          <p class="adm-muted-inline adm-detail-section__hint">
+            Après une demande reçue sur WhatsApp, définissez un nouveau mot de passe pour ce compte restaurant.
+          </p>
+          <button type="button" class="adm-btn adm-btn--primary" id="adm-user-pwd-open">
+            Modifier le mot de passe
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="adm-user-pwd-modal"
+      class="adm-detail-modal adm-pwd-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-hidden="true"
+      aria-labelledby="adm-user-pwd-title"
+    >
+      <div class="adm-detail-modal__backdrop" data-close-pwd tabindex="-1"></div>
+      <div class="adm-detail-modal__panel">
+        <div class="adm-detail-modal__head">
+          <div class="adm-detail-modal__titlewrap">
+            <h3 id="adm-user-pwd-title">Nouveau mot de passe</h3>
+            <p id="adm-user-pwd-email" class="adm-detail-modal__email"></p>
+          </div>
+          <button type="button" class="adm-detail-modal__close" aria-label="Fermer" data-close-pwd>×</button>
+        </div>
+        <form id="adm-user-pwd-form" class="adm-pwd-form" novalidate>
+          <div class="adm-pwd-field">
+            <label for="adm-user-pwd-new">Nouveau mot de passe</label>
+            <input id="adm-user-pwd-new" type="password" autocomplete="new-password" minlength="8" required />
+          </div>
+          <div class="adm-pwd-field">
+            <label for="adm-user-pwd-confirm">Confirmer le mot de passe</label>
+            <input id="adm-user-pwd-confirm" type="password" autocomplete="new-password" minlength="8" required />
+          </div>
+          <p id="adm-user-pwd-error" class="adm-pwd-error" role="alert" hidden></p>
+          <p id="adm-user-pwd-success" class="adm-pwd-success" role="status" hidden></p>
+          <div class="adm-pwd-actions">
+            <button type="button" class="adm-btn" data-close-pwd>Annuler</button>
+            <button type="submit" class="adm-btn adm-btn--primary" id="adm-user-pwd-submit">Enregistrer</button>
+          </div>
+        </form>
       </div>
     </div>
 

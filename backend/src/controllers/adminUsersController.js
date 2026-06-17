@@ -2,6 +2,7 @@
  * Liste et gestion des utilisateurs — réservé admin plateforme.
  */
 
+const bcrypt = require("bcryptjs");
 const { getPool } = require("../config/database");
 const { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
 
@@ -214,6 +215,62 @@ async function patchUserStatus(req, res) {
   }
 }
 
+async function patchUserPassword(req, res) {
+  try {
+    var id = Number(req.params.id);
+    if (!Number.isInteger(id) || id < 1) {
+      return res.status(400).json({ message: "Identifiant invalide." });
+    }
+
+    var password = String(req.body.password || "");
+    var confirmPassword = String(
+      req.body.confirmPassword != null ? req.body.confirmPassword : req.body.passwordConfirm || "",
+    );
+
+    if (!password) {
+      return res.status(400).json({ message: "Le nouveau mot de passe est obligatoire." });
+    }
+    if (password.length < 8) {
+      return res.status(400).json({ message: "Le mot de passe doit contenir au moins 8 caractères." });
+    }
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: "Les mots de passe ne correspondent pas." });
+    }
+
+    var adminId = Number(req.user.id);
+    var pool = getPool();
+    var [[target]] = await pool.query("SELECT email FROM users WHERE id = ? LIMIT 1", [id]);
+    if (!target) {
+      return res.status(404).json({ message: "Utilisateur introuvable." });
+    }
+
+    var rounds = Number(process.env.BCRYPT_SALT_ROUNDS) || 10;
+    var passwordHash = await bcrypt.hash(password, rounds);
+
+    var [result] = await pool.query("UPDATE users SET password = ? WHERE id = ? LIMIT 1", [passwordHash, id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Utilisateur introuvable." });
+    }
+
+    await appendAudit({
+      userId: adminId,
+      restaurantId: null,
+      action: AUDIT_ACTIONS.USER_PASSWORD_RESET,
+      detail: "Réinitialisation mot de passe du compte « " + String(target.email) + " »",
+    });
+
+    return res.json({
+      ok: true,
+      id: id,
+      message: "Mot de passe mis à jour avec succès.",
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Erreur serveur." });
+  }
+}
+
 async function deleteUser(req, res) {
   try {
     var id = Number(req.params.id);
@@ -252,5 +309,6 @@ module.exports = {
   listUsers: listUsers,
   getUserDetail: getUserDetail,
   patchUserStatus: patchUserStatus,
+  patchUserPassword: patchUserPassword,
   deleteUser: deleteUser,
 };

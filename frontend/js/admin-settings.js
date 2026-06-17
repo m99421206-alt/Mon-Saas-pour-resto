@@ -675,6 +675,14 @@
 
     initShell();
 
+    var supportWaEl = document.getElementById("sett-support-wa");
+    if (supportWaEl) {
+      var cfg = window.MenuGo_CONFIG || {};
+      var waRaw = typeof cfg.SUPPORT_WHATSAPP === "string" ? cfg.SUPPORT_WHATSAPP.trim() : "";
+      var waDigits = waRaw.replace(/\D/g, "") || "22399421206";
+      supportWaEl.textContent = "+" + waDigits;
+    }
+
     attachHandlers();
 
     await loadInitial();

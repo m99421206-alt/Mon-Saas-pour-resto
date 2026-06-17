@@ -422,7 +422,79 @@
   padding: 10px 0;
 }
 
+.adm-detail-section__hint {
+  padding-top: 0;
+  padding-bottom: 0.75rem;
+}
+
+.adm-detail-section--pwd {
+  margin-top: 0.25rem;
+}
+
+.adm-pwd-modal {
+  z-index: 350;
+}
+
+.adm-pwd-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.adm-pwd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.adm-pwd-field label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--adm-text-muted);
+}
+
+.adm-pwd-field input {
+  width: 100%;
+  border: 1px solid var(--adm-border);
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+  font-size: 0.9rem;
+  background: var(--adm-surface);
+}
+
+.adm-pwd-field input:focus-visible {
+  outline: none;
+  border-color: var(--adm-accent);
+  box-shadow: 0 0 0 3px var(--adm-accent-soft);
+}
+
+.adm-pwd-error {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #b91c1c;
+}
+
+.adm-pwd-success {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #15803d;
+  font-weight: 600;
+}
+
+.adm-pwd-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
 body.adm-overlay-open {
+  overflow: hidden !important;
+}
+
+body.adm-pwd-modal-open {
   overflow: hidden !important;
 }
 

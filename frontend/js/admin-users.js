@@ -24,6 +24,9 @@
     total: 0,
   };
 
+  var detailUserId = null;
+  var detailUserEmail = "";
+
   function escapeHtml(value) {
     return String(value == null ? "" : value)
       .replace(/&/g, "&amp;")
@@ -583,6 +586,187 @@
     });
   }
 
+  function setPwdModalOpen(open) {
+    var pwdModal = document.getElementById("adm-user-pwd-modal");
+    if (!pwdModal) {
+      return;
+    }
+    pwdModal.setAttribute("aria-hidden", open ? "false" : "true");
+    document.body.classList.toggle("adm-pwd-modal-open", open);
+    if (!open) {
+      clearPwdForm();
+    }
+  }
+
+  function clearPwdForm() {
+    var form = document.getElementById("adm-user-pwd-form");
+    var errEl = document.getElementById("adm-user-pwd-error");
+    var okEl = document.getElementById("adm-user-pwd-success");
+    var submitBtn = document.getElementById("adm-user-pwd-submit");
+    if (form) {
+      form.reset();
+    }
+    if (errEl) {
+      errEl.textContent = "";
+      errEl.hidden = true;
+    }
+    if (okEl) {
+      okEl.textContent = "";
+      okEl.hidden = true;
+    }
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Enregistrer";
+    }
+  }
+
+  function showPwdError(msg) {
+    var errEl = document.getElementById("adm-user-pwd-error");
+    var okEl = document.getElementById("adm-user-pwd-success");
+    if (okEl) {
+      okEl.hidden = true;
+      okEl.textContent = "";
+    }
+    if (errEl) {
+      errEl.textContent = msg || "";
+      errEl.hidden = !msg;
+    }
+  }
+
+  function showPwdSuccess(msg) {
+    var errEl = document.getElementById("adm-user-pwd-error");
+    var okEl = document.getElementById("adm-user-pwd-success");
+    if (errEl) {
+      errEl.hidden = true;
+      errEl.textContent = "";
+    }
+    if (okEl) {
+      okEl.textContent = msg || "";
+      okEl.hidden = !msg;
+    }
+  }
+
+  function bindPasswordModal() {
+    var openBtn = document.getElementById("adm-user-pwd-open");
+    var pwdModal = document.getElementById("adm-user-pwd-modal");
+    var form = document.getElementById("adm-user-pwd-form");
+    var emailEl = document.getElementById("adm-user-pwd-email");
+    var submitBtn = document.getElementById("adm-user-pwd-submit");
+
+    if (openBtn) {
+      openBtn.addEventListener("click", function () {
+        if (!detailUserId) {
+          showAccessBanner("Utilisateur introuvable.", "error");
+          return;
+        }
+        clearPwdForm();
+        if (emailEl) {
+          emailEl.textContent = detailUserEmail || "—";
+        }
+        setPwdModalOpen(true);
+        var newInput = document.getElementById("adm-user-pwd-new");
+        if (newInput) {
+          newInput.focus();
+        }
+      });
+    }
+
+    if (pwdModal) {
+      pwdModal.querySelectorAll("[data-close-pwd]").forEach(function (el) {
+        el.addEventListener("click", function () {
+          setPwdModalOpen(false);
+        });
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && pwdModal.getAttribute("aria-hidden") === "false") {
+          setPwdModalOpen(false);
+        }
+      });
+    }
+
+    if (!form) {
+      return;
+    }
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      if (!detailUserId) {
+        showPwdError("Utilisateur introuvable.");
+        return;
+      }
+
+      var newInput = document.getElementById("adm-user-pwd-new");
+      var confirmInput = document.getElementById("adm-user-pwd-confirm");
+      var password = newInput ? String(newInput.value || "") : "";
+      var confirmPassword = confirmInput ? String(confirmInput.value || "") : "";
+
+      if (!password) {
+        showPwdError("Saisissez un nouveau mot de passe.");
+        if (newInput) {
+          newInput.focus();
+        }
+        return;
+      }
+      if (password.length < 8) {
+        showPwdError("Le mot de passe doit contenir au moins 8 caractères.");
+        if (newInput) {
+          newInput.focus();
+        }
+        return;
+      }
+      if (password !== confirmPassword) {
+        showPwdError("Les mots de passe ne correspondent pas.");
+        if (confirmInput) {
+          confirmInput.focus();
+        }
+        return;
+      }
+
+      var token = localStorage.getItem(TOKEN_KEY);
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Enregistrement…";
+      }
+
+      var res = await fetchJson(
+        "PATCH",
+        "/api/admin/users/" + encodeURIComponent(String(detailUserId)) + "/password",
+        token,
+        {
+          body: {
+            password: password,
+            confirmPassword: confirmPassword,
+          },
+        },
+      );
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Enregistrer";
+      }
+
+      if (guardApiStatus(res.status)) {
+        return;
+      }
+
+      if (!res.ok) {
+        var msg = res.data && res.data.message ? res.data.message : "Enregistrement impossible.";
+        showPwdError(msg);
+        return;
+      }
+
+      showPwdSuccess(
+        res.data && res.data.message ? res.data.message : "Mot de passe mis à jour avec succès.",
+      );
+      if (newInput) {
+        newInput.value = "";
+      }
+      if (confirmInput) {
+        confirmInput.value = "";
+      }
+    });
+  }
+
   async function openUserDetail(idStr) {
     var token = localStorage.getItem(TOKEN_KEY);
     var titleEl = document.getElementById("adm-user-detail-title");
@@ -622,6 +806,8 @@
     }
 
     var u = res.data.user;
+    detailUserId = u.id;
+    detailUserEmail = u.email || "";
     var firstResto =
       Array.isArray(res.data.restaurants) && res.data.restaurants.length
         ? String(res.data.restaurants[0].name || "").trim()
@@ -722,6 +908,7 @@
     }
     initShell();
     bindModalClose();
+    bindPasswordModal();
     attachToolbar();
 
     var qInput = document.getElementById("users-q");
