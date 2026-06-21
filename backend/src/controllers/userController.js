@@ -3,6 +3,10 @@ const subscriptionService = require("../services/subscriptionService");
 const platformSettings = require("../services/platformSettings");
 const { resolvePlanLabel } = require("../utils/subscriptionLabels");
 const { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
+const {
+  createAdminNotification,
+  NOTIFICATION_TYPES,
+} = require("../services/adminNotificationService");
 const { isPlatformAdminEmail } = require("../utils/platformAdmin");
 
 function catalogPlanKey(p) {
@@ -290,7 +294,75 @@ async function postOnboardingRequestHelp(req, res) {
       action: AUDIT_ACTIONS.ONBOARDING_SETUP_REQUEST,
       detail: "Demande d’accompagnement installation (« " + String(rows[0].name || "") + " »)",
     });
+    await createAdminNotification({
+      type: NOTIFICATION_TYPES.SUPPORT,
+      userId: req.user.id,
+      restaurantId: rid,
+      restaurantName: String(rows[0].name || "—"),
+      detail: "Demande d'assistance installation (onboarding)",
+      linkUrl: "admin-dashboard.html",
+    });
     return res.json({ ok: true, needs_setup_help: true, onboarding_seen: true });
+  } catch (err) {
+    return res.status(500).json({ message: "Erreur serveur." });
+  }
+}
+
+async function postAdminNotify(req, res) {
+  try {
+    if (isPlatformAdminEmail(req.user.email)) {
+      return res.status(403).json({ message: "Action réservée aux comptes restaurant." });
+    }
+
+    var rawType = typeof req.body.type === "string" ? req.body.type.trim().toLowerCase() : "";
+    var allowed = {
+      support: NOTIFICATION_TYPES.SUPPORT,
+      subscription: NOTIFICATION_TYPES.SUBSCRIPTION,
+      issue: NOTIFICATION_TYPES.ISSUE,
+    };
+    var type = allowed[rawType];
+    if (!type) {
+      return res.status(400).json({ message: "Type invalide (support, subscription ou issue)." });
+    }
+
+    var pool = getPool();
+    var [rows] = await pool.query(
+      "SELECT r.id, r.name, r.whatsapp, u.phone, u.email FROM restaurants r " +
+        "INNER JOIN users u ON u.id = r.user_id WHERE r.user_id = ? ORDER BY r.id ASC LIMIT 1",
+      [req.user.id],
+    );
+    if (!rows.length) {
+      return res.status(404).json({ message: "Restaurant introuvable." });
+    }
+
+    var r = rows[0];
+    var restoName = String(r.name || "—");
+    var phone = r.whatsapp || r.phone || null;
+    var extra = typeof req.body.detail === "string" ? req.body.detail.trim().slice(0, 500) : "";
+    var detailByType = {
+      support: "Message support depuis le restaurant",
+      subscription: "Demande concernant l'abonnement",
+      issue: "Signalement d'un problème",
+    };
+    var detail = extra || detailByType[type] || "Notification restaurant";
+    var linkUrl =
+      type === NOTIFICATION_TYPES.SUBSCRIPTION ?
+        "admin-subscriptions.html"
+      : type === NOTIFICATION_TYPES.ISSUE ?
+        "admin-notifications.html"
+      : "admin-dashboard.html";
+
+    await createAdminNotification({
+      type: type,
+      userId: req.user.id,
+      restaurantId: r.id,
+      restaurantName: restoName,
+      phone: phone,
+      detail: detail + (r.email ? " — " + String(r.email) : ""),
+      linkUrl: linkUrl,
+    });
+
+    return res.status(201).json({ ok: true, message: "Notification envoyée à l'administration." });
   } catch (err) {
     return res.status(500).json({ message: "Erreur serveur." });
   }
@@ -300,4 +372,5 @@ module.exports = {
   getMe: getMe,
   postOnboardingMarkSeen: postOnboardingMarkSeen,
   postOnboardingRequestHelp: postOnboardingRequestHelp,
+  postAdminNotify: postAdminNotify,
 };

@@ -2,6 +2,10 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { getPool } = require("../config/database");
 const { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
+const {
+  createAdminNotification,
+  NOTIFICATION_TYPES,
+} = require("../services/adminNotificationService");
 const platformSettings = require("../services/platformSettings");
 const { normalizeWhatsapp } = require("../utils/whatsappNormalize");
 const { isPlatformAdminEmail } = require("../utils/platformAdmin");
@@ -167,6 +171,26 @@ async function register(req, res) {
       restaurantId: restaurantId,
       action: AUDIT_ACTIONS.USER_REGISTER,
       detail: "Inscription nouveau compte (« " + restaurantName + " », quartier : " + cityDb + ")",
+    });
+
+    await createAdminNotification({
+      type: NOTIFICATION_TYPES.REGISTRATION,
+      userId: userId,
+      restaurantId: restaurantId,
+      restaurantName: restaurantName,
+      phone: principalPhoneDb,
+      detail: "Nouveau compte — " + email + " — Gérant : " + fullName,
+      linkUrl: "admin-users.html",
+    });
+
+    await createAdminNotification({
+      type: NOTIFICATION_TYPES.NEW_RESTAURANT,
+      userId: userId,
+      restaurantId: restaurantId,
+      restaurantName: restaurantName,
+      phone: principalPhoneDb,
+      detail: "Restaurant inscrit — Quartier : " + cityDb,
+      linkUrl: "admin-restaurants.html",
     });
 
     const token = signToken({ userId: userId });

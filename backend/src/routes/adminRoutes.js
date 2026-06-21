@@ -8,6 +8,7 @@ const adminSubscriptionsController = require("../controllers/adminSubscriptionsC
 const adminSettingsController = require("../controllers/adminSettingsController");
 const adminSetupHelpController = require("../controllers/adminSetupHelpController");
 const adminAuditLogsController = require("../controllers/adminAuditLogsController");
+const adminNotificationsController = require("../controllers/adminNotificationsController");
 
 var router = express.Router();
 
@@ -18,6 +19,38 @@ router.get("/activity", requireAuth, requirePlatformAdmin, adminController.getAc
 router.get("/audit-logs", requireAuth, requirePlatformAdmin, adminAuditLogsController.getAuditLogs);
 router.get("/audit-logs/export", requireAuth, requirePlatformAdmin, adminAuditLogsController.exportAuditLogsCsv);
 router.delete("/audit-logs/purge", requireAuth, requirePlatformAdmin, adminAuditLogsController.purgeAuditLogs);
+
+router.get("/notifications", requireAuth, requirePlatformAdmin, adminNotificationsController.getNotifications);
+router.get(
+  "/notifications/recent",
+  requireAuth,
+  requirePlatformAdmin,
+  adminNotificationsController.getRecentNotifications,
+);
+router.get(
+  "/notifications/unread-count",
+  requireAuth,
+  requirePlatformAdmin,
+  adminNotificationsController.getUnreadCountHandler,
+);
+router.patch(
+  "/notifications/:id/read",
+  requireAuth,
+  requirePlatformAdmin,
+  adminNotificationsController.patchNotificationRead,
+);
+router.post(
+  "/notifications/mark-all-read",
+  requireAuth,
+  requirePlatformAdmin,
+  adminNotificationsController.postMarkAllRead,
+);
+router.delete(
+  "/notifications/:id",
+  requireAuth,
+  requirePlatformAdmin,
+  adminNotificationsController.deleteNotificationHandler,
+);
 
 router.get("/users", requireAuth, requirePlatformAdmin, adminUsersController.listUsers);
 router.get("/users/:id", requireAuth, requirePlatformAdmin, adminUsersController.getUserDetail);

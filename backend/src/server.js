@@ -119,6 +119,14 @@ var loginRateLimiter = rateLimit({
   message: { message: "Trop de tentatives de connexion. Réessayez dans une minute." },
 });
 
+var passwordResetNotifyLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: isProduction ? 8 : 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Trop de demandes. Réessayez dans une minute." },
+});
+
 /* CORS avant les routes — préflight inclus (évite blocages inscription / login en dev). */
 app.use(
   cors({
@@ -176,6 +184,7 @@ app.get("/health", async function (req, res) {
 /* Limitation globale inscription ; login : 5 échecs → blocage (loginLockout.js) */
 app.post("/register", registerRateLimiter);
 app.post("/login", loginRateLimiter);
+app.post("/password-reset-request", passwordResetNotifyLimiter);
 
 /* Authentification (étape 5) */
 app.use("/", authRoutes);

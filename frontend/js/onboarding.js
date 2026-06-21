@@ -63,6 +63,15 @@
     var url =
       "https://wa.me/" + supportDigits() + "?text=" + encodeURIComponent(String(body).trim());
     waBtn.setAttribute("href", url);
+    if (!waBtn.dataset.notifyBound) {
+      waBtn.dataset.notifyBound = "1";
+      waBtn.addEventListener("click", function () {
+        apiPost("/api/me/admin-notify", {
+          type: "support",
+          detail: "Contact WhatsApp depuis l'onboarding",
+        });
+      });
+    }
   }
 
   function showFeedback(msg, kind) {
@@ -154,17 +163,21 @@
     }
   }
 
-  async function apiPost(path) {
+  async function apiPost(path, body) {
     var token = getToken();
     if (!token) return { ok: false, status: 401, data: null };
 
-    var response = await fetch(API_URL + path, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        Authorization: "Bearer " + token,
-      },
-    });
+    var headers = {
+      Accept: "application/json",
+      Authorization: "Bearer " + token,
+    };
+    var opts = { method: "POST", headers: headers };
+    if (body) {
+      headers["Content-Type"] = "application/json";
+      opts.body = JSON.stringify(body);
+    }
+
+    var response = await fetch(API_URL + path, opts);
 
     var data = await readJson(response);
     return { ok: response.ok, status: response.status, data: data };

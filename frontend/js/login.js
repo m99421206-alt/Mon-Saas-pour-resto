@@ -127,6 +127,26 @@
       }
       input.addEventListener("input", updateForgotWaLink);
     });
+    if (forgotWa) {
+      forgotWa.addEventListener("click", function () {
+        var resto =
+          forgotRestoInput && forgotRestoInput.value.trim() ?
+            forgotRestoInput.value.trim()
+          : "";
+        var phone =
+          forgotPhoneInput && forgotPhoneInput.value.trim() ?
+            forgotPhoneInput.value.trim()
+          : "";
+        fetch(API_URL + "/password-reset-request", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            restaurantName: resto,
+            phone: phone,
+          }),
+        }).catch(function () {});
+      });
+    }
     updateForgotWaLink();
   }
 

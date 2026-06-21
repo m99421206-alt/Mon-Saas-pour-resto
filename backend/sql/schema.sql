@@ -123,6 +123,29 @@ CREATE TABLE IF NOT EXISTS `audit_logs` (
     ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `admin_notifications` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `type` VARCHAR(48) NOT NULL,
+  `restaurant_id` INT UNSIGNED NULL,
+  `user_id` INT UNSIGNED NULL,
+  `restaurant_name` VARCHAR(160) NOT NULL DEFAULT '',
+  `phone` VARCHAR(32) NULL,
+  `detail` VARCHAR(2048) NULL,
+  `link_url` VARCHAR(255) NULL,
+  `is_read` TINYINT(1) NOT NULL DEFAULT 0,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_admin_notif_created` (`created_at`),
+  KEY `idx_admin_notif_read_created` (`is_read`, `created_at`),
+  KEY `idx_admin_notif_type` (`type`),
+  CONSTRAINT `fk_admin_notif_user`
+    FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_admin_notif_restaurant`
+    FOREIGN KEY (`restaurant_id`) REFERENCES `restaurants` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS `upload_files` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `restaurant_id` INT UNSIGNED NOT NULL,

@@ -43,6 +43,32 @@
     return String(raw || "").replace(/\D/g, "").replace(/^0+/, "");
   }
 
+  function notifyAdminSubscription() {
+    var cfg = window.MenuGo_CONFIG || {};
+    var apiUrl = String(cfg.API_URL || "").replace(/\/$/, "");
+    var token = null;
+    try {
+      token = localStorage.getItem("MenuGo_token");
+    } catch (e) {
+      token = null;
+    }
+    if (!apiUrl || !token) {
+      return;
+    }
+    fetch(apiUrl + "/api/me/admin-notify", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify({
+        type: "subscription",
+        detail: "Contact WhatsApp concernant l'abonnement",
+      }),
+    }).catch(function () {});
+  }
+
   /** @returns {boolean} */
   function isValidEmail(s) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(s || "").trim());
@@ -427,6 +453,9 @@
       whats.rel = "noopener noreferrer";
       whats.target = "_blank";
       whats.href = waUrl;
+      whats.addEventListener("click", function () {
+        notifyAdminSubscription();
+      });
       fillContactMenuGoButton(whats);
       appendBtn(whats);
     } else if (!supportMail) {
