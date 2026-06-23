@@ -33,6 +33,6 @@
      * En dev local uniquement : ex. http://192.168.1.12:5500 pour tester le scan QR depuis un téléphone.
      */
     PUBLIC_SITE_ORIGIN:
-      typeof existingConfig.PUBLIC_SITE_ORIGIN === "string" ? existingConfig.PUBLIC_SITE_ORIGIN : " http://192.168.250.146:5500",
+      typeof existingConfig.PUBLIC_SITE_ORIGIN === "string" ? existingConfig.PUBLIC_SITE_ORIGIN : "http://192.168.100.16:5500",
   });
 })();

@@ -267,21 +267,6 @@
     await loadNotifications();
   }
 
-  async function markAllRead() {
-    var token = localStorage.getItem(TOKEN_KEY);
-    var res = await apiFetch("POST", "/api/admin/notifications/mark-all-read", token, {});
-    if (guardApiStatus(res.status)) {
-      return;
-    }
-    if (!res.ok) {
-      showFeedback("Action impossible.", "err");
-      return;
-    }
-    showFeedback("Toutes les notifications ont été marquées comme lues.", "ok");
-    syncWidgetBadge(0);
-    await loadNotifications();
-  }
-
   async function deleteOne(id) {
     if (!confirm("Supprimer cette notification ?")) {
       return;
@@ -335,11 +320,6 @@
         loadNotifications();
       });
     });
-
-    var markAllBtn = document.getElementById("notif-mark-all");
-    if (markAllBtn) {
-      markAllBtn.addEventListener("click", markAllRead);
-    }
   }
 
   async function init() {

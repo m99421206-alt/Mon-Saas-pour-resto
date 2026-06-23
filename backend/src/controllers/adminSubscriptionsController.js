@@ -457,13 +457,13 @@ async function patchAdjustSubscription(req, res) {
   }
 }
 
-/** Abonnements à surveiller (échéance ≤ 15 jours). */
+/** Abonnements à surveiller (échéance ≤ 3 jours). */
 async function listExpiringSubscriptions(req, res) {
   try {
     var pool = getPool();
     await subscriptionService.expireAllPastDueGlobally();
 
-    var maxDays = 15;
+    var maxDays = 3;
     var [rows] = await pool.query(
       "SELECT r.id, r.name, r.logo_url, r.whatsapp, r.subscription_plan_key, r.subscription_status, " +
         "r.subscription_started_at, r.subscription_ends_at, r.subscription_amount_cfa, u.email AS owner_email, " +

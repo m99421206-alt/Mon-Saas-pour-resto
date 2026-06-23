@@ -4,7 +4,7 @@
   --body-bg: #f8f9fa;
   --white: #ffffff;
   --text: #171717;
-  --muted: #6b7280;
+  --muted: #5b616e;
   --line: #e5e7eb;
   --primary: #ff7a00;
   --primary-soft: #ff7a001f;
@@ -73,7 +73,6 @@ img {
   margin: 0 auto;
   background: var(--body-bg);
   overflow: hidden;
-  max-width: 100%;
 }
 
 .app.menu-enter-pending {
@@ -395,14 +394,15 @@ img {
 
 .product-card__image {
   width: 100%;
-  aspect-ratio: 1 / 0.82;
+  aspect-ratio: 5 / 4;
   object-fit: cover;
+  object-position: center;
   border-radius: 20px;
 }
 
 .product-card__placeholder {
   width: 100%;
-  aspect-ratio: 1 / 0.82;
+  aspect-ratio: 5 / 4;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -863,13 +863,16 @@ img {
 }
 
 .detail-media {
+  --detail-media-h: 240px;
   width: calc(100% - 0.75rem);
   margin: 0.35rem auto 0.55rem;
   display: flex;
-  align-items: stretch;
+  align-items: center;
   justify-content: center;
-  min-height: 190px;
-  height: 190px;
+  flex: 0 0 auto;
+  min-height: var(--detail-media-h);
+  height: var(--detail-media-h);
+  max-height: var(--detail-media-h);
   padding: 0;
   border-radius: 22px;
   background: #eceff1;
@@ -883,28 +886,26 @@ img {
   opacity: 1;
 }
 
-.detail-media--hero,
-.detail-media--portrait {
-  padding: 0;
-  background: #eceff1;
+@media (min-width: 500px) and (max-width: 63.99rem) {
+  .detail-media {
+    --detail-media-h: 290px;
+  }
+}
+
+@media (min-width: 64rem) {
+  .detail-media {
+    --detail-media-h: 340px;
+  }
 }
 
 .detail-image {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  object-position: center center;
+  object-fit: cover;
+  object-position: center;
   border-radius: 0;
   background: transparent;
-}
-
-.detail-media--hero .detail-image {
-  object-fit: cover;
-}
-
-.detail-media--portrait .detail-image {
-  object-fit: contain;
 }
 
 .detail-image-placeholder {
@@ -1072,75 +1073,114 @@ img {
 }
 
 .similar-section {
-  margin-top: 1.25rem;
+  margin-top: 1rem;
   margin-bottom: 0;
-  padding-top: 0.75rem;
-  padding-bottom: 0.25rem;
+  padding-top: 0.65rem;
+  padding-bottom: 0;
   border-top: 1px solid var(--line);
   overflow: hidden;
 }
 
+.similar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
 .similar-title {
-  margin: 0 0 0.75rem;
-  font-size: 0.82rem;
+  margin: 0;
+  font-size: 0.88rem;
   font-weight: 800;
+}
+
+.similar-see-all {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--primary);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.similar-see-all i {
+  font-size: 0.62rem;
 }
 
 .similar-list {
   display: flex;
-  gap: 1rem;
+  flex-direction: row;
+  gap: 0.75rem;
   overflow-x: auto;
   overscroll-behavior-x: contain;
   margin-inline: calc(-1 * var(--detail-pad, 1.25rem));
-  padding: 0 var(--detail-pad, 1.25rem) 0.5rem;
-  scrollbar-width: none;
+  padding: 0 var(--detail-pad, 1.25rem) 0.35rem;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
   -webkit-overflow-scrolling: touch;
 }
 
 .similar-list::-webkit-scrollbar {
-  display: none;
+  height: 4px;
+}
+
+.similar-list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #cbd5e1;
 }
 
 .similar-card {
-  flex: 0 0 190px;
+  flex: 0 0 9.5rem;
+  width: 9.5rem;
   position: relative;
-  display: grid;
-  grid-template-columns: 4.1rem 1fr;
-  gap: 0.55rem;
-  align-items: center;
-  padding: 0.55rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0;
   border: 0;
   border-radius: 1rem;
   background: var(--white);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
   color: var(--text);
   font: inherit;
   text-align: left;
   cursor: pointer;
+  scroll-snap-align: start;
+  overflow: hidden;
 }
 
 .similar-card__heart {
-  top: 0.35rem;
-  right: 0.35rem;
+  top: 0.4rem;
+  right: 0.4rem;
   width: 1.45rem;
   height: 1.45rem;
   font-size: 0.72rem;
 }
 
 .similar-card__image {
-  width: 4.1rem;
-  height: 4.1rem;
+  width: 100%;
+  aspect-ratio: 5 / 4;
   object-fit: cover;
-  border-radius: 50%;
+  object-position: center;
+  border-radius: 0;
+  display: block;
 }
 
 .similar-card__placeholder {
-  width: 4.1rem;
-  height: 4.1rem;
+  width: 100%;
+  aspect-ratio: 5 / 4;
   display: grid;
   place-items: center;
-  padding: 0.35rem;
-  border-radius: 50%;
+  padding: 0.5rem;
+  border-radius: 0;
   background: #f3f4f6;
   color: #9ca3af;
   font-size: 0.52rem;
@@ -1157,41 +1197,25 @@ img {
   line-clamp: 3;
 }
 
-.similar-card--no-image {
-  grid-template-columns: 4.1rem 1fr;
-}
-
-.similar-card--no-image .similar-card__heart {
-  top: 0.35rem;
-  right: 0.35rem;
-}
-
-.similar-card__body {
-  min-width: 0;
-  display: grid;
-  gap: 0.18rem;
+.similar-card__price {
+  padding: 0.45rem 0.55rem 0.12rem;
+  color: var(--primary);
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1.2;
 }
 
 .similar-card__name {
+  padding: 0 0.55rem 0.55rem;
   overflow: hidden;
-  font-size: 0.67rem;
-  font-weight: 800;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.similar-card__meta {
-  overflow: hidden;
-  color: #111111;
-  font-size: 0.48rem;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.similar-card__price {
-  color: var(--primary);
+  color: var(--text);
   font-size: 0.62rem;
   font-weight: 800;
+  line-height: 1.25;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .detail-actions {
@@ -1605,153 +1629,101 @@ img {
   }
 }
 
-@media (min-width: 431px) {
+/* =========================================================
+   TABLETTE — 600px à 1023px (mobile agrandi, même design)
+   ========================================================= */
+
+@media (min-width: 37.5rem) and (max-width: 63.99rem) {
   :root {
-    /* Carte flottante : hauteur visible moins les marges verticales de .app. */
-    --app-overlay-height: calc(100svh - 3rem);
+    --app-shell-max: clamp(540px, calc(540px + (100vw - 600px) * 0.141843), 600px);
+    --app-overlay-height: calc(100svh - 2rem);
+  }
+
+  body {
+    display: grid;
+    place-items: start center;
+    padding-block: 1rem;
+    min-height: 100svh;
   }
 
   .app {
-    margin-top: 1.5rem;
-    margin-bottom: 1.5rem;
-    min-height: calc(100svh - 3rem);
-    border-radius: 34px;
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.08);
+    width: min(calc(100% - 1.25rem), var(--app-shell-max));
+    min-height: calc(100svh - 2rem);
+    border-radius: 28px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+  }
+
+  .section {
+    --section-pad: clamp(0.85rem, calc(0.8rem + (100vw - 600px) * 0.00059), 1.05rem);
+  }
+
+  .bottom-nav {
+    width: min(calc(100% - 1.25rem), var(--app-shell-max));
+    bottom: calc(1rem + var(--safe-bottom));
+    border-radius: 26px;
+  }
+
+  .whatsapp {
+    right: max(1rem, calc(50% - min(100%, var(--app-shell-max)) / 2 + 1rem));
+    bottom: max(5.75rem, calc(var(--safe-bottom) + 5.75rem));
+  }
+
+  .product-detail,
+  .order-page {
+    border-radius: 28px;
   }
 }
 
-@media (min-width: 48rem) {
+/* =========================================================
+   DESKTOP — 1024px+ (app mobile centrée, style WhatsApp Web)
+   ========================================================= */
+
+@media (min-width: 64rem) {
   :root {
-    --app-shell-max: 760px;
+    --app-shell-max: clamp(460px, 480px, 500px);
+    --app-overlay-height: calc(100svh - 3rem);
+  }
+
+  html {
+    background: #eceff1;
   }
 
   body {
     display: grid;
     place-items: start center;
     padding-block: 1.5rem;
+    min-height: 100svh;
+    background: #eceff1;
   }
 
   .app {
-    width: min(100%, 760px);
+    width: min(calc(100% - 2rem), var(--app-shell-max));
     min-height: calc(100svh - 3rem);
-    border-radius: 34px;
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.08);
-  }
-
-  .hero__banner-frame {
-    height: 300px;
-  }
-
-  .restaurant {
-    grid-template-columns: 104px 1fr;
-    gap: 1.25rem;
-    padding-inline: 1.75rem;
-    margin-top: -46px;
-  }
-
-  .restaurant__logo {
-    width: 104px;
-    height: 104px;
-    border-radius: 28px;
-  }
-
-  .restaurant__content {
-    padding-top: 3.3rem;
-  }
-
-  .restaurant__title {
-    font-size: 2rem;
-  }
-
-  .restaurant__desc {
-    max-width: 34rem;
-    font-size: 0.9rem;
-  }
-
-  .section {
-    --section-pad: 1.5rem;
-  }
-
-  .categories {
-    margin-inline: calc(-1 * var(--section-pad));
-    padding-inline: var(--section-pad);
-  }
-
-  .products-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1.1rem;
-  }
-
-  .product-card__image {
-    aspect-ratio: 1 / 0.78;
-  }
-
-  .product-card__name {
-    font-size: 0.92rem;
-  }
-
-  .product-card__meta {
-    font-size: 0.7rem;
-    height: calc(0.7rem * 1.35 * 2);
-  }
-
-  .product-card__price {
-    font-size: 0.94rem;
+    border-radius: 32px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
   }
 
   .bottom-nav {
-    width: min(calc(100vw - 3rem), var(--app-shell-max));
+    width: min(calc(100% - 2rem), var(--app-shell-max));
     bottom: calc(1.5rem + var(--safe-bottom));
     border-radius: 26px;
   }
 
   .whatsapp {
-    right: max(1.75rem, calc(50% - min(100%, var(--app-shell-max)) / 2 + 1.75rem));
-    bottom: max(6.75rem, calc(var(--safe-bottom) + 6.75rem));
-  }
-
-  .product-detail__scroll {
-    --detail-pad: 1.75rem;
-  }
-
-  .detail-content {
-    padding: 0 var(--detail-pad) 0.5rem;
-  }
-
-  .similar-list {
-    margin-inline: calc(-1 * var(--detail-pad));
-    padding-inline: var(--detail-pad);
-  }
-
-  .detail-media {
-    width: calc(100% - 1.5rem);
-    border-radius: 26px;
-  }
-
-  .detail-title {
-    font-size: 2rem;
+    right: max(1.25rem, calc(50% - min(100%, var(--app-shell-max)) / 2 + 1.25rem));
+    bottom: max(6.25rem, calc(var(--safe-bottom) + 6.25rem));
   }
 
   .product-detail {
     top: 1.5rem;
     bottom: 1.5rem;
-    border-radius: 34px;
+    border-radius: 32px;
   }
 
   .order-page {
     top: 1.5rem;
     bottom: 1.5rem;
     height: auto;
-    border-radius: 34px;
-  }
-
-  .detail-actions {
-    padding-left: calc(1.75rem + var(--safe-left));
-    padding-right: calc(1.75rem + var(--safe-right));
-  }
-
-  .order-list,
-  .order-total {
-    margin-inline: 2rem;
+    border-radius: 32px;
   }
 }

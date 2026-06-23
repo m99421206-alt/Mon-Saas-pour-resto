@@ -7,6 +7,8 @@
 
   var BANNER_ID = "dash-sub-expiry-banner";
   var DEFAULT_SUPPORT_WHATSAPP = "22399421206";
+  /** Alerte affichée uniquement les N derniers jours avant échéance. */
+  var ALERT_DAYS_BEFORE = 3;
 
   function waDigits(raw) {
     return String(raw || "")
@@ -55,7 +57,7 @@
   }
 
   /**
-   * Tier bannière client : warning-yellow | warning-orange | expired | null
+   * Tier bannière client : warning-orange | expired | null
    * @param {object|null|undefined} sub
    */
   function getClientAlertTier(sub) {
@@ -64,8 +66,7 @@
     if (isSubscriptionExpired(sub)) return "expired";
     var dr = resolveDaysRemaining(sub);
     if (dr === null) return null;
-    if (dr >= 4 && dr <= 7) return "warning-yellow";
-    if (dr >= 1 && dr <= 3) return "warning-orange";
+    if (dr >= 1 && dr <= ALERT_DAYS_BEFORE) return "warning-orange";
     return null;
   }
 
@@ -169,12 +170,12 @@
     var text = document.createElement("p");
     text.className = "dash-sub-expiry-banner__text";
 
-    if (tier === "warning-yellow") {
-      text.textContent =
-        "Votre abonnement expire dans " + String(dr != null ? dr : "—") + " jours.";
-    } else if (tier === "warning-orange") {
-      text.textContent =
-        "Votre abonnement expire bientôt. Pensez à renouveler votre accès.";
+    if (tier === "warning-orange") {
+      var daysLabel =
+        dr === 1 ?
+          "Votre abonnement expire demain."
+        : "Votre abonnement expire dans " + String(dr != null ? dr : "—") + " jours.";
+      text.textContent = daysLabel;
     } else {
       text.textContent =
         "Votre abonnement a expiré. Certaines fonctionnalités sont limitées.";
@@ -185,22 +186,21 @@
     var actions = document.createElement("div");
     actions.className = "dash-sub-expiry-banner__actions";
 
-    if (tier === "warning-yellow") {
-      actions.appendChild(
-        createBannerButton(
-          "Voir mon abonnement",
-          "mon-abonnement.html",
-          "dash-sub-expiry-banner__btn dash-sub-expiry-banner__btn--secondary",
-          false,
-        ),
-      );
-    } else if (tier === "warning-orange") {
+    if (tier === "warning-orange") {
       actions.appendChild(
         createBannerButton(
           "Contacter MenuGo",
           waUrl,
           "dash-sub-expiry-banner__btn dash-sub-expiry-banner__btn--whatsapp",
           true,
+        ),
+      );
+      actions.appendChild(
+        createBannerButton(
+          "Voir mon abonnement",
+          "mon-abonnement.html",
+          "dash-sub-expiry-banner__btn dash-sub-expiry-banner__btn--secondary",
+          false,
         ),
       );
     } else {
@@ -271,6 +271,7 @@
 
   window.MenuGo_SubscriptionAlerts = {
     BANNER_ID: BANNER_ID,
+    ALERT_DAYS_BEFORE: ALERT_DAYS_BEFORE,
     resolveDaysRemaining: resolveDaysRemaining,
     isSubscriptionExpired: isSubscriptionExpired,
     getClientAlertTier: getClientAlertTier,

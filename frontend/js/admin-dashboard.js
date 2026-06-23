@@ -305,7 +305,7 @@
       var trE = document.createElement("tr");
       trE.className = "adm-table__placeholder";
       trE.innerHTML =
-        "<td colspan=\"5\">Aucun abonnement à surveiller dans les 15 prochains jours.</td>";
+        "<td colspan=\"5\">Aucun abonnement à surveiller dans les 3 prochains jours.</td>";
       tbody.appendChild(trE);
       return;
     }

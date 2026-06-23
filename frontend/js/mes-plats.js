@@ -37,6 +37,8 @@
   let categories = [];
   let editingId = null;
   let menuEditLocked = false;
+  let pendingImageFile = null;
+  let previewObjectUrl = null;
 
   var EDIT_LOCK_MESSAGE =
     "Votre abonnement a expiré. La modification du menu est désactivée — votre menu public reste visible. Ouvrez « Mon abonnement » pour le réactiver.";
@@ -242,37 +244,95 @@
     if (imageFileInput) {
       imageFileInput.value = "";
     }
+    pendingImageFile = null;
+    if (previewObjectUrl) {
+      URL.revokeObjectURL(previewObjectUrl);
+      previewObjectUrl = null;
+    }
+  }
+
+  function assignImageFile(file) {
+    if (!imageFileInput || !file) {
+      return;
+    }
+    const transfer = new DataTransfer();
+    transfer.items.add(file);
+    imageFileInput.files = transfer.files;
+    pendingImageFile = file;
   }
 
   function setImagePreview(preview, url) {
     if (!preview) return;
     if (!url) {
+      if (previewObjectUrl) {
+        URL.revokeObjectURL(previewObjectUrl);
+        previewObjectUrl = null;
+      }
       preview.hidden = true;
       preview.removeAttribute("src");
       if (dropzone) dropzone.classList.remove("has-preview");
       if (dropzoneContent) dropzoneContent.hidden = false;
       return;
     }
-    preview.src = resolveImageUrl(url);
+
+    const resolved =
+      url.indexOf("blob:") === 0 || url.indexOf("http") === 0 ? url : resolveImageUrl(url);
+
+    if (previewObjectUrl && previewObjectUrl !== resolved) {
+      URL.revokeObjectURL(previewObjectUrl);
+      previewObjectUrl = null;
+    }
+
+    if (resolved.indexOf("blob:") === 0) {
+      previewObjectUrl = resolved;
+    } else if (previewObjectUrl) {
+      URL.revokeObjectURL(previewObjectUrl);
+      previewObjectUrl = null;
+    }
+
+    preview.src = resolved;
     preview.hidden = false;
     if (dropzone) dropzone.classList.add("has-preview");
     if (dropzoneContent) dropzoneContent.hidden = true;
   }
 
-  function previewSelectedFile(input, preview) {
-    const file = input && input.files ? input.files[0] : null;
+  async function handleImageFileSelection(file) {
     if (!file) {
-      setImagePreview(preview, "");
+      setImagePreview(imagePreview, "");
       return;
     }
     if (!isAllowedImageFile(file)) {
       clearImageFileInput();
-      setImagePreview(preview, "");
+      setImagePreview(imagePreview, "");
       setStatus(UPLOAD_REJECT_MESSAGE, true, { toast: true });
       return;
     }
-    setStatus("");
-    setImagePreview(preview, URL.createObjectURL(file));
+
+    if (!window.MenuGo_ImageCrop || typeof window.MenuGo_ImageCrop.open !== "function") {
+      setStatus("Recadrage indisponible. Rechargez la page.", true, { toast: true });
+      clearImageFileInput();
+      return;
+    }
+
+    try {
+      setStatus("Recadrage de l'image…");
+      const croppedFile = await window.MenuGo_ImageCrop.open(file, {
+        aspectRatio: window.MenuGo_ImageCrop.ASPECT_RATIO_PRODUCT,
+        outputWidth: window.MenuGo_ImageCrop.OUTPUT_WIDTH_PRODUCT,
+        title: "Recadrer l'image du plat",
+      });
+      assignImageFile(croppedFile);
+      setImagePreview(imagePreview, URL.createObjectURL(croppedFile));
+      setStatus("Image prête. Enregistrez le plat pour l'envoyer.");
+    } catch (error) {
+      clearImageFileInput();
+      setImagePreview(imagePreview, "");
+      if (error && error.message && error.message.indexOf("annul") === -1) {
+        setStatus(error.message, true, { toast: true });
+      } else {
+        setStatus("");
+      }
+    }
   }
 
   function findCategoryName(categoryId) {
@@ -433,11 +493,13 @@
 
   async function uploadSelectedImages(currentImage) {
     let image = currentImage;
+    const file = pendingImageFile || (imageFileInput.files && imageFileInput.files[0]);
 
-    if (imageFileInput.files && imageFileInput.files[0]) {
+    if (file) {
       setStatus("Upload de l'image du plat...");
-      image = await uploadImage(imageFileInput.files[0]);
+      image = await uploadImage(file);
       imageInput.value = image || "";
+      clearImageFileInput();
     }
 
     return image;
@@ -534,7 +596,7 @@
     descriptionInput.value = product && product.description ? product.description : "";
     categorySelect.value = product ? String(product.category_id) : String(categories[0].id);
     imageInput.value = product && product.image ? product.image : "";
-    imageFileInput.value = "";
+    clearImageFileInput();
     setImagePreview(imagePreview, imageInput.value);
     hasSizesInput.checked = product ? productHasSizes(product) : false;
     if (visibleInput) {
@@ -551,6 +613,7 @@
     form.hidden = true;
     form.reset();
     variantsList.innerHTML = "";
+    clearImageFileInput();
     setImagePreview(imagePreview, "");
     if (dropzone) dropzone.classList.remove("is-dragover");
   }
@@ -587,16 +650,7 @@
     dropzone.addEventListener("drop", function (event) {
       const file = event.dataTransfer && event.dataTransfer.files ? event.dataTransfer.files[0] : null;
       if (!file) return;
-      if (!isAllowedImageFile(file)) {
-        clearImageFileInput();
-        setImagePreview(imagePreview, "");
-        setStatus(UPLOAD_REJECT_MESSAGE, true, { toast: true });
-        return;
-      }
-      const transfer = new DataTransfer();
-      transfer.items.add(file);
-      imageFileInput.files = transfer.files;
-      previewSelectedFile(imageFileInput, imagePreview);
+      void handleImageFileSelection(file);
     });
   }
 
@@ -727,7 +781,9 @@
   });
 
   imageFileInput.addEventListener("change", function () {
-    previewSelectedFile(imageFileInput, imagePreview);
+    const file = imageFileInput.files && imageFileInput.files[0] ? imageFileInput.files[0] : null;
+    imageFileInput.value = "";
+    void handleImageFileSelection(file);
   });
 
   hasSizesInput.addEventListener("change", function () {

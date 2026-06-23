@@ -19,7 +19,7 @@ try {
  * d'origine pour ne jamais casser l'upload.
  */
 
-const MAX_WIDTH = 1600; // suffisant pour une bannière plein écran sur mobile/desktop
+const MAX_WIDTH = 1200;
 const WEBP_QUALITY = 78;
 const MAX_INPUT_PIXELS = 8192 * 8192;
 

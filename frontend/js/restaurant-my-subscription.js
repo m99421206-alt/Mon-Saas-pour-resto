@@ -108,7 +108,11 @@
     var st = String(subscription.status || "").toLowerCase();
     if (st === "expired") return { key: "expired", label: "Expiré" };
     if (st === "suspended") return { key: "suspended", label: "Suspendu" };
-    if (dr !== null && dr >= 1 && dr <= 7) {
+    var alertDays =
+      alerts && Number.isFinite(Number(alerts.ALERT_DAYS_BEFORE)) ?
+        Number(alerts.ALERT_DAYS_BEFORE)
+      : 3;
+    if (dr !== null && dr >= 1 && dr <= alertDays) {
       return { key: "warning", label: "Bientôt expiré" };
     }
     if (st === "active") return { key: "active", label: "Actif" };
