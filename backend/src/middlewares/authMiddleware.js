@@ -7,6 +7,7 @@
 const jwt = require("jsonwebtoken");
 const { getPool } = require("../config/database");
 const { resolveAuditContextFromJwtPayload } = require("../utils/auditLog");
+const { getJwtSecret } = require("../config/jwtSecret");
 
 async function requireAuth(req, res, next) {
   var header = req.headers.authorization || "";
@@ -18,7 +19,7 @@ async function requireAuth(req, res, next) {
     return res.status(401).json({ message: "Authentification requise (token manquant)." });
   }
 
-  var secret = process.env.JWT_SECRET;
+  var secret = getJwtSecret();
   if (!secret) {
     return res.status(500).json({ message: "Configuration serveur : JWT_SECRET manquant." });
   }

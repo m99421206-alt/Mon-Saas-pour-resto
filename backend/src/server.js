@@ -10,6 +10,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
+const { validateJwtSecretAtStartup } = require("./config/jwtSecret");
 const { ping } = require("./config/database");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
@@ -41,10 +42,6 @@ function assertProductionConfig() {
     return;
   }
 
-  var jwtSecret = String(process.env.JWT_SECRET || "");
-  if (!jwtSecret || jwtSecret === "changez_moi_cle_longue_aleatoire" || jwtSecret.length < 32) {
-    throw new Error("Configuration production invalide : JWT_SECRET doit être une clé forte (32+ caractères).");
-  }
   if (allowedOrigins.length === 0 || allowedOrigins.indexOf("*") !== -1) {
     throw new Error("Configuration production invalide : CORS_ORIGIN doit contenir les origines exactes du frontend.");
   }
@@ -53,6 +50,7 @@ function assertProductionConfig() {
   }
 }
 
+validateJwtSecretAtStartup();
 assertProductionConfig();
 
 function isPrivateNetworkHost(hostname) {

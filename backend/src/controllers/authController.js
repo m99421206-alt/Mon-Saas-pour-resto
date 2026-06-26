@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { getPool } = require("../config/database");
+const { getJwtSecret } = require("../config/jwtSecret");
 const { appendAudit, AUDIT_ACTIONS, ACTOR_TYPES } = require("../utils/auditLog");
 const {
   createAdminNotification,
@@ -38,16 +39,11 @@ function mapRestaurantAuth(row) {
   };
 }
 
-function getJwtSecret() {
-  const secret = process.env.JWT_SECRET;
+function signToken(payload) {
+  const secret = getJwtSecret();
   if (!secret) {
     throw new Error("JWT_SECRET manquant dans le fichier .env");
   }
-  return secret;
-}
-
-function signToken(payload) {
-  const secret = getJwtSecret();
   const expiresIn = process.env.JWT_EXPIRES_IN || "7d";
   return jwt.sign(payload, secret, { expiresIn: expiresIn, algorithm: "HS256" });
 }

@@ -4,6 +4,7 @@
 
 var jwt = require("jsonwebtoken");
 var { getPool } = require("../config/database");
+var { getJwtSecret } = require("../config/jwtSecret");
 var { appendAudit, AUDIT_ACTIONS, ACTOR_TYPES } = require("../utils/auditLog");
 
 var ALLOWED_SUB = ["trial", "active", "expired", "suspended"];
@@ -22,7 +23,7 @@ function normalizeSub(raw) {
 }
 
 function signOwnerToken(ownerUserId, adminUserId) {
-  var secret = process.env.JWT_SECRET;
+  var secret = getJwtSecret();
   if (!secret) {
     throw new Error("JWT_SECRET manquant");
   }
