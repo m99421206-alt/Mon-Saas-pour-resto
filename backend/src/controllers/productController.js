@@ -3,6 +3,7 @@ const { removeUnusedUploads } = require("../utils/uploadCleanup");
 const { appendAuditFromRequest, AUDIT_ACTIONS } = require("../utils/auditLog");
 const ownership = require("../utils/restaurantOwnership");
 const { normalizeStoredImageUrl } = require("../utils/imageUrlValidation");
+const uploadOwnership = require("../utils/uploadOwnership");
 
 function resolveRestaurantId(req) {
   if (req.restaurantId) {
@@ -98,6 +99,24 @@ function collectProductUploadUrls(image, variants) {
     }
   });
   return urls;
+}
+
+async function rejectIfUploadUrlsForbidden(res, restaurantId, image, variants) {
+  var uploadStatus = await uploadOwnership.assertUploadUrlsAllowedForRestaurant(
+    collectProductUploadUrls(image, variants),
+    restaurantId
+  );
+  if (uploadStatus === "forbidden") {
+    await removeUnusedUploads(collectProductUploadUrls(image, variants));
+    uploadOwnership.sendUploadForbidden(res);
+    return true;
+  }
+  if (uploadStatus === "invalid") {
+    await removeUnusedUploads(collectProductUploadUrls(image, variants));
+    res.status(400).json({ message: "Image invalide. Utilisez une image uploadée par MenuGo." });
+    return true;
+  }
+  return false;
 }
 
 async function attachVariants(pool, products) {
@@ -202,6 +221,10 @@ async function createProduct(req, res) {
     if (categoryOwnership === "not_found") {
       await removeUnusedUploads(collectProductUploadUrls(image, variants));
       return res.status(400).json({ message: "La catégorie n'appartient pas à votre restaurant." });
+    }
+
+    if (await rejectIfUploadUrlsForbidden(res, restaurantId, image, variants)) {
+      return;
     }
 
     var pool = getPool();
@@ -312,6 +335,10 @@ async function updateProduct(req, res) {
     if (categoryOwnership === "not_found") {
       await removeUnusedUploads(collectProductUploadUrls(image, variants));
       return res.status(400).json({ message: "La catégorie n'appartient pas à votre restaurant." });
+    }
+
+    if (await rejectIfUploadUrlsForbidden(res, restaurantId, image, variants)) {
+      return;
     }
 
     var pool = getPool();

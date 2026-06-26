@@ -1,6 +1,9 @@
 const path = require("path");
 const { getPool } = require("../config/database");
 
+var UPLOAD_FORBIDDEN_MESSAGE =
+  "Cette image appartient à un autre restaurant. Utilisez une image uploadée depuis votre compte.";
+
 function getFilenameFromUploadUrl(uploadUrl) {
   if (!uploadUrl || typeof uploadUrl !== "string" || uploadUrl.indexOf("/uploads/") !== 0) {
     return null;
@@ -38,6 +41,39 @@ async function registerUploadForRestaurant(params) {
   }
 }
 
+async function isUploadUrlReferencedByOtherRestaurant(uploadUrl, restaurantId) {
+  var rid = Number(restaurantId);
+  if (!uploadUrl || !Number.isInteger(rid) || rid < 1) {
+    return false;
+  }
+
+  var pool = getPool();
+
+  var [[productRow]] = await pool.query(
+    "SELECT COUNT(*) AS n FROM products WHERE image = ? AND restaurant_id <> ?",
+    [uploadUrl, rid]
+  );
+  if (Number(productRow.n) > 0) {
+    return true;
+  }
+
+  var [[variantRow]] = await pool.query(
+    "SELECT COUNT(*) AS n FROM product_variants pv " +
+      "INNER JOIN products p ON p.id = pv.product_id " +
+      "WHERE pv.image = ? AND p.restaurant_id <> ?",
+    [uploadUrl, rid]
+  );
+  if (Number(variantRow.n) > 0) {
+    return true;
+  }
+
+  var [[restaurantRow]] = await pool.query(
+    "SELECT COUNT(*) AS n FROM restaurants WHERE (logo_url = ? OR banner_url = ?) AND id <> ?",
+    [uploadUrl, uploadUrl, rid]
+  );
+  return Number(restaurantRow.n) > 0;
+}
+
 async function assertUploadUrlAllowedForRestaurant(uploadUrl, restaurantId) {
   var filename = getFilenameFromUploadUrl(uploadUrl);
   if (!filename) {
@@ -56,8 +92,11 @@ async function assertUploadUrlAllowedForRestaurant(uploadUrl, restaurantId) {
       [filename]
     );
 
-    // Rétrocompatibilité : les anciennes images n'ont pas encore d'entrée registry.
+    // Rétrocompatibilité : pas d'entrée registry — refuser si l'URL est déjà utilisée ailleurs.
     if (!rows.length) {
+      if (await isUploadUrlReferencedByOtherRestaurant(uploadUrl, rid)) {
+        return "forbidden";
+      }
       return "legacy";
     }
 
@@ -70,7 +109,42 @@ async function assertUploadUrlAllowedForRestaurant(uploadUrl, restaurantId) {
   }
 }
 
+/**
+ * Vérifie une ou plusieurs URLs d'upload avant enregistrement.
+ * @param {string|string[]|null|undefined} uploadUrls
+ * @param {number} restaurantId
+ * @returns {Promise<"ok"|"invalid"|"forbidden">}
+ */
+async function assertUploadUrlsAllowedForRestaurant(uploadUrls, restaurantId) {
+  var list = [];
+  if (Array.isArray(uploadUrls)) {
+    list = uploadUrls;
+  } else if (uploadUrls) {
+    list = [uploadUrls];
+  }
+
+  for (var i = 0; i < list.length; i += 1) {
+    var url = list[i];
+    if (!url) {
+      continue;
+    }
+    var status = await assertUploadUrlAllowedForRestaurant(url, restaurantId);
+    if (status === "forbidden" || status === "invalid") {
+      return status;
+    }
+  }
+
+  return "ok";
+}
+
+function sendUploadForbidden(res) {
+  return res.status(403).json({ message: UPLOAD_FORBIDDEN_MESSAGE });
+}
+
 module.exports = {
+  UPLOAD_FORBIDDEN_MESSAGE: UPLOAD_FORBIDDEN_MESSAGE,
   registerUploadForRestaurant: registerUploadForRestaurant,
   assertUploadUrlAllowedForRestaurant: assertUploadUrlAllowedForRestaurant,
+  assertUploadUrlsAllowedForRestaurant: assertUploadUrlsAllowedForRestaurant,
+  sendUploadForbidden: sendUploadForbidden,
 };

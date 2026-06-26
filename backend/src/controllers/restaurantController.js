@@ -4,6 +4,7 @@ const { normalizeWhatsapp: normalizeWhatsappField } = require("../utils/whatsapp
 const ownership = require("../utils/restaurantOwnership");
 const { normalizeStoredImageUrl } = require("../utils/imageUrlValidation");
 const { appendAuditFromRequest, AUDIT_ACTIONS } = require("../utils/auditLog");
+const uploadOwnership = require("../utils/uploadOwnership");
 
 function normalizeText(value) {
   if (value == null) {
@@ -77,9 +78,26 @@ async function updateMyRestaurant(req, res) {
       return res.status(400).json({ message: "Image invalide. Utilisez une image uploadée par MenuGo." });
     }
 
+    var previousRestaurant = req.restaurant || (await getRestaurantForUser(req.user.id));
+    var restaurantId = req.restaurantId || (previousRestaurant ? previousRestaurant.id : null);
+
+    if (restaurantId) {
+      var uploadStatus = await uploadOwnership.assertUploadUrlsAllowedForRestaurant(
+        collectRestaurantUploadUrls(logoUrl, bannerUrl),
+        restaurantId
+      );
+      if (uploadStatus === "forbidden") {
+        await removeUnusedUploads(collectRestaurantUploadUrls(logoUrl, bannerUrl));
+        return uploadOwnership.sendUploadForbidden(res);
+      }
+      if (uploadStatus === "invalid") {
+        await removeUnusedUploads(collectRestaurantUploadUrls(logoUrl, bannerUrl));
+        return res.status(400).json({ message: "Image invalide. Utilisez une image uploadée par MenuGo." });
+      }
+    }
+
     var pool = getPool();
     var oldImages = [];
-    var previousRestaurant = req.restaurant || (await getRestaurantForUser(req.user.id));
     if (previousRestaurant) {
       if (previousRestaurant.logo_url && previousRestaurant.logo_url !== logoUrl) {
         oldImages.push(previousRestaurant.logo_url);
