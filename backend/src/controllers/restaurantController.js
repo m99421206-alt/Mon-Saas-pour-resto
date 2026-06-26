@@ -3,6 +3,7 @@ const { removeUnusedUploads } = require("../utils/uploadCleanup");
 const { normalizeWhatsapp: normalizeWhatsappField } = require("../utils/whatsappNormalize");
 const ownership = require("../utils/restaurantOwnership");
 const { normalizeStoredImageUrl } = require("../utils/imageUrlValidation");
+const { appendAuditFromRequest, AUDIT_ACTIONS } = require("../utils/auditLog");
 
 function normalizeText(value) {
   if (value == null) {
@@ -103,6 +104,15 @@ async function updateMyRestaurant(req, res) {
 
     var restaurant = await getRestaurantForUser(req.user.id);
     await removeUnusedUploads(oldImages);
+
+    if (restaurant && restaurant.id) {
+      await appendAuditFromRequest(req, {
+        restaurantId: restaurant.id,
+        action: AUDIT_ACTIONS.RESTAURANT_SETTINGS_UPDATE,
+        detail: "Mise à jour paramètres restaurant (« " + String(name).slice(0, 160) + " »)",
+      });
+    }
+
     return res.json({ restaurant: restaurant });
   } catch (err) {
     await removeUnusedUploads(collectRestaurantUploadUrls(logoUrl, bannerUrl));

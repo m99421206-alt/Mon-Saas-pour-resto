@@ -6,6 +6,7 @@
 
 const jwt = require("jsonwebtoken");
 const { getPool } = require("../config/database");
+const { resolveAuditContextFromJwtPayload } = require("../utils/auditLog");
 
 async function requireAuth(req, res, next) {
   var header = req.headers.authorization || "";
@@ -47,6 +48,7 @@ async function requireAuth(req, res, next) {
     }
 
     req.user = { id: userId };
+    req.auditContext = resolveAuditContextFromJwtPayload(payload);
     next();
   } catch (err) {
     next(err);

@@ -177,7 +177,10 @@ async function getActivity(req, res) {
 
       var items = result.items.map(function (row) {
         return {
-          user: row.user,
+          user: row.actor || row.user,
+          actor: row.actor || row.user,
+          mode: row.mode || "Normal",
+          impersonation: !!row.impersonation,
           restaurant: row.restaurant,
           action: row.action,
           action_code: row.action_code,

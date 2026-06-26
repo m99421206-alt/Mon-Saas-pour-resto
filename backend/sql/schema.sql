@@ -108,6 +108,9 @@ CREATE TABLE IF NOT EXISTS `audit_logs` (
   `restaurant_id` INT UNSIGNED NULL,
   `action` VARCHAR(96) NOT NULL,
   `detail` VARCHAR(2048) NULL,
+  `impersonation` TINYINT(1) NOT NULL DEFAULT 0,
+  `subject_user_id` INT UNSIGNED NULL,
+  `actor_type` VARCHAR(16) NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_audit_logs_created_at` (`created_at`),
@@ -115,11 +118,15 @@ CREATE TABLE IF NOT EXISTS `audit_logs` (
   KEY `idx_audit_logs_restaurant_id` (`restaurant_id`),
   KEY `idx_audit_logs_restaurant_created` (`restaurant_id`, `created_at`),
   KEY `idx_audit_logs_action_created` (`action`, `created_at`),
+  KEY `idx_audit_logs_impersonation` (`impersonation`, `created_at`),
   CONSTRAINT `fk_audit_logs_user`
     FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
     ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_audit_logs_restaurant`
     FOREIGN KEY (`restaurant_id`) REFERENCES `restaurants` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_audit_logs_subject_user`
+    FOREIGN KEY (`subject_user_id`) REFERENCES `users` (`id`)
     ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

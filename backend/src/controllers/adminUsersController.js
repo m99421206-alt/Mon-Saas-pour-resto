@@ -4,7 +4,7 @@
 
 const bcrypt = require("bcryptjs");
 const { getPool } = require("../config/database");
-const { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
+const { appendAudit, AUDIT_ACTIONS, ACTOR_TYPES } = require("../utils/auditLog");
 
 var ALLOWED_STATUS = ["active", "suspended"];
 
@@ -197,6 +197,7 @@ async function patchUserStatus(req, res) {
     await appendAudit({
       userId: adminId,
       restaurantId: null,
+      actorType: ACTOR_TYPES.ADMIN,
       action: nextStatus === "suspended" ? AUDIT_ACTIONS.USER_SUSPEND : AUDIT_ACTIONS.USER_ACTIVATE,
       detail:
         nextStatus === "suspended"
@@ -256,6 +257,7 @@ async function patchUserPassword(req, res) {
     await appendAudit({
       userId: adminId,
       restaurantId: null,
+      actorType: ACTOR_TYPES.ADMIN,
       action: AUDIT_ACTIONS.USER_PASSWORD_RESET,
       detail: "Réinitialisation mot de passe du compte « " + String(target.email) + " »",
     });
@@ -292,6 +294,7 @@ async function deleteUser(req, res) {
     await appendAudit({
       userId: adminId,
       restaurantId: null,
+      actorType: ACTOR_TYPES.ADMIN,
       action: AUDIT_ACTIONS.USER_DELETE,
       detail: "Suppression du compte « " + String(target.email) + " »",
     });

@@ -156,6 +156,12 @@
     return params.toString();
   }
 
+  function modeBadgeHtml(mode, impersonation) {
+    var label = mode || (impersonation ? "Impersonation" : "Normal");
+    var variant = impersonation ? "password" : "neutral";
+    return badgeHtml(variant, label);
+  }
+
   function renderTableRows(logs) {
     var tbody = document.getElementById("actlog-body");
     var cards = document.getElementById("actlog-cards");
@@ -170,19 +176,22 @@
 
     if (!logs.length) {
       tbody.innerHTML =
-        '<tr class="adm-table__placeholder"><td colspan="5">Aucun événement pour ces critères.</td></tr>';
+        '<tr class="adm-table__placeholder"><td colspan="6">Aucun événement pour ces critères.</td></tr>';
       return;
     }
 
     logs.forEach(function (row) {
+      var actor = row.actor || row.user || "—";
       var tr = document.createElement("tr");
       tr.innerHTML =
         "<td>" +
         escapeHtml(formatDateTime(row.at)) +
         "</td><td>" +
-        escapeHtml(row.user) +
+        escapeHtml(actor) +
         "</td><td>" +
         escapeHtml(row.restaurant) +
+        "</td><td>" +
+        modeBadgeHtml(row.mode, row.impersonation) +
         "</td><td>" +
         badgeHtml(row.badge, row.action_label) +
         "</td><td class=\"actlog-detail-cell\">" +
@@ -196,16 +205,20 @@
         li.innerHTML =
           '<div class="actlog-card__head">' +
           badgeHtml(row.badge, row.action_label) +
+          modeBadgeHtml(row.mode, row.impersonation) +
           '<time datetime="' +
           escapeHtml(row.at || "") +
           '">' +
           escapeHtml(formatDateTime(row.at)) +
           "</time></div>" +
-          '<p class="actlog-card__meta"><strong>Utilisateur :</strong> ' +
-          escapeHtml(row.user) +
+          '<p class="actlog-card__meta"><strong>Effectué par :</strong> ' +
+          escapeHtml(actor) +
           "</p>" +
           '<p class="actlog-card__meta"><strong>Restaurant :</strong> ' +
           escapeHtml(row.restaurant) +
+          "</p>" +
+          '<p class="actlog-card__meta"><strong>Mode :</strong> ' +
+          escapeHtml(row.mode || (row.impersonation ? "Impersonation" : "Normal")) +
           "</p>" +
           '<p class="actlog-card__detail">' +
           escapeHtml(row.action) +

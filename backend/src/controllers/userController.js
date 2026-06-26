@@ -2,7 +2,7 @@ const { getPool } = require("../config/database");
 const subscriptionService = require("../services/subscriptionService");
 const platformSettings = require("../services/platformSettings");
 const { resolvePlanLabel } = require("../utils/subscriptionLabels");
-const { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
+const { appendAuditFromRequest, AUDIT_ACTIONS } = require("../utils/auditLog");
 const {
   createAdminNotification,
   NOTIFICATION_TYPES,
@@ -288,8 +288,7 @@ async function postOnboardingRequestHelp(req, res) {
     }
     var rid = rows[0].id;
     await pool.query("UPDATE restaurants SET needs_setup_help = 1, onboarding_seen = 1 WHERE id = ?", [rid]);
-    await appendAudit({
-      userId: req.user.id,
+    await appendAuditFromRequest(req, {
       restaurantId: rid,
       action: AUDIT_ACTIONS.ONBOARDING_SETUP_REQUEST,
       detail: "Demande d’accompagnement installation (« " + String(rows[0].name || "") + " »)",

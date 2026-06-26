@@ -1,6 +1,6 @@
 const { getPool } = require("../config/database");
 const { removeUnusedUploads } = require("../utils/uploadCleanup");
-const { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
+const { appendAuditFromRequest, AUDIT_ACTIONS } = require("../utils/auditLog");
 const ownership = require("../utils/restaurantOwnership");
 const { normalizeStoredImageUrl } = require("../utils/imageUrlValidation");
 
@@ -226,7 +226,7 @@ async function createProduct(req, res) {
       connection.release();
     }
 
-    await appendAudit({
+    await appendAuditFromRequest(req, {
       userId: req.user.id,
       restaurantId: restaurantId,
       action: AUDIT_ACTIONS.PRODUCT_CREATE,
@@ -361,7 +361,7 @@ async function updateProduct(req, res) {
 
     await removeUnusedUploads(oldImages);
 
-    await appendAudit({
+    await appendAuditFromRequest(req, {
       userId: req.user.id,
       restaurantId: restaurantId,
       action: AUDIT_ACTIONS.PRODUCT_UPDATE,
@@ -438,7 +438,7 @@ async function deleteProduct(req, res) {
 
     await removeUnusedUploads(oldImages);
 
-    await appendAudit({
+    await appendAuditFromRequest(req, {
       userId: req.user.id,
       restaurantId: restaurantId,
       action: AUDIT_ACTIONS.PRODUCT_DELETE,

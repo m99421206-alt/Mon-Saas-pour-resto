@@ -1,5 +1,5 @@
 const { getPool } = require("../config/database");
-const { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
+const { appendAuditFromRequest, AUDIT_ACTIONS } = require("../utils/auditLog");
 const ownership = require("../utils/restaurantOwnership");
 
 function resolveRestaurantId(req) {
@@ -50,7 +50,7 @@ async function createCategory(req, res) {
       [restaurantId, name]
     );
 
-    await appendAudit({
+    await appendAuditFromRequest(req, {
       userId: req.user.id,
       restaurantId: restaurantId,
       action: AUDIT_ACTIONS.CATEGORY_CREATE,
@@ -104,7 +104,7 @@ async function updateCategory(req, res) {
       return res.status(404).json({ message: "Catégorie introuvable." });
     }
 
-    await appendAudit({
+    await appendAuditFromRequest(req, {
       userId: req.user.id,
       restaurantId: restaurantId,
       action: AUDIT_ACTIONS.CATEGORY_UPDATE,
@@ -159,7 +159,7 @@ async function deleteCategory(req, res) {
       return res.status(404).json({ message: "Catégorie introuvable." });
     }
 
-    await appendAudit({
+    await appendAuditFromRequest(req, {
       userId: req.user.id,
       restaurantId: restaurantId,
       action: AUDIT_ACTIONS.CATEGORY_DELETE,

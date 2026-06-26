@@ -4,6 +4,14 @@
 
 const { labelForCode } = require("./auditLog");
 
+function isMissingColumnError(err) {
+  return err && (err.code === "ER_BAD_FIELD_ERROR" || err.errno === 1054);
+}
+
+var LEGACY_SELECT_FIELDS =
+  "SELECT a.id, a.created_at AS at, a.action AS code, a.detail, a.restaurant_id, " +
+  "u.email AS user_email, r.name AS restaurant_name ";
+
 var VALID_FILTERS = [
   "all",
   "logins",
@@ -18,7 +26,58 @@ var VALID_FILTERS = [
 var BASE_FROM =
   "FROM audit_logs a " +
   "LEFT JOIN users u ON u.id = a.user_id " +
-  "LEFT JOIN restaurants r ON r.id = a.restaurant_id ";
+  "LEFT JOIN restaurants r ON r.id = a.restaurant_id " +
+  "LEFT JOIN users su ON su.id = a.subject_user_id ";
+
+function isImpersonationRow(row) {
+  return row && (row.impersonation === 1 || row.impersonation === true);
+}
+
+function actorLabelForRow(row) {
+  var code = String(row.code || row.action || "").trim();
+  var email = row.user_email ? String(row.user_email) : "";
+  var actorType = row.actor_type ? String(row.actor_type).toLowerCase() : "";
+
+  if (isImpersonationRow(row)) {
+    return "Administrateur";
+  }
+  if (actorType === "admin") {
+    return "Administrateur";
+  }
+  if (actorType === "restaurant") {
+    return "Restaurant";
+  }
+
+  if (
+    row.restaurant_id &&
+    (code.indexOf("product.") === 0 ||
+      code.indexOf("category.") === 0 ||
+      code.indexOf("media.") === 0 ||
+      code === "restaurant.settings_update" ||
+      code === "onboarding.setup_request")
+  ) {
+    return "Restaurant";
+  }
+
+  if (
+    code.indexOf("admin.") === 0 ||
+    code.indexOf("subscription.") === 0 ||
+    code === "settings.update" ||
+    code === "user.suspend" ||
+    code === "user.activate" ||
+    code === "user.delete" ||
+    code === "user.password_reset" ||
+    code === "admin.setup_help_complete"
+  ) {
+    return "Administrateur";
+  }
+
+  return email || "—";
+}
+
+function modeLabelForRow(row) {
+  return isImpersonationRow(row) ? "Impersonation" : "Normal";
+}
 
 function parsePositiveInt(value, fallback) {
   var n = Number(value);
@@ -131,10 +190,20 @@ function mapAuditRow(row) {
   var code = String(row.code || row.action || "").trim();
   var detail = String(row.detail || "").trim();
   var actionText = detail.length ? detail.slice(0, 500) : labelForCode(code);
+  var actor = actorLabelForRow(row);
+  var mode = modeLabelForRow(row);
   return {
     id: row.id,
     at: row.at ? new Date(row.at).toISOString() : null,
-    user: row.user_email ? String(row.user_email) : "—",
+    user: actor,
+    actor: actor,
+    mode: mode,
+    impersonation: isImpersonationRow(row),
+    actor_type: row.actor_type ? String(row.actor_type) : null,
+    subject_user:
+      row.subject_user_email ? String(row.subject_user_email)
+      : row.subject_user_id ? "Utilisateur #" + row.subject_user_id
+      : null,
     restaurant: row.restaurant_name ? String(row.restaurant_name) : "—",
     action_code: code,
     action_label: labelForCode(code),
@@ -142,6 +211,39 @@ function mapAuditRow(row) {
     detail: detail || null,
     badge: badgeVariantForCode(code),
   };
+}
+
+var AUDIT_SELECT_FIELDS =
+  "SELECT a.id, a.created_at AS at, a.action AS code, a.detail, a.impersonation, a.actor_type, a.subject_user_id, a.restaurant_id, " +
+  "u.email AS user_email, su.email AS subject_user_email, r.name AS restaurant_name ";
+
+async function queryAuditRows(pool, built, limit, offset) {
+  var listVals = built.vals.slice();
+  listVals.push(limit);
+  if (offset != null) {
+    listVals.push(offset);
+  }
+
+  var pagingSql = " ORDER BY a.created_at DESC, a.id DESC LIMIT ?";
+  if (offset != null) {
+    pagingSql += " OFFSET ?";
+  }
+
+  try {
+    var [rows] = await pool.query(AUDIT_SELECT_FIELDS + BASE_FROM + built.whereSql + pagingSql, listVals);
+    return rows;
+  } catch (err) {
+    if (!isMissingColumnError(err)) {
+      throw err;
+    }
+    var legacyFrom =
+      "FROM audit_logs a LEFT JOIN users u ON u.id = a.user_id LEFT JOIN restaurants r ON r.id = a.restaurant_id ";
+    var [legacyRows] = await pool.query(
+      LEGACY_SELECT_FIELDS + legacyFrom + built.whereSql + pagingSql,
+      listVals
+    );
+    return legacyRows;
+  }
 }
 
 async function listAuditLogs(pool, options) {
@@ -158,16 +260,7 @@ async function listAuditLogs(pool, options) {
   var total = Number(countRow.n) || 0;
   var totalPages = total === 0 ? 0 : Math.ceil(total / pageSize);
 
-  var listVals = built.vals.slice();
-  listVals.push(pageSize, offset);
-
-  var [rows] = await pool.query(
-    "SELECT a.id, a.created_at AS at, a.action AS code, a.detail, u.email AS user_email, r.name AS restaurant_name " +
-      BASE_FROM +
-      built.whereSql +
-      " ORDER BY a.created_at DESC, a.id DESC LIMIT ? OFFSET ?",
-    listVals,
-  );
+  var rows = await queryAuditRows(pool, built, pageSize, offset);
 
   return {
     items: rows.map(mapAuditRow),
@@ -205,16 +298,7 @@ async function exportAuditLogs(pool, options) {
   options = options || {};
   var built = buildWhereClause(options.filter, options.q);
   var maxRows = Math.min(parsePositiveInt(options.maxRows, 10000), 50000);
-  var listVals = built.vals.slice();
-  listVals.push(maxRows);
-
-  var [rows] = await pool.query(
-    "SELECT a.id, a.created_at AS at, a.action AS code, a.detail, u.email AS user_email, r.name AS restaurant_name " +
-      BASE_FROM +
-      built.whereSql +
-      " ORDER BY a.created_at DESC, a.id DESC LIMIT ?",
-    listVals,
-  );
+  var rows = await queryAuditRows(pool, built, maxRows, null);
 
   return rows.map(mapAuditRow);
 }
@@ -235,6 +319,8 @@ module.exports = {
   VALID_FILTERS: VALID_FILTERS,
   badgeVariantForCode: badgeVariantForCode,
   normalizeFilter: normalizeFilter,
+  actorLabelForRow: actorLabelForRow,
+  modeLabelForRow: modeLabelForRow,
   listAuditLogs: listAuditLogs,
   fetchAuditStats: fetchAuditStats,
   exportAuditLogs: exportAuditLogs,

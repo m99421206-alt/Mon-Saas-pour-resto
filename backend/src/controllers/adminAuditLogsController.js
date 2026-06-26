@@ -3,7 +3,7 @@
  */
 
 const { getPool } = require("../config/database");
-const { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
+const { appendAudit, AUDIT_ACTIONS, ACTOR_TYPES } = require("../utils/auditLog");
 const {
   listAuditLogs,
   fetchAuditStats,
@@ -88,15 +88,18 @@ async function exportAuditLogsCsv(req, res) {
     });
 
     var lines = [
-      ["Date et heure", "Utilisateur", "Restaurant", "Type d'action", "Détails", "Code"].map(csvEscape).join(","),
+      ["Date et heure", "Effectué par", "Restaurant", "Mode", "Type d'action", "Détails", "Code"]
+        .map(csvEscape)
+        .join(","),
     ];
 
     rows.forEach(function (row) {
       lines.push(
         [
           formatCsvDate(row.at),
-          row.user,
+          row.actor || row.user,
           row.restaurant,
+          row.mode || "Normal",
           row.action_label,
           row.action,
           row.action_code,
@@ -129,6 +132,7 @@ async function purgeAuditLogs(req, res) {
     await appendAudit({
       userId: adminId,
       restaurantId: null,
+      actorType: ACTOR_TYPES.ADMIN,
       action: AUDIT_ACTIONS.SETTINGS_UPDATE,
       detail:
         "Purge journal d’activité : " +

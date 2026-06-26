@@ -6,7 +6,7 @@ const requireAuth = require("../middlewares/authMiddleware");
 const requireRestaurantOwner = require("../middlewares/requireRestaurantOwner");
 const requireRestaurantMenuEdit = require("../middlewares/subscriptionEditMiddleware");
 var platformSettings = require("../services/platformSettings");
-const { appendAudit, AUDIT_ACTIONS, getRestaurantIdForUserAudit } = require("../utils/auditLog");
+const { appendAuditFromRequest, AUDIT_ACTIONS, getRestaurantIdForUserAudit } = require("../utils/auditLog");
 const uploadImageValidation = require("../utils/uploadImageValidation");
 const { optimizeUploadedImage } = require("../utils/optimizeUploadedImage");
 const { registerUploadForRestaurant } = require("../utils/uploadOwnership");
@@ -42,8 +42,7 @@ function buildUploadMw() {
 }
 
 async function logUploadFailure(req, reason) {
-  await appendAudit({
-    userId: req.user && req.user.id ? req.user.id : null,
+  await appendAuditFromRequest(req, {
     restaurantId: req.restaurantId || (req.user && req.user.id ? await getRestaurantIdForUserAudit(req.user.id) : null),
     action: AUDIT_ACTIONS.UPLOAD_IMAGE_FAILED,
     detail: "Upload image refusé : " + String(reason || "raison inconnue").slice(0, 240),
@@ -94,8 +93,7 @@ router.post("/", requireRestaurantMenuEdit, function (req, res) {
         filename: finalFilename,
       });
 
-      await appendAudit({
-        userId: req.user.id,
+      await appendAuditFromRequest(req, {
         restaurantId: rid,
         action: AUDIT_ACTIONS.UPLOAD_IMAGE,
         detail: "Upload image (« " + finalFilename + " »)",

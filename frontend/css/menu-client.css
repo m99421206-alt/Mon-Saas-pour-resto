@@ -1212,8 +1212,6 @@ img {
   font-size: 0.62rem;
   font-weight: 800;
   line-height: 1.25;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
   white-space: nowrap;
   text-overflow: ellipsis;
 }

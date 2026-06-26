@@ -4,7 +4,7 @@
 
 var jwt = require("jsonwebtoken");
 var { getPool } = require("../config/database");
-var { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
+var { appendAudit, AUDIT_ACTIONS, ACTOR_TYPES } = require("../utils/auditLog");
 
 var ALLOWED_SUB = ["trial", "active", "expired", "suspended"];
 
@@ -21,12 +21,17 @@ function normalizeSub(raw) {
   return ALLOWED_SUB.indexOf(s) !== -1 ? s : "trial";
 }
 
-function signOwnerToken(userId) {
+function signOwnerToken(ownerUserId, adminUserId) {
   var secret = process.env.JWT_SECRET;
   if (!secret) {
     throw new Error("JWT_SECRET manquant");
   }
-  return jwt.sign({ userId: userId, purpose: "admin_dashboard_access" }, secret, {
+  var payload = { userId: ownerUserId, purpose: "admin_dashboard_access" };
+  var actorId = Number(adminUserId);
+  if (Number.isInteger(actorId) && actorId > 0) {
+    payload.actorUserId = actorId;
+  }
+  return jwt.sign(payload, secret, {
     expiresIn: process.env.ADMIN_DASHBOARD_ACCESS_EXPIRES_IN || "30m",
     algorithm: "HS256",
   });
@@ -215,6 +220,7 @@ async function patchMenuSuspended(req, res) {
     await appendAudit({
       userId: adminId,
       restaurantId: id,
+      actorType: ACTOR_TYPES.ADMIN,
       action: suspended ? AUDIT_ACTIONS.RESTAURANT_MENU_SUSPEND : AUDIT_ACTIONS.RESTAURANT_MENU_RESUME,
       detail: suspended
         ? 'Menu public suspendu — « ' + String(target.name || id) + ' »'
@@ -261,11 +267,12 @@ async function postRestaurantDashboardAccess(req, res) {
       return res.status(404).json({ message: "Propriétaire introuvable." });
     }
 
-    var token = signOwnerToken(ownerUserId);
+    var token = signOwnerToken(ownerUserId, adminId);
 
     await appendAudit({
       userId: adminId,
       restaurantId: id,
+      actorType: ACTOR_TYPES.ADMIN,
       action: AUDIT_ACTIONS.ADMIN_RESTAURANT_DASHBOARD,
       detail:
         "Accès tableau de bord pour installation — « " +
@@ -318,6 +325,7 @@ async function deleteRestaurant(req, res) {
     await appendAudit({
       userId: adminId,
       restaurantId: id,
+      actorType: ACTOR_TYPES.ADMIN,
       action: AUDIT_ACTIONS.RESTAURANT_DELETE,
       detail: "Suppression du restaurant « " + String(target.name || id) + " »",
     });

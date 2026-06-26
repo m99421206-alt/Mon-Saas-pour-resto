@@ -3,7 +3,7 @@
  */
 
 var { getPool } = require("../config/database");
-var { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
+var { appendAudit, AUDIT_ACTIONS, ACTOR_TYPES } = require("../utils/auditLog");
 var platformSettings = require("../services/platformSettings");
 var subscriptionService = require("../services/subscriptionService");
 var { resolvePlanLabel } = require("../utils/subscriptionLabels");
@@ -239,6 +239,7 @@ async function postActivate(req, res) {
     await appendAudit({
       userId: adminId,
       restaurantId: id,
+      actorType: ACTOR_TYPES.ADMIN,
       action: AUDIT_ACTIONS.SUBSCRIPTION_ACTIVATE,
       detail:
         "Activation / prolongation admin — « " + String(target.name || id) + " » (" + periodDays + " j.)",
@@ -271,6 +272,7 @@ async function postSuspend(req, res) {
     await appendAudit({
       userId: adminId,
       restaurantId: id,
+      actorType: ACTOR_TYPES.ADMIN,
       action: AUDIT_ACTIONS.SUBSCRIPTION_SUSPEND,
       detail: "Suspension abonnement admin — « " + String(target.name || id) + " »",
     });
@@ -337,6 +339,7 @@ async function postRenew(req, res) {
     await appendAudit({
       userId: adminId,
       restaurantId: id,
+      actorType: ACTOR_TYPES.ADMIN,
       action: AUDIT_ACTIONS.SUBSCRIPTION_RENEW,
       detail:
         "Renouvellement admin (« " + String(target.name || id) + " », +" + months + " mois)",
@@ -446,6 +449,7 @@ async function patchAdjustSubscription(req, res) {
     await appendAudit({
       userId: adminId,
       restaurantId: id,
+      actorType: ACTOR_TYPES.ADMIN,
       action: AUDIT_ACTIONS.SUBSCRIPTION_ADJUST,
       detail: "Ajustement durée/plan admin — « " + String(target.name || id) + " »",
     });

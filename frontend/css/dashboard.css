@@ -3083,10 +3083,12 @@ a.dash-qr-btn {
   align-items: center;
   justify-content: space-between;
   gap: 0.85rem 1rem;
+  min-width: 0;
   padding: clamp(0.95rem, 3vw, 1.25rem);
   border-radius: 18px;
   border: 1px solid rgba(17, 24, 39, 0.1);
   box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+  box-sizing: border-box;
 }
 
 .dash-sub-expiry-banner__text {
@@ -3101,7 +3103,8 @@ a.dash-qr-btn {
   display: flex;
   flex-wrap: wrap;
   gap: 0.55rem;
-  flex-shrink: 0;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .dash-sub-expiry-banner__btn {
@@ -3109,6 +3112,7 @@ a.dash-qr-btn {
   align-items: center;
   justify-content: center;
   min-height: 2.65rem;
+  max-width: 100%;
   padding: 0.55rem 1.15rem;
   border-radius: 999px;
   font-weight: 700;
@@ -3116,6 +3120,7 @@ a.dash-qr-btn {
   text-decoration: none;
   cursor: pointer;
   border: 1px solid transparent;
+  box-sizing: border-box;
   transition:
     transform 140ms ease,
     box-shadow 140ms ease;
@@ -3168,6 +3173,38 @@ a.dash-qr-btn {
 
 .dash-sub-expiry-banner--expired .dash-sub-expiry-banner__text {
   color: rgb(127, 29, 29);
+}
+
+@media (max-width: 47.99rem) {
+  .dash-sub-expiry-banner {
+    margin-inline: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .dash-sub-expiry-banner__inner {
+    flex-direction: column;
+    align-items: stretch;
+    overflow: hidden;
+  }
+
+  .dash-sub-expiry-banner__text {
+    flex: none;
+    width: 100%;
+  }
+
+  .dash-sub-expiry-banner__actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dash-sub-expiry-banner__btn {
+    width: 100%;
+    white-space: normal;
+    text-align: center;
+    padding-inline: 0.85rem;
+  }
 }
 
 /* ——— Carte « Mon abonnement » ——— */

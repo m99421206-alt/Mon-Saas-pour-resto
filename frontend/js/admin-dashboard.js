@@ -151,7 +151,7 @@
       var trEmpty = document.createElement("tr");
       trEmpty.className = "adm-table__placeholder";
       trEmpty.innerHTML =
-        '<td colspan="4">Aucune activité récente pour le moment.</td>';
+        '<td colspan="5">Aucune activité récente pour le moment.</td>';
       tbody.appendChild(trEmpty);
       return;
     }
@@ -159,9 +159,13 @@
     limited.forEach(function (row) {
       var tr = document.createElement("tr");
       var typeBadge = badgeHtml(row.badge, row.action_label || row.action_code || "Événement");
+      var modeLabel = row.mode || (row.impersonation ? "Impersonation" : "Normal");
+      var modeBadge = badgeHtml(row.impersonation ? "password" : "neutral", modeLabel);
       tr.innerHTML =
         "<td>" +
-        escapeHtml(row.user) +
+        escapeHtml(row.actor || row.user) +
+        "</td><td>" +
+        modeBadge +
         "</td><td>" +
         typeBadge +
         "</td><td>" +

@@ -3,7 +3,7 @@
  */
 
 var platformSettings = require("../services/platformSettings");
-var { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
+var { appendAudit, AUDIT_ACTIONS, ACTOR_TYPES } = require("../utils/auditLog");
 
 async function getSettings(req, res) {
   try {
@@ -29,6 +29,7 @@ async function putSettings(req, res) {
       await appendAudit({
         userId: Number.isInteger(adminId) ? adminId : null,
         restaurantId: null,
+        actorType: ACTOR_TYPES.ADMIN,
         action: AUDIT_ACTIONS.SETTINGS_UPDATE,
         detail: "Mise à jour des paramètres plateforme (admin)",
       });

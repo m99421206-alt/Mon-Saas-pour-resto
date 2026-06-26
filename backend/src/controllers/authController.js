@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { getPool } = require("../config/database");
-const { appendAudit, AUDIT_ACTIONS } = require("../utils/auditLog");
+const { appendAudit, AUDIT_ACTIONS, ACTOR_TYPES } = require("../utils/auditLog");
 const {
   createAdminNotification,
   NOTIFICATION_TYPES,
@@ -169,6 +169,7 @@ async function register(req, res) {
     await appendAudit({
       userId: userId,
       restaurantId: restaurantId,
+      actorType: ACTOR_TYPES.RESTAURANT,
       action: AUDIT_ACTIONS.USER_REGISTER,
       detail: "Inscription nouveau compte (« " + restaurantName + " », quartier : " + cityDb + ")",
     });
@@ -280,6 +281,7 @@ async function login(req, res) {
     await appendAudit({
       userId: user.id,
       restaurantId: restaurants[0] ? restaurants[0].id : null,
+      actorType: ACTOR_TYPES.RESTAURANT,
       action: AUDIT_ACTIONS.USER_LOGIN,
       detail: "Connexion utilisateur",
     });
