@@ -1,5 +1,5 @@
 /**
- * MenuGo — Alertes d’expiration d’abonnement (restaurant) + liens WhatsApp préremplis.
+ * AfricaMenu — Alertes d’expiration d’abonnement (restaurant) + liens WhatsApp préremplis.
  * Aucun envoi automatique : ouverture manuelle via wa.me uniquement.
  */
 (function () {
@@ -78,7 +78,7 @@
     var rn = restaurantName ? String(restaurantName).trim() : "Mon restaurant";
     var exp = formatDateFr(endsAtIso);
     return (
-      "Bonjour MenuGo,\n\n" +
+      "Bonjour AfricaMenu,\n\n" +
       "Je suis le restaurant " +
       rn +
       ".\n\n" +
@@ -189,7 +189,7 @@
     if (tier === "warning-orange") {
       actions.appendChild(
         createBannerButton(
-          "Contacter MenuGo",
+          "Contacter AfricaMenu",
           waUrl,
           "dash-sub-expiry-banner__btn dash-sub-expiry-banner__btn--whatsapp",
           true,
@@ -206,7 +206,7 @@
     } else {
       actions.appendChild(
         createBannerButton(
-          "Contacter MenuGo",
+          "Contacter AfricaMenu",
           waUrl,
           "dash-sub-expiry-banner__btn dash-sub-expiry-banner__btn--whatsapp",
           true,

@@ -404,7 +404,7 @@
       "Bonjour " +
       name +
       "\n\n" +
-      "Nous constatons que votre abonnement MenuGo a expiré le " +
+      "Nous constatons que votre abonnement AfricaMenu a expiré le " +
       exp +
       ".\n\n" +
       "Votre menu reste visible pour vos clients, mais certaines fonctionnalités sont actuellement limitées.\n\n" +

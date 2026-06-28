@@ -351,7 +351,7 @@
       var url = URL.createObjectURL(blob);
       var a = document.createElement("a");
       a.href = url;
-      a.download = "menugo-journal.csv";
+      a.download = "africamenu-journal.csv";
       document.body.appendChild(a);
       a.click();
       a.remove();

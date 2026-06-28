@@ -1,6 +1,6 @@
-# MenuGo — Guide de préparation et déploiement
+# AfricaMenu — Guide de préparation et déploiement
 
-Ce document décrit comment installer MenuGo en local (mode « prod-like »), initialiser la base de données, sécuriser l’API et valider le projet **avant** une mise en ligne.
+Ce document décrit comment installer AfricaMenu en local (mode « prod-like »), initialiser la base de données, sécuriser l’API et valider le projet **avant** une mise en ligne.
 
 Le déploiement réel (serveur, domaine, HTTPS, DNS) est une étape séparée — voir [Décisions reportées](#décisions-reportées-au-jour-j).
 
@@ -48,7 +48,7 @@ cp .env.example .env
 Créez la base (une seule fois) :
 
 ```sql
-CREATE DATABASE MenuGo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE AfricaMenu CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
 Puis, depuis `backend/` :
@@ -93,7 +93,7 @@ Vérification :
 
 ```bash
 curl http://localhost:4000/health
-# Attendu : {"ok":true,"service":"MenuGo-api","db":"up"}
+# Attendu : {"ok":true,"service":"AfricaMenu-api","db":"up"}
 ```
 
 ### 5. Frontend
@@ -174,7 +174,7 @@ Redémarrez l’API. Cochez chaque parcours :
 
 ## Sauvegardes automatiques (données clients)
 
-Chaque restaurant MenuGo repose sur **deux éléments** à sauvegarder ensemble :
+Chaque restaurant AfricaMenu repose sur **deux éléments** à sauvegarder ensemble :
 
 | Élément | Contenu |
 |---------|---------|
@@ -189,7 +189,7 @@ Depuis `backend/` :
 npm run backup
 ```
 
-Résultat dans `backups/menugo_YYYYMMDD_HHMMSS/` :
+Résultat dans `backups/africamenu_YYYYMMDD_HHMMSS/` :
 
 - `database.sql.gz` — export MySQL compressé
 - `uploads.zip` (Windows) ou `uploads.tar.gz` (Linux/macOS)
@@ -209,12 +209,12 @@ Variables optionnelles dans `.env` :
 
 1. Créer une tâche quotidienne (ex. 02:00)
 2. Action : `powershell.exe -ExecutionPolicy Bypass -File "C:\chemin\backend\scripts\backup.ps1"`
-3. Stocker les sauvegardes hors du projet (ex. `D:\Backups\MenuGo`) via `BACKUP_DIR` dans `.env`
+3. Stocker les sauvegardes hors du projet (ex. `D:\Backups\AfricaMenu`) via `BACKUP_DIR` dans `.env`
 
 **Linux — cron**
 
 ```cron
-0 2 * * * /chemin/vers/backend/scripts/backup.sh >> /var/log/menugo-backup.log 2>&1
+0 2 * * * /chemin/vers/backend/scripts/backup.sh >> /var/log/africamenu-backup.log 2>&1
 ```
 
 En production : copier les sauvegardes **hors site** (rsync, S3, snapshot disque).
@@ -222,7 +222,7 @@ En production : copier les sauvegardes **hors site** (rsync, S3, snapshot disque
 ### Restaurer une sauvegarde
 
 ```bash
-npm run backup:restore -- ../backups/menugo_YYYYMMDD_HHMMSS
+npm run backup:restore -- ../backups/africamenu_YYYYMMDD_HHMMSS
 ```
 
 Confirmer avec `oui` quand demandé (ou `--yes` pour script).  
@@ -231,7 +231,7 @@ Confirmer avec `oui` quand demandé (ou `--yes` pour script).
 Restauration manuelle SQL :
 
 ```bash
-gunzip -c backup/database.sql.gz | mysql -u USER -p MenuGo
+gunzip -c backup/database.sql.gz | mysql -u USER -p AfricaMenu
 ```
 
 Fréquence recommandée en prod : **quotidienne** + avant chaque migration majeure.
@@ -323,7 +323,7 @@ Les images sont enregistrées dans `backend/uploads/`.
 | Sujet | Options |
 |-------|---------|
 | Hébergement | VPS + nginx, PaaS (Railway/Render), frontend statique séparé (Netlify/Vercel) |
-| Domaine | ex. `menugo.com`, sous-domaines `app.` / `api.` |
+| Domaine | ex. `africamenu.com`, sous-domaines `app.` / `api.` |
 | HTTPS | Let’s Encrypt via Caddy ou nginx |
 | Uploads | Disque VPS vs cloud |
 | Paiement abonnement | WhatsApp manuel (actuel) vs passerelle future |
@@ -336,7 +336,7 @@ Les images sont enregistrées dans `backend/uploads/`.
 Lorsque les phases de préparation sont terminées, le dépôt peut être tagué :
 
 ```bash
-git tag -a v0.9.0-preprod -m "MenuGo prêt pour déploiement (pré-production)"
+git tag -a v0.9.0-preprod -m "AfricaMenu prêt pour déploiement (pré-production)"
 ```
 
 ---

@@ -1,5 +1,5 @@
-﻿-- MenuGo — schéma initial (MySQL 8+ / InnoDB, utf8mb4)
--- Prérequis : base créée (ex. CREATE DATABASE MenuGo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;)
+﻿-- AfricaMenu — schéma initial (MySQL 8+ / InnoDB, utf8mb4)
+-- Prérequis : base créée (ex. CREATE DATABASE AfricaMenu CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;)
 -- Le nom doit correspondre à DB_NAME dans .env
 
 SET NAMES utf8mb4;
@@ -141,10 +141,12 @@ CREATE TABLE IF NOT EXISTS `admin_notifications` (
   `link_url` VARCHAR(255) NULL,
   `is_read` TINYINT(1) NOT NULL DEFAULT 0,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_admin_notif_created` (`created_at`),
   KEY `idx_admin_notif_read_created` (`is_read`, `created_at`),
   KEY `idx_admin_notif_type` (`type`),
+  KEY `idx_admin_notif_dedupe` (`type`, `restaurant_id`, `is_read`, `id`),
   CONSTRAINT `fk_admin_notif_user`
     FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
     ON DELETE SET NULL ON UPDATE CASCADE,

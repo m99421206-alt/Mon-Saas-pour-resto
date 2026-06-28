@@ -314,13 +314,7 @@ async function postAdminNotify(req, res) {
     }
 
     var rawType = typeof req.body.type === "string" ? req.body.type.trim().toLowerCase() : "";
-    var allowed = {
-      support: NOTIFICATION_TYPES.SUPPORT,
-      subscription: NOTIFICATION_TYPES.SUBSCRIPTION,
-      issue: NOTIFICATION_TYPES.ISSUE,
-    };
-    var type = allowed[rawType];
-    if (!type) {
+    if (rawType !== "support" && rawType !== "subscription" && rawType !== "issue") {
       return res.status(400).json({ message: "Type invalide (support, subscription ou issue)." });
     }
 
@@ -343,25 +337,33 @@ async function postAdminNotify(req, res) {
       subscription: "Demande concernant l'abonnement",
       issue: "Signalement d'un problème",
     };
-    var detail = extra || detailByType[type] || "Notification restaurant";
-    var linkUrl =
-      type === NOTIFICATION_TYPES.SUBSCRIPTION ?
-        "admin-subscriptions.html"
-      : type === NOTIFICATION_TYPES.ISSUE ?
-        "admin-notifications.html"
-      : "admin-dashboard.html";
+    var detail = extra || detailByType[rawType] || "Message restaurant";
 
-    await createAdminNotification({
-      type: type,
-      userId: req.user.id,
-      restaurantId: r.id,
-      restaurantName: restoName,
-      phone: phone,
-      detail: detail + (r.email ? " — " + String(r.email) : ""),
-      linkUrl: linkUrl,
-    });
+    if (rawType === "support") {
+      await createAdminNotification({
+        type: NOTIFICATION_TYPES.SUPPORT,
+        userId: req.user.id,
+        restaurantId: r.id,
+        restaurantName: restoName,
+        phone: phone,
+        detail: detail + (r.email ? " — " + String(r.email) : ""),
+        linkUrl: "admin-dashboard.html",
+      });
+    } else {
+      await appendAuditFromRequest(req, {
+        restaurantId: r.id,
+        action: AUDIT_ACTIONS.RESTAURANT_SETTINGS_UPDATE,
+        detail:
+          (rawType === "subscription" ? "Demande abonnement (restaurant)" : "Signalement problème (restaurant)") +
+          " — « " +
+          restoName +
+          " » — " +
+          detail +
+          (r.email ? " — " + String(r.email) : ""),
+      });
+    }
 
-    return res.status(201).json({ ok: true, message: "Notification envoyée à l'administration." });
+    return res.status(201).json({ ok: true, message: "Demande enregistrée." });
   } catch (err) {
     return res.status(500).json({ message: "Erreur serveur." });
   }

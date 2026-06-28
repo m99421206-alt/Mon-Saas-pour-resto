@@ -50,7 +50,7 @@ function validateJwtSecretAtStartup() {
 
   if (secret.length < MIN_SECRET_LENGTH) {
     console.warn(
-      "[MenuGo] JWT_SECRET : " +
+      "[AfricaMenu] JWT_SECRET : " +
         secret.length +
         " caractère(s) — acceptable en développement, mais utilisez au moins " +
         MIN_SECRET_LENGTH +
@@ -59,7 +59,7 @@ function validateJwtSecretAtStartup() {
   }
   if (PLACEHOLDER_SECRETS.indexOf(secret) !== -1) {
     console.warn(
-      "[MenuGo] JWT_SECRET utilise encore la valeur par défaut de .env.example — " +
+      "[AfricaMenu] JWT_SECRET utilise encore la valeur par défaut de .env.example — " +
         "changez-la avant la mise en production.",
     );
   }

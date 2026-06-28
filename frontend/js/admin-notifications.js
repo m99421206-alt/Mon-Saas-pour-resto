@@ -40,6 +40,144 @@
     }
   }
 
+  function formatRelativeTime(iso) {
+    if (!iso) {
+      return "—";
+    }
+    try {
+      var then = new Date(iso).getTime();
+      var diffMs = Date.now() - then;
+      if (!Number.isFinite(diffMs)) {
+        return formatDateTime(iso);
+      }
+      var sec = Math.floor(diffMs / 1000);
+      if (sec < 45) {
+        return "à l'instant";
+      }
+      var min = Math.floor(sec / 60);
+      if (min < 60) {
+        return "il y a " + min + " minute" + (min > 1 ? "s" : "");
+      }
+      var hrs = Math.floor(min / 60);
+      if (hrs < 24) {
+        return "il y a " + hrs + " heure" + (hrs > 1 ? "s" : "");
+      }
+      var days = Math.floor(hrs / 24);
+      if (days < 7) {
+        return "il y a " + days + " jour" + (days > 1 ? "s" : "");
+      }
+      return formatDateTime(iso);
+    } catch (e) {
+      return formatDateTime(iso);
+    }
+  }
+
+  function buildNotificationBody(n) {
+    var count = Math.max(1, Number(n.group_count) || 1);
+    var isGrouped = Boolean(n.is_grouped) || count > 1;
+    var html = "";
+
+    if (isGrouped) {
+      html +=
+        '<p class="notif-item__meta notif-item__meta--grouped"><strong>' +
+        escapeHtml(String(count)) +
+        " nouvelle" +
+        (count > 1 ? "s" : "") +
+        " demande" +
+        (count > 1 ? "s" : "") +
+        "</strong></p>";
+      if (n.last_message) {
+        html +=
+          '<p class="notif-item__meta"><strong>Dernière :</strong> ' +
+          escapeHtml(n.last_message) +
+          "</p>";
+      }
+      html +=
+        '<p class="notif-item__meta"><strong>Dernière activité :</strong> ' +
+        escapeHtml(formatRelativeTime(n.at)) +
+        "</p>";
+    } else {
+      html +=
+        '<p class="notif-item__meta"><strong>Date :</strong> ' +
+        escapeHtml(formatDateTime(n.at)) +
+        "</p>";
+      if (n.detail) {
+        html += '<p class="notif-item__detail">' + escapeHtml(n.detail) + "</p>";
+      }
+    }
+
+    return html;
+  }
+
+  function ensureGroupModal() {
+    var existing = document.getElementById("notif-group-modal");
+    if (existing) {
+      return existing;
+    }
+    var modal = document.createElement("div");
+    modal.id = "notif-group-modal";
+    modal.className = "notif-group-modal";
+    modal.hidden = true;
+    modal.innerHTML =
+      '<div class="notif-group-modal__backdrop" data-close="1"></div>' +
+      '<div class="notif-group-modal__panel" role="dialog" aria-modal="true" aria-labelledby="notif-group-modal-title">' +
+      '<header class="notif-group-modal__head">' +
+      '<h2 id="notif-group-modal-title">Demandes</h2>' +
+      '<button type="button" class="notif-group-modal__close" data-close="1" aria-label="Fermer">×</button>' +
+      "</header>" +
+      '<ul class="notif-group-modal__list" id="notif-group-modal-list"></ul>' +
+      '<footer class="notif-group-modal__foot">' +
+      '<button type="button" class="notif-btn notif-btn--primary" id="notif-group-modal-open">Ouvrir la page</button>' +
+      "</footer></div>";
+    document.body.appendChild(modal);
+    modal.querySelectorAll("[data-close]").forEach(function (el) {
+      el.addEventListener("click", function () {
+        modal.hidden = true;
+      });
+    });
+    return modal;
+  }
+
+  function showGroupedModal(notification, link) {
+    var modal = ensureGroupModal();
+    var title = document.getElementById("notif-group-modal-title");
+    var list = document.getElementById("notif-group-modal-list");
+    var openBtn = document.getElementById("notif-group-modal-open");
+    if (!title || !list || !openBtn) {
+      window.location.href = link || "admin-notifications.html";
+      return;
+    }
+
+    title.textContent =
+      (notification.type_label || "Demandes") + " — " + (notification.restaurant_name || "—");
+    list.innerHTML = "";
+
+    var messages = Array.isArray(notification.grouped_messages) ? notification.grouped_messages : [];
+    if (!messages.length && notification.detail) {
+      messages = [{ message: notification.detail, at: notification.at }];
+    }
+
+    messages.forEach(function (item, idx) {
+      var li = document.createElement("li");
+      li.className = "notif-group-modal__item";
+      li.innerHTML =
+        '<p class="notif-group-modal__msg">' +
+        escapeHtml(item.message || "—") +
+        "</p>" +
+        '<p class="notif-group-modal__time">' +
+        escapeHtml(formatRelativeTime(item.at || notification.at)) +
+        "</p>";
+      list.appendChild(li);
+    });
+
+    openBtn.onclick = function () {
+      modal.hidden = true;
+      window.location.href = link || notification.link_url || "admin-notifications.html";
+    };
+
+    modal.hidden = false;
+  }
+
   function showFeedback(msg, kind) {
     var el = document.getElementById("notif-feedback");
     if (!el) {
@@ -106,9 +244,18 @@
     items.forEach(function (n) {
       var li = document.createElement("li");
       li.className = "notif-item" + (n.is_read ? "" : " is-unread");
+      var count = Math.max(1, Number(n.group_count) || 1);
+      var showBadge = Boolean(n.is_grouped) || count > 1;
       li.innerHTML =
         '<div class="notif-item__head">' +
         '<span class="notif-item__type">' +
+        (showBadge ?
+          '<span class="notif-item__count-badge" aria-label="' +
+          escapeHtml(String(count)) +
+          ' demandes">[' +
+          escapeHtml(String(count)) +
+          "]</span> "
+        : "") +
         escapeHtml(n.type_label) +
         "</span>" +
         '<span class="notif-item__status ' +
@@ -122,17 +269,14 @@
         (n.phone ?
           '<p class="notif-item__meta"><strong>Téléphone :</strong> ' + escapeHtml(n.phone) + "</p>"
         : "") +
-        '<p class="notif-item__meta"><strong>Date :</strong> ' +
-        escapeHtml(formatDateTime(n.at)) +
-        "</p>" +
-        (n.detail ?
-          '<p class="notif-item__detail">' + escapeHtml(n.detail) + "</p>"
-        : "") +
+        buildNotificationBody(n) +
         '<div class="notif-item__actions">' +
         '<button type="button" class="notif-btn notif-btn--primary" data-open="' +
         escapeHtml(n.id) +
         '" data-link="' +
         escapeHtml(n.link_url || "admin-notifications.html") +
+        '" data-grouped="' +
+        (showBadge ? "1" : "0") +
         '">Ouvrir</button>' +
         (!n.is_read ?
           '<button type="button" class="notif-btn" data-read="' + escapeHtml(n.id) + '">Marquer lue</button>'
@@ -146,7 +290,11 @@
 
     list.querySelectorAll("[data-open]").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        openNotification(btn.getAttribute("data-open"), btn.getAttribute("data-link"));
+        openNotification(
+          btn.getAttribute("data-open"),
+          btn.getAttribute("data-link"),
+          btn.getAttribute("data-grouped"),
+        );
       });
     });
     list.querySelectorAll("[data-read]").forEach(function (btn) {
@@ -241,14 +389,27 @@
     renderPagination();
   }
 
-  async function openNotification(id, link) {
+  async function openNotification(id, link, isGrouped) {
     var token = localStorage.getItem(TOKEN_KEY);
-    if (id) {
+    var notification = null;
+
+    if (id && token) {
+      var detailRes = await apiFetch("GET", "/api/admin/notifications/" + encodeURIComponent(id), token);
+      if (detailRes.ok && detailRes.data && detailRes.data.notification) {
+        notification = detailRes.data.notification;
+      }
+
       var res = await apiFetch("PATCH", "/api/admin/notifications/" + encodeURIComponent(id) + "/read", token);
       if (res.ok && res.data) {
         syncWidgetBadge(res.data.unread_count);
       }
     }
+
+    if (notification && (isGrouped === "1" || notification.is_grouped) && notification.grouped_messages.length > 1) {
+      showGroupedModal(notification, link);
+      return;
+    }
+
     window.location.href = link || "admin-notifications.html";
   }
 

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Menu client - MenuGo</title>
+    <title>Menu client - AfricaMenu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
@@ -184,16 +184,23 @@
 
       <nav class="bottom-nav" aria-label="Navigation principale">
         <a class="bottom-nav__item active" id="home-nav" href="#" aria-current="page" aria-label="Accueil">
-          <i class="fa-solid fa-house" aria-hidden="true"></i>
+          <span class="bottom-nav__icon-wrap">
+            <i class="fa-solid fa-house" aria-hidden="true"></i>
+          </span>
+          <span class="bottom-nav__label" aria-hidden="true">Accueil</span>
         </a>
         <a class="bottom-nav__item" id="favorites-nav" href="#" aria-label="Favoris">
-          <i class="fa-regular fa-heart" aria-hidden="true"></i>
+          <span class="bottom-nav__icon-wrap">
+            <i class="fa-regular fa-heart" aria-hidden="true"></i>
+          </span>
+          <span class="bottom-nav__label" aria-hidden="true">Favoris</span>
         </a>
         <a class="bottom-nav__item" id="cart-nav" href="#" aria-label="Panier">
           <span class="bottom-nav__icon-wrap">
             <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
             <span class="cart-badge" id="cart-badge" hidden>0</span>
           </span>
+          <span class="bottom-nav__label" aria-hidden="true">Panier</span>
         </a>
       </nav>
 

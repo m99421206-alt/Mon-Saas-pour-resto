@@ -1,5 +1,5 @@
 /**
- * MenuGo — recadrage d'image avant upload (Cropper.js)
+ * AfricaMenu — recadrage d'image avant upload (Cropper.js)
  * API : MenuGo_ImageCrop.open(file, options) → Promise<File>
  */
 (function () {

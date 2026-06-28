@@ -143,7 +143,7 @@
     img.className = "dash-my-sub__btn-ico";
     img.setAttribute("aria-hidden", "true");
     el.appendChild(img);
-    el.appendChild(document.createTextNode("Contacter MenuGo"));
+    el.appendChild(document.createTextNode("Contacter AfricaMenu"));
   }
 
   /**
@@ -440,7 +440,7 @@
       }
     }
 
-    /** WhatsApp MenuGo (support abonnements) — message prérempli, ouverture manuelle. */
+    /** WhatsApp AfricaMenu (support abonnements) — message prérempli, ouverture manuelle. */
     var waUrl =
       alertsApi && alertsApi.buildWhatsAppUrl ?
         alertsApi.buildWhatsAppUrl(restoName, subscription.ends_at)
@@ -448,7 +448,7 @@
         "https://wa.me/" +
         supportWa +
         "?text=" +
-        encodeURIComponent("Bonjour MenuGo, concernant mon abonnement (" + restoName + ").")
+        encodeURIComponent("Bonjour AfricaMenu, concernant mon abonnement (" + restoName + ").")
       : "#";
 
     if (waUrl !== "#") {

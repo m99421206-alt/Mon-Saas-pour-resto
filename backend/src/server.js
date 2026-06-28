@@ -1,5 +1,5 @@
 ﻿/**
- * Serveur Express — MenuGo API
+ * Serveur Express — AfricaMenu API
  * Étape 2 : JSON body, CORS, variables d’environnement, port configurable.
  */
 
@@ -168,11 +168,11 @@ app.use(
 app.get("/health", async function (req, res) {
   try {
     await ping();
-    return res.json({ ok: true, service: "MenuGo-api", db: "up" });
+    return res.json({ ok: true, service: "AfricaMenu-api", db: "up" });
   } catch (error) {
     return res.status(503).json({
       ok: false,
-      service: "MenuGo-api",
+      service: "AfricaMenu-api",
       db: "down",
       message: isProduction ? "Service indisponible." : error.message,
     });
@@ -233,6 +233,6 @@ app.use(function (err, req, res, next) {
 });
 
 app.listen(PORT, HOST, function () {
-  console.log("MenuGo API — http://localhost:" + PORT);
-  console.log("MenuGo API réseau — " + LAN_URL);
+  console.log("AfricaMenu API — http://localhost:" + PORT);
+  console.log("AfricaMenu API réseau — " + LAN_URL);
 });

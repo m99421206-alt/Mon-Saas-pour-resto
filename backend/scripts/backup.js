@@ -1,5 +1,5 @@
 /**
- * Sauvegarde automatique MenuGo — base MySQL + dossier uploads/
+ * Sauvegarde automatique AfricaMenu — base MySQL + dossier uploads/
  * Usage (depuis backend/) : npm run backup
  */
 
@@ -163,6 +163,10 @@ async function writeManifest(folder, info) {
   await fs.promises.writeFile(manifestPath, JSON.stringify(info, null, 2), "utf8");
 }
 
+function isBackupFolderName(name) {
+  return name.indexOf("africamenu_") === 0 || name.indexOf("menugo_") === 0;
+}
+
 async function rotateBackups(backupRoot, retentionDays) {
   if (!Number.isFinite(retentionDays) || retentionDays < 1) {
     return;
@@ -174,7 +178,7 @@ async function rotateBackups(backupRoot, retentionDays) {
 
   for (var i = 0; i < entries.length; i += 1) {
     var entry = entries[i];
-    if (!entry.isDirectory() || entry.name.indexOf("menugo_") !== 0) {
+    if (!entry.isDirectory() || !isBackupFolderName(entry.name)) {
       continue;
     }
 
@@ -196,7 +200,7 @@ async function main() {
   var backupRoot = getBackupRoot();
   var retentionDays = Number(process.env.BACKUP_RETENTION_DAYS || 14);
   var stamp = createStamp();
-  var backupFolder = path.join(backupRoot, "menugo_" + stamp);
+  var backupFolder = path.join(backupRoot, "africamenu_" + stamp);
   var sqlPlainPath = path.join(backupFolder, "database.sql");
   var sqlGzPath = sqlPlainPath + ".gz";
   var uploadsArchivePath = path.join(backupFolder, "uploads.tar.gz");
@@ -210,7 +214,7 @@ async function main() {
   var uploadsFileName = uploadsArchive ? path.basename(uploadsArchive) : null;
 
   var manifest = {
-    service: "MenuGo",
+    service: "AfricaMenu",
     created_at: new Date().toISOString(),
     database: process.env.DB_NAME,
     files: {

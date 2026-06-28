@@ -1,5 +1,5 @@
 /**
- * MenuGo — Notifications toast pour le dashboard client.
+ * AfricaMenu — Notifications toast pour le dashboard client.
  */
 (function () {
   "use strict";

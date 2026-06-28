@@ -1,5 +1,5 @@
 /* =============================================================================
-   MenuGo — Landing (mobile-first)
+   AfricaMenu — Landing (mobile-first)
    Couleurs et espacements calqués sur les maquettes fournies.
    ============================================================================= */
 
@@ -663,7 +663,7 @@ p {
   gap: 0.625rem;
 }
 
-/* Logo MenuGo — image seule (sans fond orange placeholder) */
+/* Logo AfricaMenu — image seule (sans fond orange placeholder) */
 .brand__logo {
   display: inline-flex;
   align-items: center;

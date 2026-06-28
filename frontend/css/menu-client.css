@@ -20,9 +20,10 @@
   --detail-actions-pad-y: 0.85rem;
   --detail-actions-btn-h: 3.05rem;
   --detail-actions-h: calc(var(--detail-actions-pad-y) * 2 + var(--detail-actions-btn-h) + var(--safe-bottom));
-  --bottom-nav-pad-top: 0.72rem;
-  --bottom-nav-pad-bottom: 0.82rem;
-  --bottom-nav-item-h: 2.55rem;
+  --bottom-nav-pad-top: 0.55rem;
+  --bottom-nav-pad-bottom: 0.62rem;
+  --bottom-nav-item-h: 3.35rem;
+  --bottom-nav-label-size: clamp(0.6875rem, 0.66rem + 0.12vw, 0.75rem);
   --bottom-nav-h: calc(var(--bottom-nav-pad-top) + var(--bottom-nav-pad-bottom) + var(--bottom-nav-item-h) + var(--safe-bottom));
   --app-shell-max: 430px;
   /* Android / Chrome : svh = hauteur visible réelle (sans barre d’adresse). */
@@ -519,7 +520,7 @@ img {
   position: fixed;
   right: max(1rem, calc(50% - min(100%, var(--app-shell-max)) / 2 + 1rem));
   left: auto;
-  bottom: max(5.25rem, calc(var(--safe-bottom) + 5.25rem));
+  bottom: max(calc(var(--bottom-nav-h) + 0.65rem), calc(var(--safe-bottom) + var(--bottom-nav-h) + 0.65rem));
   z-index: 20;
   width: 3.15rem;
   height: 3.15rem;
@@ -546,10 +547,10 @@ img {
   transform: translateX(-50%);
   display: flex;
   justify-content: space-around;
-  align-items: center;
-  padding: 0.72rem 1.2rem calc(0.82rem + var(--safe-bottom));
-  padding-left: calc(1.2rem + var(--safe-left));
-  padding-right: calc(1.2rem + var(--safe-right));
+  align-items: stretch;
+  padding: var(--bottom-nav-pad-top) 0.85rem calc(var(--bottom-nav-pad-bottom) + var(--safe-bottom));
+  padding-left: calc(0.85rem + var(--safe-left));
+  padding-right: calc(0.85rem + var(--safe-right));
   border-radius: 26px 26px 0 0;
   background: var(--white);
   box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.08);
@@ -562,14 +563,35 @@ img {
 
 .bottom-nav__item {
   position: relative;
-  width: 3.1rem;
-  height: 2.55rem;
-  display: grid;
-  place-items: center;
+  flex: 1;
+  min-width: 0;
+  max-width: 6.5rem;
+  min-height: var(--bottom-nav-item-h);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.18rem;
+  padding: 0.28rem 0.35rem;
   border-radius: 999px;
   color: #9ca3af;
   text-decoration: none;
+}
+
+.bottom-nav__item i {
   font-size: 1.08rem;
+  line-height: 1;
+}
+
+.bottom-nav__label {
+  display: block;
+  width: 100%;
+  font-size: var(--bottom-nav-label-size);
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
 .bottom-nav__icon-wrap {
@@ -578,6 +600,7 @@ img {
   place-items: center;
   width: 1.75rem;
   height: 1.75rem;
+  flex-shrink: 0;
 }
 
 .cart-badge {
@@ -631,10 +654,14 @@ img {
   background: var(--primary-soft);
 }
 
+.bottom-nav__item.active .bottom-nav__label {
+  font-weight: 700;
+}
+
 .cart-toast {
   position: fixed;
   left: 50%;
-  bottom: max(5.8rem, calc(var(--safe-bottom) + 5.8rem));
+  bottom: max(calc(var(--bottom-nav-h) + 0.75rem), calc(var(--safe-bottom) + var(--bottom-nav-h) + 0.75rem));
   z-index: 80;
   display: inline-flex;
   align-items: center;
@@ -1562,7 +1589,7 @@ img {
   }
 
   .bottom-nav {
-    padding-inline: 0.75rem;
+    padding-inline: 0.65rem;
   }
 
   .detail-media {
@@ -1663,7 +1690,7 @@ img {
 
   .whatsapp {
     right: max(1rem, calc(50% - min(100%, var(--app-shell-max)) / 2 + 1rem));
-    bottom: max(5.75rem, calc(var(--safe-bottom) + 5.75rem));
+    bottom: max(calc(var(--bottom-nav-h) + 0.85rem), calc(var(--safe-bottom) + var(--bottom-nav-h) + 0.85rem));
   }
 
   .product-detail,
@@ -1709,7 +1736,7 @@ img {
 
   .whatsapp {
     right: max(1.25rem, calc(50% - min(100%, var(--app-shell-max)) / 2 + 1.25rem));
-    bottom: max(6.25rem, calc(var(--safe-bottom) + 6.25rem));
+    bottom: max(calc(var(--bottom-nav-h) + 1rem), calc(var(--safe-bottom) + var(--bottom-nav-h) + 1rem));
   }
 
   .product-detail {

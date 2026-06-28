@@ -156,7 +156,7 @@
         currentRestaurant && currentRestaurant.id
           ? currentRestaurant.id
           : "menu";
-      link.download = "qrcode-MenuGo-" + id + ".png";
+      link.download = "qrcode-AfricaMenu-" + id + ".png";
       link.href = canvas.toDataURL("image/png");
       link.rel = "noopener";
       document.body.appendChild(link);

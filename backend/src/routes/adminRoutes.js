@@ -33,6 +33,12 @@ router.get(
   requirePlatformAdmin,
   adminNotificationsController.getUnreadCountHandler,
 );
+router.get(
+  "/notifications/:id",
+  requireAuth,
+  requirePlatformAdmin,
+  adminNotificationsController.getNotificationDetail,
+);
 router.patch(
   "/notifications/:id/read",
   requireAuth,

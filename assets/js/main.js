@@ -1,5 +1,5 @@
 ﻿/**
- * MenuGo — scripts landing
+ * AfricaMenu — scripts landing
  * - Révélation progressive des blocs au scroll (accessibilité : respecte prefers-reduced-motion côté CSS)
  * - Lissage du comportement des ancres internes
  * - Journalisation discrète des clics CTA (placeholder jusqu’à branchement backend)
@@ -8,7 +8,7 @@
 (function () {
   "use strict";
 
-  /** Numéro WhatsApp équipe MenuGo pour les demandes depuis la landing (chiffres, indicatif inclus, sans espaces obligatoires) */
+  /** Numéro WhatsApp équipe AfricaMenu pour les demandes depuis la landing (chiffres, indicatif inclus, sans espaces obligatoires) */
   const LANDING_SUPPORT_WHATSAPP =
     typeof window.AFRICA_LANDING_WHATSAPP === "string" && window.AFRICA_LANDING_WHATSAPP.trim()
       ? window.AFRICA_LANDING_WHATSAPP.trim()
@@ -87,7 +87,7 @@
       const raw = link.getAttribute("data-wa-message") || "";
       const text = raw.trim();
       const encoded = encodeURIComponent(
-        text || "Bonjour, je souhaite des informations sur MenuGo pour mon restaurant."
+        text || "Bonjour, je souhaite des informations sur AfricaMenu pour mon restaurant."
       );
       link.href = `https://wa.me/${digits}?text=${encoded}`;
       link.target = "_blank";
@@ -130,7 +130,7 @@
         msgEl.focus();
         return;
       }
-      var body = "Bonjour MenuGo,\n\n";
+      var body = "Bonjour AfricaMenu,\n\n";
       if (name) body += "Nom : " + name + "\n";
       if (phone) body += "Téléphone : " + phone + "\n";
       body += "\nMessage :\n" + msg;

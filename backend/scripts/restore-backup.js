@@ -1,6 +1,6 @@
 /**
- * Restauration d'une sauvegarde MenuGo (SQL + uploads)
- * Usage : npm run backup:restore -- ../backups/menugo_YYYYMMDD_HHMMSS
+ * Restauration d'une sauvegarde AfricaMenu (SQL + uploads)
+ * Usage : npm run backup:restore -- ../backups/africamenu_YYYYMMDD_HHMMSS
  */
 
 require("dotenv").config();
@@ -161,7 +161,9 @@ function askConfirmation(message) {
 async function main() {
   var backupFolder = path.resolve(process.argv[2] || "");
   if (!backupFolder || !fs.existsSync(backupFolder)) {
-    throw new Error("Indiquez le dossier de sauvegarde : npm run backup:restore -- ../backups/menugo_YYYYMMDD_HHMMSS");
+    throw new Error(
+      "Indiquez le dossier de sauvegarde : npm run backup:restore -- ../backups/africamenu_YYYYMMDD_HHMMSS (ou menugo_* pour les anciennes sauvegardes)",
+    );
   }
 
   var manifestPath = path.join(backupFolder, "manifest.json");

@@ -15,7 +15,7 @@
 
   window.MenuGo_CONFIG = Object.assign({}, existingConfig, {
     /**
-     * URL de l’API MenuGo.
+     * URL de l’API AfricaMenu.
      * Laisser vide (ou ne pas définir) si l’API est sur le même domaine via reverse proxy.
      * Sinon, ex. https://api.votredomaine.com (sans slash final).
      */

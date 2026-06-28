@@ -112,7 +112,7 @@ async function exportAuditLogsCsv(req, res) {
     var csv = "\uFEFF" + lines.join("\r\n");
     var stamp = new Date().toISOString().slice(0, 10);
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
-    res.setHeader("Content-Disposition", 'attachment; filename="menugo-journal-' + stamp + '.csv"');
+    res.setHeader("Content-Disposition", 'attachment; filename="africamenu-journal-' + stamp + '.csv"');
     return res.send(csv);
   } catch (err) {
     if (isMissingTableError(err)) {

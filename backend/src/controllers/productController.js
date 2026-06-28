@@ -113,7 +113,7 @@ async function rejectIfUploadUrlsForbidden(res, restaurantId, image, variants) {
   }
   if (uploadStatus === "invalid") {
     await removeUnusedUploads(collectProductUploadUrls(image, variants));
-    res.status(400).json({ message: "Image invalide. Utilisez une image uploadée par MenuGo." });
+    res.status(400).json({ message: "Image invalide. Utilisez une image uploadée par AfricaMenu." });
     return true;
   }
   return false;
@@ -204,7 +204,7 @@ async function createProduct(req, res) {
       return res.status(400).json({ message: "category_id est requis et doit être valide." });
     }
     if (image === false) {
-      return res.status(400).json({ message: "Image invalide. Utilisez une image uploadée par MenuGo." });
+      return res.status(400).json({ message: "Image invalide. Utilisez une image uploadée par AfricaMenu." });
     }
 
     var restaurantId = resolveRestaurantId(req);
@@ -308,7 +308,7 @@ async function updateProduct(req, res) {
       return res.status(400).json({ message: "category_id est requis et doit être valide." });
     }
     if (image === false) {
-      return res.status(400).json({ message: "Image invalide. Utilisez une image uploadée par MenuGo." });
+      return res.status(400).json({ message: "Image invalide. Utilisez une image uploadée par AfricaMenu." });
     }
 
     var restaurantId = resolveRestaurantId(req);

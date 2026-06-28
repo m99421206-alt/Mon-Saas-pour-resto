@@ -99,6 +99,33 @@
     }
   }
 
+  function formatRelativeTime(iso) {
+    if (!iso) {
+      return "—";
+    }
+    try {
+      var then = new Date(iso).getTime();
+      var diffMs = Date.now() - then;
+      if (!Number.isFinite(diffMs)) {
+        return formatDateTime(iso);
+      }
+      var min = Math.floor(diffMs / 60000);
+      if (min < 1) {
+        return "à l'instant";
+      }
+      if (min < 60) {
+        return "il y a " + min + " min";
+      }
+      var hrs = Math.floor(min / 60);
+      if (hrs < 24) {
+        return "il y a " + hrs + " h";
+      }
+      return formatDateTime(iso);
+    } catch (e) {
+      return formatDateTime(iso);
+    }
+  }
+
   function renderPanel(items) {
     var panel = document.getElementById("adm-notif-panel");
     if (!panel) {
@@ -116,6 +143,12 @@
     var listHtml = items
       .map(function (n) {
         var unreadCls = n.is_read ? "" : " is-unread";
+        var count = Math.max(1, Number(n.group_count) || 1);
+        var showBadge = Boolean(n.is_grouped) || count > 1;
+        var summary = n.detail || n.last_message || "";
+        if (showBadge && n.last_message) {
+          summary = count + " demande" + (count > 1 ? "s" : "") + " — " + n.last_message;
+        }
         return (
           '<li class="adm-notif-panel__item">' +
           '<button type="button" class="adm-notif-panel__link' +
@@ -126,13 +159,19 @@
           escapeHtml(n.link_url || "admin-notifications.html") +
           '">' +
           '<span class="adm-notif-panel__type">' +
+          (showBadge ?
+            '<span class="adm-notif-panel__count">[' + escapeHtml(String(count)) + "]</span> "
+          : "") +
           escapeHtml(n.type_label) +
           "</span>" +
           '<span class="adm-notif-panel__resto">' +
           escapeHtml(n.restaurant_name) +
           "</span>" +
+          (summary ?
+            '<span class="adm-notif-panel__summary">' + escapeHtml(summary) + "</span>"
+          : "") +
           '<span class="adm-notif-panel__time">' +
-          escapeHtml(formatDateTime(n.at)) +
+          escapeHtml(formatRelativeTime(n.at)) +
           "</span>" +
           "</button></li>"
         );

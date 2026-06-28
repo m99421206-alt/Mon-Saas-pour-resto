@@ -1,5 +1,5 @@
 /**
- * MenuGo — Shell desktop / tablette pour pages restaurant
+ * AfricaMenu — Shell desktop / tablette pour pages restaurant
  * - Sidebar fixe sur grand écran
  * - Header desktop (profil, notifications, paramètres)
  * - Mise à jour profil depuis session
@@ -34,7 +34,7 @@
     if (active && active.textContent) {
       return active.textContent.trim();
     }
-    return "MenuGo";
+    return "AfricaMenu";
   }
 
   function initialsFromName(name) {

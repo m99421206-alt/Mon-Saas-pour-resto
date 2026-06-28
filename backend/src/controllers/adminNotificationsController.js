@@ -6,6 +6,7 @@ const {
   listNotifications,
   getUnreadCount,
   listRecentNotifications,
+  getNotificationById,
   markNotificationRead,
   markAllNotificationsRead,
   deleteNotification,
@@ -77,6 +78,26 @@ async function getUnreadCountHandler(req, res) {
   }
 }
 
+async function getNotificationDetail(req, res) {
+  try {
+    var id = Number(req.params.id);
+    if (!Number.isInteger(id) || id < 1) {
+      return res.status(400).json({ message: "Identifiant invalide." });
+    }
+    var item = await getNotificationById(id);
+    if (!item) {
+      return res.status(404).json({ message: "Notification introuvable." });
+    }
+    return res.json({ notification: item });
+  } catch (err) {
+    if (isMissingTableError(err)) {
+      return res.status(404).json({ message: "Notification introuvable." });
+    }
+    console.error(err);
+    return res.status(500).json({ message: "Erreur serveur." });
+  }
+}
+
 async function patchNotificationRead(req, res) {
   try {
     var id = Number(req.params.id);
@@ -126,6 +147,7 @@ async function deleteNotificationHandler(req, res) {
 module.exports = {
   getNotifications: getNotifications,
   getRecentNotifications: getRecentNotifications,
+  getNotificationDetail: getNotificationDetail,
   getUnreadCountHandler: getUnreadCountHandler,
   patchNotificationRead: patchNotificationRead,
   postMarkAllRead: postMarkAllRead,

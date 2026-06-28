@@ -236,7 +236,7 @@
   function buildRestaurantWaUrl(digits, restaurantName) {
     if (!digits) return "#";
     var msg =
-      "Bonjour, nous vous contactons concernant votre demande d’installation MenuGo pour : " +
+      "Bonjour, nous vous contactons concernant votre demande d’installation AfricaMenu pour : " +
       String(restaurantName || "votre restaurant") +
       ".";
     return "https://wa.me/" + digits.replace(/^0+/, "") + "?text=" + encodeURIComponent(msg);
@@ -280,13 +280,13 @@
       "Bonjour " +
       String(restaurantName || "restaurant") +
       ",\n\n" +
-      "Votre abonnement MenuGo expire le " +
+      "Votre abonnement AfricaMenu expire le " +
       exp +
       " (" +
       daysText +
       ").\n\n" +
       "Souhaitez-vous renouveler votre accès ? Nous restons disponibles pour vous accompagner.\n\n" +
-      "L’équipe MenuGo";
+      "L’équipe AfricaMenu";
     return "https://wa.me/" + digits.replace(/^0+/, "") + "?text=" + encodeURIComponent(msg);
   }
 

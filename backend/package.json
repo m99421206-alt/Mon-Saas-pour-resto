@@ -1,8 +1,8 @@
 {
-  "name": "MenuGo-backend",
+  "name": "AfricaMenu-backend",
   "version": "0.1.0",
   "private": true,
-  "description": "API MenuGo (Express + MySQL)",
+  "description": "API AfricaMenu (Express + MySQL)",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
@@ -13,6 +13,7 @@
     "db:audit-log": "node scripts/migrate-audit-log.js",
     "db:audit-impersonation": "node scripts/migrate-audit-impersonation.js",
     "db:admin-notifications": "node scripts/migrate-admin-notifications.js",
+    "db:admin-notifications-group": "node scripts/migrate-admin-notifications-group.js",
     "db:user-status": "node scripts/migrate-user-account-status.js",
     "db:admin-restaurants": "node scripts/migrate-admin-restaurants.js",
     "db:admin-subscriptions": "node scripts/migrate-admin-subscriptions.js",

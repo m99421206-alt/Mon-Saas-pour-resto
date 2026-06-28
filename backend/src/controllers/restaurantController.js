@@ -75,7 +75,7 @@ async function updateMyRestaurant(req, res) {
       return res.status(400).json({ message: "Couleur de thème invalide. Exemple : #FF7A00" });
     }
     if (logoUrl === false || bannerUrl === false) {
-      return res.status(400).json({ message: "Image invalide. Utilisez une image uploadée par MenuGo." });
+      return res.status(400).json({ message: "Image invalide. Utilisez une image uploadée par AfricaMenu." });
     }
 
     var previousRestaurant = req.restaurant || (await getRestaurantForUser(req.user.id));
@@ -92,7 +92,7 @@ async function updateMyRestaurant(req, res) {
       }
       if (uploadStatus === "invalid") {
         await removeUnusedUploads(collectRestaurantUploadUrls(logoUrl, bannerUrl));
-        return res.status(400).json({ message: "Image invalide. Utilisez une image uploadée par MenuGo." });
+        return res.status(400).json({ message: "Image invalide. Utilisez une image uploadée par AfricaMenu." });
       }
     }
 

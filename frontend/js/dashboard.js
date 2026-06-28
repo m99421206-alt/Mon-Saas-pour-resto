@@ -1,5 +1,5 @@
 ﻿/**
- * Dashboard MenuGo
+ * Dashboard AfricaMenu
  * - Drawer : ouverture / fermeture, overlay, Escape, aria-expanded
  * - Données : profil, restaurant, catégories et produits depuis l’API.
  */

@@ -454,7 +454,7 @@ function applyRestaurantData(restaurant) {
 
   if (restaurant.name && restaurantNameEl) {
     restaurantNameEl.textContent = restaurant.name;
-    document.title = `${restaurant.name} - MenuGo`;
+    document.title = `${restaurant.name} - AfricaMenu`;
   }
 
   if (restaurantDescriptionEl) {

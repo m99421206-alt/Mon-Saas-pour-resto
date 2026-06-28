@@ -1,6 +1,6 @@
 @import url("responsive-guard.css");
 
-/* Dashboard MenuGo (mobile-first) — aligné maquette SaaS */
+/* Dashboard AfricaMenu (mobile-first) — aligné maquette SaaS */
 
 :root {
   --dash-bg: #fafafa;
@@ -1208,7 +1208,7 @@ a.dash-qr-btn {
   gap: 0.75rem;
 }
 
-/* Logo MenuGo dans le menu latéral */
+/* Logo AfricaMenu dans le menu latéral */
 .dash-drawer__logo {
   flex-shrink: 0;
   display: inline-flex;

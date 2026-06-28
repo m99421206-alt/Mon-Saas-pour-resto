@@ -171,22 +171,18 @@ async function register(req, res) {
     });
 
     await createAdminNotification({
-      type: NOTIFICATION_TYPES.REGISTRATION,
-      userId: userId,
-      restaurantId: restaurantId,
-      restaurantName: restaurantName,
-      phone: principalPhoneDb,
-      detail: "Nouveau compte — " + email + " — Gérant : " + fullName,
-      linkUrl: "admin-users.html",
-    });
-
-    await createAdminNotification({
       type: NOTIFICATION_TYPES.NEW_RESTAURANT,
       userId: userId,
       restaurantId: restaurantId,
       restaurantName: restaurantName,
       phone: principalPhoneDb,
-      detail: "Restaurant inscrit — Quartier : " + cityDb,
+      detail:
+        "Restaurant : " +
+        restaurantName +
+        " — Téléphone : " +
+        (principalPhoneDb || "—") +
+        " — Quartier : " +
+        cityDb,
       linkUrl: "admin-restaurants.html",
     });
 
