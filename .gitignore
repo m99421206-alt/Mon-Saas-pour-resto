@@ -23,4 +23,5 @@ dossier de resto/
 # OS
 Thumbs.db
 .DS_Store
-.tmp.driveupload/
+ # 
+ .tmp.driveupload/
