@@ -8,6 +8,8 @@ const {
   NOTIFICATION_TYPES,
 } = require("../services/adminNotificationService");
 const { isPlatformAdminEmail } = require("../utils/platformAdmin");
+const { parseAdminNotifyBody } = require("../validators/support");
+const { sendValidationError } = require("../validators/helpers");
 
 function catalogPlanKey(p) {
   return String((p || {}).id || "")
@@ -313,11 +315,12 @@ async function postAdminNotify(req, res) {
       return res.status(403).json({ message: "Action réservée aux comptes restaurant." });
     }
 
-    var rawType = typeof req.body.type === "string" ? req.body.type.trim().toLowerCase() : "";
-    if (rawType !== "support" && rawType !== "subscription" && rawType !== "issue") {
-      return res.status(400).json({ message: "Type invalide (support, subscription ou issue)." });
+    var parsed = parseAdminNotifyBody(req.body);
+    if (sendValidationError(parsed, res)) {
+      return;
     }
-
+    var rawType = parsed.data.type;
+    var extra = parsed.data.detail;
     var pool = getPool();
     var [rows] = await pool.query(
       "SELECT r.id, r.name, r.whatsapp, u.phone, u.email FROM restaurants r " +
@@ -331,7 +334,6 @@ async function postAdminNotify(req, res) {
     var r = rows[0];
     var restoName = String(r.name || "—");
     var phone = r.whatsapp || r.phone || null;
-    var extra = typeof req.body.detail === "string" ? req.body.detail.trim().slice(0, 500) : "";
     var detailByType = {
       support: "Message support depuis le restaurant",
       subscription: "Demande concernant l'abonnement",

@@ -6,6 +6,8 @@ var jwt = require("jsonwebtoken");
 var { getPool } = require("../config/database");
 var { getJwtSecret } = require("../config/jwtSecret");
 var { appendAudit, AUDIT_ACTIONS, ACTOR_TYPES } = require("../utils/auditLog");
+var { parseRestaurantIdParams, parseMenuSuspendedBody } = require("../validators/restaurant");
+var { sendValidationError } = require("../validators/helpers");
 
 var ALLOWED_SUB = ["trial", "active", "expired", "suspended"];
 
@@ -159,10 +161,11 @@ async function listRestaurants(req, res) {
 
 async function getRestaurantDetail(req, res) {
   try {
-    var id = Number(req.params.id);
-    if (!Number.isInteger(id) || id < 1) {
-      return res.status(400).json({ message: "Identifiant invalide." });
+    var idParsed = parseRestaurantIdParams(req.params);
+    if (sendValidationError(idParsed, res)) {
+      return;
     }
+    var id = idParsed.data.id;
 
     var pool = getPool();
     var [rows] = await pool.query(
@@ -196,13 +199,16 @@ async function getRestaurantDetail(req, res) {
 
 async function patchMenuSuspended(req, res) {
   try {
-    var id = Number(req.params.id);
-    if (!Number.isInteger(id) || id < 1) {
-      return res.status(400).json({ message: "Identifiant invalide." });
+    var idParsed = parseRestaurantIdParams(req.params);
+    if (sendValidationError(idParsed, res)) {
+      return;
     }
-
-    var suspendedRaw = req.body.suspended != null ? req.body.suspended : req.body.menu_suspended;
-    var suspended = suspendedRaw === true || suspendedRaw === 1 || suspendedRaw === "1" || suspendedRaw === "true";
+    var bodyParsed = parseMenuSuspendedBody(req.body);
+    if (sendValidationError(bodyParsed, res)) {
+      return;
+    }
+    var id = idParsed.data.id;
+    var suspended = bodyParsed.data;
 
     var pool = getPool();
     var adminId = Number(req.user.id);
@@ -241,10 +247,11 @@ async function patchMenuSuspended(req, res) {
 
 async function postRestaurantDashboardAccess(req, res) {
   try {
-    var id = Number(req.params.id);
-    if (!Number.isInteger(id) || id < 1) {
-      return res.status(400).json({ message: "Identifiant invalide." });
+    var idParsed = parseRestaurantIdParams(req.params);
+    if (sendValidationError(idParsed, res)) {
+      return;
     }
+    var id = idParsed.data.id;
 
     var pool = getPool();
     var adminId = Number(req.user.id);
@@ -310,10 +317,11 @@ async function postRestaurantDashboardAccess(req, res) {
 
 async function deleteRestaurant(req, res) {
   try {
-    var id = Number(req.params.id);
-    if (!Number.isInteger(id) || id < 1) {
-      return res.status(400).json({ message: "Identifiant invalide." });
+    var idParsed = parseRestaurantIdParams(req.params);
+    if (sendValidationError(idParsed, res)) {
+      return;
     }
+    var id = idParsed.data.id;
 
     var pool = getPool();
     var adminId = Number(req.user.id);

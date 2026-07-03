@@ -40,8 +40,8 @@
   }
 
   /**
-   * Les ancres internes : focus clavier sur la cible après navigation
-   * (complète scroll-behavior: smooth du CSS)
+   * Ancres internes : scroll fiable + focus accessibilité.
+   * #top : scroll explicite (le navigateur ignore souvent un 2e clic sur le même hash).
    */
   function initInternalAnchors() {
     document.addEventListener("click", (event) => {
@@ -51,10 +51,29 @@
       const id = link.getAttribute("href");
       if (!id || id === "#") return;
 
+      if (id === "#top") {
+        event.preventDefault();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        if (window.history.replaceState) {
+          window.history.replaceState(null, "", id);
+        } else {
+          window.location.hash = "top";
+        }
+        const topEl = document.getElementById("top");
+        if (topEl) {
+          window.requestAnimationFrame(() => {
+            if (topEl.tabIndex < 0) topEl.setAttribute("tabindex", "-1");
+            topEl.focus({ preventScroll: true });
+          });
+        }
+        return;
+      }
+
       const target = document.querySelector(id);
       if (!target) return;
 
-      // Laisser le navigateur gérer le scroll, puis focus pour l’accessibilité
+      event.preventDefault();
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
       window.requestAnimationFrame(() => {
         if (target.tabIndex < 0) target.setAttribute("tabindex", "-1");
         target.focus({ preventScroll: true });

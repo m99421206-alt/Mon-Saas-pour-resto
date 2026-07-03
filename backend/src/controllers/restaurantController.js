@@ -1,29 +1,10 @@
 const { getPool } = require("../config/database");
 const { removeUnusedUploads } = require("../utils/uploadCleanup");
-const { normalizeWhatsapp: normalizeWhatsappField } = require("../utils/whatsappNormalize");
 const ownership = require("../utils/restaurantOwnership");
-const { normalizeStoredImageUrl } = require("../utils/imageUrlValidation");
 const { appendAuditFromRequest, AUDIT_ACTIONS } = require("../utils/auditLog");
 const uploadOwnership = require("../utils/uploadOwnership");
-
-function normalizeText(value) {
-  if (value == null) {
-    return null;
-  }
-  var text = String(value).trim();
-  return text.length ? text : null;
-}
-
-function normalizeThemeColor(value) {
-  var text = normalizeText(value);
-  if (!text) {
-    return "#FF7A00";
-  }
-  if (!/^#[0-9A-Fa-f]{6}$/.test(text)) {
-    return false;
-  }
-  return text.toUpperCase();
-}
+const { parseUpdateRestaurantBody } = require("../validators/restaurant");
+const { sendValidationError } = require("../validators/helpers");
 
 function collectRestaurantUploadUrls(logoUrl, bannerUrl) {
   var urls = [];
@@ -54,37 +35,26 @@ async function getMyRestaurant(req, res) {
 }
 
 async function updateMyRestaurant(req, res) {
+  var parsed = parseUpdateRestaurantBody(req.body);
+  if (!parsed.ok) {
+    return res.status(400).json({ message: parsed.message });
+  }
+  var input = parsed.data;
+  var name = input.name;
+  var description = input.description;
+  var whatsapp = input.whatsapp;
+  var logoUrl = input.logoUrl;
+  var bannerUrl = input.bannerUrl;
+  var themeColor = input.themeColor;
+
   try {
-    var name = normalizeText(req.body.name || req.body.restaurantName);
-    var description = normalizeText(req.body.description);
-    var whatsapp = normalizeWhatsappField(req.body.whatsapp);
-    var logoUrl = normalizeStoredImageUrl(req.body.logo_url || req.body.logoUrl);
-    var bannerUrl = normalizeStoredImageUrl(req.body.banner_url || req.body.bannerUrl);
-    var themeColor = normalizeThemeColor(req.body.theme_color || req.body.themeColor);
-
-    if (!name) {
-      await removeUnusedUploads(collectRestaurantUploadUrls(logoUrl, bannerUrl));
-      return res.status(400).json({ message: "Le nom du restaurant est requis." });
-    }
-    if (whatsapp === false) {
-      await removeUnusedUploads(collectRestaurantUploadUrls(logoUrl, bannerUrl));
-      return res.status(400).json({ message: "Numéro WhatsApp invalide. Exemple : +22370000000" });
-    }
-    if (themeColor === false) {
-      await removeUnusedUploads(collectRestaurantUploadUrls(logoUrl, bannerUrl));
-      return res.status(400).json({ message: "Couleur de thème invalide. Exemple : #FF7A00" });
-    }
-    if (logoUrl === false || bannerUrl === false) {
-      return res.status(400).json({ message: "Image invalide. Utilisez une image uploadée par AfricaMenu." });
-    }
-
     var previousRestaurant = req.restaurant || (await getRestaurantForUser(req.user.id));
     var restaurantId = req.restaurantId || (previousRestaurant ? previousRestaurant.id : null);
 
     if (restaurantId) {
       var uploadStatus = await uploadOwnership.assertUploadUrlsAllowedForRestaurant(
         collectRestaurantUploadUrls(logoUrl, bannerUrl),
-        restaurantId
+        restaurantId,
       );
       if (uploadStatus === "forbidden") {
         await removeUnusedUploads(collectRestaurantUploadUrls(logoUrl, bannerUrl));
@@ -109,7 +79,7 @@ async function updateMyRestaurant(req, res) {
 
     var [result] = await pool.query(
       "UPDATE restaurants SET name = ?, description = ?, whatsapp = ?, logo_url = ?, banner_url = ?, theme_color = ? WHERE user_id = ? ORDER BY id ASC LIMIT 1",
-      [name, description, whatsapp, logoUrl, bannerUrl, themeColor, req.user.id]
+      [name, description, whatsapp, logoUrl, bannerUrl, themeColor, req.user.id],
     );
 
     if (result.affectedRows === 0) {
@@ -117,7 +87,6 @@ async function updateMyRestaurant(req, res) {
       return res.status(404).json({ message: "Aucun restaurant associé à ce compte." });
     }
 
-    /** Garde users.phone aligné avec le WhatsApp commandes (= contact principal du compte). */
     await pool.query("UPDATE users SET phone = ? WHERE id = ?", [whatsapp, req.user.id]);
 
     var restaurant = await getRestaurantForUser(req.user.id);

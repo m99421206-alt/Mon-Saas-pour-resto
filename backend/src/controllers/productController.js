@@ -2,90 +2,14 @@ const { getPool } = require("../config/database");
 const { removeUnusedUploads } = require("../utils/uploadCleanup");
 const { appendAuditFromRequest, AUDIT_ACTIONS } = require("../utils/auditLog");
 const ownership = require("../utils/restaurantOwnership");
-const { normalizeStoredImageUrl } = require("../utils/imageUrlValidation");
 const uploadOwnership = require("../utils/uploadOwnership");
+const { parseProductBody, parseProductIdParams } = require("../validators/product");
 
 function resolveRestaurantId(req) {
   if (req.restaurantId) {
     return req.restaurantId;
   }
   return null;
-}
-
-function normalizeName(body) {
-  if (!body || typeof body.name !== "string") {
-    return null;
-  }
-  var n = body.name.trim();
-  return n.length ? n : null;
-}
-
-function normalizeImage(body) {
-  return normalizeStoredImageUrl(body && body.image);
-}
-
-function normalizeDescription(body) {
-  if (!body || body.description == null || body.description === "") {
-    return null;
-  }
-  if (typeof body.description !== "string") {
-    return null;
-  }
-  return body.description.trim() || null;
-}
-
-function normalizeHasSizes(body) {
-  if (!body || body.has_sizes == null) {
-    return 1;
-  }
-  return body.has_sizes === true || body.has_sizes === 1 || body.has_sizes === "1" ? 1 : 0;
-}
-
-function normalizeIsVisible(body) {
-  if (!body || body.is_visible == null) {
-    return 1;
-  }
-  return body.is_visible === true || body.is_visible === 1 || body.is_visible === "1" ? 1 : 0;
-}
-
-function normalizeCategoryId(body) {
-  var id = Number(body && body.category_id);
-  if (!Number.isInteger(id) || id < 1) {
-    return null;
-  }
-  return id;
-}
-
-function normalizePrice(body) {
-  var value = Number(body && body.price);
-  if (!Number.isFinite(value) || value < 0) {
-    return null;
-  }
-  return Number(value.toFixed(2));
-}
-
-function normalizeVariants(body) {
-  if (!body || !Array.isArray(body.variants)) {
-    return [];
-  }
-
-  var variants = [];
-  for (var i = 0; i < body.variants.length; i += 1) {
-    var item = body.variants[i] || {};
-    var name = typeof item.name === "string" ? item.name.trim() : "";
-    var price = Number(item.price);
-
-    if (name && Number.isFinite(price) && price >= 0) {
-      variants.push({
-        name: name,
-        price: Number(price.toFixed(2)),
-        image: null,
-        sort_order: variants.length,
-      });
-    }
-  }
-
-  return variants;
 }
 
 function collectProductUploadUrls(image, variants) {
@@ -178,35 +102,21 @@ async function listProducts(req, res) {
 }
 
 async function createProduct(req, res) {
+  var parsed = parseProductBody(req.body);
+  if (!parsed.ok) {
+    return res.status(400).json({ message: parsed.message });
+  }
+  var p = parsed.data;
+  var name = p.name;
+  var price = p.price;
+  var categoryId = p.categoryId;
+  var image = p.image;
+  var description = p.description;
+  var hasSizes = p.hasSizes;
+  var isVisible = p.isVisible;
+  var variants = p.variants;
+
   try {
-    var name = normalizeName(req.body);
-    var price = normalizePrice(req.body);
-    var categoryId = normalizeCategoryId(req.body);
-    var image = normalizeImage(req.body);
-    var description = normalizeDescription(req.body);
-    var hasSizes = normalizeHasSizes(req.body);
-    var isVisible = normalizeIsVisible(req.body);
-    var variants = normalizeVariants(req.body);
-    if (hasSizes && !variants.length) {
-      hasSizes = 0;
-    }
-
-    if (!name) {
-      await removeUnusedUploads(collectProductUploadUrls(image, variants));
-      return res.status(400).json({ message: "Le nom du produit est requis." });
-    }
-    if (price == null) {
-      await removeUnusedUploads(collectProductUploadUrls(image, variants));
-      return res.status(400).json({ message: "Le prix doit être un nombre positif ou nul." });
-    }
-    if (!categoryId) {
-      await removeUnusedUploads(collectProductUploadUrls(image, variants));
-      return res.status(400).json({ message: "category_id est requis et doit être valide." });
-    }
-    if (image === false) {
-      return res.status(400).json({ message: "Image invalide. Utilisez une image uploadée par AfricaMenu." });
-    }
-
     var restaurantId = resolveRestaurantId(req);
     if (!restaurantId) {
       await removeUnusedUploads(collectProductUploadUrls(image, variants));
@@ -277,40 +187,27 @@ async function createProduct(req, res) {
 }
 
 async function updateProduct(req, res) {
+  var idParsed = parseProductIdParams(req.params);
+  if (!idParsed.ok) {
+    return res.status(400).json({ message: idParsed.message });
+  }
+  var productId = idParsed.data.id;
+
+  var parsed = parseProductBody(req.body);
+  if (!parsed.ok) {
+    return res.status(400).json({ message: parsed.message });
+  }
+  var p = parsed.data;
+  var name = p.name;
+  var price = p.price;
+  var categoryId = p.categoryId;
+  var image = p.image;
+  var description = p.description;
+  var hasSizes = p.hasSizes;
+  var isVisible = p.isVisible;
+  var variants = p.variants;
+
   try {
-    var productId = Number(req.params.id);
-    if (!Number.isInteger(productId) || productId < 1) {
-      return res.status(400).json({ message: "Identifiant de produit invalide." });
-    }
-
-    var name = normalizeName(req.body);
-    var price = normalizePrice(req.body);
-    var categoryId = normalizeCategoryId(req.body);
-    var image = normalizeImage(req.body);
-    var description = normalizeDescription(req.body);
-    var hasSizes = normalizeHasSizes(req.body);
-    var isVisible = normalizeIsVisible(req.body);
-    var variants = normalizeVariants(req.body);
-    if (hasSizes && !variants.length) {
-      hasSizes = 0;
-    }
-
-    if (!name) {
-      await removeUnusedUploads(collectProductUploadUrls(image, variants));
-      return res.status(400).json({ message: "Le nom du produit est requis." });
-    }
-    if (price == null) {
-      await removeUnusedUploads(collectProductUploadUrls(image, variants));
-      return res.status(400).json({ message: "Le prix doit être un nombre positif ou nul." });
-    }
-    if (!categoryId) {
-      await removeUnusedUploads(collectProductUploadUrls(image, variants));
-      return res.status(400).json({ message: "category_id est requis et doit être valide." });
-    }
-    if (image === false) {
-      return res.status(400).json({ message: "Image invalide. Utilisez une image uploadée par AfricaMenu." });
-    }
-
     var restaurantId = resolveRestaurantId(req);
     if (!restaurantId) {
       await removeUnusedUploads(collectProductUploadUrls(image, variants));
@@ -417,10 +314,11 @@ async function updateProduct(req, res) {
 
 async function deleteProduct(req, res) {
   try {
-    var productId = Number(req.params.id);
-    if (!Number.isInteger(productId) || productId < 1) {
-      return res.status(400).json({ message: "Identifiant de produit invalide." });
+    var idParsed = parseProductIdParams(req.params);
+    if (!idParsed.ok) {
+      return res.status(400).json({ message: idParsed.message });
     }
+    var productId = idParsed.data.id;
 
     var restaurantId = resolveRestaurantId(req);
     if (!restaurantId) {

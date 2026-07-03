@@ -400,11 +400,25 @@ function normalizeImageUrl(imageUrl, fallbackUrl) {
     return fallbackUrl || "";
   }
 
+  if (window.MenuGo_DomSafe && window.MenuGo_DomSafe.sanitizeImageSrc) {
+    var safe = window.MenuGo_DomSafe.sanitizeImageSrc(imageUrl, API_BASE_URL);
+    return safe || fallbackUrl || "";
+  }
+
   const url = imageUrl.trim();
-  if (!url) {
+  if (!url || /^(javascript|data|vbscript):/i.test(url)) {
     return fallbackUrl || "";
   }
-  return url.indexOf("/uploads/") === 0 ? API_BASE_URL + url : url;
+  if (url.indexOf("/uploads/") === 0) {
+    if (url.indexOf("..") !== -1 || url.indexOf("\\") !== -1) {
+      return fallbackUrl || "";
+    }
+    return API_BASE_URL + url;
+  }
+  if (/^https?:\/\//i.test(url)) {
+    return url;
+  }
+  return fallbackUrl || "";
 }
 
 function normalizeWhatsapp(value) {
@@ -965,7 +979,12 @@ function renderProductVariants(product) {
     button.className = "size-option";
     button.type = "button";
     button.dataset.variantId = variant.id;
-    button.innerHTML = `<span>${escapeHtml(variant.name)}</span><small>${escapeHtml(variant.price)}</small>`;
+    var nameSpan = document.createElement("span");
+    nameSpan.textContent = variant.name;
+    var priceSmall = document.createElement("small");
+    priceSmall.textContent = variant.price;
+    button.appendChild(nameSpan);
+    button.appendChild(priceSmall);
 
     button.addEventListener("click", function () {
       setSelectedVariant(variant);

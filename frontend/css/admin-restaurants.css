@@ -2,10 +2,107 @@
 
 .adm-page--restaurants {
   padding-bottom: clamp(1.75rem, 4vw, 3rem);
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.adm-resto-panel {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Carte unique : filtres + tableau + pagination alignés sur les mêmes bords */
+.adm-resto-panel__shell {
+  background: var(--adm-surface);
+  border: 1px solid var(--adm-border);
+  border-radius: var(--adm-radius-lg);
+  box-shadow: var(--adm-shadow-card);
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.adm-resto-panel__shell .adm-toolbar {
+  margin-top: 0;
+  padding: clamp(0.85rem, 3vw, 1.15rem);
+  padding-bottom: clamp(0.65rem, 2vw, 0.85rem);
+  border-bottom: 1px solid var(--adm-border);
+  background: #fafafa;
+}
+
+.adm-resto-panel__body {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.adm-resto-panel__shell .adm-table-wrap {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.adm-resto-panel__shell .users-pagination.users-pagination--resto {
+  margin-top: 0;
+  padding: clamp(0.75rem, 2.5vw, 1rem) clamp(0.85rem, 3vw, 1.15rem);
+  border-top: 1px solid var(--adm-border);
+  background: #fafafa;
 }
 
 .adm-toolbar--resto .adm-toolbar__search-wrap {
   max-width: min(26rem, 100%);
+}
+
+.adm-toolbar__right {
+  flex-shrink: 0;
+}
+
+/* Tableau : centrage vertical + colonnes maîtrisées */
+.adm-table--restaurants td {
+  vertical-align: middle;
+}
+
+.adm-table--restaurants .resto-th-logo,
+.adm-table--restaurants td:first-child {
+  width: 4.5rem;
+}
+
+.adm-table--restaurants .resto-th-name,
+.adm-table--restaurants td:nth-child(2) {
+  white-space: normal;
+  max-width: 13rem;
+}
+
+.adm-table--restaurants td:nth-child(2) .resto-muted {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adm-table--restaurants .resto-th-actions,
+.adm-table--restaurants td:last-child {
+  white-space: normal;
+  text-align: right;
+  width: 1%;
+}
+
+.adm-table--restaurants .resto-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: flex-end;
+  align-items: center;
+  max-width: 14.5rem;
+}
+
+.adm-table--restaurants .resto-actions .adm-btn {
+  white-space: nowrap;
 }
 
 .resto-logo-thumb {
@@ -122,6 +219,7 @@
   flex-wrap: wrap;
   gap: 0.35rem;
   justify-content: flex-end;
+  align-items: center;
 }
 
 /* Cartes mobiles */
@@ -168,7 +266,6 @@
 }
 
 .adm-toolbar {
-  margin-top: 0.85rem;
   display: flex;
   flex-wrap: wrap;
   gap: clamp(0.65rem, 2vw, 1rem);
@@ -182,6 +279,7 @@
   gap: 0.65rem;
   align-items: center;
   flex: 1;
+  min-width: 0;
 }
 
 .adm-toolbar__search-wrap {
@@ -230,10 +328,11 @@
 .restaurants-count-meta {
   font-size: 0.82rem;
   color: var(--adm-text-muted);
+  white-space: nowrap;
 }
 
-.users-pagination.users-pagination--resto {
-  margin-top: 1rem;
+.adm-resto-panel__shell .restaurants-cards__list {
+  padding: clamp(0.85rem, 3vw, 1.15rem);
 }
 
 .adm-btn {

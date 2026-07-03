@@ -7,6 +7,13 @@ var { appendAudit, AUDIT_ACTIONS, ACTOR_TYPES } = require("../utils/auditLog");
 var platformSettings = require("../services/platformSettings");
 var subscriptionService = require("../services/subscriptionService");
 var { resolvePlanLabel } = require("../utils/subscriptionLabels");
+var {
+  parseRestaurantIdParams,
+  parseActivateBody,
+  parseRenewBody,
+  parseAdjustBody,
+} = require("../validators/subscription");
+var { sendValidationError } = require("../validators/helpers");
 
 var ALLOWED_SUB = ["trial", "active", "expired", "suspended"];
 
@@ -135,10 +142,11 @@ async function listSubscriptions(req, res) {
 
 async function getSubscriptionDetail(req, res) {
   try {
-    var id = Number(req.params.restaurantId);
-    if (!Number.isInteger(id) || id < 1) {
-      return res.status(400).json({ message: "Identifiant invalide." });
+    var idParsed = parseRestaurantIdParams(req.params);
+    if (sendValidationError(idParsed, res)) {
+      return;
     }
+    var id = idParsed.data.restaurantId;
 
     var pool = getPool();
     await subscriptionService.expireAllPastDueGlobally();
@@ -181,16 +189,18 @@ async function getSubscriptionDetail(req, res) {
 
 async function postActivate(req, res) {
   try {
-    var id = Number(req.params.restaurantId);
-    if (!Number.isInteger(id) || id < 1) {
-      return res.status(400).json({ message: "Identifiant invalide." });
+    var idParsed = parseRestaurantIdParams(req.params);
+    if (sendValidationError(idParsed, res)) {
+      return;
     }
-
-    var periodDays = parsePositiveInt(req.body.period_days, 30);
-    if (periodDays > 3650) periodDays = 3650;
-
-    var amountMaybe = req.body.subscription_amount_cfa != null ? Number(req.body.subscription_amount_cfa) : null;
-    var planKeyMaybe = normalizePlanKey(req.body.subscription_plan_key);
+    var bodyParsed = parseActivateBody(req.body);
+    if (sendValidationError(bodyParsed, res)) {
+      return;
+    }
+    var id = idParsed.data.restaurantId;
+    var periodDays = bodyParsed.data.period_days;
+    var amountMaybe = bodyParsed.data.subscription_amount_cfa;
+    var planKeyMaybe = bodyParsed.data.subscription_plan_key;
 
     var pool = getPool();
     var adminId = Number(req.user.id);
@@ -254,10 +264,11 @@ async function postActivate(req, res) {
 
 async function postSuspend(req, res) {
   try {
-    var id = Number(req.params.restaurantId);
-    if (!Number.isInteger(id) || id < 1) {
-      return res.status(400).json({ message: "Identifiant invalide." });
+    var idParsed = parseRestaurantIdParams(req.params);
+    if (sendValidationError(idParsed, res)) {
+      return;
     }
+    var id = idParsed.data.restaurantId;
 
     var pool = getPool();
     var adminId = Number(req.user.id);
@@ -286,16 +297,18 @@ async function postSuspend(req, res) {
 
 async function postRenew(req, res) {
   try {
-    var id = Number(req.params.restaurantId);
-    if (!Number.isInteger(id) || id < 1) {
-      return res.status(400).json({ message: "Identifiant invalide." });
+    var idParsed = parseRestaurantIdParams(req.params);
+    if (sendValidationError(idParsed, res)) {
+      return;
     }
-
-    var months = parsePositiveInt(req.body.months, 12);
-    if (months > 120) months = 120;
-
-    var amountMaybe = req.body.subscription_amount_cfa != null ? Number(req.body.subscription_amount_cfa) : null;
-    var planKeyMaybe = normalizePlanKey(req.body.subscription_plan_key);
+    var bodyParsed = parseRenewBody(req.body);
+    if (sendValidationError(bodyParsed, res)) {
+      return;
+    }
+    var id = idParsed.data.restaurantId;
+    var months = bodyParsed.data.months;
+    var amountMaybe = bodyParsed.data.subscription_amount_cfa;
+    var planKeyMaybe = bodyParsed.data.subscription_plan_key;
 
     var pool = getPool();
     var adminId = Number(req.user.id);
@@ -357,38 +370,21 @@ async function postRenew(req, res) {
  */
 async function patchAdjustSubscription(req, res) {
   try {
-    var id = Number(req.params.restaurantId);
-    if (!Number.isInteger(id) || id < 1) {
-      return res.status(400).json({ message: "Identifiant invalide." });
+    var idParsed = parseRestaurantIdParams(req.params);
+    if (sendValidationError(idParsed, res)) {
+      return;
     }
-
-    var body = req.body || {};
-    var endsExplicit =
-      typeof body.subscription_ends_at === "string" ? body.subscription_ends_at.trim().slice(0, 32) : "";
-    var hasExplicit = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(endsExplicit);
-    var addDaysNum = Number(body.add_days);
-    var touchesEndByDate = hasExplicit;
-    var touchesEndByDays = Number.isFinite(addDaysNum) && addDaysNum !== 0;
-    var touchesPlan = Object.prototype.hasOwnProperty.call(body, "subscription_plan_key");
-
-    if (!touchesEndByDate && !touchesEndByDays && !touchesPlan) {
-      return res.status(400).json({
-        message: "Indiquez subscription_ends_at (AAAA-MM-DD), add_days (nombre de jours) et/ou subscription_plan_key.",
-      });
+    var bodyParsed = parseAdjustBody(req.body);
+    if (sendValidationError(bodyParsed, res)) {
+      return;
     }
-
-    if (touchesEndByDate && touchesEndByDays) {
-      return res.status(400).json({
-        message: "Utilisez soit subscription_ends_at soit add_days, pas les deux simultanément.",
-      });
-    }
-
-    if (touchesEndByDays) {
-      var adb = Math.round(addDaysNum);
-      if (adb < -3660 || adb > 3660) {
-        return res.status(400).json({ message: "add_days doit être compris entre -3660 et 3660." });
-      }
-    }
+    var id = idParsed.data.restaurantId;
+    var endsExplicit = bodyParsed.data.endsExplicit;
+    var addDaysNum = bodyParsed.data.addDays;
+    var touchesPlan = bodyParsed.data.touchesPlan;
+    var planClean = bodyParsed.data.planKey;
+    var touchesEndByDate = Boolean(endsExplicit);
+    var touchesEndByDays = addDaysNum != null;
 
     var pool = getPool();
     var adminId = Number(req.user.id);
@@ -400,8 +396,6 @@ async function patchAdjustSubscription(req, res) {
     if (!target) {
       return res.status(404).json({ message: "Restaurant introuvable." });
     }
-
-    var planClean = touchesPlan ? normalizePlanKey(body.subscription_plan_key === "" ? null : body.subscription_plan_key) : null;
 
     var conn = await pool.getConnection();
     try {

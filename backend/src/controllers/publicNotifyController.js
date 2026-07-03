@@ -6,15 +6,17 @@ const {
   createAdminNotification,
   NOTIFICATION_TYPES,
 } = require("../services/adminNotificationService");
+const { parsePasswordResetRequestBody } = require("../validators/support");
+const { sendValidationError } = require("../validators/helpers");
 
 async function postPasswordResetRequest(req, res) {
   try {
-    var restaurantName = String(req.body.restaurantName || req.body.restaurant_name || "").trim();
-    var phone = String(req.body.phone || "").trim();
-
-    if (!restaurantName && !phone) {
-      return res.status(400).json({ message: "Indiquez au moins le nom du restaurant ou un téléphone." });
+    var parsed = parsePasswordResetRequestBody(req.body);
+    if (sendValidationError(parsed, res)) {
+      return;
     }
+    var restaurantName = parsed.data.restaurantName;
+    var phone = parsed.data.phone;
 
     var detail =
       "Demande de réinitialisation de mot de passe" +

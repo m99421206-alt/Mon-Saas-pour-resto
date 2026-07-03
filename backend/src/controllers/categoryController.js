@@ -1,17 +1,19 @@
 const { getPool } = require("../config/database");
 const { appendAuditFromRequest, AUDIT_ACTIONS } = require("../utils/auditLog");
 const ownership = require("../utils/restaurantOwnership");
+const { parseCategoryBody, parseCategoryIdParams } = require("../validators/category");
+const { sendValidationError } = require("../validators/helpers");
 
 function resolveRestaurantId(req) {
   return req.restaurantId || null;
 }
 
 function normalizeName(body) {
-  if (!body || typeof body.name !== "string") {
-    return null;
+  var parsed = parseCategoryBody(body);
+  if (!parsed.ok) {
+    return { error: parsed.message };
   }
-  var n = body.name.trim();
-  return n.length ? n : null;
+  return { name: parsed.data.name };
 }
 
 async function listCategories(req, res) {
@@ -34,10 +36,11 @@ async function listCategories(req, res) {
 
 async function createCategory(req, res) {
   try {
-    var name = normalizeName(req.body);
-    if (!name) {
-      return res.status(400).json({ message: "Le nom de la catégorie est requis." });
+    var nameResult = normalizeName(req.body);
+    if (nameResult.error) {
+      return res.status(400).json({ message: nameResult.error });
     }
+    var name = nameResult.name;
 
     var restaurantId = resolveRestaurantId(req);
     if (!restaurantId) {
@@ -71,15 +74,17 @@ async function createCategory(req, res) {
 
 async function updateCategory(req, res) {
   try {
-    var name = normalizeName(req.body);
-    if (!name) {
-      return res.status(400).json({ message: "Le nom de la catégorie est requis." });
+    var nameResult = normalizeName(req.body);
+    if (nameResult.error) {
+      return res.status(400).json({ message: nameResult.error });
     }
+    var name = nameResult.name;
 
-    var categoryId = Number(req.params.id);
-    if (!Number.isInteger(categoryId) || categoryId < 1) {
-      return res.status(400).json({ message: "Identifiant de catégorie invalide." });
+    var idParsed = parseCategoryIdParams(req.params);
+    if (sendValidationError(idParsed, res)) {
+      return;
     }
+    var categoryId = idParsed.data.id;
 
     var restaurantId = resolveRestaurantId(req);
     if (!restaurantId) {
@@ -125,10 +130,11 @@ async function updateCategory(req, res) {
 
 async function deleteCategory(req, res) {
   try {
-    var categoryId = Number(req.params.id);
-    if (!Number.isInteger(categoryId) || categoryId < 1) {
-      return res.status(400).json({ message: "Identifiant de catégorie invalide." });
+    var idParsed = parseCategoryIdParams(req.params);
+    if (sendValidationError(idParsed, res)) {
+      return;
     }
+    var categoryId = idParsed.data.id;
 
     var restaurantId = resolveRestaurantId(req);
     if (!restaurantId) {

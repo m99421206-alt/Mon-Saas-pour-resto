@@ -46,18 +46,21 @@
     if (rel == null || String(rel).trim() === "") {
       return "";
     }
+    if (window.MenuGo_DomSafe && window.MenuGo_DomSafe.sanitizeImageSrc) {
+      return window.MenuGo_DomSafe.sanitizeImageSrc(rel, getApiBase());
+    }
     var u = String(rel).trim();
+    if (/^(javascript|data|vbscript):/i.test(u)) {
+      return "";
+    }
     if (/^https?:\/\//i.test(u)) {
       return u;
     }
+    if (u.indexOf("/uploads/") !== 0 || u.indexOf("..") !== -1) {
+      return "";
+    }
     var base = getApiBase();
-    if (!base) {
-      return u;
-    }
-    if (u.indexOf("/") === 0) {
-      return base + u;
-    }
-    return base + "/" + u.replace(/^\.?\//, "");
+    return base ? base + u : u;
   }
 
   function redirectToLogin() {

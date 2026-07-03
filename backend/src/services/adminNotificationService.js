@@ -4,6 +4,7 @@
  */
 
 const { getPool } = require("../config/database");
+const { sanitizeAppLinkUrl } = require("../utils/sanitizeAppLinkUrl");
 const subscriptionService = require("./subscriptionService");
 
 var GROUP_PREFIX = "__MG_G__";
@@ -206,7 +207,7 @@ function mapRow(row) {
         at: item.at || null,
       };
     }),
-    link_url: row.link_url ? String(row.link_url) : linkForType(type),
+    link_url: sanitizeAppLinkUrl(row.link_url, linkForType(type)),
     is_read: Boolean(row.is_read),
     at: displayAt,
     created_at: row.created_at ? new Date(row.created_at).toISOString() : null,
@@ -330,7 +331,10 @@ async function createAdminNotification(params) {
     if (detail === "") {
       detail = null;
     }
-    var linkUrl = params.linkUrl != null ? String(params.linkUrl).trim().slice(0, 255) : linkForType(type);
+    var linkUrl =
+      params.linkUrl != null ?
+        sanitizeAppLinkUrl(params.linkUrl, linkForType(type))
+      : linkForType(type);
 
     if (GROUPABLE_TYPES.indexOf(type) !== -1) {
       var existingGrouped = await findUnreadForDedupe(type, rid, phone, restaurantName);

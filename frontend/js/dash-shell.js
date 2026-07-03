@@ -216,7 +216,13 @@
         localStorage.removeItem("MenuGo_restaurant");
       }
 
-      window.location.href = returnUrl;
+      var safeReturn = returnUrl;
+      if (window.MenuGo_DomSafe && window.MenuGo_DomSafe.sanitizeAppUrl) {
+        safeReturn = window.MenuGo_DomSafe.sanitizeAppUrl(returnUrl, "admin-restaurants.html");
+      } else if (/^(javascript|data):/i.test(String(returnUrl || "")) || /^https?:/i.test(String(returnUrl || ""))) {
+        safeReturn = "admin-restaurants.html";
+      }
+      window.location.href = safeReturn;
     });
 
     inner.appendChild(text);

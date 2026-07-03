@@ -10,8 +10,9 @@ const {
 const platformSettings = require("../services/platformSettings");
 const { normalizeWhatsapp } = require("../utils/whatsappNormalize");
 const { isPlatformAdminEmail } = require("../utils/platformAdmin");
-const { isValidEmail, emailFormatMessage } = require("../utils/emailValidate");
 const loginLockout = require("../utils/loginLockout");
+const { parseLoginBody, parseRegisterBody } = require("../validators/auth");
+const { sendValidationError } = require("../validators/helpers");
 
 function mapRestaurantAuth(row) {
   if (!row) return null;
@@ -62,65 +63,17 @@ async function logLoginFailure(params) {
 }
 
 async function register(req, res) {
-  const email = String(req.body.email || "").trim().toLowerCase();
-  const password = String(req.body.password || "");
-  const restaurantName = String(req.body.restaurantName || "").trim() || "Mon restaurant";
-
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email et mot de passe sont obligatoires." });
+  var parsed = parseRegisterBody(req.body);
+  if (sendValidationError(parsed, res)) {
+    return;
   }
-  if (!isValidEmail(email)) {
-    return res.status(400).json({ message: emailFormatMessage() });
-  }
-  if (password.length < 8) {
-    return res.status(400).json({ message: "Le mot de passe doit contenir au moins 8 caractères." });
-  }
-
-  const rawMobile =
-    typeof req.body.whatsapp === "string" && req.body.whatsapp.trim() !== ""
-      ? req.body.whatsapp
-      : typeof req.body.phone === "string" && req.body.phone.trim() !== ""
-        ? req.body.phone
-        : "";
-  const whatsappNormalized = normalizeWhatsapp(rawMobile || null);
-  if (whatsappNormalized === null) {
-    return res.status(400).json({
-      message: "Le numéro de téléphone principal (WhatsApp pour les commandes) est obligatoire.",
-    });
-  }
-  if (whatsappNormalized === false) {
-    return res.status(400).json({ message: "Numéro WhatsApp invalide. Exemple : +22370000000" });
-  }
-
-  /** Même valeur : contact principal utilisateur (`users.phone`) + commandes (`restaurants.whatsapp`). */
-  const principalPhoneDb = whatsappNormalized;
-
-  const fullName = String(req.body.fullName || "").trim();
-  /** Quartier / zone géographique : enregistré dans la colonne `restaurants.city` (clés corps possibles city, location ou quartier). */
-  const fromCity =
-    typeof req.body.city === "string" && req.body.city.trim() !== "" ? req.body.city.trim() : "";
-  const fromLocation =
-    typeof req.body.location === "string" && req.body.location.trim() !== ""
-      ? req.body.location.trim()
-      : "";
-  const fromQuartier =
-    typeof req.body.quartier === "string" && req.body.quartier.trim() !== "" ?
-      req.body.quartier.trim()
-    : "";
-  const cityVal = fromCity || fromLocation || fromQuartier;
-
-  if (!fullName) {
-    return res.status(400).json({ message: "Le nom du gérant est obligatoire." });
-  }
-  if (fullName.length > 160) {
-    return res.status(400).json({ message: "Le nom ne doit pas dépasser 160 caractères." });
-  }
-  if (!cityVal) {
-    return res.status(400).json({ message: "Indiquez le quartier où se trouve votre restaurant." });
-  }
-
-  /** Valeur BD : même nom de colonne `city`, contenu métier = quartier. */
-  const cityDb = cityVal.slice(0, 120);
+  var input = parsed.data;
+  const email = input.email;
+  const password = input.password;
+  const restaurantName = input.restaurantName;
+  const fullName = input.fullName;
+  const principalPhoneDb = input.whatsapp;
+  const cityDb = input.quartier;
 
   const pool = getPool();
   const connection = await pool.getConnection();
@@ -209,16 +162,13 @@ async function register(req, res) {
 }
 
 async function login(req, res) {
-  const email = String(req.body.email || "").trim().toLowerCase();
-  const password = String(req.body.password || "");
+  var parsed = parseLoginBody(req.body);
+  if (sendValidationError(parsed, res)) {
+    return;
+  }
+  const email = parsed.data.email;
+  const password = parsed.data.password;
   const clientIp = loginLockout.getClientIp(req);
-
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email et mot de passe sont obligatoires." });
-  }
-  if (!isValidEmail(email)) {
-    return res.status(400).json({ message: emailFormatMessage() });
-  }
 
   var lockCheck = loginLockout.checkLockout(email, clientIp);
   if (!lockCheck.allowed) {

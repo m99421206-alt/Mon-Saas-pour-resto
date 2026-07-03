@@ -844,13 +844,14 @@
     }
     restos.forEach(function (r) {
       var li = document.createElement("li");
-      var name = escapeHtml(r.name || "—");
-      var q =
-        r.quartier || r.city ?
-          " — Quartier : " + escapeHtml(formatQuartier(r.quartier || r.city))
-        : "";
-      var wa = r.whatsapp ? " — WhatsApp : " + escapeHtml(String(r.whatsapp)) : "";
-      li.innerHTML = name + q + wa;
+      var parts = [r.name || "—"];
+      if (r.quartier || r.city) {
+        parts.push(" — Quartier : " + formatQuartier(r.quartier || r.city));
+      }
+      if (r.whatsapp) {
+        parts.push(" — WhatsApp : " + String(r.whatsapp));
+      }
+      li.textContent = parts.join("");
       if (listEl) {
         listEl.appendChild(li);
       }

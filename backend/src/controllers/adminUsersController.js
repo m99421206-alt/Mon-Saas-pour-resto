@@ -5,8 +5,12 @@
 const bcrypt = require("bcryptjs");
 const { getPool } = require("../config/database");
 const { appendAudit, AUDIT_ACTIONS, ACTOR_TYPES } = require("../utils/auditLog");
-
-var ALLOWED_STATUS = ["active", "suspended"];
+var {
+  parseUserIdParams,
+  parsePatchUserStatusBody,
+  parseAdminResetPasswordBody,
+} = require("../validators/profile");
+var { sendValidationError } = require("../validators/helpers");
 
 function parsePositiveInt(value, fallback) {
   var n = Number(value);
@@ -103,10 +107,11 @@ async function listUsers(req, res) {
 
 async function getUserDetail(req, res) {
   try {
-    var id = Number(req.params.id);
-    if (!Number.isInteger(id) || id < 1) {
-      return res.status(400).json({ message: "Identifiant invalide." });
+    var idParsed = parseUserIdParams(req.params);
+    if (sendValidationError(idParsed, res)) {
+      return;
     }
+    var id = idParsed.data.id;
 
     var pool = getPool();
     var [users] = await pool.query(
@@ -165,15 +170,16 @@ async function getUserDetail(req, res) {
 
 async function patchUserStatus(req, res) {
   try {
-    var id = Number(req.params.id);
-    if (!Number.isInteger(id) || id < 1) {
-      return res.status(400).json({ message: "Identifiant invalide." });
+    var idParsed = parseUserIdParams(req.params);
+    if (sendValidationError(idParsed, res)) {
+      return;
     }
-
-    var nextStatus = typeof req.body.status === "string" ? req.body.status.trim().toLowerCase() : "";
-    if (ALLOWED_STATUS.indexOf(nextStatus) === -1) {
-      return res.status(400).json({ message: "Statut invalide (active ou suspended)." });
+    var bodyParsed = parsePatchUserStatusBody(req.body);
+    if (sendValidationError(bodyParsed, res)) {
+      return;
     }
+    var id = idParsed.data.id;
+    var nextStatus = bodyParsed.data.status;
 
     var adminId = Number(req.user.id);
     if (id === adminId) {
@@ -218,25 +224,16 @@ async function patchUserStatus(req, res) {
 
 async function patchUserPassword(req, res) {
   try {
-    var id = Number(req.params.id);
-    if (!Number.isInteger(id) || id < 1) {
-      return res.status(400).json({ message: "Identifiant invalide." });
+    var idParsed = parseUserIdParams(req.params);
+    if (sendValidationError(idParsed, res)) {
+      return;
     }
-
-    var password = String(req.body.password || "");
-    var confirmPassword = String(
-      req.body.confirmPassword != null ? req.body.confirmPassword : req.body.passwordConfirm || "",
-    );
-
-    if (!password) {
-      return res.status(400).json({ message: "Le nouveau mot de passe est obligatoire." });
+    var bodyParsed = parseAdminResetPasswordBody(req.body);
+    if (sendValidationError(bodyParsed, res)) {
+      return;
     }
-    if (password.length < 8) {
-      return res.status(400).json({ message: "Le mot de passe doit contenir au moins 8 caractères." });
-    }
-    if (password !== confirmPassword) {
-      return res.status(400).json({ message: "Les mots de passe ne correspondent pas." });
-    }
+    var id = idParsed.data.id;
+    var password = bodyParsed.data.password;
 
     var adminId = Number(req.user.id);
     var pool = getPool();
@@ -275,10 +272,11 @@ async function patchUserPassword(req, res) {
 
 async function deleteUser(req, res) {
   try {
-    var id = Number(req.params.id);
-    if (!Number.isInteger(id) || id < 1) {
-      return res.status(400).json({ message: "Identifiant invalide." });
+    var idParsed = parseUserIdParams(req.params);
+    if (sendValidationError(idParsed, res)) {
+      return;
     }
+    var id = idParsed.data.id;
 
     var adminId = Number(req.user.id);
     if (id === adminId) {

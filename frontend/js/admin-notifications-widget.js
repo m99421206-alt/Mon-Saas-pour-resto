@@ -33,6 +33,18 @@
     }
   }
 
+  function safeAppUrl(url, fallback) {
+    if (window.MenuGo_DomSafe && window.MenuGo_DomSafe.sanitizeAppUrl) {
+      return window.MenuGo_DomSafe.sanitizeAppUrl(url, fallback);
+    }
+    var fb = fallback || "admin-notifications.html";
+    var raw = String(url || "").trim();
+    if (!raw || /^(javascript|data):/i.test(raw) || /^https?:/i.test(raw)) {
+      return fb;
+    }
+    return raw;
+  }
+
   function getToken() {
     try {
       return localStorage.getItem(TOKEN_KEY);
@@ -204,7 +216,7 @@
         refreshBadge();
       }
     }
-    window.location.href = link;
+    window.location.href = safeAppUrl(link, "admin-notifications.html");
   }
 
   async function refreshBadge() {

@@ -32,6 +32,7 @@ var AUDIT_ACTIONS = {
   ONBOARDING_SETUP_REQUEST: "onboarding.setup_request",
   SETUP_HELP_COMPLETE: "admin.setup_help_complete",
   ADMIN_RESTAURANT_DASHBOARD: "admin.restaurant_dashboard_access",
+  ADMIN_ACCESS_DENIED: "admin.access_denied",
 };
 
 var ACTOR_TYPES = {
@@ -68,6 +69,7 @@ var LABEL_FALLBACK = {
   "onboarding.setup_request": "Demande d’accompagnement installation",
   "admin.setup_help_complete": "Installation marquée terminée (admin)",
   "admin.restaurant_dashboard_access": "Accès tableau de bord restaurant (admin)",
+  "admin.access_denied": "Tentative d'accès administration refusée",
 };
 
 function labelForCode(code) {

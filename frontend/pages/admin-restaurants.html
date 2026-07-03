@@ -137,85 +137,89 @@
 
           <section
             id="adm-resto-panel"
-            class="adm-section adm-toolbar--resto"
+            class="adm-section adm-resto-panel"
             aria-labelledby="adm-resto-toolbar-heading"
           >
             <h2 id="adm-resto-toolbar-heading" class="visually-hidden">Filtres restaurants</h2>
 
-            <div class="adm-toolbar">
-              <div class="adm-toolbar__left">
-                <div class="adm-toolbar__search-wrap">
-                  <svg class="adm-toolbar__icon-search" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      d="M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z"
+            <div class="adm-resto-panel__shell">
+              <div class="adm-toolbar adm-toolbar--resto">
+                <div class="adm-toolbar__left">
+                  <div class="adm-toolbar__search-wrap">
+                    <svg class="adm-toolbar__icon-search" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        d="M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z"
+                      />
+                      <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M16.5 16.5L21 21" />
+                    </svg>
+                    <label class="visually-hidden" for="resto-q">Rechercher</label>
+                    <input
+                      id="resto-q"
+                      class="adm-toolbar__search"
+                      type="search"
+                      autocomplete="off"
+                      placeholder="Restaurant, propriétaire, téléphone, quartier…"
                     />
-                    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M16.5 16.5L21 21" />
-                  </svg>
-                  <label class="visually-hidden" for="resto-q">Rechercher</label>
-                  <input
-                    id="resto-q"
-                    class="adm-toolbar__search"
-                    type="search"
-                    autocomplete="off"
-                    placeholder="Restaurant, propriétaire, téléphone, quartier…"
-                  />
+                  </div>
+                  <div class="adm-toolbar__filter">
+                    <label class="visually-hidden" for="resto-filter-subscription">Filtrer par abonnement</label>
+                    <select id="resto-filter-subscription" aria-label="Abonnement">
+                      <option value="all">Tous les abonnements</option>
+                      <option value="trial">Essai</option>
+                      <option value="active">Actif</option>
+                      <option value="expired">Expiré</option>
+                      <option value="suspended">Suspendu</option>
+                    </select>
+                  </div>
+                  <div class="adm-toolbar__filter">
+                    <label class="visually-hidden" for="resto-filter-menu">Filtrer par menu public</label>
+                    <select id="resto-filter-menu" aria-label="Menu public">
+                      <option value="all">Menus : tous</option>
+                      <option value="live">Menu en ligne</option>
+                      <option value="suspended_menu">Menu suspendu</option>
+                    </select>
+                  </div>
                 </div>
-                <div class="adm-toolbar__filter">
-                  <label class="visually-hidden" for="resto-filter-subscription">Filtrer par abonnement</label>
-                  <select id="resto-filter-subscription" aria-label="Abonnement">
-                    <option value="all">Tous les abonnements</option>
-                    <option value="trial">Essai</option>
-                    <option value="active">Actif</option>
-                    <option value="expired">Expiré</option>
-                    <option value="suspended">Suspendu</option>
-                  </select>
-                </div>
-                <div class="adm-toolbar__filter">
-                  <label class="visually-hidden" for="resto-filter-menu">Filtrer par menu public</label>
-                  <select id="resto-filter-menu" aria-label="Menu public">
-                    <option value="all">Menus : tous</option>
-                    <option value="live">Menu en ligne</option>
-                    <option value="suspended_menu">Menu suspendu</option>
-                  </select>
+                <div class="adm-toolbar__right desktop-only-meta">
+                  <span id="resto-count-label" class="restaurants-count-meta" aria-live="polite"></span>
                 </div>
               </div>
-              <div class="desktop-only-meta">
-                <span id="resto-count-label" class="restaurants-count-meta" aria-live="polite"></span>
+
+              <div class="adm-resto-panel__body">
+                <div class="adm-table-wrap restaurants-table-wrap">
+                  <table class="adm-table adm-table--restaurants">
+                    <caption class="visually-hidden">
+                      Liste des restaurants .
+                    </caption>
+                    <thead>
+                      <tr>
+                        <th scope="col" class="resto-th-logo">Logo</th>
+                        <th scope="col" class="resto-th-name">Restaurant</th>
+                        <th scope="col">Téléphone</th>
+                        <th scope="col">Produits</th>
+                        <th scope="col">Abonnement &amp; menu</th>
+                        <th scope="col">Création</th>
+                        <th scope="col" class="resto-th-actions">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="resto-body">
+                      <tr class="adm-table__placeholder">
+                        <td colspan="7">Chargement…</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="restaurants-cards">
+                  <ul id="resto-cards-list" class="restaurants-cards__list"></ul>
+                </div>
               </div>
-            </div>
 
-            <div class="adm-table-wrap restaurants-table-wrap">
-              <table class="adm-table">
-                <caption class="visually-hidden">
-                  Liste des restaurants .
-                </caption>
-                <thead>
-                  <tr>
-                    <th scope="col">Logo</th>
-                    <th scope="col">Restaurant</th>
-                    <th scope="col">Téléphone</th>
-                    <th scope="col">Produits</th>
-                    <th scope="col">Abonnement &amp; menu</th>
-                    <th scope="col">Création</th>
-                    <th scope="col">Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="resto-body">
-                  <tr class="adm-table__placeholder">
-                    <td colspan="7">Chargement…</td>
-                  </tr>
-                </tbody>
-              </table>
+              <nav id="resto-pagination" class="users-pagination users-pagination--resto" aria-label="Pagination restaurants"></nav>
             </div>
-
-            <div class="restaurants-cards">
-              <ul id="resto-cards-list" class="restaurants-cards__list"></ul>
-            </div>
-
-            <nav id="resto-pagination" class="users-pagination users-pagination--resto" aria-label="Pagination restaurants"></nav>
           </section>
         </div>
       </main>
@@ -286,6 +290,8 @@
     </div>
 
     <script src="../js/config.js" defer></script>
+    <script src="../js/vendor/dompurify.min.js" defer></script>
+    <script src="../js/dom-safe.js" defer></script>
     <script src="../js/admin-guard.js" defer></script>
     <script src="../js/admin-notifications-widget.js" defer></script>
     <script src="../js/admin-restaurants.js" defer></script>

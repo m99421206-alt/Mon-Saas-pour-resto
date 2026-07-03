@@ -11,6 +11,8 @@ const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const { validateJwtSecretAtStartup } = require("./config/jwtSecret");
+const { validateAdminEmailsAtStartup } = require("./utils/platformAdmin");
+const { buildHelmetCspDirectives } = require("./config/csp");
 const { ping } = require("./config/database");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
@@ -52,6 +54,7 @@ function assertProductionConfig() {
 
 validateJwtSecretAtStartup();
 assertProductionConfig();
+validateAdminEmailsAtStartup();
 
 function isPrivateNetworkHost(hostname) {
   return (
@@ -142,6 +145,10 @@ app.use(
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: {
+      directives: buildHelmetCspDirectives(isProduction, allowedOrigins),
+    },
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
   })
 );
 

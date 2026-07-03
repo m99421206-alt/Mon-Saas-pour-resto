@@ -861,10 +861,10 @@
 
     document.getElementById("subs-d-start").textContent = formatDate(s.subscription_started_at);
     document.getElementById("subs-d-end").textContent = formatDate(s.subscription_ends_at);
-    document.getElementById("subs-d-days").innerHTML =
+    document.getElementById("subs-d-days").textContent =
       s.days_remaining === null || s.days_remaining === undefined ?
         "—"
-      : escapeHtml(String(s.days_remaining));
+      : String(s.days_remaining);
     document.getElementById("subs-d-amount").textContent = formatCFA(s.subscription_amount_cfa);
     document.getElementById("subs-d-status").innerHTML = statusBadge(s.subscription_status);
     document.getElementById("subs-d-menu").textContent = s.menu_suspended ? "Menu suspendu" : "Menu en ligne";

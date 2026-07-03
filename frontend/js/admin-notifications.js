@@ -22,6 +22,18 @@
       .replace(/"/g, "&quot;");
   }
 
+  function safeAppUrl(url, fallback) {
+    if (window.MenuGo_DomSafe && window.MenuGo_DomSafe.sanitizeAppUrl) {
+      return window.MenuGo_DomSafe.sanitizeAppUrl(url, fallback);
+    }
+    var fb = fallback || "admin-notifications.html";
+    var raw = String(url || "").trim();
+    if (!raw || /^(javascript|data):/i.test(raw) || /^https?:/i.test(raw)) {
+      return fb;
+    }
+    return raw;
+  }
+
   function getApiBase() {
     return String((window.MenuGo_CONFIG || {}).API_URL || "").replace(/\/$/, "");
   }
@@ -144,7 +156,7 @@
     var list = document.getElementById("notif-group-modal-list");
     var openBtn = document.getElementById("notif-group-modal-open");
     if (!title || !list || !openBtn) {
-      window.location.href = link || "admin-notifications.html";
+      window.location.href = safeAppUrl(link, "admin-notifications.html");
       return;
     }
 
@@ -172,7 +184,10 @@
 
     openBtn.onclick = function () {
       modal.hidden = true;
-      window.location.href = link || notification.link_url || "admin-notifications.html";
+      window.location.href = safeAppUrl(
+        link || notification.link_url,
+        "admin-notifications.html",
+      );
     };
 
     modal.hidden = false;
@@ -410,7 +425,7 @@
       return;
     }
 
-    window.location.href = link || "admin-notifications.html";
+    window.location.href = safeAppUrl(link, "admin-notifications.html");
   }
 
   async function markOneRead(id) {
