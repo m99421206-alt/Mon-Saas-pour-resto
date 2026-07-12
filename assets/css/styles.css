@@ -1560,6 +1560,7 @@ p {
   .pricing__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: clamp(1.5rem, 3vw, 2.25rem);
+    align-items: center;
   }
 }
 
@@ -1584,21 +1585,132 @@ p {
     box-shadow: 0 22px 52px rgba(15, 23, 42, 0.11);
     border-color: rgba(255, 107, 0, 0.22);
   }
+
+  .pricing-card--subscription:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+    border-color: rgba(0, 0, 0, 0.08);
+  }
 }
 
+/* Carte principale — Installation complète */
 .pricing-card--featured {
-  border-color: rgba(255, 107, 0, 0.32);
+  border: 2px solid #ff6b00;
   box-shadow:
-    0 10px 36px rgba(255, 107, 0, 0.14),
-    0 6px 24px rgba(15, 23, 42, 0.06);
+    0 22px 56px rgba(255, 107, 0, 0.2),
+    0 10px 32px rgba(15, 23, 42, 0.08);
+  padding-top: clamp(1.85rem, 4vw, 2.35rem);
+}
+
+@media (min-width: 56rem) {
+  .pricing-card--featured .pricing-card__name {
+    padding-right: 5.75rem;
+  }
+}
+
+@media (min-width: 56rem) {
+  .pricing-card--featured {
+    transform: scale(1.04);
+    z-index: 1;
+  }
 }
 
 @media (hover: hover) {
   .pricing-card--featured:hover {
+    transform: scale(1.04) translateY(-6px);
     box-shadow:
-      0 24px 56px rgba(255, 107, 0, 0.18),
-      0 12px 32px rgba(15, 23, 42, 0.08);
+      0 28px 64px rgba(255, 107, 0, 0.24),
+      0 14px 40px rgba(15, 23, 42, 0.1);
+    border-color: #ff6b00;
   }
+}
+
+/* Carte secondaire — Abonnement */
+.pricing-card--subscription {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.045);
+}
+
+.pricing-card__badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  background: #ff6b00;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.42rem 0.78rem;
+  border-radius: 999px;
+  box-shadow: 0 6px 16px rgba(255, 107, 0, 0.35);
+  white-space: nowrap;
+}
+
+.pricing-card__service-note {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.85rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 107, 0, 0.1);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #c2410c;
+}
+
+.pricing-card__service-note-icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.5rem;
+  background: rgba(255, 107, 0, 0.16);
+  color: #ff6b00;
+}
+
+.pricing-card__intro {
+  margin: 0 0 1.15rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.58;
+  color: #374151;
+}
+
+.pricing-card__price--hero .pricing-card__amount {
+  font-size: clamp(2.125rem, 5vw, 2.875rem);
+  color: var(--color-accent);
+}
+
+.pricing-card__price--hero .pricing-card__currency {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.pricing-card__billing--subtle {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #9ca3af;
+  margin-top: 0.25rem;
+}
+
+.pricing-card__features--setup li {
+  padding-left: 1.85rem;
+}
+
+.pricing-card__features--setup li::before {
+  top: 0.35rem;
+  width: 0.625rem;
+  height: 0.625rem;
+  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.22);
 }
 
 .pricing-card__ribbon {
@@ -1682,6 +1794,14 @@ p {
   font-size: 0.9375rem;
   font-weight: 600;
   color: var(--color-accent);
+}
+
+.pricing-card--subscription .pricing-card__amount {
+  color: var(--color-text);
+}
+
+.pricing-card--subscription .pricing-card__period {
+  color: var(--color-text-soft);
 }
 
 .pricing-card__price--accent .pricing-card__amount {
@@ -2471,6 +2591,10 @@ p {
     transition: none;
   }
 
+  .pricing-card--featured {
+    transform: none;
+  }
+
   .site-header__backdrop,
   .site-header__nav {
     transition: none;
@@ -2507,6 +2631,7 @@ p {
 
     .pricing-card:hover,
     .pricing-card--featured:hover,
+    .pricing-card--subscription:hover,
     .pricing-card__btn--wa:hover,
     .pricing-card__btn--cta:hover {
       transform: none;
