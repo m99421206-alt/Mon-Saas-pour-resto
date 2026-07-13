@@ -8,7 +8,10 @@
   var POLL_MS = 45000;
 
   function getApiBase() {
-    return String((window.MenuGo_CONFIG || {}).API_URL || "").replace(/\/$/, "");
+    return String((window.MenuGo_CONFIG || {}).API_URL || "").replace(
+      /\/$/,
+      "",
+    );
   }
 
   function escapeHtml(value) {
@@ -74,7 +77,13 @@
       return null;
     }
     try {
-      var res = await fetch(base + "/api/admin/notifications/recent?limit=8", {
+      var p = "/api/admin/notifications/recent?limit=8";
+      if (String(base).endsWith("/api") && p.indexOf("/api") === 0) {
+        p = p.replace(/^\/api/, "");
+      }
+      var url =
+        String(base).replace(/\/$/, "") + "/" + String(p).replace(/^\//, "");
+      var res = await fetch(url, {
         headers: {
           Accept: "application/json",
           Authorization: "Bearer " + token,
@@ -95,7 +104,13 @@
       return null;
     }
     try {
-      var res = await fetch(base + "/api/admin/notifications/" + encodeURIComponent(id) + "/read", {
+      var p = "/api/admin/notifications/" + encodeURIComponent(id) + "/read";
+      if (String(base).endsWith("/api") && p.indexOf("/api") === 0) {
+        p = p.replace(/^\/api/, "");
+      }
+      var url =
+        String(base).replace(/\/$/, "") + "/" + String(p).replace(/^\//, "");
+      var res = await fetch(url, {
         method: "PATCH",
         headers: {
           Accept: "application/json",
@@ -159,7 +174,12 @@
         var showBadge = Boolean(n.is_grouped) || count > 1;
         var summary = n.detail || n.last_message || "";
         if (showBadge && n.last_message) {
-          summary = count + " demande" + (count > 1 ? "s" : "") + " — " + n.last_message;
+          summary =
+            count +
+            " demande" +
+            (count > 1 ? "s" : "") +
+            " — " +
+            n.last_message;
         }
         return (
           '<li class="adm-notif-panel__item">' +
@@ -171,17 +191,21 @@
           escapeHtml(n.link_url || "admin-notifications.html") +
           '">' +
           '<span class="adm-notif-panel__type">' +
-          (showBadge ?
-            '<span class="adm-notif-panel__count">[' + escapeHtml(String(count)) + "]</span> "
-          : "") +
+          (showBadge
+            ? '<span class="adm-notif-panel__count">[' +
+              escapeHtml(String(count)) +
+              "]</span> "
+            : "") +
           escapeHtml(n.type_label) +
           "</span>" +
           '<span class="adm-notif-panel__resto">' +
           escapeHtml(n.restaurant_name) +
           "</span>" +
-          (summary ?
-            '<span class="adm-notif-panel__summary">' + escapeHtml(summary) + "</span>"
-          : "") +
+          (summary
+            ? '<span class="adm-notif-panel__summary">' +
+              escapeHtml(summary) +
+              "</span>"
+            : "") +
           '<span class="adm-notif-panel__time">' +
           escapeHtml(formatRelativeTime(n.at)) +
           "</span>" +
@@ -207,7 +231,8 @@
   async function handleNotificationClick(btn) {
     var token = getToken();
     var id = btn.getAttribute("data-notif-id");
-    var link = btn.getAttribute("data-notif-link") || "admin-notifications.html";
+    var link =
+      btn.getAttribute("data-notif-link") || "admin-notifications.html";
     if (token && id) {
       var result = await markRead(id, token);
       if (result && typeof result.unread_count === "number") {
@@ -294,7 +319,9 @@
   function upgradeButton() {
     var btn = document.getElementById("adm-notifications");
     if (!btn) {
-      var legacy = document.querySelector('.adm-header__actions button[aria-label="Notifications"]');
+      var legacy = document.querySelector(
+        '.adm-header__actions button[aria-label="Notifications"]',
+      );
       if (legacy) {
         legacy.id = "adm-notifications";
         btn = legacy;

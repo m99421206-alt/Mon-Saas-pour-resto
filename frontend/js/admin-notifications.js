@@ -8,10 +8,18 @@
   var LOGIN_NEXT = "admin-notifications.html";
   var PAGE_SIZE = 20;
 
-  var state = { page: 1, filter: "all", total: 0, totalPages: 0, loading: false };
+  var state = {
+    page: 1,
+    filter: "all",
+    total: 0,
+    totalPages: 0,
+    loading: false,
+  };
 
   function guardApiStatus(status) {
-    return window.MenuGo_AdminGuard.handleAdminApiStatus(status, { loginNext: LOGIN_NEXT });
+    return window.MenuGo_AdminGuard.handleAdminApiStatus(status, {
+      loginNext: LOGIN_NEXT,
+    });
   }
 
   function escapeHtml(value) {
@@ -35,7 +43,10 @@
   }
 
   function getApiBase() {
-    return String((window.MenuGo_CONFIG || {}).API_URL || "").replace(/\/$/, "");
+    return String((window.MenuGo_CONFIG || {}).API_URL || "").replace(
+      /\/$/,
+      "",
+    );
   }
 
   function formatDateTime(iso) {
@@ -114,7 +125,8 @@
         escapeHtml(formatDateTime(n.at)) +
         "</p>";
       if (n.detail) {
-        html += '<p class="notif-item__detail">' + escapeHtml(n.detail) + "</p>";
+        html +=
+          '<p class="notif-item__detail">' + escapeHtml(n.detail) + "</p>";
       }
     }
 
@@ -161,10 +173,14 @@
     }
 
     title.textContent =
-      (notification.type_label || "Demandes") + " — " + (notification.restaurant_name || "—");
+      (notification.type_label || "Demandes") +
+      " — " +
+      (notification.restaurant_name || "—");
     list.innerHTML = "";
 
-    var messages = Array.isArray(notification.grouped_messages) ? notification.grouped_messages : [];
+    var messages = Array.isArray(notification.grouped_messages)
+      ? notification.grouped_messages
+      : [];
     if (!messages.length && notification.detail) {
       messages = [{ message: notification.detail, at: notification.at }];
     }
@@ -223,7 +239,13 @@
       opts.body = JSON.stringify(body);
     }
     try {
-      var res = await fetch(base + path, opts);
+      var p = String(path || "");
+      if (String(base).endsWith("/api") && p.indexOf("/api") === 0) {
+        p = p.replace(/^\/api/, "");
+      }
+      var url =
+        String(base).replace(/\/$/, "") + "/" + String(p).replace(/^\//, "");
+      var res = await fetch(url, opts);
       var data = null;
       try {
         data = await res.json();
@@ -264,26 +286,30 @@
       li.innerHTML =
         '<div class="notif-item__head">' +
         '<span class="notif-item__type">' +
-        (showBadge ?
-          '<span class="notif-item__count-badge" aria-label="' +
-          escapeHtml(String(count)) +
-          ' demandes">[' +
-          escapeHtml(String(count)) +
-          "]</span> "
-        : "") +
+        (showBadge
+          ? '<span class="notif-item__count-badge" aria-label="' +
+            escapeHtml(String(count)) +
+            ' demandes">[' +
+            escapeHtml(String(count)) +
+            "]</span> "
+          : "") +
         escapeHtml(n.type_label) +
         "</span>" +
         '<span class="notif-item__status ' +
-        (n.is_read ? "notif-item__status--read" : "notif-item__status--unread") +
+        (n.is_read
+          ? "notif-item__status--read"
+          : "notif-item__status--unread") +
         '">' +
         (n.is_read ? "Lu" : "Non lu") +
         "</span></div>" +
         '<p class="notif-item__meta"><strong>Restaurant :</strong> ' +
         escapeHtml(n.restaurant_name) +
         "</p>" +
-        (n.phone ?
-          '<p class="notif-item__meta"><strong>Téléphone :</strong> ' + escapeHtml(n.phone) + "</p>"
-        : "") +
+        (n.phone
+          ? '<p class="notif-item__meta"><strong>Téléphone :</strong> ' +
+            escapeHtml(n.phone) +
+            "</p>"
+          : "") +
         buildNotificationBody(n) +
         '<div class="notif-item__actions">' +
         '<button type="button" class="notif-btn notif-btn--primary" data-open="' +
@@ -293,9 +319,11 @@
         '" data-grouped="' +
         (showBadge ? "1" : "0") +
         '">Ouvrir</button>' +
-        (!n.is_read ?
-          '<button type="button" class="notif-btn" data-read="' + escapeHtml(n.id) + '">Marquer lue</button>'
-        : "") +
+        (!n.is_read
+          ? '<button type="button" class="notif-btn" data-read="' +
+            escapeHtml(n.id) +
+            '">Marquer lue</button>'
+          : "") +
         '<button type="button" class="notif-btn notif-btn--danger" data-delete="' +
         escapeHtml(n.id) +
         '">Supprimer</button>' +
@@ -339,7 +367,13 @@
     var info = document.createElement("p");
     info.className = "notif-pagination__info";
     info.textContent =
-      "Page " + state.page + " sur " + state.totalPages + " — " + state.total + " notification(s)";
+      "Page " +
+      state.page +
+      " sur " +
+      state.totalPages +
+      " — " +
+      state.total +
+      " notification(s)";
     nav.appendChild(info);
 
     var prev = document.createElement("button");
@@ -400,7 +434,9 @@
     state.totalPages = Number(res.data.totalPages) || 0;
     syncWidgetBadge(res.data.unread_count);
 
-    renderList(Array.isArray(res.data.notifications) ? res.data.notifications : []);
+    renderList(
+      Array.isArray(res.data.notifications) ? res.data.notifications : [],
+    );
     renderPagination();
   }
 
@@ -409,18 +445,30 @@
     var notification = null;
 
     if (id && token) {
-      var detailRes = await apiFetch("GET", "/api/admin/notifications/" + encodeURIComponent(id), token);
+      var detailRes = await apiFetch(
+        "GET",
+        "/api/admin/notifications/" + encodeURIComponent(id),
+        token,
+      );
       if (detailRes.ok && detailRes.data && detailRes.data.notification) {
         notification = detailRes.data.notification;
       }
 
-      var res = await apiFetch("PATCH", "/api/admin/notifications/" + encodeURIComponent(id) + "/read", token);
+      var res = await apiFetch(
+        "PATCH",
+        "/api/admin/notifications/" + encodeURIComponent(id) + "/read",
+        token,
+      );
       if (res.ok && res.data) {
         syncWidgetBadge(res.data.unread_count);
       }
     }
 
-    if (notification && (isGrouped === "1" || notification.is_grouped) && notification.grouped_messages.length > 1) {
+    if (
+      notification &&
+      (isGrouped === "1" || notification.is_grouped) &&
+      notification.grouped_messages.length > 1
+    ) {
       showGroupedModal(notification, link);
       return;
     }
@@ -430,7 +478,11 @@
 
   async function markOneRead(id) {
     var token = localStorage.getItem(TOKEN_KEY);
-    var res = await apiFetch("PATCH", "/api/admin/notifications/" + encodeURIComponent(id) + "/read", token);
+    var res = await apiFetch(
+      "PATCH",
+      "/api/admin/notifications/" + encodeURIComponent(id) + "/read",
+      token,
+    );
     if (guardApiStatus(res.status)) {
       return;
     }
@@ -448,7 +500,11 @@
       return;
     }
     var token = localStorage.getItem(TOKEN_KEY);
-    var res = await apiFetch("DELETE", "/api/admin/notifications/" + encodeURIComponent(id), token);
+    var res = await apiFetch(
+      "DELETE",
+      "/api/admin/notifications/" + encodeURIComponent(id),
+      token,
+    );
     if (guardApiStatus(res.status)) {
       return;
     }
@@ -499,7 +555,9 @@
   }
 
   async function init() {
-    var allowed = await window.MenuGo_AdminGuard.enforceAdminAccess({ loginNext: LOGIN_NEXT });
+    var allowed = await window.MenuGo_AdminGuard.enforceAdminAccess({
+      loginNext: LOGIN_NEXT,
+    });
     if (!allowed) {
       return;
     }

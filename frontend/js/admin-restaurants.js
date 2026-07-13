@@ -15,7 +15,9 @@
   var DEBOUNCE_MS = 320;
 
   function guardApiStatus(status) {
-    return window.MenuGo_AdminGuard.handleAdminApiStatus(status, { loginNext: LOGIN_NEXT });
+    return window.MenuGo_AdminGuard.handleAdminApiStatus(status, {
+      loginNext: LOGIN_NEXT,
+    });
   }
 
   var state = {
@@ -64,7 +66,9 @@
   }
 
   function redirectToLogin() {
-    window.location.replace("login.html?next=" + encodeURIComponent(LOGIN_NEXT));
+    window.location.replace(
+      "login.html?next=" + encodeURIComponent(LOGIN_NEXT),
+    );
   }
 
   function clearSessionAndRedirectLogin() {
@@ -107,7 +111,9 @@
     el.textContent = message || "";
     el.hidden = false;
     el.classList.remove("adm-banner--warning", "adm-banner--error");
-    el.classList.add(variant === "error" ? "adm-banner--error" : "adm-banner--warning");
+    el.classList.add(
+      variant === "error" ? "adm-banner--error" : "adm-banner--warning",
+    );
     try {
       el.scrollIntoView({ behavior: "smooth", block: "nearest" });
     } catch (e) {}
@@ -128,7 +134,9 @@
   }
 
   function labelSubscription(st) {
-    var s = String(st || "trial").toLowerCase().trim();
+    var s = String(st || "trial")
+      .toLowerCase()
+      .trim();
     if (s === "active") return "Actif";
     if (s === "expired") return "Expiré";
     if (s === "suspended") return "Suspendu";
@@ -136,12 +144,20 @@
   }
 
   function subscriptionBadge(st) {
-    var s = String(st || "trial").toLowerCase().trim();
+    var s = String(st || "trial")
+      .toLowerCase()
+      .trim();
     var cls = "rs-badge-sub rs-badge-sub--trial";
     if (s === "active") cls = "rs-badge-sub rs-badge-sub--active";
     else if (s === "expired") cls = "rs-badge-sub rs-badge-sub--expired";
     else if (s === "suspended") cls = "rs-badge-sub rs-badge-sub--suspended";
-    return '<span class="' + cls + '" role="status">' + escapeHtml(labelSubscription(s)) + "</span>";
+    return (
+      '<span class="' +
+      cls +
+      '" role="status">' +
+      escapeHtml(labelSubscription(s)) +
+      "</span>"
+    );
   }
 
   function menuRowBadge(menuSuspended) {
@@ -170,11 +186,21 @@
       headers["Content-Type"] = "application/json";
     }
     try {
-      var response = await fetch(base + path, {
+      var p = String(path || "");
+      if (String(base).endsWith("/api") && p.indexOf("/api") === 0) {
+        p = p.replace(/^\/api/, "");
+      }
+      var url =
+        String(base).replace(/\/$/, "") + "/" + String(p).replace(/^\//, "");
+      var response = await fetch(url, {
         method: method,
         headers: headers,
         body:
-          opts.body !== undefined ? (typeof opts.body === "string" ? opts.body : JSON.stringify(opts.body)) : undefined,
+          opts.body !== undefined
+            ? typeof opts.body === "string"
+              ? opts.body
+              : JSON.stringify(opts.body)
+            : undefined,
       });
 
       var data = null;
@@ -209,7 +235,14 @@
 
     var info = document.createElement("p");
     info.className = "users-pagination__info";
-    info.textContent = "Page " + page + " sur " + totalPages + " — " + state.total + " restaurant(s)";
+    info.textContent =
+      "Page " +
+      page +
+      " sur " +
+      totalPages +
+      " — " +
+      state.total +
+      " restaurant(s)";
     nav.appendChild(info);
 
     var prev = document.createElement("button");
@@ -263,9 +296,21 @@
 
   function logoMarkup(row, sizeCls) {
     var url = resolveMediaUrl(row.logo_url);
-    var initial = escapeHtml(String(row.name || "?").trim().slice(0, 1).toUpperCase()) || "?";
+    var initial =
+      escapeHtml(
+        String(row.name || "?")
+          .trim()
+          .slice(0, 1)
+          .toUpperCase(),
+      ) || "?";
     if (!url) {
-      return '<div class="' + escapeHtml(sizeCls) + ' resto-logo-thumb resto-logo-thumb--fallback" aria-hidden="true">' + initial + "</div>";
+      return (
+        '<div class="' +
+        escapeHtml(sizeCls) +
+        ' resto-logo-thumb resto-logo-thumb--fallback" aria-hidden="true">' +
+        initial +
+        "</div>"
+      );
     }
     return (
       '<img class="' +
@@ -283,9 +328,13 @@
       id +
       '">Tableau de bord</button>';
     var menuBtn =
-      '<button type="button" class="adm-btn" data-act="menu" data-id="' + id + '">Voir menu</button>';
+      '<button type="button" class="adm-btn" data-act="menu" data-id="' +
+      id +
+      '">Voir menu</button>';
     var detBtn =
-      '<button type="button" class="adm-btn" data-act="detail" data-id="' + id + '">Voir détails</button>';
+      '<button type="button" class="adm-btn" data-act="detail" data-id="' +
+      id +
+      '">Voir détails</button>';
     var suspendLabel = row.menu_suspended ? "Réactiver menu" : "Suspendre menu";
     var suspendAct = row.menu_suspended ? "menu-on" : "menu-off";
     var menuToggle =
@@ -297,12 +346,18 @@
       suspendLabel +
       "</button>";
     var del =
-      '<button type="button" class="adm-btn adm-btn--danger" data-act="delete" data-id="' + id + '">Supprimer</button>';
+      '<button type="button" class="adm-btn adm-btn--danger" data-act="delete" data-id="' +
+      id +
+      '">Supprimer</button>';
     return dashBtn + menuBtn + detBtn + menuToggle + del;
   }
 
   function tbodyPlaceholder(msg) {
-    return '<tr class="adm-table__placeholder"><td colspan="7">' + escapeHtml(msg) + "</td></tr>";
+    return (
+      '<tr class="adm-table__placeholder"><td colspan="7">' +
+      escapeHtml(msg) +
+      "</td></tr>"
+    );
   }
 
   async function loadRestaurants() {
@@ -317,7 +372,10 @@
     var base = getApiBase();
 
     if (!base) {
-      showAccessBanner("Impossible de joindre l’API — vérifiez frontend/js/config.js (API_URL).", "error");
+      showAccessBanner(
+        "Impossible de joindre l’API — vérifiez frontend/js/config.js (API_URL).",
+        "error",
+      );
       if (tbody) tbody.innerHTML = tbodyPlaceholder("Erreur de configuration.");
       state.loading = false;
       return;
@@ -359,7 +417,9 @@
     var countLabel = document.getElementById("resto-count-label");
     if (countLabel) {
       countLabel.textContent =
-        state.total + " restaurant(s)" + (state.q ? " pour « " + state.q.trim() + " »" : "");
+        state.total +
+        " restaurant(s)" +
+        (state.q ? " pour « " + state.q.trim() + " »" : "");
     }
 
     if (state.totalPages > 0 && state.page > state.totalPages) {
@@ -462,7 +522,8 @@
 
     function setOpen(open) {
       body.classList.toggle("adm-sidebar-open", open);
-      if (sidebarBtn) sidebarBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      if (sidebarBtn)
+        sidebarBtn.setAttribute("aria-expanded", open ? "true" : "false");
       if (overlay) {
         overlay.classList.toggle("is-visible", open);
         overlay.setAttribute("aria-hidden", open ? "false" : "true");
@@ -526,7 +587,8 @@
       });
     });
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && modal.getAttribute("aria-hidden") === "false") setModalOpen(false);
+      if (e.key === "Escape" && modal.getAttribute("aria-hidden") === "false")
+        setModalOpen(false);
     });
   }
 
@@ -549,7 +611,10 @@
 
     if (!res.ok || !res.data || !res.data.restaurant) {
       setModalOpen(false);
-      showAccessBanner((res.data && res.data.message) || "Détail indisponible.", "error");
+      showAccessBanner(
+        (res.data && res.data.message) || "Détail indisponible.",
+        "error",
+      );
       return;
     }
 
@@ -561,9 +626,9 @@
 
     document.getElementById("adm-resto-id").textContent = String(r.id);
     document.getElementById("adm-resto-city").innerHTML =
-      r.quartier || r.city ?
-        escapeHtml(String(r.quartier || r.city)) :
-        '<span class="resto-city--soon">Non renseigné (formulaire d’inscription)</span>';
+      r.quartier || r.city
+        ? escapeHtml(String(r.quartier || r.city))
+        : '<span class="resto-city--soon">Non renseigné (formulaire d’inscription)</span>';
     document.getElementById("adm-resto-phone").textContent = r.phone || "—";
 
     var subDd = document.getElementById("adm-resto-sub");
@@ -572,10 +637,16 @@
     var msDd = document.getElementById("adm-resto-menu-state");
     if (msDd) msDd.innerHTML = menuRowBadge(r.menu_suspended);
 
-    document.getElementById("adm-resto-pc").textContent = String(r.product_count ?? "0");
-    document.getElementById("adm-resto-cc").textContent = String(r.category_count ?? "0");
+    document.getElementById("adm-resto-pc").textContent = String(
+      r.product_count ?? "0",
+    );
+    document.getElementById("adm-resto-cc").textContent = String(
+      r.category_count ?? "0",
+    );
 
-    document.getElementById("adm-resto-created").textContent = formatDateShort(r.created_at);
+    document.getElementById("adm-resto-created").textContent = formatDateShort(
+      r.created_at,
+    );
 
     var descEl = document.getElementById("adm-resto-desc");
     var desc = String(r.description || "").trim();
@@ -620,7 +691,9 @@
     var token = localStorage.getItem(TOKEN_KEY);
     var res = await fetchJson(
       "POST",
-      "/api/admin/restaurants/" + encodeURIComponent(String(restaurantId)) + "/dashboard-access",
+      "/api/admin/restaurants/" +
+        encodeURIComponent(String(restaurantId)) +
+        "/dashboard-access",
       token,
     );
 
@@ -630,7 +703,8 @@
 
     if (!res.ok || !res.data || !res.data.token) {
       showAccessBanner(
-        (res.data && res.data.message) || "Impossible d’ouvrir le tableau de bord du restaurant.",
+        (res.data && res.data.message) ||
+          "Impossible d’ouvrir le tableau de bord du restaurant.",
         "error",
       );
       return;
@@ -638,13 +712,19 @@
 
     try {
       sessionStorage.setItem(ADMIN_BACKUP_TOKEN, token || "");
-      sessionStorage.setItem(ADMIN_BACKUP_USER, localStorage.getItem(USER_KEY) || "");
+      sessionStorage.setItem(
+        ADMIN_BACKUP_USER,
+        localStorage.getItem(USER_KEY) || "",
+      );
       sessionStorage.setItem(ADMIN_RETURN_URL, LOGIN_NEXT);
     } catch (e) {}
 
     localStorage.setItem(TOKEN_KEY, res.data.token);
     localStorage.setItem(USER_KEY, JSON.stringify(res.data.user || null));
-    localStorage.setItem(RESTAURANT_KEY, JSON.stringify(res.data.restaurant || null));
+    localStorage.setItem(
+      RESTAURANT_KEY,
+      JSON.stringify(res.data.restaurant || null),
+    );
 
     window.location.href = "dashboard.html";
   }
@@ -653,7 +733,9 @@
     var token = localStorage.getItem(TOKEN_KEY);
     var res = await fetchJson(
       "PATCH",
-      "/api/admin/restaurants/" + encodeURIComponent(String(restaurantId)) + "/menu",
+      "/api/admin/restaurants/" +
+        encodeURIComponent(String(restaurantId)) +
+        "/menu",
       token,
       { body: { suspended: suspended } },
     );
@@ -664,9 +746,11 @@
 
     if (!res.ok) {
       var msg =
-        res.data && res.data.message ?
-          res.data.message :
-          (suspended ? "Impossible de suspendre le menu." : "Impossible de réactiver le menu.");
+        res.data && res.data.message
+          ? res.data.message
+          : suspended
+            ? "Impossible de suspendre le menu."
+            : "Impossible de réactiver le menu.";
       showAccessBanner(msg, "error");
       return;
     }
@@ -676,7 +760,11 @@
   }
 
   async function deleteRestaurant(restaurantId) {
-    if (!confirm("Supprimer définitivement ce restaurant, ses catégories et produits associés ?")) {
+    if (
+      !confirm(
+        "Supprimer définitivement ce restaurant, ses catégories et produits associés ?",
+      )
+    ) {
       return;
     }
     var token = localStorage.getItem(TOKEN_KEY);
@@ -693,7 +781,9 @@
 
     if (!res.ok) {
       var msg =
-        res.data && typeof res.data.message === "string" ? res.data.message : "Suppression impossible.";
+        res.data && typeof res.data.message === "string"
+          ? res.data.message
+          : "Suppression impossible.";
       showAccessBanner(msg, "error");
       return;
     }
@@ -709,11 +799,15 @@
 
     if (qInput) {
       qInput.addEventListener("input", function () {
-        state.q = String(qInput.value || "").trim().slice(0, 160);
+        state.q = String(qInput.value || "")
+          .trim()
+          .slice(0, 160);
         scheduleLoad();
       });
       qInput.addEventListener("search", function () {
-        state.q = String(qInput.value || "").trim().slice(0, 160);
+        state.q = String(qInput.value || "")
+          .trim()
+          .slice(0, 160);
         state.page = 1;
         loadRestaurants();
       });
@@ -765,7 +859,9 @@
   }
 
   async function init() {
-    var allowed = await window.MenuGo_AdminGuard.enforceAdminAccess({ loginNext: LOGIN_NEXT });
+    var allowed = await window.MenuGo_AdminGuard.enforceAdminAccess({
+      loginNext: LOGIN_NEXT,
+    });
     if (!allowed) {
       return;
     }

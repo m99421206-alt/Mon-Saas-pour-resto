@@ -7,12 +7,21 @@
   var LOGIN_NEXT = "admin-subscriptions.html";
 
   function guardApiStatus(status) {
-    return window.MenuGo_AdminGuard.handleAdminApiStatus(status, { loginNext: LOGIN_NEXT });
+    return window.MenuGo_AdminGuard.handleAdminApiStatus(status, {
+      loginNext: LOGIN_NEXT,
+    });
   }
   var PAGE_SIZE = 12;
   var DEBOUNCE_MS = 320;
 
-  var state = { page: 1, q: "", status: "all", loading: false, totalPages: 0, total: 0 };
+  var state = {
+    page: 1,
+    q: "",
+    status: "all",
+    loading: false,
+    totalPages: 0,
+    total: 0,
+  };
 
   var modalRestaurantId = null;
 
@@ -111,7 +120,9 @@
   /** Présélection plan pour le dialogue (ex. basic en renouvellement). */
   function applyDefaultPlanSelection(sel, preferredKeyRaw) {
     if (!sel) return;
-    var preferred = sanitizePlanKeyClient(preferredKeyRaw || RENEW_DEFAULT_PLAN_KEY);
+    var preferred = sanitizePlanKeyClient(
+      preferredKeyRaw || RENEW_DEFAULT_PLAN_KEY,
+    );
     function setIfExists(key) {
       var k = sanitizePlanKeyClient(key);
       if (!k) return false;
@@ -134,7 +145,11 @@
       var price = Math.round(Number(p.price_cfa) || 0);
       var mo = Math.round(Number(p.months) || 1);
       var nm = String(p.name || "").toLowerCase();
-      if (price === 3500 && mo === 1 && (pid === "basic" || nm.indexOf("basic") !== -1)) {
+      if (
+        price === 3500 &&
+        mo === 1 &&
+        (pid === "basic" || nm.indexOf("basic") !== -1)
+      ) {
         if (setIfExists(pid)) return;
       }
     }
@@ -170,7 +185,8 @@
       var opt = document.createElement("option");
       opt.value = k;
       opt.textContent = k + " (plan actuel)";
-      if (sel.lastChild && sel.options.length >= 2) sel.insertBefore(opt, sel.lastChild);
+      if (sel.lastChild && sel.options.length >= 2)
+        sel.insertBefore(opt, sel.lastChild);
       else sel.appendChild(opt);
     }
     sel.value = k;
@@ -206,7 +222,9 @@
 
       var raw = window.prompt(
         opts.renewOnly ? helpRenew : helpClassic,
-        opts.renewOnly ? String(opts.renewDefaultPrompt || RENEW_DEFAULT_PLAN_KEY) : "",
+        opts.renewOnly
+          ? String(opts.renewDefaultPrompt || RENEW_DEFAULT_PLAN_KEY)
+          : "",
       );
       if (raw === null) {
         resolve(null);
@@ -228,19 +246,28 @@
     opts = opts || {};
     var renewMode = !!opts.renewMode;
     var activateMode = !!opts.activateMode && !renewMode;
-    var defaultPlanKeyRaw = opts.defaultPlanKey !== undefined ? String(opts.defaultPlanKey) : "";
+    var defaultPlanKeyRaw =
+      opts.defaultPlanKey !== undefined ? String(opts.defaultPlanKey) : "";
 
     var dlg = document.getElementById("subs-plan-picker");
     var sel = document.getElementById("subs-plan-picker-select");
     if (!dlg || !sel || typeof dlg.showModal !== "function") {
       return fallbackPlanPickWithPrompt(
-        renewMode ? { renewOnly: true, renewDefaultPrompt: defaultPlanKeyRaw || RENEW_DEFAULT_PLAN_KEY } : {},
+        renewMode
+          ? {
+              renewOnly: true,
+              renewDefaultPrompt: defaultPlanKeyRaw || RENEW_DEFAULT_PLAN_KEY,
+            }
+          : {},
       );
     }
 
     fillPlanChoiceSelect(sel, renewMode ? "picker-renew" : "picker");
     if (renewMode || activateMode) {
-      applyDefaultPlanSelection(sel, defaultPlanKeyRaw || RENEW_DEFAULT_PLAN_KEY);
+      applyDefaultPlanSelection(
+        sel,
+        defaultPlanKeyRaw || RENEW_DEFAULT_PLAN_KEY,
+      );
     }
 
     var okBtn = document.getElementById("subs-plan-picker-ok");
@@ -248,7 +275,12 @@
     var hintEl = document.getElementById("subs-plan-picker-hint");
     if (!okBtn || !cancelBtn) {
       return fallbackPlanPickWithPrompt(
-        renewMode ? { renewOnly: true, renewDefaultPrompt: defaultPlanKeyRaw || RENEW_DEFAULT_PLAN_KEY } : {},
+        renewMode
+          ? {
+              renewOnly: true,
+              renewDefaultPrompt: defaultPlanKeyRaw || RENEW_DEFAULT_PLAN_KEY,
+            }
+          : {},
       );
     }
 
@@ -297,7 +329,12 @@
         dlg.removeEventListener("close", onCloseDone);
         if (hintEl) hintEl.innerHTML = hintSaved;
         fallbackPlanPickWithPrompt(
-          renewMode ? { renewOnly: true, renewDefaultPrompt: defaultPlanKeyRaw || RENEW_DEFAULT_PLAN_KEY } : {},
+          renewMode
+            ? {
+                renewOnly: true,
+                renewDefaultPrompt: defaultPlanKeyRaw || RENEW_DEFAULT_PLAN_KEY,
+              }
+            : {},
         ).then(resolve);
       }
     });
@@ -313,7 +350,9 @@
   }
 
   function redirectToLogin() {
-    window.location.replace("login.html?next=" + encodeURIComponent(LOGIN_NEXT));
+    window.location.replace(
+      "login.html?next=" + encodeURIComponent(LOGIN_NEXT),
+    );
   }
 
   function clearSessionAndRedirectLogin() {
@@ -352,7 +391,9 @@
     el.textContent = msg || "";
     el.hidden = false;
     el.classList.remove("adm-banner--warning", "adm-banner--error");
-    el.classList.add(variant === "error" ? "adm-banner--error" : "adm-banner--warning");
+    el.classList.add(
+      variant === "error" ? "adm-banner--error" : "adm-banner--warning",
+    );
     try {
       el.scrollIntoView({ behavior: "smooth", block: "nearest" });
     } catch (e) {}
@@ -409,7 +450,12 @@
       ".\n\n" +
       "Votre menu reste visible pour vos clients, mais certaines fonctionnalités sont actuellement limitées.\n\n" +
       "Pour réactiver votre abonnement et continuer à gérer votre menu normalement, merci de nous contacter.";
-    return "https://wa.me/" + digits.replace(/^0+/, "") + "?text=" + encodeURIComponent(msg);
+    return (
+      "https://wa.me/" +
+      digits.replace(/^0+/, "") +
+      "?text=" +
+      encodeURIComponent(msg)
+    );
   }
 
   function buildWhatsAppCell(row) {
@@ -418,9 +464,7 @@
     }
     var url = buildExpiredRelanceWaUrl(row);
     if (url === "#") {
-      return (
-        '<span class="subs-wa-empty" title="Numéro WhatsApp restaurant indisponible">—</span>'
-      );
+      return '<span class="subs-wa-empty" title="Numéro WhatsApp restaurant indisponible">—</span>';
     }
     return (
       '<a class="subs-wa-relance" href="' +
@@ -438,12 +482,20 @@
   }
 
   function statusBadge(st) {
-    var z = String(st || "").toLowerCase().trim();
+    var z = String(st || "")
+      .toLowerCase()
+      .trim();
     var cls = "sub-badge sub-badge--trial";
     if (z === "active") cls = "sub-badge sub-badge--active";
     else if (z === "expired") cls = "sub-badge sub-badge--expired";
     else if (z === "suspended") cls = "sub-badge sub-badge--suspended";
-    return '<span class="' + cls + '" role="status">' + escapeHtml(labelStatus(z)) + "</span>";
+    return (
+      '<span class="' +
+      cls +
+      '" role="status">' +
+      escapeHtml(labelStatus(z)) +
+      "</span>"
+    );
   }
 
   function daysCell(dr, st) {
@@ -474,7 +526,9 @@
   function buildButtons(row) {
     var id = encodeURIComponent(row.restaurant_id);
     var det =
-      '<button type="button" class="adm-btn" data-act="detail" data-id="' + id + '">Voir détails</button>';
+      '<button type="button" class="adm-btn" data-act="detail" data-id="' +
+      id +
+      '">Voir détails</button>';
     var actDis = canActivate(row) ? "" : " disabled";
     var supDis = canSuspend(row) ? "" : " disabled";
     var act =
@@ -490,7 +544,9 @@
       supDis +
       ">Suspendre</button>";
     var ren =
-      '<button type="button" class="adm-btn" data-act="renew" data-id="' + id + '">Renouveler</button>';
+      '<button type="button" class="adm-btn" data-act="renew" data-id="' +
+      id +
+      '">Renouveler</button>';
     return det + act + sus + ren;
   }
 
@@ -505,15 +561,21 @@
       headers["Content-Type"] = "application/json";
     }
     try {
-      var res = await fetch(base + path, {
+      var p = String(path || "");
+      if (String(base).endsWith("/api") && p.indexOf("/api") === 0) {
+        p = p.replace(/^\/api/, "");
+      }
+      var url =
+        String(base).replace(/\/$/, "") + "/" + String(p).replace(/^\//, "");
+      var res = await fetch(url, {
         method: method,
         headers: headers,
         body:
-          opts.body !== undefined ?
-            typeof opts.body === "string" ?
-              opts.body
-            : JSON.stringify(opts.body)
-          : undefined,
+          opts.body !== undefined
+            ? typeof opts.body === "string"
+              ? opts.body
+              : JSON.stringify(opts.body)
+            : undefined,
       });
       var data = null;
       var text = "";
@@ -545,7 +607,8 @@
 
     var info = document.createElement("p");
     info.className = "users-pagination__info";
-    info.textContent = "Page " + page + " sur " + totalPages + " — " + state.total + " ligne(s)";
+    info.textContent =
+      "Page " + page + " sur " + totalPages + " — " + state.total + " ligne(s)";
     nav.appendChild(info);
 
     function addBtn(label, disabled, fn) {
@@ -595,7 +658,11 @@
   }
 
   function tbodyPlaceholder(m) {
-    return '<tr class="adm-table__placeholder"><td colspan="10">' + escapeHtml(m) + "</td></tr>";
+    return (
+      '<tr class="adm-table__placeholder"><td colspan="10">' +
+      escapeHtml(m) +
+      "</td></tr>"
+    );
   }
 
   async function loadSubscriptions() {
@@ -651,7 +718,11 @@
     state.total = Number(res.data.total) || 0;
 
     var lc = document.getElementById("subs-count-label");
-    if (lc) lc.textContent = state.total + " abonnement(s)" + (state.q ? " — « " + state.q.trim() + " »" : "");
+    if (lc)
+      lc.textContent =
+        state.total +
+        " abonnement(s)" +
+        (state.q ? " — « " + state.q.trim() + " »" : "");
 
     if (state.totalPages > 0 && state.page > state.totalPages) {
       state.page = state.totalPages;
@@ -660,7 +731,8 @@
     }
 
     if (!list.length) {
-      if (tbody) tbody.innerHTML = tbodyPlaceholder("Aucun résultat pour ces filtres.");
+      if (tbody)
+        tbody.innerHTML = tbodyPlaceholder("Aucun résultat pour ces filtres.");
       if (cards) cards.innerHTML = "";
       renderPagination();
       return;
@@ -685,13 +757,13 @@
           escapeHtml(formatDate(row.subscription_ends_at)) +
           "</td><td>" +
           daysCell(row.days_remaining, row.subscription_status) +
-          "</td><td><span class=\"subs-money\">" +
+          '</td><td><span class="subs-money">' +
           escapeHtml(formatCFA(row.subscription_amount_cfa)) +
           "</span></td><td>" +
           statusBadge(row.subscription_status) +
           "</td><td>" +
           buildWhatsAppCell(row) +
-          "</td><td><div class=\"subs-actions\">" +
+          '</td><td><div class="subs-actions">' +
           buildButtons(row) +
           "</div></td>";
         tbody.appendChild(tr);
@@ -711,7 +783,7 @@
           "</strong>" +
           '<div class="subs-email-muted subs-plan-chip">' +
           escapeHtml(row.subscription_plan_label || "—") +
-          '</div>' +
+          "</div>" +
           '<div class="subs-email-muted">' +
           escapeHtml(row.owner_email || "") +
           "</div>" +
@@ -811,7 +883,8 @@
       });
     });
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && m.getAttribute("aria-hidden") === "false") setModal(false);
+      if (e.key === "Escape" && m.getAttribute("aria-hidden") === "false")
+        setModal(false);
     });
   }
 
@@ -819,7 +892,8 @@
     var token = localStorage.getItem(TOKEN_KEY);
     modalRestaurantId = idStr;
     setModal(true);
-    document.getElementById("adm-subs-detail-title").textContent = "Chargement…";
+    document.getElementById("adm-subs-detail-title").textContent =
+      "Chargement…";
 
     var res = await fetchJson(
       "GET",
@@ -833,7 +907,10 @@
 
     if (!res.ok || !res.data || !res.data.subscription) {
       setModal(false);
-      showAccessBanner((res.data && res.data.message) || "Détail indisponible.", "error");
+      showAccessBanner(
+        (res.data && res.data.message) || "Détail indisponible.",
+        "error",
+      );
       return;
     }
 
@@ -843,7 +920,8 @@
       plansCatalog = res.data.subscription_plans.slice(0, 12);
     }
 
-    document.getElementById("adm-subs-detail-title").textContent = s.name || "Restaurant";
+    document.getElementById("adm-subs-detail-title").textContent =
+      s.name || "Restaurant";
 
     var own = document.getElementById("adm-subs-detail-owner");
     if (own) {
@@ -853,24 +931,41 @@
     }
 
     document.getElementById("subs-d-id").textContent = String(s.restaurant_id);
-    document.getElementById("subs-d-city").textContent = s.quartier || s.city || "—";
+    document.getElementById("subs-d-city").textContent =
+      s.quartier || s.city || "—";
     var planDdEl = document.getElementById("subs-d-plan");
     if (planDdEl) planDdEl.textContent = s.subscription_plan_label || "—";
 
-    adjustInitialPlanKey = s.subscription_plan_key ? String(s.subscription_plan_key).trim().toLowerCase() : "";
+    adjustInitialPlanKey = s.subscription_plan_key
+      ? String(s.subscription_plan_key).trim().toLowerCase()
+      : "";
 
-    document.getElementById("subs-d-start").textContent = formatDate(s.subscription_started_at);
-    document.getElementById("subs-d-end").textContent = formatDate(s.subscription_ends_at);
+    document.getElementById("subs-d-start").textContent = formatDate(
+      s.subscription_started_at,
+    );
+    document.getElementById("subs-d-end").textContent = formatDate(
+      s.subscription_ends_at,
+    );
     document.getElementById("subs-d-days").textContent =
-      s.days_remaining === null || s.days_remaining === undefined ?
-        "—"
-      : String(s.days_remaining);
-    document.getElementById("subs-d-amount").textContent = formatCFA(s.subscription_amount_cfa);
-    document.getElementById("subs-d-status").innerHTML = statusBadge(s.subscription_status);
-    document.getElementById("subs-d-menu").textContent = s.menu_suspended ? "Menu suspendu" : "Menu en ligne";
-    document.getElementById("subs-d-products").textContent = String(s.product_count ?? "0");
+      s.days_remaining === null || s.days_remaining === undefined
+        ? "—"
+        : String(s.days_remaining);
+    document.getElementById("subs-d-amount").textContent = formatCFA(
+      s.subscription_amount_cfa,
+    );
+    document.getElementById("subs-d-status").innerHTML = statusBadge(
+      s.subscription_status,
+    );
+    document.getElementById("subs-d-menu").textContent = s.menu_suspended
+      ? "Menu suspendu"
+      : "Menu en ligne";
+    document.getElementById("subs-d-products").textContent = String(
+      s.product_count ?? "0",
+    );
 
-    document.getElementById("subs-d-created").textContent = formatDate(s.restaurant_created_at);
+    document.getElementById("subs-d-created").textContent = formatDate(
+      s.restaurant_created_at,
+    );
 
     var dsc = document.getElementById("subs-d-desc");
     var txt = String(s.description || "").trim();
@@ -912,7 +1007,10 @@
     var hasAdd = addRaw !== "" && Number.isFinite(addNum) && addNum !== 0;
 
     if (hasDt && hasAdd) {
-      showAccessBanner("Choisissez soit une date de fin, soit une valeur en jours — pas les deux.", "error");
+      showAccessBanner(
+        "Choisissez soit une date de fin, soit une valeur en jours — pas les deux.",
+        "error",
+      );
       return;
     }
 
@@ -920,7 +1018,9 @@
     if (hasDt) body.subscription_ends_at = dateStr;
     else if (hasAdd) body.add_days = Math.round(addNum);
 
-    var initialPk = adjustInitialPlanKey ? String(adjustInitialPlanKey).trim().toLowerCase() : "";
+    var initialPk = adjustInitialPlanKey
+      ? String(adjustInitialPlanKey).trim().toLowerCase()
+      : "";
     if (pkEl) {
       var cleaned = sanitizePlanKeyClient(pkEl.value);
       var currentNorm = cleaned;
@@ -931,7 +1031,10 @@
     }
 
     if (!Object.keys(body).length) {
-      showAccessBanner("Modifiez au moins un champ avant d’enregistrer.", "warning");
+      showAccessBanner(
+        "Modifiez au moins un champ avant d’enregistrer.",
+        "warning",
+      );
       return;
     }
 
@@ -944,7 +1047,10 @@
 
     if (guardApiStatus(res.status)) return;
     else if (!res.ok)
-      showAccessBanner((res.data && res.data.message) || "Ajustement impossible.", "error");
+      showAccessBanner(
+        (res.data && res.data.message) || "Ajustement impossible.",
+        "error",
+      );
     else {
       hideAccessBanner();
       setModal(false);
@@ -953,7 +1059,9 @@
   }
 
   function promptOptionalAmount() {
-    var raw = prompt("Montant CFA / période (laisser vide pour ne pas modifier) :");
+    var raw = prompt(
+      "Montant CFA / période (laisser vide pour ne pas modifier) :",
+    );
     if (raw === null) return "__cancel";
     raw = String(raw).trim().replace(/\s/g, "").replace(",", ".");
     if (raw === "") return undefined;
@@ -984,7 +1092,8 @@
           body.period_days = monthsToApproxPeriodDays(matched.months);
           body.subscription_plan_key = pk;
           var price = Math.round(Number(matched.price_cfa) || 0);
-          if (Number.isFinite(price) && price >= 0) body.subscription_amount_cfa = price;
+          if (Number.isFinite(price) && price >= 0)
+            body.subscription_amount_cfa = price;
         } else {
           var dRaw = window.prompt(
             "Durée en jours à ajouter depuis aujourd’hui si l’échéance doit être mise à jour (clé « " +
@@ -994,7 +1103,8 @@
           );
           if (dRaw === null) return;
           var pdManual = parseInt(dRaw, 10);
-          if (!Number.isInteger(pdManual) || pdManual < 1) pdManual = DEFAULT_ACTIVATE_DAYS;
+          if (!Number.isInteger(pdManual) || pdManual < 1)
+            pdManual = DEFAULT_ACTIVATE_DAYS;
           if (pdManual > 3650) pdManual = 3650;
           body.period_days = pdManual;
           body.subscription_plan_key = pk;
@@ -1016,7 +1126,10 @@
 
     if (guardApiStatus(res.status)) return;
     else if (!res.ok)
-      showAccessBanner((res.data && res.data.message) || "Activation impossible.", "error");
+      showAccessBanner(
+        (res.data && res.data.message) || "Activation impossible.",
+        "error",
+      );
     else {
       hideAccessBanner();
       await loadSubscriptions();
@@ -1042,7 +1155,10 @@
 
     if (guardApiStatus(res.status)) return;
     else if (!res.ok)
-      showAccessBanner((res.data && res.data.message) || "Suspension impossible.", "error");
+      showAccessBanner(
+        (res.data && res.data.message) || "Suspension impossible.",
+        "error",
+      );
     else {
       hideAccessBanner();
       await loadSubscriptions();
@@ -1073,7 +1189,8 @@
         body.months = mo;
         body.subscription_plan_key = pk;
         var price = Math.round(Number(matched.price_cfa) || 0);
-        if (Number.isFinite(price) && price >= 0) body.subscription_amount_cfa = price;
+        if (Number.isFinite(price) && price >= 0)
+          body.subscription_amount_cfa = price;
       } else {
         var mRaw = window.prompt(
           "Durée à ajouter en mois. La clé « " +
@@ -1083,7 +1200,8 @@
         );
         if (mRaw === null) return;
         var monthsManual = parseInt(mRaw, 10);
-        if (!Number.isInteger(monthsManual) || monthsManual < 1) monthsManual = 1;
+        if (!Number.isInteger(monthsManual) || monthsManual < 1)
+          monthsManual = 1;
         if (monthsManual > 120) monthsManual = 120;
         body.months = monthsManual;
         body.subscription_plan_key = pk;
@@ -1103,7 +1221,10 @@
 
     if (guardApiStatus(res.status)) return;
     else if (!res.ok)
-      showAccessBanner((res.data && res.data.message) || "Renouvellement impossible.", "error");
+      showAccessBanner(
+        (res.data && res.data.message) || "Renouvellement impossible.",
+        "error",
+      );
     else {
       hideAccessBanner();
       await loadSubscriptions();
@@ -1126,11 +1247,15 @@
       loadSubscriptions();
     });
 
-    document.getElementById("subs-status-filter").addEventListener("change", function () {
-      state.status = String(document.getElementById("subs-status-filter").value || "all").toLowerCase();
-      state.page = 1;
-      loadSubscriptions();
-    });
+    document
+      .getElementById("subs-status-filter")
+      .addEventListener("change", function () {
+        state.status = String(
+          document.getElementById("subs-status-filter").value || "all",
+        ).toLowerCase();
+        state.page = 1;
+        loadSubscriptions();
+      });
 
     var adjSendBtn = document.getElementById("subs-adj-send");
     if (adjSendBtn) {
@@ -1161,7 +1286,9 @@
   }
 
   async function init() {
-    var allowed = await window.MenuGo_AdminGuard.enforceAdminAccess({ loginNext: LOGIN_NEXT });
+    var allowed = await window.MenuGo_AdminGuard.enforceAdminAccess({
+      loginNext: LOGIN_NEXT,
+    });
     if (!allowed) {
       return;
     }

@@ -10,7 +10,9 @@
   var LOGIN_NEXT = "admin-dashboard.html";
 
   function guardApiStatus(status) {
-    return window.MenuGo_AdminGuard.handleAdminApiStatus(status, { loginNext: LOGIN_NEXT });
+    return window.MenuGo_AdminGuard.handleAdminApiStatus(status, {
+      loginNext: LOGIN_NEXT,
+    });
   }
 
   function escapeHtml(value) {
@@ -51,7 +53,9 @@
   }
 
   function redirectToLogin() {
-    window.location.replace("login.html?next=" + encodeURIComponent(LOGIN_NEXT));
+    window.location.replace(
+      "login.html?next=" + encodeURIComponent(LOGIN_NEXT),
+    );
   }
 
   function clearSessionAndRedirectLogin() {
@@ -94,13 +98,19 @@
     el.textContent = message || "";
     el.hidden = false;
     el.classList.remove("adm-banner--warning", "adm-banner--error");
-    el.classList.add(variant === "error" ? "adm-banner--error" : "adm-banner--warning");
+    el.classList.add(
+      variant === "error" ? "adm-banner--error" : "adm-banner--warning",
+    );
   }
 
   function clearStatsDisplay() {
-    ["total-users", "active-restaurants", "new-signups", "active-subscriptions", "estimated-revenue"].forEach(function (
-      key,
-    ) {
+    [
+      "total-users",
+      "active-restaurants",
+      "new-signups",
+      "active-subscriptions",
+      "estimated-revenue",
+    ].forEach(function (key) {
       var el = document.querySelector('[data-stat="' + key + '"]');
       if (el) {
         el.textContent = "—";
@@ -158,9 +168,16 @@
 
     limited.forEach(function (row) {
       var tr = document.createElement("tr");
-      var typeBadge = badgeHtml(row.badge, row.action_label || row.action_code || "Événement");
-      var modeLabel = row.mode || (row.impersonation ? "Impersonation" : "Normal");
-      var modeBadge = badgeHtml(row.impersonation ? "password" : "neutral", modeLabel);
+      var typeBadge = badgeHtml(
+        row.badge,
+        row.action_label || row.action_code || "Événement",
+      );
+      var modeLabel =
+        row.mode || (row.impersonation ? "Impersonation" : "Normal");
+      var modeBadge = badgeHtml(
+        row.impersonation ? "password" : "neutral",
+        modeLabel,
+      );
       tr.innerHTML =
         "<td>" +
         escapeHtml(row.actor || row.user) +
@@ -184,7 +201,13 @@
     }
 
     try {
-      var response = await fetch(base + path, {
+      var p = String(path || "");
+      if (String(base).endsWith("/api") && p.indexOf("/api") === 0) {
+        p = p.replace(/^\/api/, "");
+      }
+      var url =
+        String(base).replace(/\/$/, "") + "/" + String(p).replace(/^\//, "");
+      var response = await fetch(url, {
         headers: {
           Accept: "application/json",
           Authorization: "Bearer " + token,
@@ -210,7 +233,13 @@
       return { ok: false, status: 0, data: null };
     }
     try {
-      var response = await fetch(base + path, {
+      var p = String(path || "");
+      if (String(base).endsWith("/api") && p.indexOf("/api") === 0) {
+        p = p.replace(/^\/api/, "");
+      }
+      var url =
+        String(base).replace(/\/$/, "") + "/" + String(p).replace(/^\//, "");
+      var response = await fetch(url, {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -239,7 +268,12 @@
       "Bonjour, nous vous contactons concernant votre demande d’installation AfricaMenu pour : " +
       String(restaurantName || "votre restaurant") +
       ".";
-    return "https://wa.me/" + digits.replace(/^0+/, "") + "?text=" + encodeURIComponent(msg);
+    return (
+      "https://wa.me/" +
+      digits.replace(/^0+/, "") +
+      "?text=" +
+      encodeURIComponent(msg)
+    );
   }
 
   function formatDateShort(iso) {
@@ -263,18 +297,22 @@
     return "adm-sub-watch-row--yellow";
   }
 
-  function buildAdminSubWatchWaUrl(restaurantName, endsAtIso, daysRemaining, phoneRaw) {
+  function buildAdminSubWatchWaUrl(
+    restaurantName,
+    endsAtIso,
+    daysRemaining,
+    phoneRaw,
+  ) {
     var digits = waDigits(phoneRaw);
     if (!digits) return "#";
     var exp = formatDateShort(endsAtIso);
     var dr = Number(daysRemaining);
-    var daysText =
-      Number.isFinite(dr) ?
-        dr === 0 ?
-          "aujourd’hui"
-        : dr === 1 ?
-          "demain (1 jour)"
-        : "dans " + dr + " jours"
+    var daysText = Number.isFinite(dr)
+      ? dr === 0
+        ? "aujourd’hui"
+        : dr === 1
+          ? "demain (1 jour)"
+          : "dans " + dr + " jours"
       : "prochainement";
     var msg =
       "Bonjour " +
@@ -287,7 +325,12 @@
       ").\n\n" +
       "Souhaitez-vous renouveler votre accès ? Nous restons disponibles pour vous accompagner.\n\n" +
       "L’équipe AfricaMenu";
-    return "https://wa.me/" + digits.replace(/^0+/, "") + "?text=" + encodeURIComponent(msg);
+    return (
+      "https://wa.me/" +
+      digits.replace(/^0+/, "") +
+      "?text=" +
+      encodeURIComponent(msg)
+    );
   }
 
   function renderSubWatchRows(items, forbidden) {
@@ -300,7 +343,7 @@
     if (forbidden) {
       var tr0 = document.createElement("tr");
       tr0.className = "adm-table__placeholder";
-      tr0.innerHTML = "<td colspan=\"5\">Données indisponibles.</td>";
+      tr0.innerHTML = '<td colspan="5">Données indisponibles.</td>';
       tbody.appendChild(tr0);
       return;
     }
@@ -309,7 +352,7 @@
       var trE = document.createElement("tr");
       trE.className = "adm-table__placeholder";
       trE.innerHTML =
-        "<td colspan=\"5\">Aucun abonnement à surveiller dans les 3 prochains jours.</td>";
+        '<td colspan="5">Aucun abonnement à surveiller dans les 3 prochains jours.</td>';
       tbody.appendChild(trE);
       return;
     }
@@ -326,15 +369,15 @@
       );
 
       var daysCell =
-        row.days_remaining === null || row.days_remaining === undefined ?
-          "—"
-        : escapeHtml(String(row.days_remaining));
+        row.days_remaining === null || row.days_remaining === undefined
+          ? "—"
+          : escapeHtml(String(row.days_remaining));
 
       var waBtn =
         '<a class="adm-mini-btn adm-mini-btn--wa"' +
-        (waUrl === "#" ?
-          ' href="#" role="button" aria-disabled="true" title="Numéro WhatsApp restaurant indisponible"'
-        : ' href="' + waUrl + '" target="_blank" rel="noopener noreferrer"') +
+        (waUrl === "#"
+          ? ' href="#" role="button" aria-disabled="true" title="Numéro WhatsApp restaurant indisponible"'
+          : ' href="' + waUrl + '" target="_blank" rel="noopener noreferrer"') +
         ">WhatsApp</a>";
 
       tr.innerHTML =
@@ -363,7 +406,7 @@
     if (forbidden) {
       var tr0 = document.createElement("tr");
       tr0.className = "adm-table__placeholder";
-      tr0.innerHTML = "<td colspan=\"5\">Données indisponibles.</td>";
+      tr0.innerHTML = '<td colspan="5">Données indisponibles.</td>';
       tbody.appendChild(tr0);
       return;
     }
@@ -371,7 +414,8 @@
     if (!items || !items.length) {
       var trE = document.createElement("tr");
       trE.className = "adm-table__placeholder";
-      trE.innerHTML = "<td colspan=\"5\">Aucune demande d’assistance en cours.</td>";
+      trE.innerHTML =
+        '<td colspan="5">Aucune demande d’assistance en cours.</td>';
       tbody.appendChild(trE);
       return;
     }
@@ -383,19 +427,20 @@
       var nameCell = escapeHtml(row.name || "—");
       var emailCell = escapeHtml(row.email || "—");
       var phoneCell = escapeHtml(row.phone || "—");
-      var dateCell =
-        row.created_at ? escapeHtml(formatActivityDate(row.created_at)) : "—";
+      var dateCell = row.created_at
+        ? escapeHtml(formatActivityDate(row.created_at))
+        : "—";
 
       var actionsHtml =
         '<div class="adm-setup-actions">' +
         '<a class="adm-mini-btn adm-mini-btn--wa"' +
-        (waUrl === "#" ?
-          ' href="#" role="button" aria-disabled="true"'
-        : ' href="' + waUrl + '" target="_blank" rel="noopener noreferrer"') +
+        (waUrl === "#"
+          ? ' href="#" role="button" aria-disabled="true"'
+          : ' href="' + waUrl + '" target="_blank" rel="noopener noreferrer"') +
         '>Contacter<br /><span class="adm-mini-btn__hint">WhatsApp resto</span></a>' +
         '<button type="button" class="adm-mini-btn adm-mini-btn--done" data-setup-done="' +
         escapeHtml(String(Number(row.id) || "")) +
-        "\">Installation<br /><span class=\"adm-mini-btn__hint\">terminée</span></button>" +
+        '">Installation<br /><span class="adm-mini-btn__hint">terminée</span></button>' +
         "</div>";
 
       tr.innerHTML =
@@ -495,19 +540,33 @@
       }
     }
 
-    var setupRes = await fetchAdminJson("/api/admin/setup-help?pageSize=50", token);
+    var setupRes = await fetchAdminJson(
+      "/api/admin/setup-help?pageSize=50",
+      token,
+    );
     if (guardApiStatus(setupRes.status)) {
       return;
-    } else if (setupRes.ok && setupRes.data && Array.isArray(setupRes.data.items)) {
+    } else if (
+      setupRes.ok &&
+      setupRes.data &&
+      Array.isArray(setupRes.data.items)
+    ) {
       renderSetupHelpRows(setupRes.data.items, false);
     } else {
       renderSetupHelpRows([], false);
     }
 
-    var watchRes = await fetchAdminJson("/api/admin/subscriptions/expiring", token);
+    var watchRes = await fetchAdminJson(
+      "/api/admin/subscriptions/expiring",
+      token,
+    );
     if (guardApiStatus(watchRes.status)) {
       return;
-    } else if (watchRes.ok && watchRes.data && Array.isArray(watchRes.data.items)) {
+    } else if (
+      watchRes.ok &&
+      watchRes.data &&
+      Array.isArray(watchRes.data.items)
+    ) {
       renderSubWatchRows(watchRes.data.items, false);
     } else {
       renderSubWatchRows([], false);
@@ -577,7 +636,9 @@
       if (!id || !/^-?\d+$/.test(id)) {
         return;
       }
-      if (!confirm("Marquer l’installation de ce restaurant comme terminée ?")) {
+      if (
+        !confirm("Marquer l’installation de ce restaurant comme terminée ?")
+      ) {
         return;
       }
       var token = localStorage.getItem(TOKEN_KEY);
@@ -588,37 +649,44 @@
 
       btn.disabled = true;
 
-      fetchAdminPost("/api/admin/restaurants/" + id + "/setup-help/complete", token).then(
-        function (res) {
+      fetchAdminPost(
+        "/api/admin/restaurants/" + id + "/setup-help/complete",
+        token,
+      )
+        .then(function (res) {
           if (guardApiStatus(res.status)) {
             return;
           }
           if (!res.ok) {
             btn.disabled = false;
-            alert((res.data && res.data.message) || "Impossible de mettre à jour.");
+            alert(
+              (res.data && res.data.message) || "Impossible de mettre à jour.",
+            );
             return;
           }
           return fetchAdminJson("/api/admin/setup-help?pageSize=50", token);
-        },
-      ).then(function (refRes) {
-        if (!refRes) {
-          return;
-        }
-        if (refRes.status === 401) {
-          clearSessionAndRedirectLogin();
-          return;
-        }
-        if (refRes.ok && refRes.data && Array.isArray(refRes.data.items)) {
-          renderSetupHelpRows(refRes.data.items, false);
-        } else {
-          renderSetupHelpRows([], false);
-        }
-      });
+        })
+        .then(function (refRes) {
+          if (!refRes) {
+            return;
+          }
+          if (refRes.status === 401) {
+            clearSessionAndRedirectLogin();
+            return;
+          }
+          if (refRes.ok && refRes.data && Array.isArray(refRes.data.items)) {
+            renderSetupHelpRows(refRes.data.items, false);
+          } else {
+            renderSetupHelpRows([], false);
+          }
+        });
     });
   }
 
   async function init() {
-    var allowed = await window.MenuGo_AdminGuard.enforceAdminAccess({ loginNext: LOGIN_NEXT });
+    var allowed = await window.MenuGo_AdminGuard.enforceAdminAccess({
+      loginNext: LOGIN_NEXT,
+    });
     if (!allowed) {
       return;
     }

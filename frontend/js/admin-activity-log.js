@@ -19,7 +19,9 @@
   };
 
   function guardApiStatus(status) {
-    return window.MenuGo_AdminGuard.handleAdminApiStatus(status, { loginNext: LOGIN_NEXT });
+    return window.MenuGo_AdminGuard.handleAdminApiStatus(status, {
+      loginNext: LOGIN_NEXT,
+    });
   }
 
   function escapeHtml(value) {
@@ -83,7 +85,9 @@
     el.textContent = message || "";
     el.hidden = false;
     el.classList.remove("adm-banner--warning", "adm-banner--error");
-    el.classList.add(variant === "error" ? "adm-banner--error" : "adm-banner--warning");
+    el.classList.add(
+      variant === "error" ? "adm-banner--error" : "adm-banner--warning",
+    );
   }
 
   function showFeedback(message, kind) {
@@ -126,7 +130,13 @@
       return { ok: false, status: 0, data: null };
     }
     try {
-      var response = await fetch(base + path, {
+      var p = String(path || "");
+      if (String(base).endsWith("/api") && p.indexOf("/api") === 0) {
+        p = p.replace(/^\/api/, "");
+      }
+      var url =
+        String(base).replace(/\/$/, "") + "/" + String(p).replace(/^\//, "");
+      var response = await fetch(url, {
         headers: {
           Accept: "application/json",
           Authorization: "Bearer " + token,
@@ -194,7 +204,7 @@
         modeBadgeHtml(row.mode, row.impersonation) +
         "</td><td>" +
         badgeHtml(row.badge, row.action_label) +
-        "</td><td class=\"actlog-detail-cell\">" +
+        '</td><td class="actlog-detail-cell">' +
         escapeHtml(row.action) +
         "</td>";
       tbody.appendChild(tr);
@@ -218,7 +228,9 @@
           escapeHtml(row.restaurant) +
           "</p>" +
           '<p class="actlog-card__meta"><strong>Mode :</strong> ' +
-          escapeHtml(row.mode || (row.impersonation ? "Impersonation" : "Normal")) +
+          escapeHtml(
+            row.mode || (row.impersonation ? "Impersonation" : "Normal"),
+          ) +
           "</p>" +
           '<p class="actlog-card__detail">' +
           escapeHtml(row.action) +
@@ -244,7 +256,13 @@
     var info = document.createElement("p");
     info.className = "actlog-pagination__info";
     info.textContent =
-      "Page " + state.page + " sur " + state.totalPages + " — " + state.total + " événement(s)";
+      "Page " +
+      state.page +
+      " sur " +
+      state.totalPages +
+      " — " +
+      state.total +
+      " événement(s)";
     nav.appendChild(info);
 
     var prev = document.createElement("button");
@@ -287,7 +305,10 @@
     state.loading = true;
     renderPagination();
 
-    var res = await fetchJson("/api/admin/audit-logs?" + buildQueryParams(), token);
+    var res = await fetchJson(
+      "/api/admin/audit-logs?" + buildQueryParams(),
+      token,
+    );
     state.loading = false;
 
     if (guardApiStatus(res.status)) {
@@ -296,7 +317,8 @@
 
     if (!res.ok || !res.data) {
       showAccessBanner(
-        (res.data && res.data.message) || "Impossible de charger le journal d'activité.",
+        (res.data && res.data.message) ||
+          "Impossible de charger le journal d'activité.",
         "error",
       );
       renderTableRows([]);
@@ -332,7 +354,13 @@
     }
 
     try {
-      var response = await fetch(base + "/api/admin/audit-logs/export?" + params.toString(), {
+      var p = "/api/admin/audit-logs/export?" + params.toString();
+      if (String(base).endsWith("/api") && p.indexOf("/api") === 0) {
+        p = p.replace(/^\/api/, "");
+      }
+      var url =
+        String(base).replace(/\/$/, "") + "/" + String(p).replace(/^\//, "");
+      var response = await fetch(url, {
         headers: {
           Authorization: "Bearer " + token,
         },
@@ -379,7 +407,13 @@
     }
 
     try {
-      var response = await fetch(base + "/api/admin/audit-logs/purge", {
+      var p = "/api/admin/audit-logs/purge";
+      if (String(base).endsWith("/api") && p.indexOf("/api") === 0) {
+        p = p.replace(/^\/api/, "");
+      }
+      var url =
+        String(base).replace(/\/$/, "") + "/" + String(p).replace(/^\//, "");
+      var response = await fetch(url, {
         method: "DELETE",
         headers: {
           Accept: "application/json",
@@ -488,7 +522,9 @@
   }
 
   async function init() {
-    var allowed = await window.MenuGo_AdminGuard.enforceAdminAccess({ loginNext: LOGIN_NEXT });
+    var allowed = await window.MenuGo_AdminGuard.enforceAdminAccess({
+      loginNext: LOGIN_NEXT,
+    });
     if (!allowed) {
       return;
     }

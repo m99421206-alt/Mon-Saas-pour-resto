@@ -58,7 +58,13 @@
       return null;
     }
 
-    var response = await fetch(API_URL + "/api/me", {
+    var base = String(API_URL || "").replace(/\/$/, "");
+    var p = "/api/me";
+    if (String(base).endsWith("/api") && p.indexOf("/api") === 0) {
+      p = p.replace(/^\/api/, "");
+    }
+    var url = base ? base + "/" + String(p).replace(/^\//, "") : p;
+    var response = await fetch(url, {
       headers: {
         Authorization: "Bearer " + token,
       },
@@ -85,7 +91,9 @@
   function resolvePublicSiteOrigin() {
     var cfg = window.MenuGo_CONFIG || {};
     var raw =
-      typeof cfg.PUBLIC_SITE_ORIGIN === "string" ? cfg.PUBLIC_SITE_ORIGIN.trim().replace(/\/+$/, "") : "";
+      typeof cfg.PUBLIC_SITE_ORIGIN === "string"
+        ? cfg.PUBLIC_SITE_ORIGIN.trim().replace(/\/+$/, "")
+        : "";
     return raw.length ? raw : window.location.origin;
   }
 
@@ -93,7 +101,10 @@
     var currentPath = window.location.pathname;
     var menuPath = currentPath.replace(/qr-code\.html$/, "mon-menu.html");
     return (
-      resolvePublicSiteOrigin() + menuPath + "?id=" + encodeURIComponent(restaurantId)
+      resolvePublicSiteOrigin() +
+      menuPath +
+      "?id=" +
+      encodeURIComponent(restaurantId)
     );
   }
 
@@ -219,7 +230,10 @@
     var storedRestaurant = null;
     try {
       var cfg = window.MenuGo_CONFIG || {};
-      var pub = typeof cfg.PUBLIC_SITE_ORIGIN === "string" ? cfg.PUBLIC_SITE_ORIGIN.trim() : "";
+      var pub =
+        typeof cfg.PUBLIC_SITE_ORIGIN === "string"
+          ? cfg.PUBLIC_SITE_ORIGIN.trim()
+          : "";
       var host = String(window.location.hostname || "").toLowerCase();
       var warnEl = document.getElementById("qr-phone-scan-warning");
       if (

@@ -14,7 +14,10 @@
   var RESTAURANT_DASHBOARD = "dashboard.html";
 
   function getApiBase() {
-    return String((window.MenuGo_CONFIG || {}).API_URL || "").replace(/\/$/, "");
+    return String((window.MenuGo_CONFIG || {}).API_URL || "").replace(
+      /\/$/,
+      "",
+    );
   }
 
   function getCurrentPage() {
@@ -76,7 +79,13 @@
     }
 
     /* 2. Vérification serveur : is_platform_admin (ADMIN_EMAILS côté API). */
-    var response = await fetch(base + "/api/me", {
+    var p = "/api/me";
+    if (String(base).endsWith("/api") && p.indexOf("/api") === 0) {
+      p = p.replace(/^\/api/, "");
+    }
+    var url =
+      String(base).replace(/\/$/, "") + "/" + String(p).replace(/^\//, "");
+    var response = await fetch(url, {
       headers: { Authorization: "Bearer " + token },
     });
     var data = await readJson(response);

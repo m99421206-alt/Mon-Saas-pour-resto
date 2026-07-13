@@ -12,7 +12,9 @@
   var DEBOUNCE_MS = 340;
 
   function guardApiStatus(status) {
-    return window.MenuGo_AdminGuard.handleAdminApiStatus(status, { loginNext: LOGIN_NEXT });
+    return window.MenuGo_AdminGuard.handleAdminApiStatus(status, {
+      loginNext: LOGIN_NEXT,
+    });
   }
 
   var state = {
@@ -42,7 +44,9 @@
   }
 
   function redirectToLogin() {
-    window.location.replace("login.html?next=" + encodeURIComponent(LOGIN_NEXT));
+    window.location.replace(
+      "login.html?next=" + encodeURIComponent(LOGIN_NEXT),
+    );
   }
 
   function clearSessionAndRedirectLogin() {
@@ -100,7 +104,9 @@
     el.textContent = message || "";
     el.hidden = false;
     el.classList.remove("adm-banner--warning", "adm-banner--error");
-    el.classList.add(variant === "error" ? "adm-banner--error" : "adm-banner--warning");
+    el.classList.add(
+      variant === "error" ? "adm-banner--error" : "adm-banner--warning",
+    );
     try {
       el.scrollIntoView({ behavior: "smooth", block: "nearest" });
     } catch (e) {}
@@ -136,11 +142,17 @@
   }
 
   function statusBadge(status) {
-    var st = String(status || "").toLowerCase().trim();
+    var st = String(status || "")
+      .toLowerCase()
+      .trim();
     var isSuspended = st === "suspended";
     var label = isSuspended ? "Suspendu" : "Actif";
-    var cls = isSuspended ? "users-badge users-badge--suspended" : "users-badge users-badge--active";
-    return '<span class="' + cls + '" role="status">' + escapeHtml(label) + "</span>";
+    var cls = isSuspended
+      ? "users-badge users-badge--suspended"
+      : "users-badge users-badge--active";
+    return (
+      '<span class="' + cls + '" role="status">' + escapeHtml(label) + "</span>"
+    );
   }
 
   async function fetchJson(method, path, token, opts) {
@@ -154,7 +166,13 @@
       headers["Content-Type"] = "application/json";
     }
     try {
-      var response = await fetch(base + path, {
+      var p = String(path || "");
+      if (String(base).endsWith("/api") && p.indexOf("/api") === 0) {
+        p = p.replace(/^\/api/, "");
+      }
+      var url =
+        String(base).replace(/\/$/, "") + "/" + String(p).replace(/^\//, "");
+      var response = await fetch(url, {
         method: method,
         headers: headers,
         body: opts.body ? JSON.stringify(opts.body) : undefined,
@@ -194,7 +212,14 @@
 
     var info = document.createElement("p");
     info.className = "users-pagination__info";
-    info.textContent = "Page " + page + " sur " + totalPages + " — " + state.total + " utilisateur(s)";
+    info.textContent =
+      "Page " +
+      page +
+      " sur " +
+      totalPages +
+      " — " +
+      state.total +
+      " utilisateur(s)";
     nav.appendChild(info);
 
     var prev = document.createElement("button");
@@ -255,8 +280,10 @@
       encodeURIComponent(row.id) +
       '">Voir détails</button>';
 
-    var suspendDisabled = isSelf || row.status === "suspended" ? " disabled" : "";
-    var activateDisabled = isSelf || row.status !== "suspended" ? " disabled" : "";
+    var suspendDisabled =
+      isSelf || row.status === "suspended" ? " disabled" : "";
+    var activateDisabled =
+      isSelf || row.status !== "suspended" ? " disabled" : "";
     var delDisabled = isSelf ? " disabled" : "";
 
     var suspendBtn =
@@ -289,7 +316,11 @@
 
   function tbodyPlaceholder(msg) {
     return (
-      '<tr class="adm-table__placeholder">' + '<td colspan="5">' + escapeHtml(msg) + "</td>" + "</tr>"
+      '<tr class="adm-table__placeholder">' +
+      '<td colspan="5">' +
+      escapeHtml(msg) +
+      "</td>" +
+      "</tr>"
     );
   }
 
@@ -307,7 +338,10 @@
     var base = getApiBase();
 
     if (!base) {
-      showAccessBanner("Impossible de joindre l’API : vérifiez frontend/js/config.js (API_URL).", "error");
+      showAccessBanner(
+        "Impossible de joindre l’API : vérifiez frontend/js/config.js (API_URL).",
+        "error",
+      );
       if (tbody) {
         tbody.innerHTML = tbodyPlaceholder("Erreur de configuration.");
       }
@@ -337,7 +371,10 @@
     }
 
     if (!res.ok || !res.data || !Array.isArray(res.data.users)) {
-      showAccessBanner("Impossible de charger la liste des utilisateurs.", "error");
+      showAccessBanner(
+        "Impossible de charger la liste des utilisateurs.",
+        "error",
+      );
       if (tbody) {
         tbody.innerHTML = tbodyPlaceholder("Erreur lors du chargement.");
       }
@@ -360,12 +397,16 @@
     var label = document.getElementById("users-count-label");
     if (label) {
       label.textContent =
-        state.total + " utilisateur(s)" + (state.q ? ' pour « ' + state.q.trim() + " »" : "");
+        state.total +
+        " utilisateur(s)" +
+        (state.q ? " pour « " + state.q.trim() + " »" : "");
     }
 
     if (!users.length) {
       if (tbody) {
-        tbody.innerHTML = tbodyPlaceholder("Aucun utilisateur ne correspond aux critères.");
+        tbody.innerHTML = tbodyPlaceholder(
+          "Aucun utilisateur ne correspond aux critères.",
+        );
       }
       if (cardsUl) {
         cardsUl.innerHTML = "";
@@ -504,11 +545,15 @@
 
     if (qInput) {
       qInput.addEventListener("input", function () {
-        state.q = String(qInput.value || "").trim().slice(0, 160);
+        state.q = String(qInput.value || "")
+          .trim()
+          .slice(0, 160);
         scheduleLoad();
       });
       qInput.addEventListener("search", function () {
-        state.q = String(qInput.value || "").trim().slice(0, 160);
+        state.q = String(qInput.value || "")
+          .trim()
+          .slice(0, 160);
         state.page = 1;
         loadUsers();
       });
@@ -678,7 +723,10 @@
         });
       });
       document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape" && pwdModal.getAttribute("aria-hidden") === "false") {
+        if (
+          e.key === "Escape" &&
+          pwdModal.getAttribute("aria-hidden") === "false"
+        ) {
           setPwdModalOpen(false);
         }
       });
@@ -698,7 +746,9 @@
       var newInput = document.getElementById("adm-user-pwd-new");
       var confirmInput = document.getElementById("adm-user-pwd-confirm");
       var password = newInput ? String(newInput.value || "") : "";
-      var confirmPassword = confirmInput ? String(confirmInput.value || "") : "";
+      var confirmPassword = confirmInput
+        ? String(confirmInput.value || "")
+        : "";
 
       if (!password) {
         showPwdError("Saisissez un nouveau mot de passe.");
@@ -730,7 +780,9 @@
 
       var res = await fetchJson(
         "PATCH",
-        "/api/admin/users/" + encodeURIComponent(String(detailUserId)) + "/password",
+        "/api/admin/users/" +
+          encodeURIComponent(String(detailUserId)) +
+          "/password",
         token,
         {
           body: {
@@ -750,13 +802,18 @@
       }
 
       if (!res.ok) {
-        var msg = res.data && res.data.message ? res.data.message : "Enregistrement impossible.";
+        var msg =
+          res.data && res.data.message
+            ? res.data.message
+            : "Enregistrement impossible.";
         showPwdError(msg);
         return;
       }
 
       showPwdSuccess(
-        res.data && res.data.message ? res.data.message : "Mot de passe mis à jour avec succès.",
+        res.data && res.data.message
+          ? res.data.message
+          : "Mot de passe mis à jour avec succès.",
       );
       if (newInput) {
         newInput.value = "";
@@ -793,7 +850,11 @@
       quartierEl.textContent = "";
     }
 
-    var res = await fetchJson("GET", "/api/admin/users/" + encodeURIComponent(idStr), token);
+    var res = await fetchJson(
+      "GET",
+      "/api/admin/users/" + encodeURIComponent(idStr),
+      token,
+    );
 
     if (guardApiStatus(res.status)) {
       return;
@@ -801,7 +862,10 @@
 
     if (!res.ok || !res.data || !res.data.user) {
       setModalOpen(false);
-      showAccessBanner("Impossible de charger le détail de l’utilisateur.", "error");
+      showAccessBanner(
+        "Impossible de charger le détail de l’utilisateur.",
+        "error",
+      );
       return;
     }
 
@@ -838,7 +902,9 @@
     if (listEl) {
       listEl.innerHTML = "";
     }
-    var restos = Array.isArray(res.data.restaurants) ? res.data.restaurants : [];
+    var restos = Array.isArray(res.data.restaurants)
+      ? res.data.restaurants
+      : [];
     if (emptyEl) {
       emptyEl.hidden = restos.length > 0;
     }
@@ -860,16 +926,22 @@
 
   async function patchUserStatus(idStr, status) {
     var token = localStorage.getItem(TOKEN_KEY);
-    var res = await fetchJson("PATCH", "/api/admin/users/" + encodeURIComponent(idStr) + "/status", token, {
-      body: { status: status },
-    });
+    var res = await fetchJson(
+      "PATCH",
+      "/api/admin/users/" + encodeURIComponent(idStr) + "/status",
+      token,
+      {
+        body: { status: status },
+      },
+    );
 
     if (guardApiStatus(res.status)) {
       return;
     }
 
     if (!res.ok) {
-      var msg = res.data && res.data.message ? res.data.message : "Action impossible.";
+      var msg =
+        res.data && res.data.message ? res.data.message : "Action impossible.";
       showAccessBanner(msg, "error");
       return;
     }
@@ -879,13 +951,22 @@
   }
 
   async function deleteUser(idStr) {
-    if (!confirm("Supprimer définitivement cet utilisateur et ses données associées ?")) {
+    if (
+      !confirm(
+        "Supprimer définitivement cet utilisateur et ses données associées ?",
+      )
+    ) {
       return;
     }
     var token = localStorage.getItem(TOKEN_KEY);
-    var res = await fetchJson("DELETE", "/api/admin/users/" + encodeURIComponent(idStr), token, {
-      skipJsonHeaders: true,
-    });
+    var res = await fetchJson(
+      "DELETE",
+      "/api/admin/users/" + encodeURIComponent(idStr),
+      token,
+      {
+        skipJsonHeaders: true,
+      },
+    );
 
     if (guardApiStatus(res.status)) {
       return;
@@ -893,7 +974,9 @@
 
     if (!res.ok) {
       var msg =
-        res.data && typeof res.data.message === "string" ? res.data.message : "Suppression impossible.";
+        res.data && typeof res.data.message === "string"
+          ? res.data.message
+          : "Suppression impossible.";
       showAccessBanner(msg, "error");
       return;
     }
@@ -903,7 +986,9 @@
   }
 
   async function init() {
-    var allowed = await window.MenuGo_AdminGuard.enforceAdminAccess({ loginNext: LOGIN_NEXT });
+    var allowed = await window.MenuGo_AdminGuard.enforceAdminAccess({
+      loginNext: LOGIN_NEXT,
+    });
     if (!allowed) {
       return;
     }
