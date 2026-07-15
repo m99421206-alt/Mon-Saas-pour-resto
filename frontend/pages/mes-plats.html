@@ -2,8 +2,14 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="Gérez les plats de votre menu — AfricaMenu." />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta
+      name="description"
+      content="Gérez les plats de votre menu — AfricaMenu."
+    />
     <title>Mes plats — AfricaMenu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -11,7 +17,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
       media="print"
-      onload="this.media='all'"
+      onload="this.media = 'all'"
     />
     <noscript>
       <link
@@ -26,13 +32,27 @@
       href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css"
       crossorigin="anonymous"
     />
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-N40SHP116G"
+    ></script>
+    <script src="../js/analytics.js"></script>
   </head>
   <body class="dashboard-page plats-page">
     <main class="dashboard-main" id="mes-plats-main">
       <header class="dash-topbar">
-        <a href="../../index.html" class="dash-brand" aria-label="Retour accueil AfricaMenu">
+        <a
+          href="../../index.html"
+          class="dash-brand"
+          aria-label="Retour accueil AfricaMenu"
+        >
           <span class="dash-brand__logo" aria-hidden="true">
-            <img src="../../assets/images/icone/logo.webp" alt="" width="40" height="40" />
+            <img
+              src="../../assets/images/icone/logo.webp"
+              alt=""
+              width="40"
+              height="40"
+            />
           </span>
           <span class="dash-brand__name">AfricaMenu</span>
         </a>
@@ -57,7 +77,12 @@
           </p>
         </div>
         <div class="dash-hero__cta">
-          <button type="button" class="plats-add-btn" id="plats-add-main" data-action="add-plat">
+          <button
+            type="button"
+            class="plats-add-btn"
+            id="plats-add-main"
+            data-action="add-plat"
+          >
             <span class="plats-add-btn__plus" aria-hidden="true">+</span>
             <span>Ajouter un plat</span>
           </button>
@@ -70,10 +95,17 @@
         <section class="plats-form__section" aria-labelledby="plats-info-title">
           <header class="plats-form__section-head">
             <span class="plats-form__section-icon" aria-hidden="true">
-              <img src="../../assets/images/icone/coutellerie.webp" alt="" width="22" height="22" />
+              <img
+                src="../../assets/images/icone/coutellerie.webp"
+                alt=""
+                width="22"
+                height="22"
+              />
             </span>
             <div>
-              <h2 class="plats-form__section-title" id="plats-info-title">Informations du plat</h2>
+              <h2 class="plats-form__section-title" id="plats-info-title">
+                Informations du plat
+              </h2>
               <p class="plats-form__section-desc">
                 Nom, prix, description et visuel affichés sur votre menu public.
               </p>
@@ -82,7 +114,9 @@
 
           <div class="plats-form__grid plats-form__grid--duo">
             <div class="plats-form__field">
-              <label class="plats-form__label" for="plats-name">Nom du plat</label>
+              <label class="plats-form__label" for="plats-name"
+                >Nom du plat</label
+              >
               <input
                 class="plats-form__input"
                 id="plats-name"
@@ -109,7 +143,9 @@
           </div>
 
           <div class="plats-form__field plats-form__field--full">
-            <label class="plats-form__label" for="plats-description">Description du plat</label>
+            <label class="plats-form__label" for="plats-description"
+              >Description du plat</label
+            >
             <textarea
               class="plats-form__input plats-form__textarea"
               id="plats-description"
@@ -121,12 +157,26 @@
 
           <div class="plats-form__grid plats-form__grid--duo">
             <div class="plats-form__field">
-              <label class="plats-form__label" for="plats-category">Catégorie</label>
-              <select class="plats-form__input plats-form__select" id="plats-category" name="category_id" required></select>
+              <label class="plats-form__label" for="plats-category"
+                >Catégorie</label
+              >
+              <select
+                class="plats-form__input plats-form__select"
+                id="plats-category"
+                name="category_id"
+                required
+              ></select>
             </div>
             <div class="plats-form__field">
-              <span class="plats-form__label" id="plats-image-label">Image du plat</span>
-              <div class="plats-dropzone" id="plats-dropzone" role="group" aria-labelledby="plats-image-label">
+              <span class="plats-form__label" id="plats-image-label"
+                >Image du plat</span
+              >
+              <div
+                class="plats-dropzone"
+                id="plats-dropzone"
+                role="group"
+                aria-labelledby="plats-image-label"
+              >
                 <input
                   class="plats-dropzone__input"
                   id="plats-image-file"
@@ -135,17 +185,41 @@
                   accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                   tabindex="-1"
                 />
-                <div class="plats-dropzone__content" id="plats-dropzone-content">
+                <div
+                  class="plats-dropzone__content"
+                  id="plats-dropzone-content"
+                >
                   <span class="plats-dropzone__icon" aria-hidden="true">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                      <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.5" />
+                      <rect
+                        x="3"
+                        y="5"
+                        width="18"
+                        height="14"
+                        rx="2"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                      />
                       <circle cx="8.5" cy="10" r="1.5" fill="currentColor" />
-                      <path d="M21 16l-5-5-4 4-3-3-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                      <path
+                        d="M21 16l-5-5-4 4-3-3-6 6"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
                     </svg>
                   </span>
-                  <p class="plats-dropzone__text">Glissez une image ou cliquez pour sélectionner</p>
+                  <p class="plats-dropzone__text">
+                    Glissez une image ou cliquez pour sélectionner
+                  </p>
                 </div>
-                <img class="plats-dropzone__preview" id="plats-image-preview" alt="Aperçu du plat" hidden />
+                <img
+                  class="plats-dropzone__preview"
+                  id="plats-image-preview"
+                  alt="Aperçu du plat"
+                  hidden
+                />
               </div>
             </div>
           </div>
@@ -162,21 +236,38 @@
         />
 
         <label class="plats-form__check">
-          <input id="plats-is-visible" name="is_visible" type="checkbox" checked />
+          <input
+            id="plats-is-visible"
+            name="is_visible"
+            type="checkbox"
+            checked
+          />
           <span>Visible sur le menu client</span>
         </label>
 
         <label class="plats-form__check">
           <input id="plats-has-sizes" name="has_sizes" type="checkbox" />
-          <span>Ce plat propose des tailles ou options avec des prix différents</span>
+          <span
+            >Ce plat propose des tailles ou options avec des prix
+            différents</span
+          >
         </label>
 
-        <section class="plats-variants" id="plats-variants" aria-label="Variantes du plat">
+        <section
+          class="plats-variants"
+          id="plats-variants"
+          aria-label="Variantes du plat"
+        >
           <div class="plats-variants__header">
             <div class="plats-variants__head-copy">
               <span class="plats-variants__icon" aria-hidden="true">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path d="M4 7h16M4 12h10M4 17h16" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+                  <path
+                    d="M4 7h16M4 12h10M4 17h16"
+                    stroke="currentColor"
+                    stroke-width="1.75"
+                    stroke-linecap="round"
+                  />
                 </svg>
               </span>
               <div>
@@ -186,7 +277,11 @@
                 </p>
               </div>
             </div>
-            <button class="plats-variants__add" id="plats-variant-add" type="button">
+            <button
+              class="plats-variants__add"
+              id="plats-variant-add"
+              type="button"
+            >
               + Ajouter une option
             </button>
           </div>
@@ -194,20 +289,45 @@
         </section>
 
         <div class="plats-form__actions">
-          <button class="plats-form__submit" type="submit" id="plats-submit">Enregistrer</button>
-          <button class="plats-form__cancel" type="button" id="plats-cancel">Annuler</button>
+          <button class="plats-form__submit" type="submit" id="plats-submit">
+            Enregistrer
+          </button>
+          <button class="plats-form__cancel" type="button" id="plats-cancel">
+            Annuler
+          </button>
         </div>
       </form>
 
-      <section class="plats-list" id="plats-list" aria-label="Liste des plats" hidden></section>
+      <section
+        class="plats-list"
+        id="plats-list"
+        aria-label="Liste des plats"
+        hidden
+      ></section>
 
-      <section class="plats-empty" id="plats-empty" aria-labelledby="plats-empty-title">
+      <section
+        class="plats-empty"
+        id="plats-empty"
+        aria-labelledby="plats-empty-title"
+      >
         <div class="plats-empty__icon-wrap" aria-hidden="true">
-          <img src="../../assets/images/icone/coutellerie.webp" alt="" width="44" height="44" />
+          <img
+            src="../../assets/images/icone/coutellerie.webp"
+            alt=""
+            width="44"
+            height="44"
+          />
         </div>
         <h2 id="plats-empty-title" class="plats-empty__title">Aucun plat</h2>
-        <p class="plats-empty__desc">Commencez par ajouter des plats à votre menu digital.</p>
-        <button type="button" class="plats-empty__cta" id="plats-add-empty" data-action="add-plat">
+        <p class="plats-empty__desc">
+          Commencez par ajouter des plats à votre menu digital.
+        </p>
+        <button
+          type="button"
+          class="plats-empty__cta"
+          id="plats-add-empty"
+          data-action="add-plat"
+        >
           + Ajouter un plat
         </button>
       </section>
@@ -215,15 +335,31 @@
 
     <div class="dash-overlay" id="dash-overlay" hidden aria-hidden="true"></div>
 
-    <button type="button" class="dash-drawer-close" id="close-drawer" hidden aria-label="Fermer le menu">
+    <button
+      type="button"
+      class="dash-drawer-close"
+      id="close-drawer"
+      hidden
+      aria-label="Fermer le menu"
+    >
       <span class="dash-drawer-close__x" aria-hidden="true">×</span>
     </button>
 
-    <aside class="dash-drawer" id="dash-drawer" aria-labelledby="dash-drawer-title" aria-hidden="true">
+    <aside
+      class="dash-drawer"
+      id="dash-drawer"
+      aria-labelledby="dash-drawer-title"
+      aria-hidden="true"
+    >
       <header class="dash-drawer__header">
         <div class="dash-drawer__brand" id="dash-drawer-title">
           <span class="dash-drawer__logo" aria-hidden="true">
-            <img src="../../assets/images/icone/logo.webp" alt="" width="30" height="30" />
+            <img
+              src="../../assets/images/icone/logo.webp"
+              alt=""
+              width="30"
+              height="30"
+            />
           </span>
           <span class="dash-drawer__brand-name">AfricaMenu</span>
         </div>
@@ -234,15 +370,29 @@
           <li>
             <a class="dash-drawer__link" href="dashboard.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/tableaux-de-bord.webp" alt="" width="20" height="20" />
+                <img
+                  src="../../assets/images/icone/tableaux-de-bord.webp"
+                  alt=""
+                  width="20"
+                  height="20"
+                />
               </span>
               <span class="dash-drawer__label">tableau de bord</span>
             </a>
           </li>
           <li>
-            <a class="dash-drawer__link is-active" href="mes-plats.html" aria-current="page">
+            <a
+              class="dash-drawer__link is-active"
+              href="mes-plats.html"
+              aria-current="page"
+            >
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/restaurant .webp" alt="" width="30" height="30" />
+                <img
+                  src="../../assets/images/icone/restaurant .webp"
+                  alt=""
+                  width="30"
+                  height="30"
+                />
               </span>
               <span class="dash-drawer__label">Mes plats</span>
             </a>
@@ -250,7 +400,12 @@
           <li>
             <a class="dash-drawer__link" href="categories.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/categorie (1).webp" alt="" width="20" height="20" />
+                <img
+                  src="../../assets/images/icone/categorie (1).webp"
+                  alt=""
+                  width="20"
+                  height="20"
+                />
               </span>
               <span class="dash-drawer__label">Catégories</span>
             </a>
@@ -258,7 +413,12 @@
           <li>
             <a class="dash-drawer__link" href="mon-menu.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/carte-de-menu.webp" alt="" width="90" height="90" />
+                <img
+                  src="../../assets/images/icone/carte-de-menu.webp"
+                  alt=""
+                  width="90"
+                  height="90"
+                />
               </span>
               <span class="dash-drawer__label">Mon Menu</span>
             </a>
@@ -266,7 +426,12 @@
           <li>
             <a class="dash-drawer__link" href="qr-code.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/balayage-du-code-qr.webp" alt="" width="30" height="30" />
+                <img
+                  src="../../assets/images/icone/balayage-du-code-qr.webp"
+                  alt=""
+                  width="30"
+                  height="30"
+                />
               </span>
               <span class="dash-drawer__label">QR Code</span>
             </a>
@@ -274,7 +439,12 @@
           <li>
             <a class="dash-drawer__link" href="mon-abonnement.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/abonnement.webp" alt="" width="22" height="22" />
+                <img
+                  src="../../assets/images/icone/abonnement.webp"
+                  alt=""
+                  width="22"
+                  height="22"
+                />
               </span>
               <span class="dash-drawer__label">Mon abonnement</span>
             </a>
@@ -282,7 +452,12 @@
           <li>
             <a class="dash-drawer__link" href="parametres.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/parametres.webp" alt="" width="20" height="20" />
+                <img
+                  src="../../assets/images/icone/parametres.webp"
+                  alt=""
+                  width="20"
+                  height="20"
+                />
               </span>
               <span class="dash-drawer__label">Paramètres</span>
             </a>
@@ -291,11 +466,21 @@
       </nav>
 
       <footer class="dash-drawer__footer">
-        <p class="dash-drawer__resto" id="plats-drawer-restaurant">Nom du resto</p>
+        <p class="dash-drawer__resto" id="plats-drawer-restaurant">
+          Nom du resto
+        </p>
         <p class="dash-drawer__email" id="plats-drawer-email">email du resto</p>
         <a class="dash-drawer__logout" href="login.html" id="plats-logout">
-          <span class="dash-drawer__ico dash-drawer__ico--logout" aria-hidden="true">
-            <img src="../../assets/images/icone/se-deconnecter.webp" alt="" width="20" height="20" />
+          <span
+            class="dash-drawer__ico dash-drawer__ico--logout"
+            aria-hidden="true"
+          >
+            <img
+              src="../../assets/images/icone/se-deconnecter.webp"
+              alt=""
+              width="20"
+              height="20"
+            />
           </span>
           <span>Déconnexion</span>
         </a>

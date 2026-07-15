@@ -2,9 +2,11 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta
-
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta
       name="description"
       content="Administration plateforme AfricaMenu — vue globale et activité."
     />
@@ -15,7 +17,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
       media="print"
-      onload="this.media='all'"
+      onload="this.media = 'all'"
     />
     <noscript>
       <link
@@ -25,46 +27,86 @@
     </noscript>
     <link rel="stylesheet" href="../css/admin-dashboard.css" />
     <link rel="stylesheet" href="../css/admin-notifications.css" />
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-N40SHP116G"
+    ></script>
+    <script src="../js/analytics.js"></script>
   </head>
   <body class="adm-app">
     <a class="adm-skip-link" href="#admin-main">Aller au contenu principal</a>
 
     <!-- Sidebar fixe (gauche) — navigation admin plateforme -->
-    <aside class="adm-sidebar" id="adm-sidebar-panel" aria-label="Navigation administration plateforme">
+    <aside
+      class="adm-sidebar"
+      id="adm-sidebar-panel"
+      aria-label="Navigation administration plateforme"
+    >
       <div class="adm-sidebar__inner">
         <header class="adm-sidebar__head">
           <a href="../../index.html" class="adm-sidebar__brand">
             <span class="adm-sidebar__logo" aria-hidden="true">
-              <img src="../../assets/images/icone/logo.webp" alt="AfricaMenu" width="36" height="36" />
+              <img
+                src="../../assets/images/icone/logo.webp"
+                alt="AfricaMenu"
+                width="36"
+                height="36"
+              />
             </span>
-            <span class="adm-sidebar__brand-text">AfricaMenu <span class="adm-sidebar__badge">Admin</span></span>
+            <span class="adm-sidebar__brand-text"
+              >AfricaMenu <span class="adm-sidebar__badge">Admin</span></span
+            >
           </a>
         </header>
 
         <nav class="adm-sidebar__nav" aria-label="Sections admin">
           <ul class="adm-sidebar__list">
             <li>
-              <a href="admin-dashboard.html" class="adm-sidebar__link is-active" aria-current="page">
+              <a
+                href="admin-dashboard.html"
+                class="adm-sidebar__link is-active"
+                aria-current="page"
+              >
                 Tableau de bord
               </a>
             </li>
             <li>
-              <a href="admin-users.html" class="adm-sidebar__link">Utilisateurs</a>
+              <a href="admin-users.html" class="adm-sidebar__link"
+                >Utilisateurs</a
+              >
             </li>
             <li>
-              <a href="admin-restaurants.html" class="adm-sidebar__link">Restaurants</a>
+              <a href="admin-restaurants.html" class="adm-sidebar__link"
+                >Restaurants</a
+              >
             </li>
             <li>
-              <a href="admin-subscriptions.html" class="adm-sidebar__link">Abonnements</a>
+              <a href="admin-subscriptions.html" class="adm-sidebar__link"
+                >Abonnements</a
+              >
             </li>
             <li>
-              <a href="admin-settings.html" class="adm-sidebar__link">Paramètres</a>
+              <a href="admin-settings.html" class="adm-sidebar__link"
+                >Paramètres</a
+              >
             </li>
             <li>
               <a href="admin-activity-log.html" class="adm-sidebar__link">
                 <span class="adm-sidebar__link-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
+                    />
                     <path d="M3 3v5h5" />
                     <path d="M12 7v5l4 2" />
                   </svg>
@@ -75,7 +117,17 @@
             <li>
               <a href="admin-notifications.html" class="adm-sidebar__link">
                 <span class="adm-sidebar__link-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                     <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                   </svg>
@@ -87,7 +139,11 @@
         </nav>
 
         <footer class="adm-sidebar__foot">
-          <a href="login.html" class="adm-sidebar__link adm-sidebar__link--muted">Quitter l’admin</a>
+          <a
+            href="login.html"
+            class="adm-sidebar__link adm-sidebar__link--muted"
+            >Quitter l’admin</a
+          >
         </footer>
       </div>
     </aside>
@@ -111,7 +167,11 @@
           </button>
 
           <form class="adm-search" role="search" aria-label="Recherche admin">
-            <label class="adm-search__label visually-hidden" for="adm-search-input">Rechercher</label>
+            <label
+              class="adm-search__label visually-hidden"
+              for="adm-search-input"
+              >Rechercher</label
+            >
             <input
               id="adm-search-input"
               class="adm-search__input"
@@ -123,7 +183,12 @@
           </form>
 
           <div class="adm-header__actions">
-            <button type="button" class="adm-header__icon-btn" id="adm-notifications" aria-label="Notifications">
+            <button
+              type="button"
+              class="adm-header__icon-btn"
+              id="adm-notifications"
+              aria-label="Notifications"
+            >
               <span class="adm-header__notif-dot" aria-hidden="true"></span>
             </button>
 
@@ -141,7 +206,7 @@
                   <span class="adm-profile__role">Super admin</span>
                 </span>
               </button>
-              
+
               <!-- Étape ultérieure : menu déroulant profil -->
             </div>
           </div>
@@ -152,7 +217,6 @@
         <div class="adm-main__inner">
           <header class="adm-page-head">
             <h1 class="adm-page-title">Tableau de bord</h1>
-           
           </header>
 
           <div
@@ -164,7 +228,9 @@
 
           <!-- Cartes statistiques — libellés fixes ; valeurs branchées en JS (étape suivante) -->
           <section class="adm-section" aria-labelledby="adm-stats-heading">
-            <h2 id="adm-stats-heading" class="visually-hidden">Indicateurs clés</h2>
+            <h2 id="adm-stats-heading" class="visually-hidden">
+              Indicateurs clés
+            </h2>
             <ul class="adm-stats-grid">
               <li class="adm-stat-card">
                 <article class="adm-stat-card__inner">
@@ -176,7 +242,12 @@
               <li class="adm-stat-card">
                 <article class="adm-stat-card__inner">
                   <h3 class="adm-stat-card__label">Restaurants actifs</h3>
-                  <p class="adm-stat-card__value" data-stat="active-restaurants">—</p>
+                  <p
+                    class="adm-stat-card__value"
+                    data-stat="active-restaurants"
+                  >
+                    —
+                  </p>
                   <p class="adm-stat-card__hint">Établissements actifs</p>
                 </article>
               </li>
@@ -190,15 +261,28 @@
               <li class="adm-stat-card">
                 <article class="adm-stat-card__inner">
                   <h3 class="adm-stat-card__label">Abonnements actifs</h3>
-                  <p class="adm-stat-card__value" data-stat="active-subscriptions">—</p>
-                  <p class="adm-stat-card__hint">Statut « actif » et échéance ≥ aujourd’hui</p>
+                  <p
+                    class="adm-stat-card__value"
+                    data-stat="active-subscriptions"
+                  >
+                    —
+                  </p>
+                  <p class="adm-stat-card__hint">
+                    Statut « actif » et échéance ≥ aujourd’hui
+                  </p>
                 </article>
               </li>
               <li class="adm-stat-card">
                 <article class="adm-stat-card__inner">
-                  <h3 class="adm-stat-card__label">Revenus CFA (abonnements)</h3>
-                  <p class="adm-stat-card__value" data-stat="estimated-revenue">—</p>
-                  <p class="adm-stat-card__hint">Somme des tarifs CFA enregistrés sur ces abonnements</p>
+                  <h3 class="adm-stat-card__label">
+                    Revenus CFA (abonnements)
+                  </h3>
+                  <p class="adm-stat-card__value" data-stat="estimated-revenue">
+                    —
+                  </p>
+                  <p class="adm-stat-card__hint">
+                    Somme des tarifs CFA enregistrés sur ces abonnements
+                  </p>
                 </article>
               </li>
             </ul>
@@ -209,13 +293,13 @@
               <h2 id="adm-setup-help-heading" class="adm-section-title">
                 Restaurants demandant assistance
               </h2>
-              
             </div>
 
             <div class="adm-table-wrap">
               <table class="adm-table">
                 <caption class="visually-hidden">
-                  Liste des restaurants en attente d’assistance pour l’installation
+                  Liste des restaurants en attente d’assistance pour
+                  l’installation
                 </caption>
                 <thead>
                   <tr>
@@ -239,10 +323,16 @@
           <section class="adm-section" aria-labelledby="adm-activity-heading">
             <div class="adm-section-head adm-section-head--row">
               <div>
-                <h2 id="adm-activity-heading" class="adm-section-title">Activité récente</h2>
-                <p class="adm-section-desc">Les 10 dernières actions enregistrées.</p>
+                <h2 id="adm-activity-heading" class="adm-section-title">
+                  Activité récente
+                </h2>
+                <p class="adm-section-desc">
+                  Les 10 dernières actions enregistrées.
+                </p>
               </div>
-              <a href="admin-activity-log.html" class="adm-section-link-btn">Voir tout</a>
+              <a href="admin-activity-log.html" class="adm-section-link-btn"
+                >Voir tout</a
+              >
             </div>
 
             <div class="adm-table-wrap">
@@ -270,9 +360,12 @@
 
           <section class="adm-section" aria-labelledby="adm-sub-watch-heading">
             <div class="adm-section-head">
-              <h2 id="adm-sub-watch-heading" class="adm-section-title">Abonnements à surveiller</h2>
+              <h2 id="adm-sub-watch-heading" class="adm-section-title">
+                Abonnements à surveiller
+              </h2>
               <p class="adm-section-desc">
-                Échéances dans les 3 prochains jours — contactez le restaurant via WhatsApp.
+                Échéances dans les 3 prochains jours — contactez le restaurant
+                via WhatsApp.
               </p>
             </div>
 

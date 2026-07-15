@@ -2,8 +2,14 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="Admin AfricaMenu — abonnements par restaurant." />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta
+      name="description"
+      content="Admin AfricaMenu — abonnements par restaurant."
+    />
     <title>Abonnements — Admin AfricaMenu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -11,7 +17,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
       media="print"
-      onload="this.media='all'"
+      onload="this.media = 'all'"
     />
     <noscript>
       <link
@@ -22,37 +28,84 @@
     <link rel="stylesheet" href="../css/admin-dashboard.css" />
     <link rel="stylesheet" href="../css/admin-notifications.css" />
     <link rel="stylesheet" href="../css/admin-subscriptions.css" />
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-N40SHP116G"
+    ></script>
+    <script src="../js/analytics.js"></script>
   </head>
   <body class="adm-app">
     <a class="adm-skip-link" href="#admin-main">Aller au contenu principal</a>
 
-    <aside class="adm-sidebar" id="adm-sidebar-panel" aria-label="Navigation administration plateforme">
+    <aside
+      class="adm-sidebar"
+      id="adm-sidebar-panel"
+      aria-label="Navigation administration plateforme"
+    >
       <div class="adm-sidebar__inner">
         <header class="adm-sidebar__head">
           <a href="../../index.html" class="adm-sidebar__brand">
             <span class="adm-sidebar__logo" aria-hidden="true">
-              <img src="../../assets/images/icone/logo.webp" alt="AfricaMenu" width="36" height="36" />
+              <img
+                src="../../assets/images/icone/logo.webp"
+                alt="AfricaMenu"
+                width="36"
+                height="36"
+              />
             </span>
-            <span class="adm-sidebar__brand-text">AfricaMenu <span class="adm-sidebar__badge">Admin</span></span>
+            <span class="adm-sidebar__brand-text"
+              >AfricaMenu <span class="adm-sidebar__badge">Admin</span></span
+            >
           </a>
         </header>
 
         <nav class="adm-sidebar__nav" aria-label="Sections admin">
           <ul class="adm-sidebar__list">
-            <li><a href="admin-dashboard.html" class="adm-sidebar__link">Tableau de bord</a></li>
-            <li><a href="admin-users.html" class="adm-sidebar__link">Utilisateurs</a></li>
-            <li><a href="admin-restaurants.html" class="adm-sidebar__link">Restaurants</a></li>
             <li>
-              <a href="admin-subscriptions.html" class="adm-sidebar__link is-active" aria-current="page"
+              <a href="admin-dashboard.html" class="adm-sidebar__link"
+                >Tableau de bord</a
+              >
+            </li>
+            <li>
+              <a href="admin-users.html" class="adm-sidebar__link"
+                >Utilisateurs</a
+              >
+            </li>
+            <li>
+              <a href="admin-restaurants.html" class="adm-sidebar__link"
+                >Restaurants</a
+              >
+            </li>
+            <li>
+              <a
+                href="admin-subscriptions.html"
+                class="adm-sidebar__link is-active"
+                aria-current="page"
                 >Abonnements</a
               >
             </li>
-            <li><a href="admin-settings.html" class="adm-sidebar__link">Paramètres</a></li>
+            <li>
+              <a href="admin-settings.html" class="adm-sidebar__link"
+                >Paramètres</a
+              >
+            </li>
             <li>
               <a href="admin-activity-log.html" class="adm-sidebar__link">
                 <span class="adm-sidebar__link-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
+                    />
                     <path d="M3 3v5h5" />
                     <path d="M12 7v5l4 2" />
                   </svg>
@@ -63,7 +116,17 @@
             <li>
               <a href="admin-notifications.html" class="adm-sidebar__link">
                 <span class="adm-sidebar__link-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                     <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                   </svg>
@@ -75,7 +138,11 @@
         </nav>
 
         <footer class="adm-sidebar__foot">
-          <a href="login.html" class="adm-sidebar__link adm-sidebar__link--muted">Quitter l’admin</a>
+          <a
+            href="login.html"
+            class="adm-sidebar__link adm-sidebar__link--muted"
+            >Quitter l’admin</a
+          >
         </footer>
       </div>
     </aside>
@@ -99,11 +166,19 @@
           <div class="adm-header__spacer" aria-hidden="true"></div>
 
           <div class="adm-header__actions">
-            <button type="button" class="adm-header__icon-btn" aria-label="Notifications">
+            <button
+              type="button"
+              class="adm-header__icon-btn"
+              aria-label="Notifications"
+            >
               <span class="adm-header__notif-dot" aria-hidden="true"></span>
             </button>
             <div class="adm-profile">
-              <button type="button" class="adm-profile__trigger" aria-expanded="false">
+              <button
+                type="button"
+                class="adm-profile__trigger"
+                aria-expanded="false"
+              >
                 <span class="adm-profile__avatar" aria-hidden="true"></span>
                 <span class="adm-profile__meta">
                   <span class="adm-profile__name">Moussa Coulibaly</span>
@@ -119,29 +194,50 @@
         <div class="adm-main__inner adm-page--subscriptions">
           <header class="adm-page-head">
             <h1 class="adm-page-title">Abonnements</h1>
-            <p class="adm-page-subtitle">
-             
-            </p>
+            <p class="adm-page-subtitle"></p>
           </header>
 
-          <div id="adm-access-banner" class="adm-banner" role="alert" hidden></div>
+          <div
+            id="adm-access-banner"
+            class="adm-banner"
+            role="alert"
+            hidden
+          ></div>
 
-          <section id="adm-subs-panel" class="adm-section adm-toolbar--subs" aria-labelledby="adm-subs-toolbar-h">
-            <h2 id="adm-subs-toolbar-h" class="visually-hidden">Filtres abonnements</h2>
+          <section
+            id="adm-subs-panel"
+            class="adm-section adm-toolbar--subs"
+            aria-labelledby="adm-subs-toolbar-h"
+          >
+            <h2 id="adm-subs-toolbar-h" class="visually-hidden">
+              Filtres abonnements
+            </h2>
 
             <div class="adm-toolbar">
               <div class="adm-toolbar__left">
                 <div class="adm-toolbar__search-wrap">
-                  <svg class="adm-toolbar__icon-search" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <svg
+                    class="adm-toolbar__icon-search"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
                     <path
                       stroke="currentColor"
                       stroke-width="2"
                       stroke-linecap="round"
                       d="M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z"
                     />
-                    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M16.5 16.5L21 21" />
+                    <path
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      d="M16.5 16.5L21 21"
+                    />
                   </svg>
-                  <label class="visually-hidden" for="subs-q">Recherche restaurant ou email</label>
+                  <label class="visually-hidden" for="subs-q"
+                    >Recherche restaurant ou email</label
+                  >
                   <input
                     id="subs-q"
                     class="adm-toolbar__search"
@@ -151,8 +247,13 @@
                   />
                 </div>
                 <div class="adm-toolbar__filter">
-                  <label class="visually-hidden" for="subs-status-filter">Statut</label>
-                  <select id="subs-status-filter" aria-label="Filtrer par statut">
+                  <label class="visually-hidden" for="subs-status-filter"
+                    >Statut</label
+                  >
+                  <select
+                    id="subs-status-filter"
+                    aria-label="Filtrer par statut"
+                  >
                     <option value="all">Tous les statuts</option>
                     <option value="trial">Essai</option>
                     <option value="active">Actifs</option>
@@ -162,13 +263,19 @@
                 </div>
               </div>
               <div class="adm-toolbar__right desktop-only-meta">
-                <span id="subs-count-label" class="subs-count-meta" aria-live="polite"></span>
+                <span
+                  id="subs-count-label"
+                  class="subs-count-meta"
+                  aria-live="polite"
+                ></span>
               </div>
             </div>
 
             <div class="adm-table-wrap subs-table-wrap">
               <table class="adm-table">
-                <caption class="visually-hidden">Abonnements par restaurant.</caption>
+                <caption class="visually-hidden">
+                  Abonnements par restaurant.
+                </caption>
                 <thead>
                   <tr>
                     <th scope="col">Restaurant</th>
@@ -195,7 +302,11 @@
               <ul id="subs-cards-list" class="subs-cards__list"></ul>
             </div>
 
-            <nav id="subs-pagination" class="users-pagination" aria-label="Pagination"></nav>
+            <nav
+              id="subs-pagination"
+              class="users-pagination"
+              aria-label="Pagination"
+            ></nav>
           </section>
         </div>
       </main>
@@ -209,14 +320,29 @@
       aria-hidden="true"
       aria-labelledby="adm-subs-detail-title"
     >
-      <div class="adm-detail-modal__backdrop" tabindex="-1" data-close-modal></div>
+      <div
+        class="adm-detail-modal__backdrop"
+        tabindex="-1"
+        data-close-modal
+      ></div>
       <div class="adm-detail-modal__panel">
         <div class="adm-detail-modal__head">
           <div class="adm-detail-modal__titlewrap">
             <h3 id="adm-subs-detail-title">Abonnement</h3>
-            <p id="adm-subs-detail-owner" class="adm-muted-inline" style="margin-top: 0"></p>
+            <p
+              id="adm-subs-detail-owner"
+              class="adm-muted-inline"
+              style="margin-top: 0"
+            ></p>
           </div>
-          <button type="button" class="adm-detail-modal__close" aria-label="Fermer" data-close-modal>×</button>
+          <button
+            type="button"
+            class="adm-detail-modal__close"
+            aria-label="Fermer"
+            data-close-modal
+          >
+            ×
+          </button>
         </div>
         <dl>
           <div class="adm-detail-kv-row">
@@ -224,7 +350,12 @@
             <dd id="subs-d-id"></dd>
           </div>
           <div class="adm-detail-kv-row">
-            <dt>Quartier <span class="adm-muted-inline">(BD : <code>restaurants.city</code>)</span></dt>
+            <dt>
+              Quartier
+              <span class="adm-muted-inline"
+                >(BD : <code>restaurants.city</code>)</span
+              >
+            </dt>
             <dd id="subs-d-city"></dd>
           </div>
           <div class="adm-detail-kv-row">
@@ -265,10 +396,14 @@
           </div>
         </dl>
         <div id="subs-adjust-box" class="subs-adjust-box" hidden>
-          <h4 id="subs-adjust-title" class="subs-adjust-title">Ajuster durée ou plan</h4>
+          <h4 id="subs-adjust-title" class="subs-adjust-title">
+            Ajuster durée ou plan
+          </h4>
           <p class="subs-adjust-hint">
-            Choisissez la <strong>date de fin</strong>, ou des <strong>jours à ajouter</strong> (<strong>pas les deux</strong>), ou modifiez le
-            <strong>plan</strong> (catalogue défini sous Paramètres).
+            Choisissez la <strong>date de fin</strong>, ou des
+            <strong>jours à ajouter</strong> (<strong>pas les deux</strong>), ou
+            modifiez le <strong>plan</strong> (catalogue défini sous
+            Paramètres).
           </p>
           <div class="subs-adjust-fields">
             <label class="subs-adjust-label">
@@ -277,32 +412,58 @@
             </label>
             <label class="subs-adjust-label">
               <span>Ajouter des jours</span>
-              <input type="number" id="subs-adj-add-days" min="-3660" max="3660" step="1" placeholder="± jours" />
+              <input
+                type="number"
+                id="subs-adj-add-days"
+                min="-3660"
+                max="3660"
+                step="1"
+                placeholder="± jours"
+              />
             </label>
             <label class="subs-adjust-label">
               <span>Plan</span>
               <select id="subs-adj-plan-key" autocomplete="off"></select>
             </label>
           </div>
-          <button type="button" class="adm-btn adm-btn--primary" id="subs-adj-send">Enregistrer les changements</button>
+          <button
+            type="button"
+            class="adm-btn adm-btn--primary"
+            id="subs-adj-send"
+          >
+            Enregistrer les changements
+          </button>
         </div>
         <p id="subs-d-desc" class="adm-muted-inline" hidden></p>
       </div>
     </div>
 
-    <dialog id="subs-plan-picker" class="subs-plan-picker" aria-labelledby="subs-plan-picker-title">
+    <dialog
+      id="subs-plan-picker"
+      class="subs-plan-picker"
+      aria-labelledby="subs-plan-picker-title"
+    >
       <div class="subs-plan-picker__panel">
-        <h3 id="subs-plan-picker-title" class="subs-plan-picker__title">Choisir un plan</h3>
+        <h3 id="subs-plan-picker-title" class="subs-plan-picker__title">
+          Choisir un plan
+        </h3>
         <p id="subs-plan-picker-hint" class="subs-plan-picker__hint">
-          Catalogue défini sous <strong>Paramètres</strong> → <strong>Plans d’abonnement</strong>.
+          Catalogue défini sous <strong>Paramètres</strong> →
+          <strong>Plans d’abonnement</strong>.
         </p>
         <label class="subs-plan-picker__label">
           <span class="subs-plan-picker__labeltxt">Plan</span>
           <select id="subs-plan-picker-select" autocomplete="off"></select>
         </label>
         <div class="subs-plan-picker__actions">
-          <button type="button" class="adm-btn" id="subs-plan-picker-cancel">Annuler</button>
-          <button type="button" class="adm-btn adm-btn--primary" id="subs-plan-picker-ok">
+          <button type="button" class="adm-btn" id="subs-plan-picker-cancel">
+            Annuler
+          </button>
+          <button
+            type="button"
+            class="adm-btn adm-btn--primary"
+            id="subs-plan-picker-ok"
+          >
             Continuer
           </button>
         </div>

@@ -6,7 +6,10 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <meta name="description" content="Créez votre compte AfricaMenu — menu digital pour restaurant." />
+    <meta
+      name="description"
+      content="Créez votre compte AfricaMenu — menu digital pour restaurant."
+    />
     <title>Inscription — AfricaMenu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,7 +17,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
       media="print"
-      onload="this.media='all'"
+      onload="this.media = 'all'"
     />
     <noscript>
       <link
@@ -23,13 +26,27 @@
       />
     </noscript>
     <link rel="stylesheet" href="../css/auth.css" />
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-N40SHP116G"
+    ></script>
+    <script src="../js/analytics.js"></script>
   </head>
   <body class="auth-page">
     <main class="auth-main">
       <div class="auth-card">
-        <a class="auth-brand" href="../../index.html" aria-label="AfricaMenu — Accueil">
+        <a
+          class="auth-brand"
+          href="../../index.html"
+          aria-label="AfricaMenu — Accueil"
+        >
           <span class="auth-brand__logo">
-            <img src="../../assets/images/icone/logo.webp" alt="AfricaMenu" width="40" height="40" />
+            <img
+              src="../../assets/images/icone/logo.webp"
+              alt="AfricaMenu"
+              width="40"
+              height="40"
+            />
           </span>
           <span class="auth-brand__name">AfricaMenu</span>
         </a>
@@ -39,7 +56,13 @@
           Vous avez déjà un compte ? <a href="login.html">Connectez-vous</a>
         </p>
 
-        <form class="auth-form" id="form-register" action="#" method="post" novalidate>
+        <form
+          class="auth-form"
+          id="form-register"
+          action="#"
+          method="post"
+          novalidate
+        >
           <div class="auth-field">
             <label for="restaurant-name">Nom du restaurant</label>
             <input
@@ -66,7 +89,9 @@
           </div>
 
           <div class="auth-field">
-            <label for="whatsapp">Téléphone principal (WhatsApp pour les commandes)</label>
+            <label for="whatsapp"
+              >Téléphone principal (WhatsApp pour les commandes)</label
+            >
             <input
               id="whatsapp"
               name="whatsapp"
@@ -75,7 +100,10 @@
               placeholder="+223 00 00 00 00"
               required
             />
-            <span class="auth-field-hint">Ce numéro est enregistré comme contact principal du compte et pour recevoir les commandes.</span>
+            <span class="auth-field-hint"
+              >Ce numéro est enregistré comme contact principal du compte et
+              pour recevoir les commandes.</span
+            >
           </div>
 
           <div class="auth-field">
@@ -92,7 +120,6 @@
               required
               maxlength="120"
             />
-           
           </div>
 
           <div class="auth-field">
@@ -126,12 +153,36 @@
                 aria-pressed="false"
               >
                 <span class="auth-password-toggle__icons" aria-hidden="true">
-                  <svg class="auth-password-toggle__eye" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg
+                    class="auth-password-toggle__eye"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
                     <path d="M2 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
                     <circle cx="13" cy="12" r="3" />
                   </svg>
-                  <svg class="auth-password-toggle__eye-off" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17.94 17.94A11.93 11.93 0 0112 20c-7 0-11-8-11-8a21.71 21.71 0 015.06-7.94M9.9 4.24A11.93 11.93 0 0112 4c7 0 11 8 11 8a21.71 21.71 0 01-5.06 7.94" />
+                  <svg
+                    class="auth-password-toggle__eye-off"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M17.94 17.94A11.93 11.93 0 0112 20c-7 0-11-8-11-8a21.71 21.71 0 015.06-7.94M9.9 4.24A11.93 11.93 0 0112 4c7 0 11 8 11 8a21.71 21.71 0 01-5.06 7.94"
+                    />
                     <line x1="1" y1="1" x2="23" y2="23" />
                   </svg>
                 </span>
@@ -157,12 +208,36 @@
                 aria-pressed="false"
               >
                 <span class="auth-password-toggle__icons" aria-hidden="true">
-                  <svg class="auth-password-toggle__eye" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg
+                    class="auth-password-toggle__eye"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
                     <path d="M2 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
                     <circle cx="13" cy="12" r="3" />
                   </svg>
-                  <svg class="auth-password-toggle__eye-off" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17.94 17.94A11.93 11.93 0 0112 20c-7 0-11-8-11-8a21.71 21.71 0 015.06-7.94M9.9 4.24A11.93 11.93 0 0112 4c7 0 11 8 11 8a21.71 21.71 0 01-5.06 7.94" />
+                  <svg
+                    class="auth-password-toggle__eye-off"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M17.94 17.94A11.93 11.93 0 0112 20c-7 0-11-8-11-8a21.71 21.71 0 015.06-7.94M9.9 4.24A11.93 11.93 0 0112 4c7 0 11 8 11 8a21.71 21.71 0 01-5.06 7.94"
+                    />
                     <line x1="1" y1="1" x2="23" y2="23" />
                   </svg>
                 </span>

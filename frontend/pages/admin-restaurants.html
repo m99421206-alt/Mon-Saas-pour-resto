@@ -2,8 +2,14 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="Administration AfricaMenu — restaurants et menus publics." />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta
+      name="description"
+      content="Administration AfricaMenu — restaurants et menus publics."
+    />
     <title>Restaurants — Admin AfricaMenu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -11,7 +17,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
       media="print"
-      onload="this.media='all'"
+      onload="this.media = 'all'"
     />
     <noscript>
       <link
@@ -22,43 +28,84 @@
     <link rel="stylesheet" href="../css/admin-dashboard.css" />
     <link rel="stylesheet" href="../css/admin-notifications.css" />
     <link rel="stylesheet" href="../css/admin-restaurants.css" />
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-N40SHP116G"
+    ></script>
+    <script src="../js/analytics.js"></script>
   </head>
   <body class="adm-app">
     <a class="adm-skip-link" href="#admin-main">Aller au contenu principal</a>
 
-    <aside class="adm-sidebar" id="adm-sidebar-panel" aria-label="Navigation administration plateforme">
+    <aside
+      class="adm-sidebar"
+      id="adm-sidebar-panel"
+      aria-label="Navigation administration plateforme"
+    >
       <div class="adm-sidebar__inner">
         <header class="adm-sidebar__head">
           <a href="../../index.html" class="adm-sidebar__brand">
             <span class="adm-sidebar__logo" aria-hidden="true">
-              <img src="../../assets/images/icone/logo.webp" alt="AfricaMenu" width="36" height="36" />
+              <img
+                src="../../assets/images/icone/logo.webp"
+                alt="AfricaMenu"
+                width="36"
+                height="36"
+              />
             </span>
-            <span class="adm-sidebar__brand-text">AfricaMenu <span class="adm-sidebar__badge">Admin</span></span>
+            <span class="adm-sidebar__brand-text"
+              >AfricaMenu <span class="adm-sidebar__badge">Admin</span></span
+            >
           </a>
         </header>
 
         <nav class="adm-sidebar__nav" aria-label="Sections admin">
           <ul class="adm-sidebar__list">
             <li>
-              <a href="admin-dashboard.html" class="adm-sidebar__link">Tableau de bord</a>
+              <a href="admin-dashboard.html" class="adm-sidebar__link"
+                >Tableau de bord</a
+              >
             </li>
             <li>
-              <a href="admin-users.html" class="adm-sidebar__link">Utilisateurs</a>
+              <a href="admin-users.html" class="adm-sidebar__link"
+                >Utilisateurs</a
+              >
             </li>
             <li>
-              <a href="admin-restaurants.html" class="adm-sidebar__link is-active" aria-current="page">Restaurants</a>
+              <a
+                href="admin-restaurants.html"
+                class="adm-sidebar__link is-active"
+                aria-current="page"
+                >Restaurants</a
+              >
             </li>
             <li>
-              <a href="admin-subscriptions.html" class="adm-sidebar__link">Abonnements</a>
+              <a href="admin-subscriptions.html" class="adm-sidebar__link"
+                >Abonnements</a
+              >
             </li>
             <li>
-              <a href="admin-settings.html" class="adm-sidebar__link">Paramètres</a>
+              <a href="admin-settings.html" class="adm-sidebar__link"
+                >Paramètres</a
+              >
             </li>
             <li>
               <a href="admin-activity-log.html" class="adm-sidebar__link">
                 <span class="adm-sidebar__link-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"
+                    />
                     <path d="M3 3v5h5" />
                     <path d="M12 7v5l4 2" />
                   </svg>
@@ -69,7 +116,17 @@
             <li>
               <a href="admin-notifications.html" class="adm-sidebar__link">
                 <span class="adm-sidebar__link-icon" aria-hidden="true">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                     <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                   </svg>
@@ -81,7 +138,11 @@
         </nav>
 
         <footer class="adm-sidebar__foot">
-          <a href="login.html" class="adm-sidebar__link adm-sidebar__link--muted">Quitter l’admin</a>
+          <a
+            href="login.html"
+            class="adm-sidebar__link adm-sidebar__link--muted"
+            >Quitter l’admin</a
+          >
         </footer>
       </div>
     </aside>
@@ -105,7 +166,11 @@
           <div class="adm-header__spacer" aria-hidden="true"></div>
 
           <div class="adm-header__actions">
-            <button type="button" class="adm-header__icon-btn" aria-label="Notifications">
+            <button
+              type="button"
+              class="adm-header__icon-btn"
+              aria-label="Notifications"
+            >
               <span class="adm-header__notif-dot" aria-hidden="true"></span>
             </button>
             <div class="adm-profile">
@@ -130,32 +195,50 @@
         <div class="adm-main__inner adm-page--restaurants">
           <header class="adm-page-head">
             <h1 class="adm-page-title">Restaurants</h1>
-          
           </header>
 
-          <div id="adm-access-banner" class="adm-banner" role="alert" hidden></div>
+          <div
+            id="adm-access-banner"
+            class="adm-banner"
+            role="alert"
+            hidden
+          ></div>
 
           <section
             id="adm-resto-panel"
             class="adm-section adm-resto-panel"
             aria-labelledby="adm-resto-toolbar-heading"
           >
-            <h2 id="adm-resto-toolbar-heading" class="visually-hidden">Filtres restaurants</h2>
+            <h2 id="adm-resto-toolbar-heading" class="visually-hidden">
+              Filtres restaurants
+            </h2>
 
             <div class="adm-resto-panel__shell">
               <div class="adm-toolbar adm-toolbar--resto">
                 <div class="adm-toolbar__left">
                   <div class="adm-toolbar__search-wrap">
-                    <svg class="adm-toolbar__icon-search" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <svg
+                      class="adm-toolbar__icon-search"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      aria-hidden="true"
+                    >
                       <path
                         stroke="currentColor"
                         stroke-width="2"
                         stroke-linecap="round"
                         d="M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z"
                       />
-                      <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M16.5 16.5L21 21" />
+                      <path
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        d="M16.5 16.5L21 21"
+                      />
                     </svg>
-                    <label class="visually-hidden" for="resto-q">Rechercher</label>
+                    <label class="visually-hidden" for="resto-q"
+                      >Rechercher</label
+                    >
                     <input
                       id="resto-q"
                       class="adm-toolbar__search"
@@ -165,8 +248,15 @@
                     />
                   </div>
                   <div class="adm-toolbar__filter">
-                    <label class="visually-hidden" for="resto-filter-subscription">Filtrer par abonnement</label>
-                    <select id="resto-filter-subscription" aria-label="Abonnement">
+                    <label
+                      class="visually-hidden"
+                      for="resto-filter-subscription"
+                      >Filtrer par abonnement</label
+                    >
+                    <select
+                      id="resto-filter-subscription"
+                      aria-label="Abonnement"
+                    >
                       <option value="all">Tous les abonnements</option>
                       <option value="trial">Essai</option>
                       <option value="active">Actif</option>
@@ -175,7 +265,9 @@
                     </select>
                   </div>
                   <div class="adm-toolbar__filter">
-                    <label class="visually-hidden" for="resto-filter-menu">Filtrer par menu public</label>
+                    <label class="visually-hidden" for="resto-filter-menu"
+                      >Filtrer par menu public</label
+                    >
                     <select id="resto-filter-menu" aria-label="Menu public">
                       <option value="all">Menus : tous</option>
                       <option value="live">Menu en ligne</option>
@@ -184,7 +276,11 @@
                   </div>
                 </div>
                 <div class="adm-toolbar__right desktop-only-meta">
-                  <span id="resto-count-label" class="restaurants-count-meta" aria-live="polite"></span>
+                  <span
+                    id="resto-count-label"
+                    class="restaurants-count-meta"
+                    aria-live="polite"
+                  ></span>
                 </div>
               </div>
 
@@ -214,11 +310,18 @@
                 </div>
 
                 <div class="restaurants-cards">
-                  <ul id="resto-cards-list" class="restaurants-cards__list"></ul>
+                  <ul
+                    id="resto-cards-list"
+                    class="restaurants-cards__list"
+                  ></ul>
                 </div>
               </div>
 
-              <nav id="resto-pagination" class="users-pagination users-pagination--resto" aria-label="Pagination restaurants"></nav>
+              <nav
+                id="resto-pagination"
+                class="users-pagination users-pagination--resto"
+                aria-label="Pagination restaurants"
+              ></nav>
             </div>
           </section>
         </div>
@@ -233,7 +336,11 @@
       aria-hidden="true"
       aria-labelledby="adm-resto-detail-title"
     >
-      <div class="adm-detail-modal__backdrop" tabindex="-1" data-close-modal></div>
+      <div
+        class="adm-detail-modal__backdrop"
+        tabindex="-1"
+        data-close-modal
+      ></div>
       <div class="adm-detail-modal__panel wide">
         <img id="adm-resto-banner" class="resto-detail-cover" alt="" hidden />
         <div class="adm-detail-modal__head">
@@ -241,7 +348,14 @@
             <h3 id="adm-resto-detail-title">Restaurant</h3>
             <p id="adm-resto-owner" class="adm-detail-modal__email"></p>
           </div>
-          <button type="button" class="adm-detail-modal__close" data-close-modal aria-label="Fermer">×</button>
+          <button
+            type="button"
+            class="adm-detail-modal__close"
+            data-close-modal
+            aria-label="Fermer"
+          >
+            ×
+          </button>
         </div>
         <dl>
           <div class="adm-detail-kv-row">
@@ -249,7 +363,12 @@
             <dd id="adm-resto-id"></dd>
           </div>
           <div class="adm-detail-kv-row">
-            <dt>Quartier <span class="adm-muted-inline">(colonnes BD&nbsp;: <code>restaurants.city</code>)</span></dt>
+            <dt>
+              Quartier
+              <span class="adm-muted-inline"
+                >(colonnes BD&nbsp;: <code>restaurants.city</code>)</span
+              >
+            </dt>
             <dd id="adm-resto-city"></dd>
           </div>
           <div class="adm-detail-kv-row">
@@ -278,11 +397,16 @@
           </div>
         </dl>
         <div class="resto-detail-actions">
-          <button type="button" class="adm-btn adm-btn--install" id="adm-resto-open-dashboard">
+          <button
+            type="button"
+            class="adm-btn adm-btn--install"
+            id="adm-resto-open-dashboard"
+          >
             Ouvrir le tableau de bord
           </button>
           <p class="resto-detail-actions__hint">
-            Accédez au dashboard du restaurant pour réaliser l’installation à sa place.
+            Accédez au dashboard du restaurant pour réaliser l’installation à sa
+            place.
           </p>
         </div>
         <p id="adm-resto-desc" class="adm-muted-inline" hidden></p>

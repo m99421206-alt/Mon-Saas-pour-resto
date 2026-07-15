@@ -2,7 +2,10 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
     <title>Menu client - AfricaMenu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -16,7 +19,7 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
       media="print"
-      onload="this.media='all'"
+      onload="this.media = 'all'"
     />
     <noscript>
       <link
@@ -31,7 +34,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
       referrerpolicy="no-referrer"
       media="print"
-      onload="this.media='all'"
+      onload="this.media = 'all'"
     />
     <noscript>
       <link
@@ -40,6 +43,11 @@
         referrerpolicy="no-referrer"
       />
     </noscript>
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-N40SHP116G"
+    ></script>
+    <script src="../js/analytics.js"></script>
   </head>
   <body>
     <div class="app menu-enter-pending">
@@ -57,11 +65,17 @@
           </div>
 
           <article class="restaurant">
-            <div class="restaurant__logo is-empty" id="restaurant-logo-wrap" aria-label="Logo du restaurant">
+            <div
+              class="restaurant__logo is-empty"
+              id="restaurant-logo-wrap"
+              aria-label="Logo du restaurant"
+            >
               <img id="restaurant-logo" alt="" decoding="async" hidden />
             </div>
             <div class="restaurant__content">
-              <h1 class="restaurant__title" id="restaurant-name">Menu du restaurant</h1>
+              <h1 class="restaurant__title" id="restaurant-name">
+                Menu du restaurant
+              </h1>
               <p class="restaurant__desc" id="restaurant-description">
                 Les informations du restaurant seront chargées automatiquement.
               </p>
@@ -79,15 +93,35 @@
         </section>
       </main>
 
-      <section class="product-detail" id="product-detail" aria-labelledby="detail-title" hidden>
-        <button class="detail-back" id="detail-back" type="button" aria-label="Retour au menu">
+      <section
+        class="product-detail"
+        id="product-detail"
+        aria-labelledby="detail-title"
+        hidden
+      >
+        <button
+          class="detail-back"
+          id="detail-back"
+          type="button"
+          aria-label="Retour au menu"
+        >
           <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
         </button>
 
         <div class="product-detail__scroll">
           <div class="detail-media">
-            <img class="detail-image" id="detail-image" alt="Image du produit" hidden />
-            <div class="detail-image-placeholder" id="detail-image-placeholder" role="img" hidden>
+            <img
+              class="detail-image"
+              id="detail-image"
+              alt="Image du produit"
+              hidden
+            />
+            <div
+              class="detail-image-placeholder"
+              id="detail-image-placeholder"
+              role="img"
+              hidden
+            >
               <i class="fa-regular fa-image" aria-hidden="true"></i>
               <span>Aucune image disponible</span>
             </div>
@@ -96,30 +130,65 @@
           <div class="detail-content">
             <h2 class="detail-title" id="detail-title">Produit</h2>
             <p class="detail-price" id="detail-price">0 CFA</p>
-            <p class="detail-description" id="detail-description">Description du produit</p>
+            <p class="detail-description" id="detail-description">
+              Description du produit
+            </p>
 
             <div class="detail-group" id="detail-size-group">
               <p class="detail-label">Taille</p>
-              <div class="size-options" id="size-options" aria-label="Choisir une taille">
-                <button class="size-option active" type="button" data-size="Petit">Petit</button>
-                <button class="size-option" type="button" data-size="Moins">Moins</button>
-                <button class="size-option" type="button" data-size="Grand">Grand</button>
+              <div
+                class="size-options"
+                id="size-options"
+                aria-label="Choisir une taille"
+              >
+                <button
+                  class="size-option active"
+                  type="button"
+                  data-size="Petit"
+                >
+                  Petit
+                </button>
+                <button class="size-option" type="button" data-size="Moins">
+                  Moins
+                </button>
+                <button class="size-option" type="button" data-size="Grand">
+                  Grand
+                </button>
               </div>
             </div>
 
             <div class="detail-group">
               <p class="detail-label">Quantité</p>
               <div class="quantity-control" aria-label="Choisir une quantité">
-                <button class="quantity-btn quantity-btn--minus" id="quantity-minus" type="button">−</button>
+                <button
+                  class="quantity-btn quantity-btn--minus"
+                  id="quantity-minus"
+                  type="button"
+                >
+                  −
+                </button>
                 <span class="quantity-value" id="quantity-value">02</span>
-                <button class="quantity-btn quantity-btn--plus" id="quantity-plus" type="button">+</button>
+                <button
+                  class="quantity-btn quantity-btn--plus"
+                  id="quantity-plus"
+                  type="button"
+                >
+                  +
+                </button>
               </div>
             </div>
 
             <section class="similar-section" aria-labelledby="similar-title">
               <div class="similar-header">
-                <h3 class="similar-title" id="similar-title">Produits similaires</h3>
-                <button class="similar-see-all" id="similar-see-all" type="button" hidden>
+                <h3 class="similar-title" id="similar-title">
+                  Produits similaires
+                </h3>
+                <button
+                  class="similar-see-all"
+                  id="similar-see-all"
+                  type="button"
+                  hidden
+                >
                   Tout voir
                   <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
                 </button>
@@ -130,19 +199,37 @@
         </div>
 
         <div class="detail-actions">
-          <button class="action-btn action-btn--add" id="detail-add" type="button">
+          <button
+            class="action-btn action-btn--add"
+            id="detail-add"
+            type="button"
+          >
             <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
             <span>Ajouter</span>
           </button>
-          <button class="action-btn action-btn--order" id="detail-order" type="button">
+          <button
+            class="action-btn action-btn--order"
+            id="detail-order"
+            type="button"
+          >
             <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
             <span>Commander</span>
           </button>
         </div>
       </section>
 
-      <section class="order-page" id="order-page" aria-labelledby="order-title" hidden>
-        <button class="order-back" id="order-back" type="button" aria-label="Retour">
+      <section
+        class="order-page"
+        id="order-page"
+        aria-labelledby="order-title"
+        hidden
+      >
+        <button
+          class="order-back"
+          id="order-back"
+          type="button"
+          aria-label="Retour"
+        >
           <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
         </button>
 
@@ -152,7 +239,8 @@
           </header>
 
           <p class="order-instruction">
-            Cliquez sur <strong>Commander</strong> pour envoyer votre commande sur
+            Cliquez sur <strong>Commander</strong> pour envoyer votre commande
+            sur
             <span>WhatsApp</span>
           </p>
 
@@ -183,13 +271,24 @@
       </a>
 
       <nav class="bottom-nav" aria-label="Navigation principale">
-        <a class="bottom-nav__item active" id="home-nav" href="#" aria-current="page" aria-label="Accueil">
+        <a
+          class="bottom-nav__item active"
+          id="home-nav"
+          href="#"
+          aria-current="page"
+          aria-label="Accueil"
+        >
           <span class="bottom-nav__icon-wrap">
             <i class="fa-solid fa-house" aria-hidden="true"></i>
           </span>
           <span class="bottom-nav__label" aria-hidden="true">Accueil</span>
         </a>
-        <a class="bottom-nav__item" id="favorites-nav" href="#" aria-label="Favoris">
+        <a
+          class="bottom-nav__item"
+          id="favorites-nav"
+          href="#"
+          aria-label="Favoris"
+        >
           <span class="bottom-nav__icon-wrap">
             <i class="fa-regular fa-heart" aria-hidden="true"></i>
           </span>
@@ -204,7 +303,13 @@
         </a>
       </nav>
 
-      <div class="cart-toast" id="cart-toast" role="status" aria-live="polite" hidden>
+      <div
+        class="cart-toast"
+        id="cart-toast"
+        role="status"
+        aria-live="polite"
+        hidden
+      >
         <span class="cart-toast__msg" id="cart-toast-msg"></span>
       </div>
     </div>

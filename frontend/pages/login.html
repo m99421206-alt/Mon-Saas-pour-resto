@@ -6,7 +6,10 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <meta name="description" content="Connectez-vous à AfricaMenu — menu digital pour restaurant." />
+    <meta
+      name="description"
+      content="Connectez-vous à AfricaMenu — menu digital pour restaurant."
+    />
     <title>Connexion — AfricaMenu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,7 +17,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
       media="print"
-      onload="this.media='all'"
+      onload="this.media = 'all'"
     />
     <noscript>
       <link
@@ -23,13 +26,27 @@
       />
     </noscript>
     <link rel="stylesheet" href="../css/auth.css" />
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-N40SHP116G"
+    ></script>
+    <script src="../js/analytics.js"></script>
   </head>
   <body class="auth-page auth-page--login">
     <main class="auth-main">
       <div class="auth-card">
-        <a class="auth-brand" href="../../index.html" aria-label="AfricaMenu — Accueil">
+        <a
+          class="auth-brand"
+          href="../../index.html"
+          aria-label="AfricaMenu — Accueil"
+        >
           <span class="auth-brand__logo">
-            <img src="../../assets/images/icone/logo.webp" alt="AfricaMenu" width="40" height="40" />
+            <img
+              src="../../assets/images/icone/logo.webp"
+              alt="AfricaMenu"
+              width="40"
+              height="40"
+            />
           </span>
           <span class="auth-brand__name">AfricaMenu</span>
         </a>
@@ -39,7 +56,13 @@
           <a href="register.html">Ou créez un compte gratuitement</a>
         </p>
 
-        <form class="auth-form" id="form-login" action="#" method="post" novalidate>
+        <form
+          class="auth-form"
+          id="form-login"
+          action="#"
+          method="post"
+          novalidate
+        >
           <div class="auth-field">
             <label for="login-email">Adresse email</label>
             <input
@@ -70,19 +93,47 @@
                 aria-pressed="false"
               >
                 <span class="auth-password-toggle__icons" aria-hidden="true">
-                  <svg class="auth-password-toggle__eye" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg
+                    class="auth-password-toggle__eye"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
                     <path d="M2 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
                     <circle cx="13" cy="12" r="3" />
                   </svg>
-                  <svg class="auth-password-toggle__eye-off" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17.94 17.94A11.93 11.93 0 0112 20c-7 0-11-8-11-8a21.71 21.71 0 015.06-7.94M9.9 4.24A11.93 11.93 0 0112 4c7 0 11 8 11 8a21.71 21.71 0 01-5.06 7.94" />
+                  <svg
+                    class="auth-password-toggle__eye-off"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M17.94 17.94A11.93 11.93 0 0112 20c-7 0-11-8-11-8a21.71 21.71 0 015.06-7.94M9.9 4.24A11.93 11.93 0 0112 4c7 0 11 8 11 8a21.71 21.71 0 01-5.06 7.94"
+                    />
                     <line x1="1" y1="1" x2="23" y2="23" />
                   </svg>
                 </span>
               </button>
             </div>
             <p class="auth-forgot-wrap">
-              <button type="button" class="auth-forgot-link" id="login-forgot-btn">
+              <button
+                type="button"
+                class="auth-forgot-link"
+                id="login-forgot-btn"
+              >
                 Mot de passe oublié ?
               </button>
             </p>
@@ -106,14 +157,26 @@
       <div class="auth-modal__backdrop" data-close-forgot tabindex="-1"></div>
       <div class="auth-modal__panel">
         <div class="auth-modal__head">
-          <h2 id="login-forgot-title" class="auth-modal__title">Mot de passe oublié</h2>
-          <button type="button" class="auth-modal__close" aria-label="Fermer" data-close-forgot>×</button>
+          <h2 id="login-forgot-title" class="auth-modal__title">
+            Mot de passe oublié
+          </h2>
+          <button
+            type="button"
+            class="auth-modal__close"
+            aria-label="Fermer"
+            data-close-forgot
+          >
+            ×
+          </button>
         </div>
         <p class="auth-modal__lead">
-          Contactez notre support WhatsApp pour recevoir votre code de réinitialisation.
+          Contactez notre support WhatsApp pour recevoir votre code de
+          réinitialisation.
         </p>
         <div class="auth-field">
-          <label for="forgot-resto-name">Nom du restaurant <span class="auth-field-optional"></span></label>
+          <label for="forgot-resto-name"
+            >Nom du restaurant <span class="auth-field-optional"></span
+          ></label>
           <input
             id="forgot-resto-name"
             type="text"
@@ -122,7 +185,9 @@
           />
         </div>
         <div class="auth-field">
-          <label for="forgot-phone">Numéro de téléphone <span class="auth-field-optional"></span></label>
+          <label for="forgot-phone"
+            >Numéro de téléphone <span class="auth-field-optional"></span
+          ></label>
           <input
             id="forgot-phone"
             type="tel"
@@ -146,7 +211,9 @@
           </span>
           Contacter le support WhatsApp
         </a>
-        <button type="button" class="auth-modal__ghost" data-close-forgot>Retour à la connexion</button>
+        <button type="button" class="auth-modal__ghost" data-close-forgot>
+          Retour à la connexion
+        </button>
       </div>
     </div>
 

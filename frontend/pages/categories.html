@@ -2,8 +2,14 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="Gérez les catégories de votre menu — AfricaMenu." />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta
+      name="description"
+      content="Gérez les catégories de votre menu — AfricaMenu."
+    />
     <title>Catégories — AfricaMenu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -11,7 +17,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
       media="print"
-      onload="this.media='all'"
+      onload="this.media = 'all'"
     />
     <noscript>
       <link
@@ -20,13 +26,27 @@
       />
     </noscript>
     <link rel="stylesheet" href="../css/dashboard.css" />
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-N40SHP116G"
+    ></script>
+    <script src="../js/analytics.js"></script>
   </head>
   <body class="dashboard-page cats-page">
     <main class="dashboard-main" id="categories-main">
       <header class="dash-topbar">
-        <a href="../../index.html" class="dash-brand" aria-label="Retour accueil AfricaMenu">
+        <a
+          href="../../index.html"
+          class="dash-brand"
+          aria-label="Retour accueil AfricaMenu"
+        >
           <span class="dash-brand__logo" aria-hidden="true">
-            <img src="../../assets/images/icone/logo.webp" alt="" width="40" height="40" />
+            <img
+              src="../../assets/images/icone/logo.webp"
+              alt=""
+              width="40"
+              height="40"
+            />
           </span>
           <span class="dash-brand__name">AfricaMenu</span>
         </a>
@@ -47,11 +67,17 @@
         <div class="dash-hero__text">
           <h1 class="cats-page-title">Catégories</h1>
           <p class="cats-page-sub">
-            Gérez les catégories de votre menu (ex&nbsp;: Entrées, Plats, Boissons).
+            Gérez les catégories de votre menu (ex&nbsp;: Entrées, Plats,
+            Boissons).
           </p>
         </div>
         <div class="dash-hero__cta">
-          <button type="button" class="cats-add-btn" id="cats-add-main" data-action="add-category">
+          <button
+            type="button"
+            class="cats-add-btn"
+            id="cats-add-main"
+            data-action="add-category"
+          >
             <span class="cats-add-btn__plus" aria-hidden="true">+</span>
             <span>Ajouter</span>
           </button>
@@ -61,7 +87,9 @@
       <p class="cats-status" id="cats-status" role="status"></p>
 
       <form class="cats-form" id="cats-form" hidden>
-        <label class="cats-form__label" for="cats-name">Nom de la catégorie</label>
+        <label class="cats-form__label" for="cats-name"
+          >Nom de la catégorie</label
+        >
         <div class="cats-form__row">
           <input
             class="cats-form__input"
@@ -72,20 +100,47 @@
             autocomplete="off"
             required
           />
-          <button class="cats-form__submit" type="submit" id="cats-submit">Enregistrer</button>
+          <button class="cats-form__submit" type="submit" id="cats-submit">
+            Enregistrer
+          </button>
         </div>
-        <button class="cats-form__cancel" type="button" id="cats-cancel">Annuler</button>
+        <button class="cats-form__cancel" type="button" id="cats-cancel">
+          Annuler
+        </button>
       </form>
 
-      <section class="cats-list" id="cats-list" aria-label="Liste des catégories" hidden></section>
+      <section
+        class="cats-list"
+        id="cats-list"
+        aria-label="Liste des catégories"
+        hidden
+      ></section>
 
-      <section class="cats-empty" id="cats-empty" aria-labelledby="cats-empty-title">
+      <section
+        class="cats-empty"
+        id="cats-empty"
+        aria-labelledby="cats-empty-title"
+      >
         <div class="cats-empty__icon-wrap" aria-hidden="true">
-          <img src="../../assets/images/icone/logo.webp" alt="" width="50" height="50" />
+          <img
+            src="../../assets/images/icone/logo.webp"
+            alt=""
+            width="50"
+            height="50"
+          />
         </div>
-        <h2 id="cats-empty-title" class="cats-empty__title">Aucune catégorie</h2>
-        <p class="cats-empty__desc">Commencez par ajouter une catégorie pour organiser vos plats.</p>
-        <button type="button" class="cats-empty__cta" id="cats-add-empty" data-action="add-category">
+        <h2 id="cats-empty-title" class="cats-empty__title">
+          Aucune catégorie
+        </h2>
+        <p class="cats-empty__desc">
+          Commencez par ajouter une catégorie pour organiser vos plats.
+        </p>
+        <button
+          type="button"
+          class="cats-empty__cta"
+          id="cats-add-empty"
+          data-action="add-category"
+        >
           + Ajouter une catégorie
         </button>
       </section>
@@ -93,15 +148,31 @@
 
     <div class="dash-overlay" id="dash-overlay" hidden aria-hidden="true"></div>
 
-    <button type="button" class="dash-drawer-close" id="close-drawer" hidden aria-label="Fermer le menu">
+    <button
+      type="button"
+      class="dash-drawer-close"
+      id="close-drawer"
+      hidden
+      aria-label="Fermer le menu"
+    >
       <span class="dash-drawer-close__x" aria-hidden="true">×</span>
     </button>
 
-    <aside class="dash-drawer" id="dash-drawer" aria-labelledby="dash-drawer-title" aria-hidden="true">
+    <aside
+      class="dash-drawer"
+      id="dash-drawer"
+      aria-labelledby="dash-drawer-title"
+      aria-hidden="true"
+    >
       <header class="dash-drawer__header">
         <div class="dash-drawer__brand" id="dash-drawer-title">
           <span class="dash-drawer__logo" aria-hidden="true">
-            <img src="../../assets/images/icone/logo.webp" alt="" width="30" height="30" />
+            <img
+              src="../../assets/images/icone/logo.webp"
+              alt=""
+              width="30"
+              height="30"
+            />
           </span>
           <span class="dash-drawer__brand-name">AfricaMenu</span>
         </div>
@@ -112,7 +183,12 @@
           <li>
             <a class="dash-drawer__link" href="dashboard.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/tableaux-de-bord.webp" alt="" width="20" height="20" />
+                <img
+                  src="../../assets/images/icone/tableaux-de-bord.webp"
+                  alt=""
+                  width="20"
+                  height="20"
+                />
               </span>
               <span class="dash-drawer__label">tableau de bord</span>
             </a>
@@ -120,15 +196,29 @@
           <li>
             <a class="dash-drawer__link" href="mes-plats.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/restaurant .webp" alt="" width="30" height="30" />
+                <img
+                  src="../../assets/images/icone/restaurant .webp"
+                  alt=""
+                  width="30"
+                  height="30"
+                />
               </span>
               <span class="dash-drawer__label">Mes plats</span>
             </a>
           </li>
           <li>
-            <a class="dash-drawer__link is-active" href="categories.html" aria-current="page">
+            <a
+              class="dash-drawer__link is-active"
+              href="categories.html"
+              aria-current="page"
+            >
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/categorie (1).webp" alt="" width="20" height="20" />
+                <img
+                  src="../../assets/images/icone/categorie (1).webp"
+                  alt=""
+                  width="20"
+                  height="20"
+                />
               </span>
               <span class="dash-drawer__label">Catégories</span>
             </a>
@@ -136,7 +226,12 @@
           <li>
             <a class="dash-drawer__link" href="mon-menu.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/carte-de-menu.webp" alt="" width="90" height="90" />
+                <img
+                  src="../../assets/images/icone/carte-de-menu.webp"
+                  alt=""
+                  width="90"
+                  height="90"
+                />
               </span>
               <span class="dash-drawer__label">Mon Menu</span>
             </a>
@@ -144,7 +239,12 @@
           <li>
             <a class="dash-drawer__link" href="qr-code.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/balayage-du-code-qr.webp" alt="" width="30" height="30" />
+                <img
+                  src="../../assets/images/icone/balayage-du-code-qr.webp"
+                  alt=""
+                  width="30"
+                  height="30"
+                />
               </span>
               <span class="dash-drawer__label">QR Code</span>
             </a>
@@ -152,7 +252,12 @@
           <li>
             <a class="dash-drawer__link" href="mon-abonnement.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/abonnement.webp" alt="" width="22" height="22" />
+                <img
+                  src="../../assets/images/icone/abonnement.webp"
+                  alt=""
+                  width="22"
+                  height="22"
+                />
               </span>
               <span class="dash-drawer__label">Mon abonnement</span>
             </a>
@@ -160,7 +265,12 @@
           <li>
             <a class="dash-drawer__link" href="parametres.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/parametres.webp" alt="" width="20" height="20" />
+                <img
+                  src="../../assets/images/icone/parametres.webp"
+                  alt=""
+                  width="20"
+                  height="20"
+                />
               </span>
               <span class="dash-drawer__label">Paramètres</span>
             </a>
@@ -169,11 +279,21 @@
       </nav>
 
       <footer class="dash-drawer__footer">
-        <p class="dash-drawer__resto" id="cats-drawer-restaurant">Nom du resto</p>
+        <p class="dash-drawer__resto" id="cats-drawer-restaurant">
+          Nom du resto
+        </p>
         <p class="dash-drawer__email" id="cats-drawer-email">email du resto</p>
         <a class="dash-drawer__logout" href="login.html" id="cats-logout">
-          <span class="dash-drawer__ico dash-drawer__ico--logout" aria-hidden="true">
-            <img src="../../assets/images/icone/se-deconnecter.webp" alt="" width="20" height="20" />
+          <span
+            class="dash-drawer__ico dash-drawer__ico--logout"
+            aria-hidden="true"
+          >
+            <img
+              src="../../assets/images/icone/se-deconnecter.webp"
+              alt=""
+              width="20"
+              height="20"
+            />
           </span>
           <span>Déconnexion</span>
         </a>

@@ -2,7 +2,10 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
     <meta name="description" content="Paramètres du restaurant — AfricaMenu." />
     <title>Paramètres — AfricaMenu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -11,7 +14,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
       media="print"
-      onload="this.media='all'"
+      onload="this.media = 'all'"
     />
     <noscript>
       <link
@@ -20,13 +23,27 @@
       />
     </noscript>
     <link rel="stylesheet" href="../css/dashboard.css" />
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-N40SHP116G"
+    ></script>
+    <script src="../js/analytics.js"></script>
   </head>
   <body class="dashboard-page parametres-page">
     <main class="dashboard-main" id="parametres-main">
       <header class="dash-topbar">
-        <a href="../../index.html" class="dash-brand" aria-label="Retour accueil AfricaMenu">
+        <a
+          href="../../index.html"
+          class="dash-brand"
+          aria-label="Retour accueil AfricaMenu"
+        >
           <span class="dash-brand__logo" aria-hidden="true">
-            <img src="../../assets/images/icone/logo.webp" alt="" width="40" height="40" />
+            <img
+              src="../../assets/images/icone/logo.webp"
+              alt=""
+              width="40"
+              height="40"
+            />
           </span>
           <span class="dash-brand__name">AfricaMenu</span>
         </a>
@@ -46,7 +63,9 @@
       <section class="dash-hero dash-page-hero">
         <div class="dash-hero__text">
           <h1 class="plats-page-title">Paramètres</h1>
-          <p class="plats-page-sub">Gérez les informations de votre restaurant.</p>
+          <p class="plats-page-sub">
+            Gérez les informations de votre restaurant.
+          </p>
         </div>
       </section>
 
@@ -56,7 +75,9 @@
           <div class="parametres-card__rule" aria-hidden="true"></div>
 
           <div class="param-field">
-            <label class="param-field__label" for="restaurant-name">Nom du restaurant</label>
+            <label class="param-field__label" for="restaurant-name"
+              >Nom du restaurant</label
+            >
             <input
               class="param-field__input"
               id="restaurant-name"
@@ -66,13 +87,15 @@
               placeholder=""
             />
             <p class="param-field__hint">
-              Note : Changer le nom ne modifiera pas le lien de votre menu pour éviter de casser vos QR codes
-              existants.
+              Note : Changer le nom ne modifiera pas le lien de votre menu pour
+              éviter de casser vos QR codes existants.
             </p>
           </div>
 
           <div class="param-field">
-            <label class="param-field__label" for="restaurant-description">Description du restaurant</label>
+            <label class="param-field__label" for="restaurant-description"
+              >Description du restaurant</label
+            >
             <textarea
               class="param-field__input param-field__textarea"
               id="restaurant-description"
@@ -83,7 +106,9 @@
           </div>
 
           <div class="param-field">
-            <label class="param-field__label" for="whatsapp-number">WhatsApp commandes clients</label>
+            <label class="param-field__label" for="whatsapp-number"
+              >WhatsApp commandes clients</label
+            >
             <input
               class="param-field__input"
               id="whatsapp-number"
@@ -94,12 +119,15 @@
               placeholder="+223…"
             />
             <p class="param-field__hint">
-              Même numéro que lors de l’inscription, prérempli automatiquement ; modifiez-le ici seulement pour en utiliser un autre.
+              Même numéro que lors de l’inscription, prérempli automatiquement ;
+              modifiez-le ici seulement pour en utiliser un autre.
             </p>
           </div>
 
           <div class="param-field">
-            <span class="param-field__label" id="logo-file-label">Image de votre logo</span>
+            <span class="param-field__label" id="logo-file-label"
+              >Image de votre logo</span
+            >
             <div
               class="param-dropzone param-dropzone--logo"
               id="logo-dropzone"
@@ -118,7 +146,15 @@
               <div class="param-dropzone__content" id="logo-dropzone-content">
                 <span class="param-dropzone__icon" aria-hidden="true">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                    <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.5" />
+                    <rect
+                      x="3"
+                      y="5"
+                      width="18"
+                      height="14"
+                      rx="2"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                    />
                     <circle cx="8.5" cy="10" r="1.5" fill="currentColor" />
                     <path
                       d="M21 16l-5-5-4 4-3-3-6 6"
@@ -129,9 +165,16 @@
                     />
                   </svg>
                 </span>
-                <p class="param-dropzone__text">Glissez une image ou cliquez pour sélectionner</p>
+                <p class="param-dropzone__text">
+                  Glissez une image ou cliquez pour sélectionner
+                </p>
               </div>
-              <img class="param-dropzone__preview" id="logo-preview" alt="Aperçu du logo" hidden />
+              <img
+                class="param-dropzone__preview"
+                id="logo-preview"
+                alt="Aperçu du logo"
+                hidden
+              />
             </div>
             <input
               class="param-field__input"
@@ -146,7 +189,9 @@
           </div>
 
           <div class="param-field">
-            <span class="param-field__label" id="banner-file-label">Photo de bannière du restaurant</span>
+            <span class="param-field__label" id="banner-file-label"
+              >Photo de bannière du restaurant</span
+            >
             <div
               class="param-dropzone param-dropzone--banner"
               id="banner-dropzone"
@@ -165,7 +210,15 @@
               <div class="param-dropzone__content" id="banner-dropzone-content">
                 <span class="param-dropzone__icon" aria-hidden="true">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                    <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.5" />
+                    <rect
+                      x="3"
+                      y="5"
+                      width="18"
+                      height="14"
+                      rx="2"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                    />
                     <circle cx="8.5" cy="10" r="1.5" fill="currentColor" />
                     <path
                       d="M21 16l-5-5-4 4-3-3-6 6"
@@ -176,10 +229,17 @@
                     />
                   </svg>
                 </span>
-                <p class="param-dropzone__text">Glissez une image ou cliquez pour sélectionner</p>
+                <p class="param-dropzone__text">
+                  Glissez une image ou cliquez pour sélectionner
+                </p>
                 <p class="param-dropzone__hint">Format paysage recommandé</p>
               </div>
-              <img class="param-dropzone__preview" id="banner-preview" alt="Aperçu de la bannière" hidden />
+              <img
+                class="param-dropzone__preview"
+                id="banner-preview"
+                alt="Aperçu de la bannière"
+                hidden
+              />
             </div>
             <input
               class="param-field__input"
@@ -191,13 +251,19 @@
               placeholder="https://"
               hidden
             />
-            <p class="param-field__hint">Cette image apparaîtra en haut du menu client.</p>
+            <p class="param-field__hint">
+              Cette image apparaîtra en haut du menu client.
+            </p>
           </div>
 
           <div class="param-field param-field--theme">
             <div class="param-theme-panel">
               <div class="param-theme-panel__head">
-                <label class="param-theme-panel__title" id="theme-color-label" for="theme-choices">
+                <label
+                  class="param-theme-panel__title"
+                  id="theme-color-label"
+                  for="theme-choices"
+                >
                   Couleur du thème
                 </label>
                 <p class="param-theme-panel__desc">
@@ -217,7 +283,7 @@
                   aria-checked="false"
                   aria-label="Orange"
                   data-theme-color="#FF7A00"
-                  style="--choice-color: #FF7A00"
+                  style="--choice-color: #ff7a00"
                 ></button>
                 <button
                   type="button"
@@ -226,7 +292,7 @@
                   aria-checked="false"
                   aria-label="Gris"
                   data-theme-color="#7F8C8D"
-                  style="--choice-color: #7F8C8D"
+                  style="--choice-color: #7f8c8d"
                 ></button>
                 <button
                   type="button"
@@ -235,7 +301,7 @@
                   aria-checked="false"
                   aria-label="Rouge"
                   data-theme-color="#E74C3C"
-                  style="--choice-color: #E74C3C"
+                  style="--choice-color: #e74c3c"
                 ></button>
                 <button
                   type="button"
@@ -244,7 +310,7 @@
                   aria-checked="false"
                   aria-label="Bleu"
                   data-theme-color="#3498DB"
-                  style="--choice-color: #3498DB"
+                  style="--choice-color: #3498db"
                 ></button>
                 <button
                   type="button"
@@ -256,13 +322,24 @@
                   style="--choice-color: #111111"
                 ></button>
               </div>
-              <input type="hidden" id="theme-color-text" name="themeColor" value="#FF7A00" />
+              <input
+                type="hidden"
+                id="theme-color-text"
+                name="themeColor"
+                value="#FF7A00"
+              />
             </div>
           </div>
 
           <button type="submit" class="param-save-btn" id="parametres-save">
             <span class="param-save-btn__icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
                 <path
                   fill="currentColor"
                   d="M17 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7l-4-4zm-5 16a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm3-10H9V5h6v4z"
@@ -273,21 +350,43 @@
           </button>
         </div>
 
-        <p class="parametres-feedback" id="parametres-feedback" role="status" aria-live="polite" hidden></p>
+        <p
+          class="parametres-feedback"
+          id="parametres-feedback"
+          role="status"
+          aria-live="polite"
+          hidden
+        ></p>
       </form>
     </main>
 
     <div class="dash-overlay" id="dash-overlay" hidden aria-hidden="true"></div>
 
-    <button type="button" class="dash-drawer-close" id="close-drawer" hidden aria-label="Fermer le menu">
+    <button
+      type="button"
+      class="dash-drawer-close"
+      id="close-drawer"
+      hidden
+      aria-label="Fermer le menu"
+    >
       <span class="dash-drawer-close__x" aria-hidden="true">×</span>
     </button>
 
-    <aside class="dash-drawer" id="dash-drawer" aria-labelledby="dash-drawer-title" aria-hidden="true">
+    <aside
+      class="dash-drawer"
+      id="dash-drawer"
+      aria-labelledby="dash-drawer-title"
+      aria-hidden="true"
+    >
       <header class="dash-drawer__header">
         <div class="dash-drawer__brand" id="dash-drawer-title">
           <span class="dash-drawer__logo" aria-hidden="true">
-            <img src="../../assets/images/icone/logo.webp" alt="" width="30" height="30" />
+            <img
+              src="../../assets/images/icone/logo.webp"
+              alt=""
+              width="30"
+              height="30"
+            />
           </span>
           <span class="dash-drawer__brand-name">AfricaMenu</span>
         </div>
@@ -298,7 +397,12 @@
           <li>
             <a class="dash-drawer__link" href="dashboard.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/tableaux-de-bord.webp" alt="" width="20" height="20" />
+                <img
+                  src="../../assets/images/icone/tableaux-de-bord.webp"
+                  alt=""
+                  width="20"
+                  height="20"
+                />
               </span>
               <span class="dash-drawer__label">tableau de bord</span>
             </a>
@@ -306,7 +410,12 @@
           <li>
             <a class="dash-drawer__link" href="mes-plats.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/restaurant .webp" alt="" width="30" height="30" />
+                <img
+                  src="../../assets/images/icone/restaurant .webp"
+                  alt=""
+                  width="30"
+                  height="30"
+                />
               </span>
               <span class="dash-drawer__label">Mes plats</span>
             </a>
@@ -314,7 +423,12 @@
           <li>
             <a class="dash-drawer__link" href="categories.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/categorie (1).webp" alt="" width="20" height="20" />
+                <img
+                  src="../../assets/images/icone/categorie (1).webp"
+                  alt=""
+                  width="20"
+                  height="20"
+                />
               </span>
               <span class="dash-drawer__label">Catégories</span>
             </a>
@@ -322,7 +436,12 @@
           <li>
             <a class="dash-drawer__link" href="mon-menu.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/carte-de-menu.webp" alt="" width="90" height="90" />
+                <img
+                  src="../../assets/images/icone/carte-de-menu.webp"
+                  alt=""
+                  width="90"
+                  height="90"
+                />
               </span>
               <span class="dash-drawer__label">Mon Menu</span>
             </a>
@@ -330,7 +449,12 @@
           <li>
             <a class="dash-drawer__link" href="qr-code.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/balayage-du-code-qr.webp" alt="" width="30" height="30" />
+                <img
+                  src="../../assets/images/icone/balayage-du-code-qr.webp"
+                  alt=""
+                  width="30"
+                  height="30"
+                />
               </span>
               <span class="dash-drawer__label">QR Code</span>
             </a>
@@ -338,15 +462,29 @@
           <li>
             <a class="dash-drawer__link" href="mon-abonnement.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/abonnement.webp" alt="" width="22" height="22" />
+                <img
+                  src="../../assets/images/icone/abonnement.webp"
+                  alt=""
+                  width="22"
+                  height="22"
+                />
               </span>
               <span class="dash-drawer__label">Mon abonnement</span>
             </a>
           </li>
           <li>
-            <a class="dash-drawer__link is-active" href="parametres.html" aria-current="page">
+            <a
+              class="dash-drawer__link is-active"
+              href="parametres.html"
+              aria-current="page"
+            >
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/parametres.webp" alt="" width="20" height="20" />
+                <img
+                  src="../../assets/images/icone/parametres.webp"
+                  alt=""
+                  width="20"
+                  height="20"
+                />
               </span>
               <span class="dash-drawer__label">Paramètres</span>
             </a>
@@ -355,11 +493,21 @@
       </nav>
 
       <footer class="dash-drawer__footer">
-        <p class="dash-drawer__resto" id="param-drawer-restaurant">Nom du resto</p>
+        <p class="dash-drawer__resto" id="param-drawer-restaurant">
+          Nom du resto
+        </p>
         <p class="dash-drawer__email" id="param-drawer-email">email du resto</p>
         <a class="dash-drawer__logout" href="login.html" id="param-logout">
-          <span class="dash-drawer__ico dash-drawer__ico--logout" aria-hidden="true">
-            <img src="../../assets/images/icone/se-deconnecter.webp" alt="" width="20" height="20" />
+          <span
+            class="dash-drawer__ico dash-drawer__ico--logout"
+            aria-hidden="true"
+          >
+            <img
+              src="../../assets/images/icone/se-deconnecter.webp"
+              alt=""
+              width="20"
+              height="20"
+            />
           </span>
           <span>Déconnexion</span>
         </a>

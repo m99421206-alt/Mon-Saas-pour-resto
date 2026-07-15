@@ -18,7 +18,7 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
       media="print"
-      onload="this.media='all'"
+      onload="this.media = 'all'"
     />
     <noscript>
       <link
@@ -26,6 +26,11 @@
         rel="stylesheet"
       />
     </noscript>
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-N40SHP116G"
+    ></script>
+    <script src="../js/analytics.js"></script>
   </head>
   <!-- data-menu-id : id du restaurant pour le lien public du menu -->
   <body class="dashboard-page" data-menu-id="">
@@ -37,19 +42,31 @@
     -->
     <main class="dashboard-main" id="dashboard-main">
       <header class="dash-topbar">
-        <a href="../../index.html" class="dash-brand" aria-label="Retour accueil AfricaMenu">
-          
+        <a
+          href="../../index.html"
+          class="dash-brand"
+          aria-label="Retour accueil AfricaMenu"
+        >
           <!-- Logo : carré orange + glyphe blanc (placeholder — remplacer par SVG) -->
           <span class="dash-brand__logo" aria-hidden="true">
-            <img src="../../assets/images/icone/logo.webp" alt="Logo AfricaMenu" width="40" height="40" />
-            
-           
+            <img
+              src="../../assets/images/icone/logo.webp"
+              alt="Logo AfricaMenu"
+              width="40"
+              height="40"
+            />
           </span>
           <span class="dash-brand__name">AfricaMenu</span>
         </a>
 
-        <button class="dash-menu-btn" id="open-drawer" type="button" aria-label="Ouvrir le menu" aria-controls="dash-drawer" aria-expanded="false">
-         
+        <button
+          class="dash-menu-btn"
+          id="open-drawer"
+          type="button"
+          aria-label="Ouvrir le menu"
+          aria-controls="dash-drawer"
+          aria-expanded="false"
+        >
           <span class="dash-menu-bars" aria-hidden="true"></span>
         </button>
       </header>
@@ -57,7 +74,9 @@
       <section class="dash-hero">
         <div class="dash-hero__text">
           <h1 class="dash-title" id="dashboard-title">Bonjour</h1>
-          <p class="dash-subtitle">Vue d’ensemble de votre menu : contenu, lien public et QR code.</p>
+          <p class="dash-subtitle">
+            Vue d’ensemble de votre menu : contenu, lien public et QR code.
+          </p>
         </div>
       </section>
 
@@ -66,8 +85,16 @@
         <div class="dash-stats-row">
           <article class="dash-card dash-card--stat">
             <div class="dash-stat-inner">
-              <div class="dash-icon-tile dash-icon-tile--purple" aria-hidden="true">
-                <img src="../../assets/images/icone/categorie.webp" alt="" width="30" height="30" />
+              <div
+                class="dash-icon-tile dash-icon-tile--purple"
+                aria-hidden="true"
+              >
+                <img
+                  src="../../assets/images/icone/categorie.webp"
+                  alt=""
+                  width="30"
+                  height="30"
+                />
               </div>
               <div class="dash-stat-copy">
                 <p class="dash-label">Catégories</p>
@@ -78,8 +105,16 @@
 
           <article class="dash-card dash-card--stat">
             <div class="dash-stat-inner">
-              <div class="dash-icon-tile dash-icon-tile--orange" aria-hidden="true">
-                <img src="../../assets/images/icone/coutellerie.webp" alt="" width="40" height="40" />
+              <div
+                class="dash-icon-tile dash-icon-tile--orange"
+                aria-hidden="true"
+              >
+                <img
+                  src="../../assets/images/icone/coutellerie.webp"
+                  alt=""
+                  width="40"
+                  height="40"
+                />
               </div>
               <div class="dash-stat-copy">
                 <p class="dash-label">Plats</p>
@@ -90,15 +125,36 @@
         </div>
 
         <!-- Actions rapides (édition du menu uniquement) -->
-        <section class="dash-panel dash-panel--actions" aria-labelledby="dash-quick-title">
-          <h2 class="dash-section-title" id="dash-quick-title">Actions rapides</h2>
+        <section
+          class="dash-panel dash-panel--actions"
+          aria-labelledby="dash-quick-title"
+        >
+          <h2 class="dash-section-title" id="dash-quick-title">
+            Actions rapides
+          </h2>
           <div class="dash-quick-grid dash-quick-grid--duo">
-            <button class="dash-quick-tile" type="button" id="dashboard-add-product">
-              <span class="dash-quick-tile__icon dash-quick-tile__icon--accent" aria-hidden="true">+</span>
+            <button
+              class="dash-quick-tile"
+              type="button"
+              id="dashboard-add-product"
+            >
+              <span
+                class="dash-quick-tile__icon dash-quick-tile__icon--accent"
+                aria-hidden="true"
+                >+</span
+              >
               <span class="dash-quick-tile__label">Ajouter un plat</span>
             </button>
-            <button class="dash-quick-tile" type="button" id="dashboard-add-category">
-              <span class="dash-quick-tile__icon dash-quick-tile__icon--dark" aria-hidden="true">+</span>
+            <button
+              class="dash-quick-tile"
+              type="button"
+              id="dashboard-add-category"
+            >
+              <span
+                class="dash-quick-tile__icon dash-quick-tile__icon--dark"
+                aria-hidden="true"
+                >+</span
+              >
               <span class="dash-quick-tile__label">Ajouter une catégorie</span>
             </button>
           </div>
@@ -108,7 +164,9 @@
         <div class="dash-share-row">
           <article class="dash-card dash-card--link">
             <h2 class="dash-card-title">Lien de votre menu</h2>
-            <p class="dash-card-desc">Partagez ce lien avec vos clients ou sur vos réseaux sociaux.</p>
+            <p class="dash-card-desc">
+              Partagez ce lien avec vos clients ou sur vos réseaux sociaux.
+            </p>
             <div class="dash-link-row">
               <input
                 class="dash-link-input"
@@ -120,12 +178,28 @@
                 autocomplete="off"
                 readonly
               />
-              <button type="button" class="dash-copy-btn" id="dashboard-copy-menu" aria-label="Copier le lien du menu">
+              <button
+                type="button"
+                class="dash-copy-btn"
+                id="dashboard-copy-menu"
+                aria-label="Copier le lien du menu"
+              >
                 <span class="dash-copy-btn__label">Copier</span>
               </button>
             </div>
-            <p class="dash-copy-feedback" id="dashboard-copy-feedback" role="status" aria-live="polite" hidden></p>
-            <button type="button" class="dash-link-btn" data-action="view-public-menu" id="dashboard-view-menu">
+            <p
+              class="dash-copy-feedback"
+              id="dashboard-copy-feedback"
+              role="status"
+              aria-live="polite"
+              hidden
+            ></p>
+            <button
+              type="button"
+              class="dash-link-btn"
+              data-action="view-public-menu"
+              id="dashboard-view-menu"
+            >
               <span>Voir le menu public</span>
               <span class="dash-link-btn__icon" aria-hidden="true"></span>
             </button>
@@ -135,19 +209,35 @@
             <div class="dash-qr-card__layout">
               <div class="dash-qr-card__body">
                 <span class="dash-qr-card__icon" aria-hidden="true">
-                  <img src="../../assets/images/icone/balayage-du-code-qr.webp" alt="" width="22" height="22" />
+                  <img
+                    src="../../assets/images/icone/balayage-du-code-qr.webp"
+                    alt=""
+                    width="22"
+                    height="22"
+                  />
                 </span>
                 <h2 class="dash-qr-title">Votre QR Code</h2>
                 <p class="dash-qr-text">
-                  Imprimez-le pour vos tables. Vos clients scanneront et accéderont à votre menu.
+                  Imprimez-le pour vos tables. Vos clients scanneront et
+                  accéderont à votre menu.
                 </p>
                 <a href="qr-code.html" class="dash-qr-btn">
-                  <img src="../../assets/images/icone/qrcode.webp" alt="" width="20" height="20" />
+                  <img
+                    src="../../assets/images/icone/qrcode.webp"
+                    alt=""
+                    width="20"
+                    height="20"
+                  />
                   <span class="dash-qr-btn__label">Télécharger le QR</span>
                 </a>
               </div>
               <div class="dash-qr-preview" aria-hidden="true">
-                <canvas id="dashboard-qr-preview" width="88" height="88" aria-label="Aperçu du QR code"></canvas>
+                <canvas
+                  id="dashboard-qr-preview"
+                  width="88"
+                  height="88"
+                  aria-label="Aperçu du QR code"
+                ></canvas>
               </div>
             </div>
           </article>
@@ -156,12 +246,7 @@
     </main>
 
     <!-- --- Drawer mobile (off-canvas) --- -->
-    <div
-      class="dash-overlay"
-      id="dash-overlay"
-      hidden
-      aria-hidden="true"
-    ></div>
+    <div class="dash-overlay" id="dash-overlay" hidden aria-hidden="true"></div>
 
     <!-- Fermeture en haut à droite (zone hors panneau gris), comme sur la maquette -->
     <button
@@ -185,7 +270,12 @@
         <div class="dash-drawer__brand" id="dash-drawer-title">
           <!-- Même placeholder que la barre du haut -->
           <span class="dash-drawer__logo" aria-hidden="true">
-          <img src="../../assets/images/icone/logo.webp" alt="" width="30" height="30" />
+            <img
+              src="../../assets/images/icone/logo.webp"
+              alt=""
+              width="30"
+              height="30"
+            />
           </span>
           <span class="dash-drawer__brand-name">AfricaMenu</span>
         </div>
@@ -194,9 +284,18 @@
       <nav class="dash-drawer__nav" aria-label="Navigation principale">
         <ul class="dash-drawer__list">
           <li>
-            <a class="dash-drawer__link is-active" href="dashboard.html" aria-current="page">
+            <a
+              class="dash-drawer__link is-active"
+              href="dashboard.html"
+              aria-current="page"
+            >
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/tableaux-de-bord.webp" alt="" width="20" height="20" />
+                <img
+                  src="../../assets/images/icone/tableaux-de-bord.webp"
+                  alt=""
+                  width="20"
+                  height="20"
+                />
               </span>
               <span class="dash-drawer__label">tableau de bord</span>
             </a>
@@ -204,7 +303,12 @@
           <li>
             <a class="dash-drawer__link" href="mes-plats.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/restaurant .webp" alt="" width="30" height="30" />
+                <img
+                  src="../../assets/images/icone/restaurant .webp"
+                  alt=""
+                  width="30"
+                  height="30"
+                />
               </span>
               <span class="dash-drawer__label">Mes plats</span>
             </a>
@@ -212,7 +316,12 @@
           <li>
             <a class="dash-drawer__link" href="categories.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/categorie (1).webp" alt="" width="20" height="20" />
+                <img
+                  src="../../assets/images/icone/categorie (1).webp"
+                  alt=""
+                  width="20"
+                  height="20"
+                />
               </span>
               <span class="dash-drawer__label">Catégories</span>
             </a>
@@ -220,7 +329,12 @@
           <li>
             <a class="dash-drawer__link" href="mon-menu.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/carte-de-menu.webp" alt="" width="90" height="90" />
+                <img
+                  src="../../assets/images/icone/carte-de-menu.webp"
+                  alt=""
+                  width="90"
+                  height="90"
+                />
               </span>
               <span class="dash-drawer__label">Mon Menu</span>
             </a>
@@ -228,7 +342,12 @@
           <li>
             <a class="dash-drawer__link" href="qr-code.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/balayage-du-code-qr.webp" alt="" width="30" height="30" />
+                <img
+                  src="../../assets/images/icone/balayage-du-code-qr.webp"
+                  alt=""
+                  width="30"
+                  height="30"
+                />
               </span>
               <span class="dash-drawer__label">QR Code</span>
             </a>
@@ -236,7 +355,12 @@
           <li>
             <a class="dash-drawer__link" href="mon-abonnement.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/abonnement.webp" alt="" width="22" height="22" />
+                <img
+                  src="../../assets/images/icone/abonnement.webp"
+                  alt=""
+                  width="22"
+                  height="22"
+                />
               </span>
               <span class="dash-drawer__label">Mon abonnement</span>
             </a>
@@ -244,7 +368,12 @@
           <li>
             <a class="dash-drawer__link" href="parametres.html">
               <span class="dash-drawer__ico" aria-hidden="true">
-                <img src="../../assets/images/icone/parametres.webp" alt="" width="20" height="20" />
+                <img
+                  src="../../assets/images/icone/parametres.webp"
+                  alt=""
+                  width="20"
+                  height="20"
+                />
               </span>
               <span class="dash-drawer__label">Paramètres</span>
             </a>
@@ -253,11 +382,23 @@
       </nav>
 
       <footer class="dash-drawer__footer">
-        <p class="dash-drawer__resto" id="dashboard-drawer-restaurant">Nom du resto</p>
-        <p class="dash-drawer__email" id="dashboard-drawer-email">email du resto</p>
+        <p class="dash-drawer__resto" id="dashboard-drawer-restaurant">
+          Nom du resto
+        </p>
+        <p class="dash-drawer__email" id="dashboard-drawer-email">
+          email du resto
+        </p>
         <a class="dash-drawer__logout" href="login.html" id="dashboard-logout">
-          <span class="dash-drawer__ico dash-drawer__ico--logout" aria-hidden="true">
-            <img src="../../assets/images/icone/se-deconnecter.webp" alt="" width="20" height="20" />
+          <span
+            class="dash-drawer__ico dash-drawer__ico--logout"
+            aria-hidden="true"
+          >
+            <img
+              src="../../assets/images/icone/se-deconnecter.webp"
+              alt=""
+              width="20"
+              height="20"
+            />
           </span>
           <span>Déconnexion</span>
         </a>
