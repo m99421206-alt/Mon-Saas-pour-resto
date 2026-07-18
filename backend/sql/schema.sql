@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS `restaurants` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` INT UNSIGNED NOT NULL,
   `name` VARCHAR(255) NOT NULL,
+  `slug` VARCHAR(180) NULL,
   -- Champ technique `city` = quartier / zone du restaurant (même valeur que `restaurant.city` ou `restaurant.quartier` dans l’API).
   `city` VARCHAR(120) NULL COMMENT 'Quartier ou zone géographique du restaurant',
   `country` VARCHAR(100) NULL,
@@ -40,6 +41,7 @@ CREATE TABLE IF NOT EXISTS `restaurants` (
   `needs_setup_help` TINYINT(1) NOT NULL DEFAULT 0,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_restaurants_slug` (`slug`),
   KEY `idx_restaurants_user_id` (`user_id`),
   KEY `idx_restaurants_subscription` (`subscription_status`),
   KEY `idx_restaurants_subscription_ends_at` (`subscription_ends_at`),

@@ -97,14 +97,20 @@
     return raw.length ? raw : window.location.origin;
   }
 
-  function buildPublicMenuUrl(restaurantId) {
-    var currentPath = window.location.pathname;
-    var menuPath = currentPath.replace(/qr-code\.html$/, "mon-menu.html");
+  function buildPublicMenuUrl(restaurant) {
+    var target =
+      restaurant && restaurant.slug
+        ? String(restaurant.slug)
+        : restaurant && restaurant.id
+          ? String(restaurant.id)
+          : "";
+    if (!target) {
+      return "";
+    }
     return (
       resolvePublicSiteOrigin() +
-      menuPath +
-      "?id=" +
-      encodeURIComponent(restaurantId)
+      (restaurant && restaurant.slug ? "/" : "/menu/") +
+      encodeURIComponent(target)
     );
   }
 
@@ -252,7 +258,7 @@
       if (!data || !data.restaurant) return;
 
       currentRestaurant = data.restaurant;
-      currentShareUrl = buildPublicMenuUrl(data.restaurant.id);
+      currentShareUrl = buildPublicMenuUrl(data.restaurant);
       updateAccountInfo(data.user, data.restaurant);
 
       if (urlInput) {
@@ -266,7 +272,7 @@
       );
       if (storedRestaurant && storedRestaurant.id) {
         currentRestaurant = storedRestaurant;
-        currentShareUrl = buildPublicMenuUrl(storedRestaurant.id);
+        currentShareUrl = buildPublicMenuUrl(storedRestaurant);
         if (urlInput) urlInput.value = currentShareUrl;
         renderQrCode(currentShareUrl);
       }

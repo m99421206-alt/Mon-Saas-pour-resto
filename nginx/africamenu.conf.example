@@ -1,0 +1,61 @@
+# AfricaMenu nginx example configuration
+# Replace /var/www/africamenu with the actual path to your project root.
+server {
+  listen 80;
+  server_name africamenu.com www.africamenu.com;
+
+  root /var/www/africamenu;
+  index index.html;
+
+  access_log /var/log/nginx/africamenu.access.log;
+  error_log /var/log/nginx/africamenu.error.log warn;
+
+  location /api/ {
+    proxy_pass http://127.0.0.1:4000;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  location /uploads/ {
+    alias /var/www/africamenu/backend/uploads/;
+    access_log off;
+    expires 30d;
+    add_header Cache-Control "public, max-age=2592000, immutable";
+  }
+
+  location /assets/ {
+    alias /var/www/africamenu/assets/;
+    access_log off;
+    expires 30d;
+    add_header Cache-Control "public, max-age=2592000, immutable";
+  }
+
+  location /frontend/ {
+    alias /var/www/africamenu/frontend/;
+    access_log off;
+    expires 7d;
+    add_header Cache-Control "public, max-age=604800";
+  }
+
+  location /menu/ {
+    try_files $uri $uri/ /frontend/pages/mon-menu.html;
+  }
+
+  location = /mon-menu.html {
+    if ($arg_id) {
+      return 301 /menu/$arg_id;
+    }
+    try_files /frontend/pages/mon-menu.html =404;
+  }
+
+  location ~ ^/(?!api/|uploads/|assets/|frontend/|favicon\.ico|robots\.txt|sitemap\.xml)([^/.]+)$ {
+    try_files $uri /frontend/pages/mon-menu.html;
+  }
+
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+}

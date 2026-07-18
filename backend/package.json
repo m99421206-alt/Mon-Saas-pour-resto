@@ -16,6 +16,7 @@
     "db:admin-notifications-group": "node scripts/migrate-admin-notifications-group.js",
     "db:user-status": "node scripts/migrate-user-account-status.js",
     "db:admin-restaurants": "node scripts/migrate-admin-restaurants.js",
+    "db:restaurant-slugs": "node scripts/migrate-restaurant-slugs.js",
     "db:admin-subscriptions": "node scripts/migrate-admin-subscriptions.js",
     "db:admin-platform-settings": "node scripts/migrate-admin-platform-settings.js",
     "db:subscription-plan-key": "node scripts/migrate-subscription-plan-key.js",

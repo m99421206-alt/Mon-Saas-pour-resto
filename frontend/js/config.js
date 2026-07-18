@@ -42,6 +42,6 @@
     PUBLIC_SITE_ORIGIN:
       typeof existingConfig.PUBLIC_SITE_ORIGIN === "string"
         ? existingConfig.PUBLIC_SITE_ORIGIN
-        : "https://africamenu.com",
+        : "http://192.168.1.12:5500",
   });
 })();

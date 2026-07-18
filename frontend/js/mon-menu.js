@@ -31,7 +31,9 @@ const productDetailEl = document.getElementById("product-detail");
 const productDetailScrollEl = document.querySelector(".product-detail__scroll");
 const detailBackEl = document.getElementById("detail-back");
 const detailImageEl = document.getElementById("detail-image");
-const detailImagePlaceholderEl = document.getElementById("detail-image-placeholder");
+const detailImagePlaceholderEl = document.getElementById(
+  "detail-image-placeholder",
+);
 const detailMediaEl = document.querySelector(".detail-media");
 const detailTitleEl = document.getElementById("detail-title");
 const detailPriceEl = document.getElementById("detail-price");
@@ -70,7 +72,12 @@ let savedMenuScrollY = 0;
  * .app a overflow:hidden et .page n'est pas un conteneur scrollable.
  */
 function getMenuScrollY() {
-  return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+  return (
+    window.pageYOffset ||
+    document.documentElement.scrollTop ||
+    document.body.scrollTop ||
+    0
+  );
 }
 
 /**
@@ -181,7 +188,10 @@ function restoreCartFromStorage() {
         }
 
         const product = products.find(function (item) {
-          return item.id === entry.productId || String(item.id) === String(entry.productId);
+          return (
+            item.id === entry.productId ||
+            String(item.id) === String(entry.productId)
+          );
         });
 
         if (!product) {
@@ -305,14 +315,32 @@ function toggleFavorite(productId, button) {
 }
 
 function getRestaurantIdFromUrl() {
-  const idFromUrl = new URLSearchParams(window.location.search).get("id");
+  var searchParams = new URLSearchParams(window.location.search);
+  var idFromUrl = searchParams.get("id");
   if (idFromUrl) {
     return idFromUrl;
   }
 
+  var path = String(window.location.pathname || "").trim();
+  if (path.length) {
+    var segments = path.split("/").filter(function (segment) {
+      return segment !== "";
+    });
+    if (segments.length >= 2 && segments[0] === "menu") {
+      return decodeURIComponent(segments[1]);
+    }
+    if (segments.length === 1 && segments[0] !== "mon-menu.html") {
+      return decodeURIComponent(segments[0]);
+    }
+  }
+
   try {
-    const storedRestaurant = JSON.parse(localStorage.getItem("MenuGo_restaurant") || "null");
-    return storedRestaurant && storedRestaurant.id ? String(storedRestaurant.id) : null;
+    var storedRestaurant = JSON.parse(
+      localStorage.getItem("MenuGo_restaurant") || "null",
+    );
+    return storedRestaurant && storedRestaurant.id
+      ? String(storedRestaurant.id)
+      : null;
   } catch (error) {
     return null;
   }
@@ -364,7 +392,9 @@ function updateDetailMedia(product, variant) {
   resetDetailMedia();
 
   const imageUrl = getDetailImageUrl(product, variant);
-  const altText = variant ? `${product.name} - ${variant.name}` : product.alt || product.name;
+  const altText = variant
+    ? `${product.name} - ${variant.name}`
+    : product.alt || product.name;
 
   if (imageUrl) {
     detailImageEl.hidden = false;
@@ -381,7 +411,11 @@ function updateDetailMedia(product, variant) {
     detailImageEl.alt = altText;
     detailImagePlaceholderEl.hidden = true;
 
-    if (!productDetailEl.hidden && detailImageEl.complete && detailImageEl.naturalWidth) {
+    if (
+      !productDetailEl.hidden &&
+      detailImageEl.complete &&
+      detailImageEl.naturalWidth
+    ) {
       markDetailMediaReady(true);
     }
   } else {
@@ -451,14 +485,84 @@ function applyThemeColor(value) {
   const rgb = hexToRgb(color);
   document.documentElement.style.setProperty("--primary", color);
   document.documentElement.style.setProperty("--primary-soft", color + "1f");
-  document.documentElement.style.setProperty("--primary-shadow", `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.28)`);
+  document.documentElement.style.setProperty(
+    "--primary-shadow",
+    `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.28)`,
+  );
+}
+
+function setMetaTag(name, content) {
+  if (!name) {
+    return;
+  }
+  var meta = document.head.querySelector('meta[name="' + name + '"]');
+  if (!meta) {
+    meta = document.createElement("meta");
+    meta.setAttribute("name", name);
+    document.head.appendChild(meta);
+  }
+  meta.setAttribute("content", content || "");
+}
+
+function setMetaProperty(property, content) {
+  if (!property) {
+    return;
+  }
+  var meta = document.head.querySelector('meta[property="' + property + '"]');
+  if (!meta) {
+    meta = document.createElement("meta");
+    meta.setAttribute("property", property);
+    document.head.appendChild(meta);
+  }
+  meta.setAttribute("content", content || "");
+}
+
+function setLinkCanonical(url) {
+  var link = document.head.querySelector('link[rel="canonical"]');
+  if (!link) {
+    link = document.createElement("link");
+    link.setAttribute("rel", "canonical");
+    document.head.appendChild(link);
+  }
+  link.setAttribute("href", url || window.location.href);
+}
+
+function updateSeoTags(restaurant) {
+  var restaurantName =
+    restaurant && restaurant.name ? restaurant.name : "AfricaMenu";
+  var description = getTrimmedDescription(
+    restaurant && restaurant.description
+      ? restaurant.description
+      : "Découvrez le menu de ce restaurant sur AfricaMenu.",
+  );
+  var currentUrl =
+    String(window.location.origin || "") +
+    String(window.location.pathname || "");
+
+  document.title = restaurantName + " | AfricaMenu";
+  setMetaTag("description", description);
+  setMetaProperty("og:title", restaurantName + " | AfricaMenu");
+  setMetaProperty("og:description", description);
+  setMetaProperty("og:url", currentUrl);
+  setMetaProperty("og:type", "website");
+  setMetaProperty("twitter:card", "summary_large_image");
+  setLinkCanonical(currentUrl);
+
+  if (restaurant && restaurant.banner_url) {
+    var imageUrl = normalizeImageUrl(String(restaurant.banner_url).trim(), "");
+    if (imageUrl) {
+      setMetaProperty("og:image", imageUrl);
+    }
+  }
 }
 
 function applyRestaurantData(restaurant) {
   const heroBannerFrame = document.getElementById("hero-banner-frame");
   const heroCoverEl = document.getElementById("hero-cover");
   const restaurantNameEl = document.getElementById("restaurant-name");
-  const restaurantDescriptionEl = document.getElementById("restaurant-description");
+  const restaurantDescriptionEl = document.getElementById(
+    "restaurant-description",
+  );
   const restaurantLogoEl = document.getElementById("restaurant-logo");
   const restaurantLogoWrap = document.getElementById("restaurant-logo-wrap");
 
@@ -468,7 +572,7 @@ function applyRestaurantData(restaurant) {
 
   if (restaurant.name && restaurantNameEl) {
     restaurantNameEl.textContent = restaurant.name;
-    document.title = `${restaurant.name} - AfricaMenu`;
+    updateSeoTags(restaurant);
   }
 
   if (restaurantDescriptionEl) {
@@ -483,7 +587,9 @@ function applyRestaurantData(restaurant) {
   }
 
   if (heroCoverEl && heroBannerFrame) {
-    const bUrl = restaurant.banner_url ? String(restaurant.banner_url).trim() : "";
+    const bUrl = restaurant.banner_url
+      ? String(restaurant.banner_url).trim()
+      : "";
     if (bUrl) {
       heroCoverEl.hidden = false;
       heroCoverEl.src = normalizeImageUrl(bUrl, "");
@@ -498,7 +604,9 @@ function applyRestaurantData(restaurant) {
   }
 
   if (restaurantLogoEl && restaurantLogoWrap) {
-    const logoUrl = restaurant.logo_url ? String(restaurant.logo_url).trim() : "";
+    const logoUrl = restaurant.logo_url
+      ? String(restaurant.logo_url).trim()
+      : "";
     if (logoUrl) {
       restaurantLogoEl.hidden = false;
       restaurantLogoEl.src = normalizeImageUrl(logoUrl, "");
@@ -516,7 +624,7 @@ function applyRestaurantData(restaurant) {
 
   whatsappNumber = normalizeWhatsapp(restaurant.whatsapp);
   whatsappEl.href = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
-    "Bonjour, je souhaite commander"
+    "Bonjour, je souhaite commander",
   )}`;
 }
 
@@ -529,11 +637,13 @@ function mapPublicMenuData(data) {
         id: String(category.id),
         name: category.name,
       };
-    })
+    }),
   );
 
   products = apiCategories.flatMap(function (category) {
-    const categoryProducts = Array.isArray(category.products) ? category.products : [];
+    const categoryProducts = Array.isArray(category.products)
+      ? category.products
+      : [];
 
     return categoryProducts.map(function (product) {
       const rawImage = product.image ? String(product.image).trim() : "";
@@ -548,7 +658,10 @@ function mapPublicMenuData(data) {
         image: image,
         detailImage: image,
         alt: product.name,
-        hasSizes: product.has_sizes === true || product.has_sizes === 1 || product.has_sizes === "1",
+        hasSizes:
+          product.has_sizes === true ||
+          product.has_sizes === 1 ||
+          product.has_sizes === "1",
         variants: Array.isArray(product.variants) ? product.variants : [],
       };
     });
@@ -613,15 +726,23 @@ function playMenuEnterAnimation() {
   const cards = productsEl.querySelectorAll(".product-card");
 
   pills.forEach(function (pill, index) {
-    pill.style.setProperty("--menu-enter-delay", categoryBaseDelay + index * staggerMs + "ms");
+    pill.style.setProperty(
+      "--menu-enter-delay",
+      categoryBaseDelay + index * staggerMs + "ms",
+    );
   });
 
-  const productsBaseDelay = categoryBaseDelay + pills.length * staggerMs + productsGap;
+  const productsBaseDelay =
+    categoryBaseDelay + pills.length * staggerMs + productsGap;
   cards.forEach(function (card, index) {
-    card.style.setProperty("--menu-enter-delay", productsBaseDelay + index * staggerMs + "ms");
+    card.style.setProperty(
+      "--menu-enter-delay",
+      productsBaseDelay + index * staggerMs + "ms",
+    );
   });
 
-  const whatsappDelay = productsBaseDelay + cards.length * staggerMs + whatsappGap;
+  const whatsappDelay =
+    productsBaseDelay + cards.length * staggerMs + whatsappGap;
   if (whatsappEl) {
     whatsappEl.style.setProperty("--menu-enter-delay", whatsappDelay + "ms");
   }
@@ -652,7 +773,11 @@ function createCategoryButton(category) {
   button.addEventListener("click", function () {
     setActiveNav(homeNavEl);
     showProducts(String(category.id));
-    button.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    button.scrollIntoView({
+      behavior: "smooth",
+      inline: "center",
+      block: "nearest",
+    });
   });
 
   return button;
@@ -708,10 +833,12 @@ function createProductCard(product) {
     showProductDetail(product);
   });
 
-  card.querySelector(".product-card__heart").addEventListener("click", function (event) {
-    event.stopPropagation();
-    toggleFavorite(product.id, event.currentTarget);
-  });
+  card
+    .querySelector(".product-card__heart")
+    .addEventListener("click", function (event) {
+      event.stopPropagation();
+      toggleFavorite(product.id, event.currentTarget);
+    });
 
   return card;
 }
@@ -749,10 +876,12 @@ function createSimilarProductCard(product) {
     showProductDetail(product);
   });
 
-  card.querySelector(".similar-card__heart").addEventListener("click", function (event) {
-    event.stopPropagation();
-    toggleFavorite(product.id, event.currentTarget);
-  });
+  card
+    .querySelector(".similar-card__heart")
+    .addEventListener("click", function (event) {
+      event.stopPropagation();
+      toggleFavorite(product.id, event.currentTarget);
+    });
 
   return card;
 }
@@ -767,7 +896,10 @@ function renderCategories() {
 function setActiveCategory(categoryId) {
   activeCategory = categoryId;
   document.querySelectorAll(".category-pill").forEach(function (button) {
-    button.classList.toggle("active", button.dataset.categoryId === String(categoryId));
+    button.classList.toggle(
+      "active",
+      button.dataset.categoryId === String(categoryId),
+    );
   });
 }
 
@@ -863,9 +995,10 @@ function renderSimilarProducts(currentProduct) {
   var section = similarProductsEl.closest(".similar-section");
   var titleEl = document.getElementById("similar-title");
   var catId =
-    currentProduct.categoryId !== undefined && currentProduct.categoryId !== null ?
-      String(currentProduct.categoryId)
-    : "";
+    currentProduct.categoryId !== undefined &&
+    currentProduct.categoryId !== null
+      ? String(currentProduct.categoryId)
+      : "";
 
   /** Autres produits de la même catégorie (excluant le plat ouvert). */
   var peers = products.filter(function (product) {
@@ -912,7 +1045,14 @@ function parsePrice(price) {
   if (Number.isFinite(numericValue)) {
     return numericValue;
   }
-  return Number(String(price || "").replace(/[^\d,.-]/g, "").replace(/\s/g, "").replace(",", ".")) || 0;
+  return (
+    Number(
+      String(price || "")
+        .replace(/[^\d,.-]/g, "")
+        .replace(/\s/g, "")
+        .replace(",", "."),
+    ) || 0
+  );
 }
 
 function formatPrice(value) {
@@ -921,14 +1061,18 @@ function formatPrice(value) {
 
 function normalizeVariant(variant, index, product) {
   const fallbackNames = ["Petit", "Moyen", "Grand"];
-  const name = variant && variant.name ? String(variant.name) : fallbackNames[index] || `Option ${index + 1}`;
-  const value = variant && variant.price != null ? variant.price : product.price;
+  const name =
+    variant && variant.name
+      ? String(variant.name)
+      : fallbackNames[index] || `Option ${index + 1}`;
+  const value =
+    variant && variant.price != null ? variant.price : product.price;
   const image =
-    variant && variant.image && String(variant.image).trim() ?
-      normalizeImageUrl(variant.image, "")
-    : productHasImage(product) ?
-      product.detailImage || product.image
-    : "";
+    variant && variant.image && String(variant.image).trim()
+      ? normalizeImageUrl(variant.image, "")
+      : productHasImage(product)
+        ? product.detailImage || product.image
+        : "";
 
   return {
     id: variant && variant.id != null ? String(variant.id) : name.toLowerCase(),
@@ -958,7 +1102,10 @@ function setSelectedVariant(variant) {
   updateDetailMedia(selectedProduct, variant);
 
   document.querySelectorAll(".size-option").forEach(function (button) {
-    button.classList.toggle("active", variant && button.dataset.variantId === variant.id);
+    button.classList.toggle(
+      "active",
+      variant && button.dataset.variantId === variant.id,
+    );
   });
 }
 
@@ -1104,7 +1251,8 @@ function showCartToast(productName) {
   window.clearTimeout(toastTimeout);
 
   if (cartToastMsgEl) {
-    cartToastMsgEl.textContent = (productName || "Produit") + " ajouté au panier";
+    cartToastMsgEl.textContent =
+      (productName || "Produit") + " ajouté au panier";
   }
 
   cartToastEl.classList.remove("is-leaving");
@@ -1152,7 +1300,9 @@ function addSelectedProductToOrder(options) {
   const previousTotal = getCartTotalItems();
 
   if (existingItem) {
-    existingItem.quantity = shouldReplaceQuantity ? quantity : existingItem.quantity + quantity;
+    existingItem.quantity = shouldReplaceQuantity
+      ? quantity
+      : existingItem.quantity + quantity;
   } else {
     orderItems.push(line);
   }
@@ -1216,17 +1366,23 @@ function createOrderItem(item) {
     </button>
   `;
 
-  row.querySelector('[data-action="plus"]').addEventListener("click", function () {
-    updateOrderItemQuantity(item.key, item.quantity + 1);
-  });
+  row
+    .querySelector('[data-action="plus"]')
+    .addEventListener("click", function () {
+      updateOrderItemQuantity(item.key, item.quantity + 1);
+    });
 
-  row.querySelector('[data-action="minus"]').addEventListener("click", function () {
-    updateOrderItemQuantity(item.key, item.quantity - 1);
-  });
+  row
+    .querySelector('[data-action="minus"]')
+    .addEventListener("click", function () {
+      updateOrderItemQuantity(item.key, item.quantity - 1);
+    });
 
-  row.querySelector('[data-action="remove"]').addEventListener("click", function () {
-    updateOrderItemQuantity(item.key, 0);
-  });
+  row
+    .querySelector('[data-action="remove"]')
+    .addEventListener("click", function () {
+      updateOrderItemQuantity(item.key, 0);
+    });
 
   return row;
 }

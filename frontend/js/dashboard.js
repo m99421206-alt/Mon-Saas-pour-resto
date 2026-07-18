@@ -19,7 +19,9 @@
   const title = document.getElementById("dashboard-title");
   const categoriesCount = document.getElementById("dashboard-categories-count");
   const productsCount = document.getElementById("dashboard-products-count");
-  const drawerRestaurant = document.getElementById("dashboard-drawer-restaurant");
+  const drawerRestaurant = document.getElementById(
+    "dashboard-drawer-restaurant",
+  );
   const drawerEmail = document.getElementById("dashboard-drawer-email");
   const menuUrlInput = document.getElementById("dashboard-menu-url");
   const copyMenuBtn = document.getElementById("dashboard-copy-menu");
@@ -94,14 +96,27 @@
   function resolvePublicSiteOrigin() {
     var cfg = window.MenuGo_CONFIG || {};
     var raw =
-      typeof cfg.PUBLIC_SITE_ORIGIN === "string" ? cfg.PUBLIC_SITE_ORIGIN.trim().replace(/\/+$/, "") : "";
+      typeof cfg.PUBLIC_SITE_ORIGIN === "string"
+        ? cfg.PUBLIC_SITE_ORIGIN.trim().replace(/\/+$/, "")
+        : "";
     return raw.length ? raw : window.location.origin;
   }
 
-  function buildPublicMenuUrl(restaurantId) {
-    const currentPath = window.location.pathname;
-    const menuPath = currentPath.replace(/dashboard\.html$/, "mon-menu.html");
-    return resolvePublicSiteOrigin() + menuPath + "?id=" + encodeURIComponent(restaurantId);
+  function buildPublicMenuUrl(restaurant) {
+    var target =
+      restaurant && restaurant.slug
+        ? String(restaurant.slug)
+        : restaurant && restaurant.id
+          ? String(restaurant.id)
+          : "";
+    if (!target) {
+      return "";
+    }
+    return (
+      resolvePublicSiteOrigin() +
+      (restaurant && restaurant.slug ? "/" : "/menu/") +
+      encodeURIComponent(target)
+    );
   }
 
   function getDashboardQrDisplaySize() {
@@ -180,7 +195,8 @@
   function renderDashboard(me, categories, products) {
     const restaurant = me.restaurant || getStoredRestaurant();
     const user = me.user || {};
-    const restaurantName = restaurant && restaurant.name ? restaurant.name : "votre restaurant";
+    const restaurantName =
+      restaurant && restaurant.name ? restaurant.name : "votre restaurant";
 
     title.textContent = "Bonjour, " + restaurantName;
     drawerRestaurant.textContent = restaurantName;
@@ -198,14 +214,17 @@
     localStorage.setItem(RESTAURANT_KEY, JSON.stringify(restaurant || null));
 
     if (restaurant && restaurant.id) {
-      const publicUrl = buildPublicMenuUrl(restaurant.id);
+      const publicUrl = buildPublicMenuUrl(restaurant);
       document.body.setAttribute("data-menu-id", String(restaurant.id));
       menuUrlInput.value = publicUrl;
       viewMenuBtn.setAttribute("data-menu-url", publicUrl);
       renderDashboardQrPreview(publicUrl);
     }
 
-    if (window.MenuGo_SubscriptionAlerts && window.MenuGo_SubscriptionAlerts.mountClientBanner) {
+    if (
+      window.MenuGo_SubscriptionAlerts &&
+      window.MenuGo_SubscriptionAlerts.mountClientBanner
+    ) {
       window.MenuGo_SubscriptionAlerts.mountClientBanner(me);
     }
   }
@@ -262,7 +281,13 @@
   }
 
   async function loadDashboard() {
-    if (!title || !categoriesCount || !productsCount || !menuUrlInput || !viewMenuBtn) {
+    if (
+      !title ||
+      !categoriesCount ||
+      !productsCount ||
+      !menuUrlInput ||
+      !viewMenuBtn
+    ) {
       return;
     }
 
@@ -277,7 +302,11 @@
         return;
       }
 
-      if (!me.is_platform_admin && me.restaurant && me.restaurant.onboarding_seen === false) {
+      if (
+        !me.is_platform_admin &&
+        me.restaurant &&
+        me.restaurant.onboarding_seen === false
+      ) {
         if (!isAdminImpersonating()) {
           window.location.replace("onboarding.html");
           return;
@@ -293,7 +322,11 @@
         return;
       }
 
-      renderDashboard(me, categoriesData.categories || [], productsData.products || []);
+      renderDashboard(
+        me,
+        categoriesData.categories || [],
+        productsData.products || [],
+      );
     } catch (error) {
       title.textContent = "Impossible de charger le dashboard";
     }

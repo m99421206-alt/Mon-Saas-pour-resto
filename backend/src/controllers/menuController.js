@@ -2,33 +2,58 @@ const { getPool } = require("../config/database");
 
 async function getPublicMenu(req, res) {
   try {
-    var restaurantId = Number(req.params.restaurantId);
-    if (!Number.isInteger(restaurantId) || restaurantId < 1) {
-      return res.status(400).json({ message: "Identifiant de restaurant invalide." });
+    var param = String(
+      req.params.restaurantId || req.params.restaurantSlug || "",
+    ).trim();
+    if (!param.length) {
+      return res
+        .status(400)
+        .json({ message: "Identifiant de restaurant invalide." });
     }
+
+    var restaurantId = Number(param);
+    var useId = Number.isInteger(restaurantId) && restaurantId >= 1;
 
     var pool = getPool();
 
     var row;
+    var resolvedRestaurantId = null;
     try {
-      var [restaurants] = await pool.query(
-        "SELECT id, name, description, whatsapp, logo_url, banner_url, theme_color, COALESCE(menu_suspended, 0) AS menu_suspended FROM restaurants WHERE id = ? LIMIT 1",
-        [restaurantId],
-      );
-      if (!restaurants.length) {
-        return res.status(404).json({ message: "Restaurant introuvable." });
+      if (useId) {
+        var [restaurants] = await pool.query(
+          "SELECT id, name, description, whatsapp, logo_url, banner_url, theme_color, slug, COALESCE(menu_suspended, 0) AS menu_suspended FROM restaurants WHERE id = ? LIMIT 1",
+          [restaurantId],
+        );
+        if (!restaurants.length) {
+          return res.status(404).json({ message: "Restaurant introuvable." });
+        }
+        row = restaurants[0];
+      } else {
+        var [restaurants] = await pool.query(
+          "SELECT id, name, description, whatsapp, logo_url, banner_url, theme_color, slug, COALESCE(menu_suspended, 0) AS menu_suspended FROM restaurants WHERE slug = ? LIMIT 1",
+          [param],
+        );
+        if (!restaurants.length) {
+          return res.status(404).json({ message: "Restaurant introuvable." });
+        }
+        row = restaurants[0];
       }
-      row = restaurants[0];
+
       var ms = row.menu_suspended;
       if (ms === 1 || ms === true || ms === "1") {
-        return res.status(403).json({ message: "Ce menu est temporairement indisponible." });
+        return res
+          .status(403)
+          .json({ message: "Ce menu est temporairement indisponible." });
       }
     } catch (pickErr) {
       if (!(pickErr && pickErr.code === "ER_BAD_FIELD_ERROR")) {
         throw pickErr;
       }
+      if (!useId) {
+        return res.status(404).json({ message: "Restaurant introuvable." });
+      }
       var [legacyRows] = await pool.query(
-        "SELECT id, name, description, whatsapp, logo_url, banner_url, theme_color FROM restaurants WHERE id = ? LIMIT 1",
+        "SELECT id, name, description, whatsapp, logo_url, banner_url, theme_color, slug FROM restaurants WHERE id = ? LIMIT 1",
         [restaurantId],
       );
       if (!legacyRows.length) {
@@ -37,16 +62,18 @@ async function getPublicMenu(req, res) {
       row = legacyRows[0];
     }
 
+    resolvedRestaurantId = row.id;
+
     var [categories] = await pool.query(
       "SELECT id, restaurant_id, name FROM categories WHERE restaurant_id = ? ORDER BY id ASC",
-      [restaurantId]
+      [resolvedRestaurantId],
     );
 
     var products;
     try {
       var productRows = await pool.query(
         "SELECT id, restaurant_id, category_id, name, description, price, image, has_sizes FROM products WHERE restaurant_id = ? AND is_visible = 1 ORDER BY id DESC",
-        [restaurantId],
+        [resolvedRestaurantId],
       );
       products = productRows[0];
     } catch (productErr) {
@@ -55,7 +82,7 @@ async function getPublicMenu(req, res) {
       }
       var legacyProductRows = await pool.query(
         "SELECT id, restaurant_id, category_id, name, description, price, image, has_sizes FROM products WHERE restaurant_id = ? ORDER BY id DESC",
-        [restaurantId],
+        [resolvedRestaurantId],
       );
       products = legacyProductRows[0];
     }
@@ -67,7 +94,7 @@ async function getPublicMenu(req, res) {
       });
       var [variants] = await pool.query(
         "SELECT id, product_id, name, price, image, sort_order FROM product_variants WHERE product_id IN (?) ORDER BY product_id ASC, sort_order DESC, id DESC",
-        [productIds]
+        [productIds],
       );
       for (var v = 0; v < variants.length; v += 1) {
         var variant = variants[v];
@@ -114,6 +141,7 @@ async function getPublicMenu(req, res) {
       restaurant: {
         id: row.id,
         name: row.name,
+        slug: row.slug || null,
         description: row.description,
         whatsapp: row.whatsapp,
         logo_url: row.logo_url,

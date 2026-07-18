@@ -323,6 +323,7 @@
 
   function buildActionButtons(row) {
     var id = encodeURIComponent(row.id);
+    var slugAttr = row.slug ? ' data-slug="' + escapeHtml(row.slug) + '"' : "";
     var dashBtn =
       '<button type="button" class="adm-btn adm-btn--install" data-act="dashboard" data-id="' +
       id +
@@ -330,7 +331,9 @@
     var menuBtn =
       '<button type="button" class="adm-btn" data-act="menu" data-id="' +
       id +
-      '">Voir menu</button>';
+      '"' +
+      slugAttr +
+      ">Voir menu</button>";
     var detBtn =
       '<button type="button" class="adm-btn" data-act="detail" data-id="' +
       id +
@@ -566,8 +569,12 @@
     }, DEBOUNCE_MS);
   }
 
-  function openPublicMenu(restaurantId) {
-    var url = "mon-menu.html?id=" + encodeURIComponent(String(restaurantId));
+  function openPublicMenu(restaurantId, restaurantSlug) {
+    var target = restaurantSlug ? String(restaurantSlug) : String(restaurantId);
+    var url =
+      restaurantSlug && restaurantSlug.length
+        ? "/" + encodeURIComponent(target)
+        : "/menu/" + encodeURIComponent(target);
     window.open(url, "_blank", "noopener,noreferrer");
   }
 
@@ -848,8 +855,9 @@
       if (!id || !act) return;
 
       e.preventDefault();
+      var slug = btn.getAttribute("data-slug");
 
-      if (act === "menu") openPublicMenu(id);
+      if (act === "menu") openPublicMenu(id, slug);
       else if (act === "dashboard") accessRestaurantDashboard(id);
       else if (act === "detail") openDetail(id);
       else if (act === "menu-off") patchMenuSuspend(id, true);

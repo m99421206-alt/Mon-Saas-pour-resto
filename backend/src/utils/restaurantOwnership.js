@@ -22,7 +22,7 @@ async function getRestaurantForUser(userId) {
 
   var pool = getPool();
   var [rows] = await pool.query(
-    "SELECT id, user_id, name, description, whatsapp, logo_url, banner_url, theme_color FROM restaurants WHERE user_id = ? ORDER BY id ASC LIMIT 1",
+    "SELECT id, user_id, name, description, whatsapp, logo_url, banner_url, theme_color, slug FROM restaurants WHERE user_id = ? ORDER BY id ASC LIMIT 1",
     [uid],
   );
   return rows.length ? rows[0] : null;
@@ -97,7 +97,10 @@ async function assertProductOwnedByRestaurant(productId, restaurantId) {
   }
 
   var pool = getPool();
-  var [rows] = await pool.query("SELECT restaurant_id FROM products WHERE id = ? LIMIT 1", [pid]);
+  var [rows] = await pool.query(
+    "SELECT restaurant_id FROM products WHERE id = ? LIMIT 1",
+    [pid],
+  );
   if (!rows.length) {
     return "not_found";
   }
@@ -118,7 +121,10 @@ async function assertCategoryOwnedByRestaurant(categoryId, restaurantId) {
   }
 
   var pool = getPool();
-  var [rows] = await pool.query("SELECT restaurant_id FROM categories WHERE id = ? LIMIT 1", [cid]);
+  var [rows] = await pool.query(
+    "SELECT restaurant_id FROM categories WHERE id = ? LIMIT 1",
+    [cid],
+  );
   if (!rows.length) {
     return "not_found";
   }

@@ -21,9 +21,12 @@ function catalogPlanKey(p) {
 /** Entrée catalogue correspondant à la clé (hors trial implicite). */
 function matchCatalogPlan(planKey, catalog) {
   var k =
-    planKey != null && String(planKey).trim() !== "" ?
-      String(planKey).trim().toLowerCase().replace(/[^a-z0-9_-]/g, "")
-    : "";
+    planKey != null && String(planKey).trim() !== ""
+      ? String(planKey)
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9_-]/g, "")
+      : "";
   if (!k || k === "trial" || !Array.isArray(catalog)) {
     return null;
   }
@@ -125,30 +128,54 @@ function buildSubscriptionPayload(row) {
   var status = normalizeSubStatus(row.subscription_status);
 
   var rawPlan =
-    row.subscription_plan_key != null && String(row.subscription_plan_key).trim() !== "" ?
-      String(row.subscription_plan_key).trim().toLowerCase().replace(/[^a-z0-9_-]/g, "")
-    : "";
+    row.subscription_plan_key != null &&
+    String(row.subscription_plan_key).trim() !== ""
+      ? String(row.subscription_plan_key)
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9_-]/g, "")
+      : "";
   var planKey = rawPlan !== "" ? rawPlan : "trial";
 
-  var startedIso = row.subscription_started_at ? new Date(row.subscription_started_at).toISOString() : null;
-  var endsIso = row.subscription_ends_at ? new Date(row.subscription_ends_at).toISOString() : null;
+  var startedIso = row.subscription_started_at
+    ? new Date(row.subscription_started_at).toISOString()
+    : null;
+  var endsIso = row.subscription_ends_at
+    ? new Date(row.subscription_ends_at).toISOString()
+    : null;
 
   var drRaw = row.days_remaining;
   var dr =
-    row.subscription_ends_at == null ? null : drRaw !== undefined && drRaw !== null ? Number(drRaw) : null;
+    row.subscription_ends_at == null
+      ? null
+      : drRaw !== undefined && drRaw !== null
+        ? Number(drRaw)
+        : null;
 
   var canEdit = status !== "expired" && status !== "suspended";
 
   var amountCfa =
-    Math.round(Number(row.subscription_amount_cfa !== undefined ? row.subscription_amount_cfa : 0)) || 0;
+    Math.round(
+      Number(
+        row.subscription_amount_cfa !== undefined
+          ? row.subscription_amount_cfa
+          : 0,
+      ),
+    ) || 0;
 
   var catalogEntry = matchCatalogPlan(planKey, catalog);
   var catalogPriceCfa =
-    catalogEntry != null ?
-      Math.round(Number(catalogEntry.price_cfa !== undefined ? catalogEntry.price_cfa : 0))
-    : null;
+    catalogEntry != null
+      ? Math.round(
+          Number(
+            catalogEntry.price_cfa !== undefined ? catalogEntry.price_cfa : 0,
+          ),
+        )
+      : null;
 
-  var billingMonths = catalogEntry ? Math.round(Number(catalogEntry.months) || 1) : 1;
+  var billingMonths = catalogEntry
+    ? Math.round(Number(catalogEntry.months) || 1)
+    : 1;
   if (!Number.isFinite(billingMonths) || billingMonths < 1) billingMonths = 1;
 
   var displayPriceCfa = 0;
@@ -162,9 +189,15 @@ function buildSubscriptionPayload(row) {
     displayPriceCfa = 0;
   }
 
-  var trialDisplayDays = computeTrialDisplayedDays(platformTrialDays, startedIso, endsIso);
+  var trialDisplayDays = computeTrialDisplayedDays(
+    platformTrialDays,
+    startedIso,
+    endsIso,
+  );
   var postTrialRenewal =
-    status === "trial" || status === "expired" ? pickPostTrialRenewalOffer(catalog) : null;
+    status === "trial" || status === "expired"
+      ? pickPostTrialRenewalOffer(catalog)
+      : null;
 
   return {
     status: status,
@@ -191,14 +224,17 @@ function buildSubscriptionPayload(row) {
 async function getMe(req, res) {
   try {
     var pool = getPool();
-    var [users] = await pool.query("SELECT id, email, full_name, phone FROM users WHERE id = ? LIMIT 1", [req.user.id]);
+    var [users] = await pool.query(
+      "SELECT id, email, full_name, phone FROM users WHERE id = ? LIMIT 1",
+      [req.user.id],
+    );
 
     if (!users.length) {
       return res.status(404).json({ message: "Utilisateur introuvable." });
     }
 
     var [restaurants] = await pool.query(
-      "SELECT r.id, r.name, r.city, r.country, r.description, r.whatsapp, r.logo_url, r.banner_url, r.theme_color, " +
+      "SELECT r.id, r.name, r.slug, r.city, r.country, r.description, r.whatsapp, r.logo_url, r.banner_url, r.theme_color, " +
         "r.subscription_status, r.subscription_plan_key, r.subscription_started_at, r.subscription_ends_at, r.subscription_amount_cfa, " +
         "COALESCE(r.onboarding_seen, 0) AS onboarding_seen, COALESCE(r.needs_setup_help, 0) AS needs_setup_help, " +
         "CASE WHEN r.subscription_ends_at IS NULL THEN NULL ELSE GREATEST(0, DATEDIFF(DATE(r.subscription_ends_at), CURDATE())) END AS days_remaining " +
@@ -210,9 +246,11 @@ async function getMe(req, res) {
     var subscriptionPayload = null;
 
     if (baseRestaurant) {
-      await subscriptionService.refreshRestaurantSubscriptionState(baseRestaurant.id);
+      await subscriptionService.refreshRestaurantSubscriptionState(
+        baseRestaurant.id,
+      );
       var [again] = await pool.query(
-        "SELECT r.id, r.name, r.city, r.country, r.description, r.whatsapp, r.logo_url, r.banner_url, r.theme_color, " +
+        "SELECT r.id, r.name, r.slug, r.city, r.country, r.description, r.whatsapp, r.logo_url, r.banner_url, r.theme_color, " +
           "r.subscription_status, r.subscription_plan_key, r.subscription_started_at, r.subscription_ends_at, r.subscription_amount_cfa, " +
           "COALESCE(r.onboarding_seen, 0) AS onboarding_seen, COALESCE(r.needs_setup_help, 0) AS needs_setup_help, " +
           "CASE WHEN r.subscription_ends_at IS NULL THEN NULL ELSE GREATEST(0, DATEDIFF(DATE(r.subscription_ends_at), CURDATE())) END AS days_remaining " +
@@ -223,32 +261,35 @@ async function getMe(req, res) {
       subscriptionPayload = buildSubscriptionPayload(baseRestaurant);
     }
 
-    var restaurantPublic = baseRestaurant ?
-      (function () {
-        var locality =
-          baseRestaurant.city != null && String(baseRestaurant.city).trim() !== "" ?
-            String(baseRestaurant.city).trim()
-          : null;
-        return {
-          id: baseRestaurant.id,
-          name: baseRestaurant.name,
-          /** Colonne BD `restaurants.city` (quartier). */
-          city: locality,
-          quartier: locality,
-          country:
-            baseRestaurant.country != null && String(baseRestaurant.country).trim() !== "" ?
-              String(baseRestaurant.country).trim()
-            : null,
-          description: baseRestaurant.description,
-          whatsapp: baseRestaurant.whatsapp,
-          logo_url: baseRestaurant.logo_url,
-          banner_url: baseRestaurant.banner_url,
-          theme_color: baseRestaurant.theme_color,
-          onboarding_seen: Boolean(baseRestaurant.onboarding_seen),
-          needs_setup_help: Boolean(baseRestaurant.needs_setup_help),
-        };
-      })()
-    : null;
+    var restaurantPublic = baseRestaurant
+      ? (function () {
+          var locality =
+            baseRestaurant.city != null &&
+            String(baseRestaurant.city).trim() !== ""
+              ? String(baseRestaurant.city).trim()
+              : null;
+          return {
+            id: baseRestaurant.id,
+            name: baseRestaurant.name,
+            slug: baseRestaurant.slug || null,
+            /** Colonne BD `restaurants.city` (quartier). */
+            city: locality,
+            quartier: locality,
+            country:
+              baseRestaurant.country != null &&
+              String(baseRestaurant.country).trim() !== ""
+                ? String(baseRestaurant.country).trim()
+                : null,
+            description: baseRestaurant.description,
+            whatsapp: baseRestaurant.whatsapp,
+            logo_url: baseRestaurant.logo_url,
+            banner_url: baseRestaurant.banner_url,
+            theme_color: baseRestaurant.theme_color,
+            onboarding_seen: Boolean(baseRestaurant.onboarding_seen),
+            needs_setup_help: Boolean(baseRestaurant.needs_setup_help),
+          };
+        })()
+      : null;
 
     return res.json({
       user: users[0],
@@ -265,13 +306,17 @@ async function getMe(req, res) {
 async function postOnboardingMarkSeen(req, res) {
   try {
     var pool = getPool();
-    var [rows] = await pool.query("SELECT id FROM restaurants WHERE user_id = ? ORDER BY id ASC LIMIT 1", [
-      req.user.id,
-    ]);
+    var [rows] = await pool.query(
+      "SELECT id FROM restaurants WHERE user_id = ? ORDER BY id ASC LIMIT 1",
+      [req.user.id],
+    );
     if (!rows.length) {
       return res.status(404).json({ message: "Restaurant introuvable." });
     }
-    await pool.query("UPDATE restaurants SET onboarding_seen = 1 WHERE id = ?", [rows[0].id]);
+    await pool.query(
+      "UPDATE restaurants SET onboarding_seen = 1 WHERE id = ?",
+      [rows[0].id],
+    );
     return res.json({ ok: true, onboarding_seen: true });
   } catch (err) {
     return res.status(500).json({ message: "Erreur serveur." });
@@ -289,11 +334,17 @@ async function postOnboardingRequestHelp(req, res) {
       return res.status(404).json({ message: "Restaurant introuvable." });
     }
     var rid = rows[0].id;
-    await pool.query("UPDATE restaurants SET needs_setup_help = 1, onboarding_seen = 1 WHERE id = ?", [rid]);
+    await pool.query(
+      "UPDATE restaurants SET needs_setup_help = 1, onboarding_seen = 1 WHERE id = ?",
+      [rid],
+    );
     await appendAuditFromRequest(req, {
       restaurantId: rid,
       action: AUDIT_ACTIONS.ONBOARDING_SETUP_REQUEST,
-      detail: "Demande d’accompagnement installation (« " + String(rows[0].name || "") + " »)",
+      detail:
+        "Demande d’accompagnement installation (« " +
+        String(rows[0].name || "") +
+        " »)",
     });
     await createAdminNotification({
       type: NOTIFICATION_TYPES.SUPPORT,
@@ -303,7 +354,11 @@ async function postOnboardingRequestHelp(req, res) {
       detail: "Demande d'assistance installation (onboarding)",
       linkUrl: "admin-dashboard.html",
     });
-    return res.json({ ok: true, needs_setup_help: true, onboarding_seen: true });
+    return res.json({
+      ok: true,
+      needs_setup_help: true,
+      onboarding_seen: true,
+    });
   } catch (err) {
     return res.status(500).json({ message: "Erreur serveur." });
   }
@@ -312,7 +367,9 @@ async function postOnboardingRequestHelp(req, res) {
 async function postAdminNotify(req, res) {
   try {
     if (isPlatformAdminEmail(req.user.email)) {
-      return res.status(403).json({ message: "Action réservée aux comptes restaurant." });
+      return res
+        .status(403)
+        .json({ message: "Action réservée aux comptes restaurant." });
     }
 
     var parsed = parseAdminNotifyBody(req.body);
@@ -356,7 +413,9 @@ async function postAdminNotify(req, res) {
         restaurantId: r.id,
         action: AUDIT_ACTIONS.RESTAURANT_SETTINGS_UPDATE,
         detail:
-          (rawType === "subscription" ? "Demande abonnement (restaurant)" : "Signalement problème (restaurant)") +
+          (rawType === "subscription"
+            ? "Demande abonnement (restaurant)"
+            : "Signalement problème (restaurant)") +
           " — « " +
           restoName +
           " » — " +

@@ -12,20 +12,30 @@
   --whatsapp: #25d366;
   --shadow-card: 0 8px 24px rgba(0, 0, 0, 0.05);
   --shadow-logo: 0 14px 32px rgba(0, 0, 0, 0.16);
-  --font: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font:
+    "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --detail-actions-pad-y: 0.85rem;
   --detail-actions-btn-h: 3.05rem;
-  --detail-actions-h: calc(var(--detail-actions-pad-y) * 2 + var(--detail-actions-btn-h) + var(--safe-bottom));
+  --detail-actions-h: calc(
+    var(--detail-actions-pad-y) * 2 + var(--detail-actions-btn-h) +
+      var(--safe-bottom)
+  );
   --bottom-nav-pad-top: 0.55rem;
   --bottom-nav-pad-bottom: 0.62rem;
   --bottom-nav-item-h: 3.35rem;
   --bottom-nav-label-size: clamp(0.6875rem, 0.66rem + 0.12vw, 0.75rem);
-  --bottom-nav-h: calc(var(--bottom-nav-pad-top) + var(--bottom-nav-pad-bottom) + var(--bottom-nav-item-h) + var(--safe-bottom));
+  --bottom-nav-h: calc(
+    var(--bottom-nav-pad-top) + var(--bottom-nav-pad-bottom) +
+      var(--bottom-nav-item-h) + var(--safe-bottom)
+  );
   --app-shell-max: 430px;
+  /* fallback for browsers without svh support */
+  --app-overlay-height: 100vh;
   /* Android / Chrome : svh = hauteur visible réelle (sans barre d’adresse). */
   --app-overlay-height: 100svh;
 }
@@ -45,8 +55,15 @@ html {
   background: var(--body-bg);
 }
 
+/* Empêche le scroll horizontal accidentel sur petits appareils */
+html,
+body {
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
+  min-height: 100vh;
   min-height: 100svh;
   background: var(--body-bg);
   font-family: var(--font);
@@ -70,10 +87,12 @@ img {
 .app {
   position: relative;
   width: min(100%, 430px);
+  min-height: 100vh;
   min-height: 100svh;
   margin: 0 auto;
   background: var(--body-bg);
-  overflow: hidden;
+  /* bloque uniquement l'overflow horizontal, laisse le vertical géré par le document */
+  overflow-x: hidden;
 }
 
 .app.menu-enter-pending {
@@ -132,7 +151,9 @@ img {
   animation: menu-content-enter 320ms ease-out 160ms both;
 }
 
-.app.is-menu-opening .section[aria-labelledby="categories-title"] .section__title {
+.app.is-menu-opening
+  .section[aria-labelledby="categories-title"]
+  .section__title {
   animation: menu-content-enter 280ms ease-out 220ms both;
 }
 
@@ -213,6 +234,7 @@ img {
 .hero__banner-frame {
   width: 100%;
   height: 235px;
+  height: clamp(180px, 28vh, 260px);
   border-radius: 0 0 30px 30px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
   background: linear-gradient(180deg, #f5f6f8 0%, #e9ecef 100%);
@@ -243,8 +265,8 @@ img {
 }
 
 .restaurant__logo {
-  width: 86px;
-  height: 86px;
+  width: clamp(64px, 16vw, 86px);
+  height: clamp(64px, 16vw, 86px);
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -374,7 +396,7 @@ img {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  padding: 15px;
+  padding: clamp(0.5rem, 1.2vw, 1rem);
   border-radius: 25px;
   background: var(--white);
   box-shadow: var(--shadow-card);
@@ -520,7 +542,10 @@ img {
   position: fixed;
   right: max(1rem, calc(50% - min(100%, var(--app-shell-max)) / 2 + 1rem));
   left: auto;
-  bottom: max(calc(var(--bottom-nav-h) + 0.65rem), calc(var(--safe-bottom) + var(--bottom-nav-h) + 0.65rem));
+  bottom: max(
+    calc(var(--bottom-nav-h) + 0.65rem),
+    calc(var(--safe-bottom) + var(--bottom-nav-h) + 0.65rem)
+  );
   z-index: 20;
   width: 3.15rem;
   height: 3.15rem;
@@ -548,7 +573,8 @@ img {
   display: flex;
   justify-content: space-around;
   align-items: stretch;
-  padding: var(--bottom-nav-pad-top) 0.85rem calc(var(--bottom-nav-pad-bottom) + var(--safe-bottom));
+  padding: var(--bottom-nav-pad-top) 0.85rem
+    calc(var(--bottom-nav-pad-bottom) + var(--safe-bottom));
   padding-left: calc(0.85rem + var(--safe-left));
   padding-right: calc(0.85rem + var(--safe-right));
   border-radius: 26px 26px 0 0;
@@ -661,7 +687,10 @@ img {
 .cart-toast {
   position: fixed;
   left: 50%;
-  bottom: max(calc(var(--bottom-nav-h) + 0.75rem), calc(var(--safe-bottom) + var(--bottom-nav-h) + 0.75rem));
+  bottom: max(
+    calc(var(--bottom-nav-h) + 0.75rem),
+    calc(var(--safe-bottom) + var(--bottom-nav-h) + 0.75rem)
+  );
   z-index: 80;
   display: inline-flex;
   align-items: center;
@@ -722,7 +751,9 @@ img {
 
 @media (prefers-reduced-motion: reduce) {
   .cart-toast {
-    transition: opacity 0.15s ease, visibility 0.15s ease;
+    transition:
+      opacity 0.15s ease,
+      visibility 0.15s ease;
     transform: translateX(-50%);
   }
 
@@ -747,7 +778,9 @@ img {
   .app.is-menu-opening .hero__banner-frame,
   .app.is-menu-opening .restaurant__logo,
   .app.is-menu-opening .restaurant__content,
-  .app.is-menu-opening .section[aria-labelledby="categories-title"] .section__title,
+  .app.is-menu-opening
+    .section[aria-labelledby="categories-title"]
+    .section__title,
   .app.is-menu-opening .category-pill,
   .app.is-menu-opening .product-card,
   .app.is-menu-opening .whatsapp {
@@ -1073,7 +1106,9 @@ img {
   font-size: 1.05rem;
   font-weight: 800;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .quantity-btn:active {
@@ -1165,8 +1200,8 @@ img {
 }
 
 .similar-card {
-  flex: 0 0 9.5rem;
-  width: 9.5rem;
+  flex: 0 0 clamp(7.5rem, 28vw, 9.5rem);
+  width: clamp(7.5rem, 28vw, 9.5rem);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -1252,7 +1287,8 @@ img {
   grid-template-columns: 1fr 1.12fr;
   gap: 0.7rem;
   align-items: stretch;
-  padding: var(--detail-actions-pad-y) 1.15rem calc(var(--detail-actions-pad-y) + var(--safe-bottom));
+  padding: var(--detail-actions-pad-y) 1.15rem
+    calc(var(--detail-actions-pad-y) + var(--safe-bottom));
   padding-left: calc(1.15rem + var(--safe-left));
   padding-right: calc(1.15rem + var(--safe-right));
   background: var(--white);
@@ -1278,7 +1314,9 @@ img {
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   text-align: center;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
   overflow: visible;
 }
 
@@ -1660,7 +1698,13 @@ img {
 
 @media (min-width: 37.5rem) and (max-width: 63.99rem) {
   :root {
-    --app-shell-max: clamp(540px, calc(540px + (100vw - 600px) * 0.141843), 600px);
+    --app-shell-max: clamp(
+      540px,
+      calc(540px + (100vw - 600px) * 0.141843),
+      600px
+    );
+    /* fallback for browsers without svh support */
+    --app-overlay-height: calc(100vh - 2rem);
     --app-overlay-height: calc(100svh - 2rem);
   }
 
@@ -1668,18 +1712,24 @@ img {
     display: grid;
     place-items: start center;
     padding-block: 1rem;
+    min-height: 100vh;
     min-height: 100svh;
   }
 
   .app {
     width: min(calc(100% - 1.25rem), var(--app-shell-max));
+    min-height: calc(100vh - 2rem);
     min-height: calc(100svh - 2rem);
     border-radius: 28px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
   }
 
   .section {
-    --section-pad: clamp(0.85rem, calc(0.8rem + (100vw - 600px) * 0.00059), 1.05rem);
+    --section-pad: clamp(
+      0.85rem,
+      calc(0.8rem + (100vw - 600px) * 0.00059),
+      1.05rem
+    );
   }
 
   .bottom-nav {
@@ -1690,7 +1740,10 @@ img {
 
   .whatsapp {
     right: max(1rem, calc(50% - min(100%, var(--app-shell-max)) / 2 + 1rem));
-    bottom: max(calc(var(--bottom-nav-h) + 0.85rem), calc(var(--safe-bottom) + var(--bottom-nav-h) + 0.85rem));
+    bottom: max(
+      calc(var(--bottom-nav-h) + 0.85rem),
+      calc(var(--safe-bottom) + var(--bottom-nav-h) + 0.85rem)
+    );
   }
 
   .product-detail,
@@ -1706,6 +1759,8 @@ img {
 @media (min-width: 64rem) {
   :root {
     --app-shell-max: clamp(460px, 480px, 500px);
+    /* fallback for browsers without svh support */
+    --app-overlay-height: calc(100vh - 3rem);
     --app-overlay-height: calc(100svh - 3rem);
   }
 
@@ -1717,12 +1772,14 @@ img {
     display: grid;
     place-items: start center;
     padding-block: 1.5rem;
+    min-height: 100vh;
     min-height: 100svh;
     background: #eceff1;
   }
 
   .app {
     width: min(calc(100% - 2rem), var(--app-shell-max));
+    min-height: calc(100vh - 3rem);
     min-height: calc(100svh - 3rem);
     border-radius: 32px;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
@@ -1735,8 +1792,14 @@ img {
   }
 
   .whatsapp {
-    right: max(1.25rem, calc(50% - min(100%, var(--app-shell-max)) / 2 + 1.25rem));
-    bottom: max(calc(var(--bottom-nav-h) + 1rem), calc(var(--safe-bottom) + var(--bottom-nav-h) + 1rem));
+    right: max(
+      1.25rem,
+      calc(50% - min(100%, var(--app-shell-max)) / 2 + 1.25rem)
+    );
+    bottom: max(
+      calc(var(--bottom-nav-h) + 1rem),
+      calc(var(--safe-bottom) + var(--bottom-nav-h) + 1rem)
+    );
   }
 
   .product-detail {

@@ -19,8 +19,10 @@ const userRoutes = require("./routes/userRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const productRoutes = require("./routes/productRoutes");
 const menuRoutes = require("./routes/menuRoutes");
+const menuController = require("./controllers/menuController");
 const adminRoutes = require("./routes/adminRoutes");
 const restaurantRoutes = require("./routes/restaurantRoutes");
+const sitemapRoutes = require("./routes/sitemapRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 var platformSettings = require("./services/platformSettings");
 
@@ -45,10 +47,14 @@ function assertProductionConfig() {
   }
 
   if (allowedOrigins.length === 0 || allowedOrigins.indexOf("*") !== -1) {
-    throw new Error("Configuration production invalide : CORS_ORIGIN doit contenir les origines exactes du frontend.");
+    throw new Error(
+      "Configuration production invalide : CORS_ORIGIN doit contenir les origines exactes du frontend.",
+    );
   }
   if (!process.env.DB_PASSWORD) {
-    throw new Error("Configuration production invalide : DB_PASSWORD doit être renseigné.");
+    throw new Error(
+      "Configuration production invalide : DB_PASSWORD doit être renseigné.",
+    );
   }
 }
 
@@ -117,7 +123,9 @@ var loginRateLimiter = rateLimit({
   max: isProduction ? 20 : 60,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { message: "Trop de tentatives de connexion. Réessayez dans une minute." },
+  message: {
+    message: "Trop de tentatives de connexion. Réessayez dans une minute.",
+  },
 });
 
 var passwordResetNotifyLimiter = rateLimit({
@@ -139,7 +147,7 @@ app.use(
       return callback(new Error("Origine CORS non autorisée."));
     },
     credentials: true,
-  })
+  }),
 );
 
 app.use(
@@ -149,7 +157,7 @@ app.use(
       directives: buildHelmetCspDirectives(isProduction, allowedOrigins),
     },
     referrerPolicy: { policy: "strict-origin-when-cross-origin" },
-  })
+  }),
 );
 
 /* Corps des requêtes en JSON (POST / PUT) */
@@ -168,7 +176,7 @@ app.use(
     setHeaders: function (res) {
       res.setHeader("Cache-Control", "public, max-age=2592000, immutable");
     },
-  })
+  }),
 );
 
 /* Route de santé : serveur + base de données */
@@ -206,8 +214,10 @@ app.use("/api/products", productRoutes);
 app.use("/api/restaurant", restaurantRoutes);
 /* Upload images — JWT requis */
 app.use("/upload", uploadRoutes);
+app.use(sitemapRoutes);
 /* Menu public client (étape 9) — sans JWT */
 app.use("/menu", menuRoutes);
+app.get("/restaurant/:restaurantSlug", menuController.getPublicMenu);
 
 platformSettings.refresh().catch(function (e) {
   console.warn("[platform_settings]", e.message || e);
@@ -228,9 +238,9 @@ app.use(function (err, req, res, next) {
   }
 
   var message =
-    isProduction && status >= 500 ?
-      "Erreur serveur."
-    : err.message || "Erreur serveur.";
+    isProduction && status >= 500
+      ? "Erreur serveur."
+      : err.message || "Erreur serveur.";
 
   if (!isProduction && status >= 500) {
     console.error(err);

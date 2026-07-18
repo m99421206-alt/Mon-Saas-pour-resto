@@ -6,7 +6,10 @@ var jwt = require("jsonwebtoken");
 var { getPool } = require("../config/database");
 var { getJwtSecret } = require("../config/jwtSecret");
 var { appendAudit, AUDIT_ACTIONS, ACTOR_TYPES } = require("../utils/auditLog");
-var { parseRestaurantIdParams, parseMenuSuspendedBody } = require("../validators/restaurant");
+var {
+  parseRestaurantIdParams,
+  parseMenuSuspendedBody,
+} = require("../validators/restaurant");
 var { sendValidationError } = require("../validators/helpers");
 
 var ALLOWED_SUB = ["trial", "active", "expired", "suspended"];
@@ -20,7 +23,9 @@ function parsePositiveInt(value, fallback) {
 }
 
 function normalizeSub(raw) {
-  var s = String(raw || "").trim().toLowerCase();
+  var s = String(raw || "")
+    .trim()
+    .toLowerCase();
   return ALLOWED_SUB.indexOf(s) !== -1 ? s : "trial";
 }
 
@@ -43,14 +48,18 @@ function signOwnerToken(ownerUserId, adminUserId) {
 function mapRestaurantSession(row) {
   if (!row) return null;
   var locality =
-    row.city != null && String(row.city).trim() !== "" ? String(row.city).trim() : null;
+    row.city != null && String(row.city).trim() !== ""
+      ? String(row.city).trim()
+      : null;
   return {
     id: row.id,
     name: row.name,
     city: locality,
     quartier: locality,
     country:
-      row.country != null && String(row.country).trim() !== "" ? String(row.country).trim() : null,
+      row.country != null && String(row.country).trim() !== ""
+        ? String(row.country).trim()
+        : null,
     whatsapp: row.whatsapp,
     subscription_status: normalizeSub(row.subscription_status),
     subscription_started_at: row.subscription_started_at
@@ -68,17 +77,20 @@ function mapRestaurantSession(row) {
 function mapRow(r) {
   var ms = r.menu_suspended;
   var menuSuspended = ms === 1 || ms === true || ms === "1";
-  var locality = r.city != null && String(r.city).trim() !== "" ? String(r.city).trim() : null;
+  var locality =
+    r.city != null && String(r.city).trim() !== ""
+      ? String(r.city).trim()
+      : null;
   return {
     id: r.id,
     name: String(r.name || "").trim() || "—",
-    logo_url: r.logo_url ? String(r.logo_url) : null,
+    slug: r.slug != null ? String(r.slug) : null,
     city: locality,
     quartier: locality,
     phone: r.whatsapp != null ? String(r.whatsapp) : null,
+    product_count: Number(r.product_count) || 0,
     subscription_status: normalizeSub(r.subscription_status),
     menu_suspended: menuSuspended,
-    product_count: Number(r.product_count) || 0,
     created_at: r.created_at ? new Date(r.created_at).toISOString() : null,
     owner_email: r.owner_email ? String(r.owner_email) : "",
   };
@@ -91,10 +103,16 @@ async function listRestaurants(req, res) {
     var pageSize = Math.min(parsePositiveInt(req.query.pageSize, 12), 100);
     var offset = (page - 1) * pageSize;
 
-    var qRaw = typeof req.query.q === "string" ? req.query.q.trim().slice(0, 160) : "";
+    var qRaw =
+      typeof req.query.q === "string" ? req.query.q.trim().slice(0, 160) : "";
     var statusFilter =
-      typeof req.query.subscription === "string" ? req.query.subscription.trim().toLowerCase() : "all";
-    var menuFilter = typeof req.query.menu === "string" ? req.query.menu.trim().toLowerCase() : "all";
+      typeof req.query.subscription === "string"
+        ? req.query.subscription.trim().toLowerCase()
+        : "all";
+    var menuFilter =
+      typeof req.query.menu === "string"
+        ? req.query.menu.trim().toLowerCase()
+        : "all";
 
     var conditions = [];
     var vals = [];
@@ -120,10 +138,13 @@ async function listRestaurants(req, res) {
       conditions.push("(COALESCE(r.menu_suspended, 0) = 1)");
     }
 
-    var whereClause = conditions.length ? "WHERE " + conditions.join(" AND ") : "";
+    var whereClause = conditions.length
+      ? "WHERE " + conditions.join(" AND ")
+      : "";
 
     var [[countRow]] = await pool.query(
-      "SELECT COUNT(*) AS n FROM restaurants r INNER JOIN users u ON u.id = r.user_id " + whereClause,
+      "SELECT COUNT(*) AS n FROM restaurants r INNER JOIN users u ON u.id = r.user_id " +
+        whereClause,
       vals,
     );
 
@@ -134,7 +155,7 @@ async function listRestaurants(req, res) {
     listVals.push(pageSize, offset);
 
     var [rows] = await pool.query(
-      "SELECT r.id, r.name, r.city, r.whatsapp AS whatsapp, r.logo_url, r.subscription_status, r.menu_suspended, " +
+      "SELECT r.id, r.name, r.slug, r.city, r.whatsapp AS whatsapp, r.logo_url, r.subscription_status, r.menu_suspended, " +
         "r.created_at AS created_at, u.email AS owner_email, " +
         "(SELECT COUNT(*) FROM products p WHERE p.restaurant_id = r.id) AS product_count " +
         "FROM restaurants r " +
@@ -155,7 +176,9 @@ async function listRestaurants(req, res) {
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Impossible de charger les restaurants." });
+    return res
+      .status(500)
+      .json({ message: "Impossible de charger les restaurants." });
   }
 }
 
@@ -169,7 +192,7 @@ async function getRestaurantDetail(req, res) {
 
     var pool = getPool();
     var [rows] = await pool.query(
-      "SELECT r.id, r.user_id, r.name, r.city, r.description, r.whatsapp, r.logo_url, r.banner_url, r.theme_color, " +
+      "SELECT r.id, r.user_id, r.name, r.slug, r.city, r.description, r.whatsapp, r.logo_url, r.banner_url, r.theme_color, " +
         "r.subscription_status, r.menu_suspended, r.created_at AS created_at, u.email AS owner_email, " +
         "(SELECT COUNT(*) FROM products p WHERE p.restaurant_id = r.id) AS product_count, " +
         "(SELECT COUNT(*) FROM categories c WHERE c.restaurant_id = r.id) AS category_count " +
@@ -213,13 +236,19 @@ async function patchMenuSuspended(req, res) {
     var pool = getPool();
     var adminId = Number(req.user.id);
 
-    var [[target]] = await pool.query("SELECT id, name FROM restaurants WHERE id = ? LIMIT 1", [id]);
+    var [[target]] = await pool.query(
+      "SELECT id, name FROM restaurants WHERE id = ? LIMIT 1",
+      [id],
+    );
     if (!target) {
       return res.status(404).json({ message: "Restaurant introuvable." });
     }
 
     var flag = suspended ? 1 : 0;
-    var [result] = await pool.query("UPDATE restaurants SET menu_suspended = ? WHERE id = ? LIMIT 1", [flag, id]);
+    var [result] = await pool.query(
+      "UPDATE restaurants SET menu_suspended = ? WHERE id = ? LIMIT 1",
+      [flag, id],
+    );
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Restaurant introuvable." });
     }
@@ -228,10 +257,12 @@ async function patchMenuSuspended(req, res) {
       userId: adminId,
       restaurantId: id,
       actorType: ACTOR_TYPES.ADMIN,
-      action: suspended ? AUDIT_ACTIONS.RESTAURANT_MENU_SUSPEND : AUDIT_ACTIONS.RESTAURANT_MENU_RESUME,
+      action: suspended
+        ? AUDIT_ACTIONS.RESTAURANT_MENU_SUSPEND
+        : AUDIT_ACTIONS.RESTAURANT_MENU_RESUME,
       detail: suspended
-        ? 'Menu public suspendu — « ' + String(target.name || id) + ' »'
-        : 'Menu public réactivé — « ' + String(target.name || id) + ' »',
+        ? "Menu public suspendu — « " + String(target.name || id) + " »"
+        : "Menu public réactivé — « " + String(target.name || id) + " »",
     });
 
     return res.json({
@@ -296,22 +327,27 @@ async function postRestaurantDashboardAccess(req, res) {
         id: ownerUserId,
         email: raw.owner_email,
         full_name:
-          raw.owner_full_name != null && String(raw.owner_full_name).trim() !== "" ?
-            String(raw.owner_full_name).trim()
-          : null,
+          raw.owner_full_name != null &&
+          String(raw.owner_full_name).trim() !== ""
+            ? String(raw.owner_full_name).trim()
+            : null,
         phone:
-          raw.owner_phone != null && String(raw.owner_phone).trim() !== "" ?
-            String(raw.owner_phone).trim()
-          : null,
+          raw.owner_phone != null && String(raw.owner_phone).trim() !== ""
+            ? String(raw.owner_phone).trim()
+            : null,
       },
       restaurant: mapRestaurantSession(raw),
     });
   } catch (err) {
     console.error(err);
     if (String(err.message || "").indexOf("JWT_SECRET") !== -1) {
-      return res.status(500).json({ message: "Configuration serveur : JWT_SECRET manquant." });
+      return res
+        .status(500)
+        .json({ message: "Configuration serveur : JWT_SECRET manquant." });
     }
-    return res.status(500).json({ message: "Impossible d’ouvrir le tableau de bord du restaurant." });
+    return res.status(500).json({
+      message: "Impossible d’ouvrir le tableau de bord du restaurant.",
+    });
   }
 }
 
@@ -326,7 +362,10 @@ async function deleteRestaurant(req, res) {
     var pool = getPool();
     var adminId = Number(req.user.id);
 
-    var [[target]] = await pool.query("SELECT id, name FROM restaurants WHERE id = ? LIMIT 1", [id]);
+    var [[target]] = await pool.query(
+      "SELECT id, name FROM restaurants WHERE id = ? LIMIT 1",
+      [id],
+    );
     if (!target) {
       return res.status(404).json({ message: "Restaurant introuvable." });
     }
