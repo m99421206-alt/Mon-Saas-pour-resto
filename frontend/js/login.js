@@ -34,7 +34,10 @@
   function saveSession(data) {
     localStorage.setItem(TOKEN_KEY, data.token);
     localStorage.setItem(USER_KEY, JSON.stringify(data.user || null));
-    localStorage.setItem(RESTAURANT_KEY, JSON.stringify(data.restaurant || null));
+    localStorage.setItem(
+      RESTAURANT_KEY,
+      JSON.stringify(data.restaurant || null),
+    );
   }
 
   function wantsOnboarding(data) {
@@ -58,20 +61,23 @@
 
   function supportDigits() {
     var cfg = window.MenuGo_CONFIG || {};
-    var w = typeof cfg.SUPPORT_WHATSAPP === "string" ? cfg.SUPPORT_WHATSAPP.trim() : "";
+    var w =
+      typeof cfg.SUPPORT_WHATSAPP === "string"
+        ? cfg.SUPPORT_WHATSAPP.trim()
+        : "";
     var d = w.replace(/\D/g, "");
     return d || DEFAULT_SUPPORT_WA;
   }
 
   function buildForgotWaMessage() {
     var resto =
-      forgotRestoInput && forgotRestoInput.value.trim() ?
-        forgotRestoInput.value.trim()
-      : FORGOT_PLACEHOLDER;
+      forgotRestoInput && forgotRestoInput.value.trim()
+        ? forgotRestoInput.value.trim()
+        : FORGOT_PLACEHOLDER;
     var phone =
-      forgotPhoneInput && forgotPhoneInput.value.trim() ?
-        forgotPhoneInput.value.trim()
-      : FORGOT_PLACEHOLDER;
+      forgotPhoneInput && forgotPhoneInput.value.trim()
+        ? forgotPhoneInput.value.trim()
+        : FORGOT_PLACEHOLDER;
     return (
       "Bonjour, je souhaite réinitialiser mon mot de passe.\n" +
       "Nom du restaurant : " +
@@ -117,7 +123,10 @@
       });
     });
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && forgotModal.getAttribute("aria-hidden") === "false") {
+      if (
+        e.key === "Escape" &&
+        forgotModal.getAttribute("aria-hidden") === "false"
+      ) {
         setForgotModalOpen(false);
       }
     });
@@ -130,14 +139,14 @@
     if (forgotWa) {
       forgotWa.addEventListener("click", function () {
         var resto =
-          forgotRestoInput && forgotRestoInput.value.trim() ?
-            forgotRestoInput.value.trim()
-          : "";
+          forgotRestoInput && forgotRestoInput.value.trim()
+            ? forgotRestoInput.value.trim()
+            : "";
         var phone =
-          forgotPhoneInput && forgotPhoneInput.value.trim() ?
-            forgotPhoneInput.value.trim()
-          : "";
-        fetch(API_URL + "/password-reset-request", {
+          forgotPhoneInput && forgotPhoneInput.value.trim()
+            ? forgotPhoneInput.value.trim()
+            : "";
+        fetch(API_URL + "/auth/password-reset-request", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -162,7 +171,10 @@
       return;
     }
 
-    if (window.MenuGo_EmailValidate && !window.MenuGo_EmailValidate.isValidEmail(email)) {
+    if (
+      window.MenuGo_EmailValidate &&
+      !window.MenuGo_EmailValidate.isValidEmail(email)
+    ) {
       showError(window.MenuGo_EmailValidate.emailFormatMessage());
       document.getElementById("login-email").focus();
       return;
@@ -172,7 +184,7 @@
     submitBtn.textContent = "Connexion...";
 
     try {
-      const response = await fetch(API_URL + "/login", {
+      const response = await fetch(API_URL + "/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -199,7 +211,11 @@
         if (!url || typeof url !== "string") {
           return false;
         }
-        if (url.indexOf("/") !== -1 || url.indexOf("\\") !== -1 || url.indexOf("..") !== -1) {
+        if (
+          url.indexOf("/") !== -1 ||
+          url.indexOf("\\") !== -1 ||
+          url.indexOf("..") !== -1
+        ) {
           return false;
         }
         if (/^https?:/i.test(url) || url.indexOf("//") === 0) {
@@ -212,7 +228,10 @@
         return typeof url === "string" && /^admin-[\w.-]+\.html$/i.test(url);
       }
 
-      if (wantsOnboarding(data) && !(isSafeNextPage(next) && isAdminNextPage(next))) {
+      if (
+        wantsOnboarding(data) &&
+        !(isSafeNextPage(next) && isAdminNextPage(next))
+      ) {
         window.location.href = "onboarding.html";
       } else if (isSafeNextPage(next)) {
         window.location.href = next;
@@ -222,7 +241,9 @@
         window.location.href = "dashboard.html";
       }
     } catch (error) {
-      showError("Impossible de contacter le serveur. Vérifiez que l'API est lancée.");
+      showError(
+        "Impossible de contacter le serveur. Vérifiez que l'API est lancée.",
+      );
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = "Se connecter";
