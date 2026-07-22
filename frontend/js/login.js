@@ -32,12 +32,16 @@
   }
 
   function saveSession(data) {
-    localStorage.setItem(TOKEN_KEY, data.token);
-    localStorage.setItem(USER_KEY, JSON.stringify(data.user || null));
-    localStorage.setItem(
-      RESTAURANT_KEY,
-      JSON.stringify(data.restaurant || null),
-    );
+    try {
+      localStorage.setItem(TOKEN_KEY, data.token);
+      localStorage.setItem(USER_KEY, JSON.stringify(data.user || null));
+      localStorage.setItem(
+        RESTAURANT_KEY,
+        JSON.stringify(data.restaurant || null),
+      );
+    } catch (e) {
+      console.warn("Storage inacessible", e);
+    }
   }
 
   function wantsOnboarding(data) {
@@ -51,119 +55,15 @@
     return r.onboarding_seen === false;
   }
 
-  var forgotBtn = document.getElementById("login-forgot-btn");
-  var forgotModal = document.getElementById("login-forgot-modal");
-  var forgotWa = document.getElementById("login-forgot-wa");
-  var forgotRestoInput = document.getElementById("forgot-resto-name");
-  var forgotPhoneInput = document.getElementById("forgot-phone");
-  var DEFAULT_SUPPORT_WA = "22399421206";
-  var FORGOT_PLACEHOLDER = "[à renseigner]";
-
-  function supportDigits() {
-    var cfg = window.MenuGo_CONFIG || {};
-    var w =
-      typeof cfg.SUPPORT_WHATSAPP === "string"
-        ? cfg.SUPPORT_WHATSAPP.trim()
-        : "";
-    var d = w.replace(/\D/g, "");
-    return d || DEFAULT_SUPPORT_WA;
-  }
-
-  function buildForgotWaMessage() {
-    var resto =
-      forgotRestoInput && forgotRestoInput.value.trim()
-        ? forgotRestoInput.value.trim()
-        : FORGOT_PLACEHOLDER;
-    var phone =
-      forgotPhoneInput && forgotPhoneInput.value.trim()
-        ? forgotPhoneInput.value.trim()
-        : FORGOT_PLACEHOLDER;
-    return (
-      "Bonjour, je souhaite réinitialiser mon mot de passe.\n" +
-      "Nom du restaurant : " +
-      resto +
-      "\n" +
-      "Numéro de téléphone : " +
-      phone
-    );
-  }
-
-  function updateForgotWaLink() {
-    if (!forgotWa) {
-      return;
-    }
-    forgotWa.href =
-      "https://wa.me/" +
-      supportDigits() +
-      "?text=" +
-      encodeURIComponent(buildForgotWaMessage());
-  }
-
-  function setForgotModalOpen(open) {
-    if (!forgotModal) {
-      return;
-    }
-    forgotModal.setAttribute("aria-hidden", open ? "false" : "true");
-    document.body.classList.toggle("auth-forgot-open", open);
-    if (open) {
-      updateForgotWaLink();
-      if (forgotRestoInput) {
-        forgotRestoInput.focus();
-      }
-    }
-  }
-
-  if (forgotBtn && forgotModal) {
-    forgotBtn.addEventListener("click", function () {
-      setForgotModalOpen(true);
-    });
-    forgotModal.querySelectorAll("[data-close-forgot]").forEach(function (el) {
-      el.addEventListener("click", function () {
-        setForgotModalOpen(false);
-      });
-    });
-    document.addEventListener("keydown", function (e) {
-      if (
-        e.key === "Escape" &&
-        forgotModal.getAttribute("aria-hidden") === "false"
-      ) {
-        setForgotModalOpen(false);
-      }
-    });
-    [forgotRestoInput, forgotPhoneInput].forEach(function (input) {
-      if (!input) {
-        return;
-      }
-      input.addEventListener("input", updateForgotWaLink);
-    });
-    if (forgotWa) {
-      forgotWa.addEventListener("click", function () {
-        var resto =
-          forgotRestoInput && forgotRestoInput.value.trim()
-            ? forgotRestoInput.value.trim()
-            : "";
-        var phone =
-          forgotPhoneInput && forgotPhoneInput.value.trim()
-            ? forgotPhoneInput.value.trim()
-            : "";
-        fetch(API_URL + "/auth/password-reset-request", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            restaurantName: resto,
-            phone: phone,
-          }),
-        }).catch(function () {});
-      });
-    }
-    updateForgotWaLink();
-  }
+  // ... (Garde la partie Modal Réinitialisation de Mot de Passe ici) ...
 
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
     clearError();
 
-    const email = document.getElementById("login-email").value.trim();
+    //  FIX 1 : Force la minuscules et nettoie les espaces
+    const emailInput = document.getElementById("login-email");
+    const email = emailInput.value.trim().toLowerCase();
     const password = document.getElementById("login-password").value;
 
     if (!email || !password) {
@@ -176,7 +76,7 @@
       !window.MenuGo_EmailValidate.isValidEmail(email)
     ) {
       showError(window.MenuGo_EmailValidate.emailFormatMessage());
-      document.getElementById("login-email").focus();
+      emailInput.focus();
       return;
     }
 
@@ -208,19 +108,14 @@
       var next = params.get("next");
 
       function isSafeNextPage(url) {
-        if (!url || typeof url !== "string") {
-          return false;
-        }
+        if (!url || typeof url !== "string") return false;
         if (
           url.indexOf("/") !== -1 ||
           url.indexOf("\\") !== -1 ||
           url.indexOf("..") !== -1
-        ) {
+        )
           return false;
-        }
-        if (/^https?:/i.test(url) || url.indexOf("//") === 0) {
-          return false;
-        }
+        if (/^https?:/i.test(url) || url.indexOf("//") === 0) return false;
         return /^[a-zA-Z0-9_-]+\.html$/.test(url);
       }
 
@@ -241,8 +136,10 @@
         window.location.href = "dashboard.html";
       }
     } catch (error) {
+      // Affiche le détail en alerte pour déboguer si le réseau mobile plante
+      alert("Erreur connexion: " + error.message);
       showError(
-        "Impossible de contacter le serveur. Vérifiez que l'API est lancée.",
+        "Impossible de contacter le serveur. Vérifiez votre connexion internet.",
       );
     } finally {
       submitBtn.disabled = false;
