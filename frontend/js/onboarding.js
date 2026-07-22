@@ -4,10 +4,9 @@
 (function () {
   "use strict";
 
-  var API_URL = String((window.MenuGo_CONFIG && window.MenuGo_CONFIG.API_URL) || "").replace(
-    /\/$/,
-    "",
-  );
+  var API_URL = String(
+    (window.MenuGo_CONFIG && window.MenuGo_CONFIG.API_URL) || "",
+  ).replace(/\/$/, "");
   var TOKEN_KEY = "MenuGo_token";
   var USER_KEY = "MenuGo_user";
   var RESTAURANT_KEY = "MenuGo_restaurant";
@@ -27,7 +26,8 @@
   var HELP_SUCCESS_BTN = "Demande envoyée";
 
   function redirectLogin() {
-    window.location.href = "login.html?next=" + encodeURIComponent("onboarding.html");
+    window.location.href =
+      "login.html?next=" + encodeURIComponent("onboarding.html");
   }
 
   function getToken() {
@@ -52,7 +52,10 @@
 
   function supportDigits() {
     var cfg = window.MenuGo_CONFIG || {};
-    var w = typeof cfg.SUPPORT_WHATSAPP === "string" ? cfg.SUPPORT_WHATSAPP.trim() : "";
+    var w =
+      typeof cfg.SUPPORT_WHATSAPP === "string"
+        ? cfg.SUPPORT_WHATSAPP.trim()
+        : "";
     var d = w.replace(/\D/g, "");
     return d || DEFAULT_SUPPORT_WA;
   }
@@ -61,12 +64,15 @@
     if (!waBtn) return;
     var body = waBtn.getAttribute("data-wa-body") || "";
     var url =
-      "https://wa.me/" + supportDigits() + "?text=" + encodeURIComponent(String(body).trim());
+      "https://wa.me/" +
+      supportDigits() +
+      "?text=" +
+      encodeURIComponent(String(body).trim());
     waBtn.setAttribute("href", url);
     if (!waBtn.dataset.notifyBound) {
       waBtn.dataset.notifyBound = "1";
       waBtn.addEventListener("click", function () {
-        apiPost("/api/me/admin-notify", {
+        apiPost("/me/admin-notify", {
           type: "support",
           detail: "Contact WhatsApp depuis l'onboarding",
         });
@@ -184,7 +190,7 @@
   }
 
   async function markSeen() {
-    var res = await apiPost("/api/me/onboarding/mark-seen");
+    var res = await apiPost("/me/onboarding/mark-seen");
     if (res.ok && res.data) {
       patchStoredRestaurant({ onboarding_seen: true });
     }
@@ -220,17 +226,21 @@
       helpBtn.addEventListener("click", async function () {
         resetHelpNotice();
         setHelpButtonState("loading");
-        var res = await apiPost("/api/me/onboarding/request-help");
+        var res = await apiPost("/me/onboarding/request-help");
         if (res.status === 401) {
           redirectLogin();
           return;
         }
         if (res.ok) {
-          patchStoredRestaurant({ onboarding_seen: true, needs_setup_help: true });
+          patchStoredRestaurant({
+            onboarding_seen: true,
+            needs_setup_help: true,
+          });
           showHelpSuccess();
         } else {
           showHelpError(
-            (res.data && res.data.message) || "Impossible d’envoyer la demande. Réessayez.",
+            (res.data && res.data.message) ||
+              "Impossible d’envoyer la demande. Réessayez.",
           );
         }
       });
