@@ -9,20 +9,23 @@
   var catalogPanelRef = null;
 
   function escapeHtml(value) {
-    return String(value == null ? "" : value).replace(/[&<>"']/g, function (ch) {
-      switch (ch) {
-        case "&":
-          return "&amp;";
-        case "<":
-          return "&lt;";
-        case ">":
-          return "&gt;";
-        case '"':
-          return "&quot;";
-        default:
-          return "&#039;";
-      }
-    });
+    return String(value == null ? "" : value).replace(
+      /[&<>"']/g,
+      function (ch) {
+        switch (ch) {
+          case "&":
+            return "&amp;";
+          case "<":
+            return "&lt;";
+          case ">":
+            return "&gt;";
+          case '"':
+            return "&quot;";
+          default:
+            return "&#039;";
+        }
+      },
+    );
   }
 
   function formatCFA(n) {
@@ -35,12 +38,18 @@
     if (!iso) return "—";
     var d = new Date(iso);
     if (!Number.isFinite(d.getTime())) return "—";
-    return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+    return d.toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
   }
 
   /** @param {string|null|undefined} raw */
   function waDigits(raw) {
-    return String(raw || "").replace(/\D/g, "").replace(/^0+/, "");
+    return String(raw || "")
+      .replace(/\D/g, "")
+      .replace(/^0+/, "");
   }
 
   function notifyAdminSubscription() {
@@ -95,13 +104,18 @@
   function resolveDisplayBadge(subscription) {
     var alerts = window.MenuGo_SubscriptionAlerts;
     var dr =
-      alerts && alerts.resolveDaysRemaining ?
-        alerts.resolveDaysRemaining(subscription)
-      : subscription.days_remaining !== undefined && subscription.days_remaining !== null ?
-        Number(subscription.days_remaining)
-      : null;
+      alerts && alerts.resolveDaysRemaining
+        ? alerts.resolveDaysRemaining(subscription)
+        : subscription.days_remaining !== undefined &&
+            subscription.days_remaining !== null
+          ? Number(subscription.days_remaining)
+          : null;
 
-    if (alerts && alerts.isSubscriptionExpired && alerts.isSubscriptionExpired(subscription)) {
+    if (
+      alerts &&
+      alerts.isSubscriptionExpired &&
+      alerts.isSubscriptionExpired(subscription)
+    ) {
       return { key: "expired", label: "Expiré" };
     }
 
@@ -109,9 +123,9 @@
     if (st === "expired") return { key: "expired", label: "Expiré" };
     if (st === "suspended") return { key: "suspended", label: "Suspendu" };
     var alertDays =
-      alerts && Number.isFinite(Number(alerts.ALERT_DAYS_BEFORE)) ?
-        Number(alerts.ALERT_DAYS_BEFORE)
-      : 3;
+      alerts && Number.isFinite(Number(alerts.ALERT_DAYS_BEFORE))
+        ? Number(alerts.ALERT_DAYS_BEFORE)
+        : 3;
     if (dr !== null && dr >= 1 && dr <= alertDays) {
       return { key: "warning", label: "Bientôt expiré" };
     }
@@ -137,7 +151,7 @@
   function fillContactMenuGoButton(el) {
     var img = document.createElement("img");
     img.src = "../../assets/images/icone/phone-receiver-silhouette.webp";
-    img.alt = "";
+    img.alt = "Téléphone";
     img.width = 18;
     img.height = 18;
     img.className = "dash-my-sub__btn-ico";
@@ -166,7 +180,7 @@
       var inner = document.createElement("div");
       inner.className = "dash-my-sub__card";
       inner.innerHTML =
-        "<div class=\"dash-my-sub__head\"><div class=\"dash-my-sub__titlewrap\"><h2 id=\"dash-my-sub-title\">Mon abonnement</h2></div></div>" +
+        '<div class="dash-my-sub__head"><div class="dash-my-sub__titlewrap"><h2 id="dash-my-sub-title">Mon abonnement</h2></div></div>' +
         '<p class="dash-my-sub__muted">Aucune information d’abonnement n’est encore disponible pour ce compte.</p>';
       wrap.appendChild(inner);
       rootEl.appendChild(wrap);
@@ -177,21 +191,26 @@
     var displayBadge = resolveDisplayBadge(subscription);
 
     var rawPlanLabel =
-      status === "trial" ?
-        "Essai gratuit"
-      : String(subscription.plan_label || "").trim();
+      status === "trial"
+        ? "Essai gratuit"
+        : String(subscription.plan_label || "").trim();
     var planHeaderMuted = escapeHtml(rawPlanLabel || "Plan");
 
     /** @type {Array<object>} */
-    var catalog =
-      Array.isArray(me.plans_catalog) ? me.plans_catalog.slice() : [];
+    var catalog = Array.isArray(me.plans_catalog)
+      ? me.plans_catalog.slice()
+      : [];
 
     /** @type {object|null} */
     var restaurant = me.restaurant || null;
-    var restoName = restaurant && restaurant.name ? String(restaurant.name) : "Mon restaurant";
+    var restoName =
+      restaurant && restaurant.name
+        ? String(restaurant.name)
+        : "Mon restaurant";
 
     var supportMail = cfg.SUPPORT_EMAIL && String(cfg.SUPPORT_EMAIL).trim();
-    supportMail = supportMail && isValidEmail(supportMail) ? supportMail.trim() : "";
+    supportMail =
+      supportMail && isValidEmail(supportMail) ? supportMail.trim() : "";
 
     var supportWa = cfg.SUPPORT_WHATSAPP ? waDigits(cfg.SUPPORT_WHATSAPP) : "";
 
@@ -208,7 +227,7 @@
     header.innerHTML =
       '<div class="dash-my-sub__titlewrap">' +
       '<h2 id="dash-my-sub-title">' +
-      '<span class="dash-my-sub__icon" aria-hidden="true"><img src="../../assets/images/icone/abonnement.webp" alt="" width="26" height="26" /></span>' +
+      '<span class="dash-my-sub__icon" aria-hidden="true"><img src="../../assets/images/icone/abonnement.webp" alt="Abonnement" width="26" height="26"></span>' +
       "Mon abonnement" +
       "</h2>" +
       '<div class="dash-my-sub__badge-line">' +
@@ -217,9 +236,9 @@
       '" data-sub-role="badge">' +
       escapeHtml(displayBadge.label) +
       "</span>" +
-      (status !== "trial" ?
-        '<span class="dash-my-sub__muted">' + planHeaderMuted + "</span>"
-      : "") +
+      (status !== "trial"
+        ? '<span class="dash-my-sub__muted">' + planHeaderMuted + "</span>"
+        : "") +
       "</div>" +
       "</div>";
 
@@ -231,22 +250,25 @@
     if (status === "trial") {
       var trialDays =
         subscription.trial_display_days !== undefined &&
-        subscription.trial_display_days !== null ?
-          Number(subscription.trial_display_days)
-        : NaN;
+        subscription.trial_display_days !== null
+          ? Number(subscription.trial_display_days)
+          : NaN;
       if (!Number.isFinite(trialDays) || trialDays < 1) trialDays = 30;
 
       var dr =
-        subscription.days_remaining !== undefined && subscription.days_remaining !== null ?
-          Number(subscription.days_remaining)
-        : NaN;
+        subscription.days_remaining !== undefined &&
+        subscription.days_remaining !== null
+          ? Number(subscription.days_remaining)
+          : NaN;
 
       var offer = subscription.post_trial_offer;
 
       var lead =
-        trialDays <= 1 ?
-          "Vous profitez actuellement de l’essai gratuit (dernier jour)."
-        : "Vous profitez actuellement de l’essai gratuit de " + trialDays + " jours.";
+        trialDays <= 1
+          ? "Vous profitez actuellement de l’essai gratuit (dernier jour)."
+          : "Vous profitez actuellement de l’essai gratuit de " +
+            trialDays +
+            " jours.";
 
       /** @type {string[]} */
       var trialLines = [lead];
@@ -255,11 +277,11 @@
 
       if (Number.isFinite(dr)) {
         trialLines.push(
-          dr === 0 ?
-            "Essai terminé aujourd’hui."
-          : dr === 1 ?
-            "Il reste 1 jour."
-          : "Il reste " + dr + " jours.",
+          dr === 0
+            ? "Essai terminé aujourd’hui."
+            : dr === 1
+              ? "Il reste 1 jour."
+              : "Il reste " + dr + " jours.",
         );
         trialLineClasses.push(
           "dash-my-sub__trial-countdown dash-my-sub__muted",
@@ -271,10 +293,7 @@
         var priceShown = formatCFA(offer.price_cfa || 0);
         var freq = moOffer === 1 ? "/mois" : " pour " + moOffer + " mois";
         var planResume =
-          String(offer.plan_label).trim() +
-          " — " +
-          priceShown +
-          freq;
+          String(offer.plan_label).trim() + " — " + priceShown + freq;
         trialLines.push("Après expiration :");
         trialLineClasses.push("dash-my-sub__trial-after-label");
         trialLines.push(planResume);
@@ -288,8 +307,7 @@
       });
     } else if (status === "expired") {
       alerts.push({
-        text:
-          "Votre abonnement est arrivé à échéance. Renouvellement ou contact équipe nécessaires pour corriger votre accès aux écrans du menu.",
+        text: "Votre abonnement est arrivé à échéance. Renouvellement ou contact équipe nécessaires pour corriger votre accès aux écrans du menu.",
         mod: "dash-my-sub__alert--expired",
       });
       var eo = subscription.post_trial_offer || null;
@@ -308,8 +326,7 @@
       }
     } else if (status === "suspended") {
       alerts.push({
-        text:
-          "Votre compte ou abonnement est suspendu par l’administrateur. Merci de contacter le support pour une réactivation.",
+        text: "Votre compte ou abonnement est suspendu par l’administrateur. Merci de contacter le support pour une réactivation.",
         mod: "dash-my-sub__alert--muted",
       });
     }
@@ -337,17 +354,22 @@
 
     var alertsApi = window.MenuGo_SubscriptionAlerts;
     var daysLeft =
-      alertsApi && alertsApi.resolveDaysRemaining ?
-        alertsApi.resolveDaysRemaining(subscription)
-      : subscription.days_remaining !== undefined && subscription.days_remaining !== null ?
-        Number(subscription.days_remaining)
-      : null;
+      alertsApi && alertsApi.resolveDaysRemaining
+        ? alertsApi.resolveDaysRemaining(subscription)
+        : subscription.days_remaining !== undefined &&
+            subscription.days_remaining !== null
+          ? Number(subscription.days_remaining)
+          : null;
     if (daysLeft === null || !Number.isFinite(daysLeft)) daysLeft = 0;
 
     var amountLine =
-      status === "trial" ?
-        formatCFA(0) + " — période d’essai"
-      : formatCFA(subscription.display_price_cfa || subscription.subscription_amount_cfa || 0);
+      status === "trial"
+        ? formatCFA(0) + " — période d’essai"
+        : formatCFA(
+            subscription.display_price_cfa ||
+              subscription.subscription_amount_cfa ||
+              0,
+          );
 
     var gridItems = [];
 
@@ -435,21 +457,27 @@
           "&body=" +
           encodeURIComponent(renewBody);
         renew.textContent =
-          status === "trial" ? "Questions sur l’abonnement" : "Renouveler par e-mail";
+          status === "trial"
+            ? "Questions sur l’abonnement"
+            : "Renouveler par e-mail";
         appendBtn(renew);
       }
     }
 
     /** WhatsApp AfricaMenu (support abonnements) — message prérempli, ouverture manuelle. */
     var waUrl =
-      alertsApi && alertsApi.buildWhatsAppUrl ?
-        alertsApi.buildWhatsAppUrl(restoName, subscription.ends_at)
-      : supportWa ?
-        "https://wa.me/" +
-        supportWa +
-        "?text=" +
-        encodeURIComponent("Bonjour AfricaMenu, concernant mon abonnement (" + restoName + ").")
-      : "#";
+      alertsApi && alertsApi.buildWhatsAppUrl
+        ? alertsApi.buildWhatsAppUrl(restoName, subscription.ends_at)
+        : supportWa
+          ? "https://wa.me/" +
+            supportWa +
+            "?text=" +
+            encodeURIComponent(
+              "Bonjour AfricaMenu, concernant mon abonnement (" +
+                restoName +
+                ").",
+            )
+          : "#";
 
     if (waUrl !== "#") {
       var whats = document.createElement("a");
@@ -507,7 +535,9 @@
         var id = escapeHtml(String(p.id || ""));
         var name = escapeHtml(String(p.name || "Plan"));
         var price =
-          Number(p.price_cfa) > 0 ? formatCFA(p.price_cfa) : "Offert ou sur devis";
+          Number(p.price_cfa) > 0
+            ? formatCFA(p.price_cfa)
+            : "Offert ou sur devis";
 
         var li = document.createElement("li");
         li.className = "dash-my-sub__plan-mini";
