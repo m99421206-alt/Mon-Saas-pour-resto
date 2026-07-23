@@ -8,7 +8,18 @@
       content="AfricaMenu — Un simple scan pour un menu complet. Vos clients accèdent instantanément à votre menu via QR code."
     />
     <title>AfricaMenu — Menu QR pour restaurants</title>
-    <!-- Police moderne alignée sur les maquettes (Inter) -->
+
+    <!-- Force le chargement sécurisé (HTTPS) des ressources -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="upgrade-insecure-requests"
+    />
+
+    <!-- Configuration PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#10B981" />
+
+    <!-- Police moderne (Inter) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -22,6 +33,23 @@
       src="https://www.googletagmanager.com/gtag/js?id=G-N40SHP116G"
     ></script>
     <script src="frontend/js/analytics.js"></script>
+
+    <!-- ÉTAPE 3 : DONNÉES STRUCTURÉES (SCHEMA.ORG / JSON-LD) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "AfricaMenu",
+        "operatingSystem": "All",
+        "applicationCategory": "BusinessApplication",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "XOF"
+        },
+        "description": "Plateforme SaaS de menus digitaux QR Code avec commande WhatsApp intégrée."
+      }
+    </script>
   </head>
   <body>
     <!-- ========== En-tête ========== -->
