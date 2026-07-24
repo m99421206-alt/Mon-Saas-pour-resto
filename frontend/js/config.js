@@ -15,7 +15,7 @@
   // En production, on utilise la route relative "/api" pour éviter tout blocage CORS/SSL sur mobile.
   var defaultApiUrl = isLocalHost
     ? protocol + "//" + hostname + ":" + API_PORT
-    : "/api";
+    : "";
 
   var existingConfig = window.MenuGo_CONFIG || {};
 
