@@ -199,24 +199,22 @@ app.post("/register", registerRateLimiter);
 app.post("/login", loginRateLimiter);
 app.post("/password-reset-request", passwordResetNotifyLimiter);
 
-/* Authentification (étape 5) */
+/* Authentification — accessible sur /api/auth ET / (pour compatibilité) */
+app.use("/api/auth", authRoutes);
+app.use("/auth", authRoutes);
 app.use("/", authRoutes);
 
-/* Administration plateforme — avant /api (évite middleware compte resto sur /api/admin/*) */
+/* Administration plateforme */
 app.use("/api/admin", adminRoutes);
-/* Routes protégées sous /api (étape 6 — middleware JWT) */
-app.use("/api", userRoutes);
-/* CRUD catégories (étape 7) — JWT requis */
+
+/* CRUD spécifiques (chacun sur son préfixe) */
 app.use("/api/categories", categoryRoutes);
-/* CRUD produits (étape 8) — JWT requis */
 app.use("/api/products", productRoutes);
-/* Paramètres restaurant — JWT requis */
 app.use("/api/restaurant", restaurantRoutes);
-/* Upload images — JWT requis */
-app.use("/upload", uploadRoutes);
-app.use(sitemapRoutes);
-/* Menu public client (étape 9) — sans JWT */
-app.use("/menu", menuRoutes);
+
+/* Profil et Utilisateurs — Isoler la route générale pour ne pas bloquer /api/auth */
+app.use("/api/users", userRoutes);
+app.use("/api/me", userRoutes); // Si la route /me est dans userRoutes
 app.get("/restaurant/:restaurantSlug", menuController.getPublicMenu);
 
 platformSettings.refresh().catch(function (e) {
