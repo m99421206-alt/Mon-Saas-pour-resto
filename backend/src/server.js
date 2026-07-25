@@ -14,6 +14,7 @@ const { validateJwtSecretAtStartup } = require("./config/jwtSecret");
 const { validateAdminEmailsAtStartup } = require("./utils/platformAdmin");
 const { buildHelmetCspDirectives } = require("./config/csp");
 const { ping } = require("./config/database");
+
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
@@ -28,9 +29,11 @@ var platformSettings = require("./services/platformSettings");
 
 const isProduction = process.env.NODE_ENV === "production";
 const app = express();
+
 if (isProduction) {
   app.set("trust proxy", 1);
 }
+
 const PORT = Number(process.env.PORT) || 4000;
 const HOST = process.env.HOST || "0.0.0.0";
 const LAN_URL = process.env.LAN_URL || "http://localhost:" + PORT;
@@ -73,11 +76,6 @@ function isPrivateNetworkHost(hostname) {
   );
 }
 
-/**
- * Hors production : tout origine HTTP/HTTPS depuis localhost ou LAN privé est acceptée,
- * quel que soit le port (5500 mais aussi 8080, 63342 Live Server variant, etc.).
- * Sinon l’inscription / login peuvent « échouer » alors que le seul problème était le CORS.
- */
 function isAllowedDevOrigin(origin) {
   if (process.env.NODE_ENV === "production") {
     return false;
@@ -136,7 +134,7 @@ var passwordResetNotifyLimiter = rateLimit({
   message: { message: "Trop de demandes. Réessayez dans une minute." },
 });
 
-/* CORS avant les routes — préflight inclus (évite blocages inscription / login en dev). */
+/* CORS avant les routes — préflight inclus */
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -163,9 +161,7 @@ app.use(
 /* Corps des requêtes en JSON (POST / PUT) */
 app.use(express.json({ limit: "256kb" }));
 
-/* Images uploadées par les restaurants.
-   Les noms de fichiers sont uniques (timestamp + aléatoire), le contenu ne change
-   jamais : on peut donc activer un cache navigateur long + immutable. */
+/* Images uploadées par les restaurants */
 app.use(
   "/uploads",
   express.static(path.join(__dirname, "../uploads"), {
@@ -194,28 +190,44 @@ app.get("/health", async function (req, res) {
   }
 });
 
-/* Limitation globale inscription ; login : 5 échecs → blocage (loginLockout.js) */
+/* Rate limiting pour l'authentification */
 app.post("/register", registerRateLimiter);
 app.post("/login", loginRateLimiter);
 app.post("/password-reset-request", passwordResetNotifyLimiter);
+app.post("/api/auth/register", registerRateLimiter);
+app.post("/api/auth/login", loginRateLimiter);
 
-/* Authentification — accessible sur /api/auth ET / (pour compatibilité) */
+/* ------------------------------------------------------------- */
+/*                       DECLARATION ROUTES                       */
+/* ------------------------------------------------------------- */
+
+/* Authentification — support des routes /api/auth et racine */
 app.use("/api/auth", authRoutes);
 app.use("/auth", authRoutes);
-app.use("/", authRoutes);
+
+/* Routes Profil & Utilisateurs */
+// Capturer explicitement /api/me et rediriger vers userRoutes
+app.use("/api/me", userRoutes);
+app.use("/api/users", userRoutes);
 
 /* Administration plateforme */
 app.use("/api/admin", adminRoutes);
 
-/* CRUD spécifiques (chacun sur son préfixe) */
+/* CRUD Métier */
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/restaurant", restaurantRoutes);
 
-/* Profil et Utilisateurs — Isoler la route générale pour ne pas bloquer /api/auth */
-app.use("/api/users", userRoutes);
-app.use("/api/me", userRoutes); // Si la route /me est dans userRoutes
+/* Uploads, Sitemap et Menus publics */
+app.use("/upload", uploadRoutes);
+app.use(sitemapRoutes);
+app.use("/menu", menuRoutes);
 app.get("/restaurant/:restaurantSlug", menuController.getPublicMenu);
+
+/* Legacy Auth Fallback — A laisser en dernier parmi les routes d'auth */
+app.use("/", authRoutes);
+
+/* ------------------------------------------------------------- */
 
 platformSettings.refresh().catch(function (e) {
   console.warn("[platform_settings]", e.message || e);
