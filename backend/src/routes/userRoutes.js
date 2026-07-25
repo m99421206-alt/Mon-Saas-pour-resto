@@ -6,10 +6,15 @@ const router = express.Router();
 
 router.use(requireAuth);
 
+// Supporte /api/me (si monté sur /api/me) ET /api + /me (si monté sur /api)
+router.get("/", userController.getMe);
 router.get("/me", userController.getMe);
 
 router.post("/me/onboarding/mark-seen", userController.postOnboardingMarkSeen);
-router.post("/me/onboarding/request-help", userController.postOnboardingRequestHelp);
+router.post(
+  "/me/onboarding/request-help",
+  userController.postOnboardingRequestHelp,
+);
 router.post("/me/admin-notify", userController.postAdminNotify);
 
 module.exports = router;
