@@ -1,6 +1,5 @@
 ﻿/**
  * Serveur Express — AfricaMenu API
- * Étape 2 : JSON body, CORS, variables d’environnement, port configurable.
  */
 
 require("dotenv").config();
@@ -39,25 +38,16 @@ const HOST = process.env.HOST || "0.0.0.0";
 const LAN_URL = process.env.LAN_URL || "http://localhost:" + PORT;
 const allowedOrigins = (process.env.CORS_ORIGIN || "")
   .split(",")
-  .map(function (origin) {
-    return origin.trim();
-  })
+  .map((origin) => origin.trim())
   .filter(Boolean);
 
 function assertProductionConfig() {
-  if (!isProduction) {
-    return;
-  }
-
+  if (!isProduction) return;
   if (allowedOrigins.length === 0 || allowedOrigins.indexOf("*") !== -1) {
-    throw new Error(
-      "Configuration production invalide : CORS_ORIGIN doit contenir les origines exactes du frontend.",
-    );
+    throw new Error("CORS_ORIGIN invalide en production.");
   }
   if (!process.env.DB_PASSWORD) {
-    throw new Error(
-      "Configuration production invalide : DB_PASSWORD doit être renseigné.",
-    );
+    throw new Error("DB_PASSWORD doit être renseigné.");
   }
 }
 
@@ -77,10 +67,7 @@ function isPrivateNetworkHost(hostname) {
 }
 
 function isAllowedDevOrigin(origin) {
-  if (process.env.NODE_ENV === "production") {
-    return false;
-  }
-
+  if (process.env.NODE_ENV === "production") return false;
   try {
     var url = new URL(origin);
     return (
@@ -93,55 +80,19 @@ function isAllowedDevOrigin(origin) {
 }
 
 function isAllowedCorsOrigin(origin) {
-  if (!origin) {
-    return true;
-  }
-
-  if (
+  if (!origin) return true;
+  return (
     (!isProduction && allowedOrigins.includes("*")) ||
     allowedOrigins.includes(origin) ||
     isAllowedDevOrigin(origin)
-  ) {
-    return true;
-  }
-
-  return false;
+  );
 }
 
-var registerRateLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: isProduction ? 10 : 30,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { message: "Trop de tentatives. Réessayez dans une minute." },
-});
-
-var loginRateLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: isProduction ? 20 : 60,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: {
-    message: "Trop de tentatives de connexion. Réessayez dans une minute.",
-  },
-});
-
-var passwordResetNotifyLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: isProduction ? 8 : 20,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { message: "Trop de demandes. Réessayez dans une minute." },
-});
-
-/* CORS avant les routes — préflight inclus */
+/* Middlewares de sécurité & parsing */
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (isAllowedCorsOrigin(origin)) {
-        return callback(null, true);
-      }
-
+      if (isAllowedCorsOrigin(origin)) return callback(null, true);
       return callback(new Error("Origine CORS non autorisée."));
     },
     credentials: true,
@@ -158,10 +109,9 @@ app.use(
   }),
 );
 
-/* Corps des requêtes en JSON (POST / PUT) */
 app.use(express.json({ limit: "256kb" }));
 
-/* Images uploadées par les restaurants */
+/* Fichiers statiques uploads */
 app.use(
   "/uploads",
   express.static(path.join(__dirname, "../uploads"), {
@@ -169,14 +119,14 @@ app.use(
     immutable: true,
     etag: true,
     lastModified: true,
-    setHeaders: function (res) {
+    setHeaders: (res) => {
       res.setHeader("Cache-Control", "public, max-age=2592000, immutable");
     },
   }),
 );
 
-/* Route de santé : serveur + base de données */
-app.get("/health", async function (req, res) {
+/* Healthcheck */
+app.get("/health", async (req, res) => {
   try {
     await ping();
     return res.json({ ok: true, service: "AfricaMenu-api", db: "up" });
@@ -190,64 +140,56 @@ app.get("/health", async function (req, res) {
   }
 });
 
-/* Rate limiting pour l'authentification */
-app.post("/register", registerRateLimiter);
-app.post("/login", loginRateLimiter);
-app.post("/password-reset-request", passwordResetNotifyLimiter);
-app.post("/api/auth/register", registerRateLimiter);
-app.post("/api/auth/login", loginRateLimiter);
+// =================================================================
+//                 ROUTAGE STRICT ET CLAIR DE L'API
+// =================================================================
 
-/* ------------------------------------------------------------- */
-/*                       DECLARATION ROUTES                       */
-/* ------------------------------------------------------------- */
-
-/* Authentification — support des routes /api/auth et racine */
+/* 1. Authentification */
 app.use("/api/auth", authRoutes);
-app.use("/auth", authRoutes);
+app.use("/auth", authRoutes); // Rétro-compatibilité
 
-/* Routes Profil & Utilisateurs */
-// Capturer explicitement /api/me et rediriger vers userRoutes
+/* 2. Utilisateurs & Profil (/api/me et /api/users) */
 app.use("/api/me", userRoutes);
 app.use("/api/users", userRoutes);
 
-/* Administration plateforme */
+/* 3. Administration */
 app.use("/api/admin", adminRoutes);
 
-/* CRUD Métier */
+/* 4. Données métier (Espace client/Resto) */
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/restaurant", restaurantRoutes);
+app.use("/api/upload", uploadRoutes);
 
-/* Uploads, Sitemap et Menus publics */
-app.use("/upload", uploadRoutes);
-app.use(sitemapRoutes);
+/* 5. Menus Publics (C'est la route interrogée par la page client/menu public) */
+app.use("/api/menu", menuRoutes);
 app.use("/menu", menuRoutes);
 app.get("/restaurant/:restaurantSlug", menuController.getPublicMenu);
 
-/* Legacy Auth Fallback — A laisser en dernier parmi les routes d'auth */
-app.use("/", authRoutes);
+/* Sitemap */
+app.use(sitemapRoutes);
 
-/* ------------------------------------------------------------- */
+/* Fallback auth pour requêtes POST legacy à la racine (/login, /register) */
+app.post("/login", authRoutes);
+app.post("/register", authRoutes);
 
-platformSettings.refresh().catch(function (e) {
-  console.warn("[platform_settings]", e.message || e);
+// =================================================================
+//                     GESTION DES ERREURS
+// =================================================================
+
+/* 404 : Si aucune route ci-dessus n'a répondu, renvoyer du JSON et JAMAIS du HTML */
+app.use((req, res) => {
+  res.status(404).json({ ok: false, message: "Route API introuvable." });
 });
 
-app.use(function (req, res) {
-  res.status(404).json({ message: "Route introuvable." });
-});
+/* Gestion globale des erreurs serveur */
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
 
-app.use(function (err, req, res, next) {
-  if (res.headersSent) {
-    return next(err);
-  }
+  let status = err.status || err.statusCode || 500;
+  if (status < 400 || status >= 600) status = 500;
 
-  var status = err.status || err.statusCode || 500;
-  if (status < 400 || status >= 600) {
-    status = 500;
-  }
-
-  var message =
+  const message =
     isProduction && status >= 500
       ? "Erreur serveur."
       : err.message || "Erreur serveur.";
@@ -256,10 +198,13 @@ app.use(function (err, req, res, next) {
     console.error(err);
   }
 
-  res.status(status).json({ message: message });
+  res.status(status).json({ ok: false, message: message });
 });
 
-app.listen(PORT, HOST, function () {
+platformSettings.refresh().catch((e) => {
+  console.warn("[platform_settings]", e.message || e);
+});
+
+app.listen(PORT, HOST, () => {
   console.log("AfricaMenu API — http://localhost:" + PORT);
-  console.log("AfricaMenu API réseau — " + LAN_URL);
 });
