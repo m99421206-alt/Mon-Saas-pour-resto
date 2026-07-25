@@ -297,7 +297,13 @@
         return;
       }
 
-      if (me.is_platform_admin) {
+      // Par une conversion explicite en booléen :
+      const isPlatformAdmin =
+        me.is_platform_admin === true ||
+        me.is_platform_admin === 1 ||
+        me.is_platform_admin === "1";
+
+      if (isPlatformAdmin) {
         window.location.replace("admin-dashboard.html");
         return;
       }
