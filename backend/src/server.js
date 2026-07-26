@@ -139,14 +139,15 @@ app.get("/health", async (req, res) => {
     });
   }
 });
-
 // =================================================================
 //                 ROUTAGE STRICT ET CLAIR DE L'API
 // =================================================================
 
-/* 1. Authentification */
-app.use("/api/auth", authRoutes);
+/* 1. Authentification (/api/register, /api/login, etc.) */
+app.use("/api", authRoutes); //  Route principale propre pour le frontend
+app.use("/api/auth", authRoutes); // Alias de sécurité
 app.use("/auth", authRoutes); // Rétro-compatibilité
+app.use("/", authRoutes); // Fallback à la racine
 
 /* 2. Utilisateurs & Profil (/api/me et /api/users) */
 app.use("/api/me", userRoutes);
@@ -168,14 +169,6 @@ app.get("/restaurant/:restaurantSlug", menuController.getPublicMenu);
 
 /* Sitemap */
 app.use(sitemapRoutes);
-
-/*
- * Fallback d'authentification pour les requêtes à la racine (/login, /register, etc.)
- * CORRECTION : Utilisation de app.use au lieu de app.post pour capturer correctement
- * les sous-routes définies dans authRoutes.
- */
-app.use("/", authRoutes);
-
 // =================================================================
 //                     GESTION DES ERREURS
 // =================================================================
