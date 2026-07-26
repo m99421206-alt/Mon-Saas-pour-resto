@@ -12,10 +12,10 @@
     /^172\.(1[6-9]|2\d|3[0-1])\./.test(hostname);
 
   // En local, on pointe vers l'API sur le port 4000.
-  // En production, on utilise la route relative "/api" pour éviter tout blocage CORS/SSL sur mobile.
+  // En production, on utilise la route relative "/api" gérée par le Reverse Proxy Nginx.
   var defaultApiUrl = isLocalHost
     ? protocol + "//" + hostname + ":" + API_PORT
-    : "";
+    : "/api"; // <--- MODIFIÉ ICI (remplacé "" par "/api")
 
   var existingConfig = window.MenuGo_CONFIG || {};
 
@@ -31,7 +31,6 @@
         ? existingConfig.SUPPORT_WHATSAPP
         : "22399421206",
 
-    // Utilise dynamiquement l'adresse exacte du navigateur sur mobile
     PUBLIC_SITE_ORIGIN:
       typeof existingConfig.PUBLIC_SITE_ORIGIN === "string" &&
       existingConfig.PUBLIC_SITE_ORIGIN !== ""
