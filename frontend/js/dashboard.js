@@ -292,7 +292,7 @@
     }
 
     try {
-      const me = await apiGet("/api/me");
+      const me = await apiGet("/me");
       if (!me) {
         return;
       }
@@ -320,8 +320,8 @@
       }
 
       const [categoriesData, productsData] = await Promise.all([
-        apiGet("/api/categories"),
-        apiGet("/api/products"),
+        apiGet("/categories"),
+        apiGet("/products"),
       ]);
 
       if (!categoriesData || !productsData) {

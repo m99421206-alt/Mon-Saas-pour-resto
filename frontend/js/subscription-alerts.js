@@ -26,7 +26,11 @@
     if (!iso) return "—";
     var d = new Date(iso);
     if (!Number.isFinite(d.getTime())) return "—";
-    return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+    return d.toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
   }
 
   /** @param {object|null|undefined} sub */
@@ -121,7 +125,9 @@
     if (topbar && topbar.parentNode === main) {
       return topbar.nextSibling;
     }
-    var adminBanner = document.getElementById("dash-admin-impersonation-banner");
+    var adminBanner = document.getElementById(
+      "dash-admin-impersonation-banner",
+    );
     if (adminBanner && adminBanner.parentNode === main) {
       return adminBanner.nextSibling;
     }
@@ -155,13 +161,16 @@
 
     var restaurant = (me && me.restaurant) || null;
     var restName =
-      restaurant && restaurant.name ? String(restaurant.name).trim() : "Mon restaurant";
+      restaurant && restaurant.name
+        ? String(restaurant.name).trim()
+        : "Mon restaurant";
     var dr = resolveDaysRemaining(sub);
     var waUrl = buildWhatsAppUrl(restName, sub.ends_at);
 
     var section = document.createElement("section");
     section.id = BANNER_ID;
-    section.className = "dash-sub-expiry-banner dash-sub-expiry-banner--" + tier;
+    section.className =
+      "dash-sub-expiry-banner dash-sub-expiry-banner--" + tier;
     section.setAttribute("role", "alert");
 
     var inner = document.createElement("div");
@@ -172,9 +181,11 @@
 
     if (tier === "warning-orange") {
       var daysLabel =
-        dr === 1 ?
-          "Votre abonnement expire demain."
-        : "Votre abonnement expire dans " + String(dr != null ? dr : "—") + " jours.";
+        dr === 1
+          ? "Votre abonnement expire demain."
+          : "Votre abonnement expire dans " +
+            String(dr != null ? dr : "—") +
+            " jours.";
       text.textContent = daysLabel;
     } else {
       text.textContent =
@@ -246,7 +257,7 @@
     var apiUrl = String(cfg.API_URL || "").replace(/\/$/, "");
     if (!apiUrl) return;
 
-    fetch(apiUrl + "/api/me", {
+    fetch(apiUrl + "/me", {
       headers: {
         Accept: "application/json",
         Authorization: "Bearer " + token,
