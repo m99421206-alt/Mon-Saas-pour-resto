@@ -11,11 +11,11 @@
     hostname.indexOf("10.") === 0 ||
     /^172\.(1[6-9]|2\d|3[0-1])\./.test(hostname);
 
-  // En local, on pointe vers l'API sur le port 4000.
-  // En production, on utilise la route relative "/api" gérée par le Reverse Proxy Nginx.
+  // En local : http://localhost:4000
+  // En production : "" (car tes scripts ajoutent déjà "/api/...")
   var defaultApiUrl = isLocalHost
     ? protocol + "//" + hostname + ":" + API_PORT
-    : "/api"; // <--- MODIFIÉ ICI (remplacé "" par "/api")
+    : ""; //  CORRIGÉ (remis à "")
 
   var existingConfig = window.MenuGo_CONFIG || {};
 
