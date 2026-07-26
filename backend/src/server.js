@@ -161,7 +161,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/restaurant", restaurantRoutes);
 app.use("/api/upload", uploadRoutes);
 
-/* 5. Menus Publics (C'est la route interrogée par la page client/menu public) */
+/* 5. Menus Publics */
 app.use("/api/menu", menuRoutes);
 app.use("/menu", menuRoutes);
 app.get("/restaurant/:restaurantSlug", menuController.getPublicMenu);
@@ -169,9 +169,12 @@ app.get("/restaurant/:restaurantSlug", menuController.getPublicMenu);
 /* Sitemap */
 app.use(sitemapRoutes);
 
-/* Fallback auth pour requêtes POST legacy à la racine (/login, /register) */
-app.post("/login", authRoutes);
-app.post("/register", authRoutes);
+/*
+ * Fallback d'authentification pour les requêtes à la racine (/login, /register, etc.)
+ * CORRECTION : Utilisation de app.use au lieu de app.post pour capturer correctement
+ * les sous-routes définies dans authRoutes.
+ */
+app.use("/", authRoutes);
 
 // =================================================================
 //                     GESTION DES ERREURS
