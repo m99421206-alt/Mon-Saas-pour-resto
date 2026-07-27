@@ -147,7 +147,15 @@ app.get("/api/menu/:id", async (req, res) => {
     const restaurantData = await getMenuData(req.params.id);
     return res.json(restaurantData);
   } catch (error) {
-    return res.status(500).json({ message: "Erreur serveur" });
+    // 1. Affichage de l'erreur détaillée dans le terminal PM2
+    console.error("Erreur dans GET /api/menu/:id :", error);
+
+    // 2. Renvoi du message exact pour le débogage
+    return res.status(500).json({
+      message: "Erreur serveur",
+      error: error.message,
+      stack: error.stack,
+    });
   }
 });
 // =================================================================
