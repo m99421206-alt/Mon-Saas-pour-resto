@@ -126,7 +126,6 @@ app.use(
 );
 
 /* Healthcheck */
-// Route de santé de l'API
 app.get("/api/health", async (req, res) => {
   try {
     await ping();
@@ -141,29 +140,12 @@ app.get("/api/health", async (req, res) => {
   }
 });
 
-// Route qui renvoie les données JSON du restaurant
-app.get("/api/menu/:id", async (req, res) => {
-  try {
-    const restaurantData = await getMenuData(req.params.id);
-    return res.json(restaurantData);
-  } catch (error) {
-    // 1. Affichage de l'erreur détaillée dans le terminal PM2
-    console.error("Erreur dans GET /api/menu/:id :", error);
-
-    // 2. Renvoi du message exact pour le débogage
-    return res.status(500).json({
-      message: "Erreur serveur",
-      error: error.message,
-      stack: error.stack,
-    });
-  }
-});
 // =================================================================
 //                 ROUTAGE STRICT ET CLAIR DE L'API
 // =================================================================
 
 /* 1. Authentification (/api/register, /api/login, etc.) */
-app.use("/api", authRoutes); //  Route principale propre pour le frontend
+app.use("/api", authRoutes); // Route principale propre pour le frontend
 app.use("/api/auth", authRoutes); // Alias de sécurité
 app.use("/auth", authRoutes); // Rétro-compatibilité
 app.use("/", authRoutes); // Fallback à la racine
@@ -188,6 +170,7 @@ app.get("/restaurant/:restaurantSlug", menuController.getPublicMenu);
 
 /* Sitemap */
 app.use(sitemapRoutes);
+
 // =================================================================
 //                     GESTION DES ERREURS
 // =================================================================
