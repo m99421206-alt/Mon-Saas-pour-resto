@@ -126,7 +126,8 @@ app.use(
 );
 
 /* Healthcheck */
-app.get("/health", async (req, res) => {
+// Route de santé de l'API
+app.get("/api/health", async (req, res) => {
   try {
     await ping();
     return res.json({ ok: true, service: "AfricaMenu-api", db: "up" });
@@ -137,6 +138,16 @@ app.get("/health", async (req, res) => {
       db: "down",
       message: isProduction ? "Service indisponible." : error.message,
     });
+  }
+});
+
+// Route qui renvoie les données JSON du restaurant
+app.get("/api/menu/:id", async (req, res) => {
+  try {
+    const restaurantData = await getMenuData(req.params.id);
+    return res.json(restaurantData);
+  } catch (error) {
+    return res.status(500).json({ message: "Erreur serveur" });
   }
 });
 // =================================================================
