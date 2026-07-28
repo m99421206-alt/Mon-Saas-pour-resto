@@ -434,9 +434,22 @@ function normalizeImageUrl(imageUrl, fallbackUrl) {
     return fallbackUrl || "";
   }
 
+  // Racine pour les fichiers statiques (ex: /uploads)
+  var uploadsBase =
+    window.MenuGo_CONFIG && window.MenuGo_CONFIG.UPLOADS_URL
+      ? window.MenuGo_CONFIG.UPLOADS_URL
+      : "/uploads";
+
+  // Si DomSafe est présent, on lui passe uploadsBase ou "" au lieu de API_BASE_URL
   if (window.MenuGo_DomSafe && window.MenuGo_DomSafe.sanitizeImageSrc) {
-    var safe = window.MenuGo_DomSafe.sanitizeImageSrc(imageUrl, API_BASE_URL);
-    return safe || fallbackUrl || "";
+    var safe = window.MenuGo_DomSafe.sanitizeImageSrc(imageUrl, "");
+    if (safe) {
+      if (safe.indexOf("/uploads/") === 0) {
+        return safe.replace(/^\/uploads/, uploadsBase);
+      }
+      return safe;
+    }
+    return fallbackUrl || "";
   }
 
   const url = imageUrl.trim();
@@ -448,11 +461,6 @@ function normalizeImageUrl(imageUrl, fallbackUrl) {
     if (url.indexOf("..") !== -1 || url.indexOf("\\") !== -1) {
       return fallbackUrl || "";
     }
-    // Utilise UPLOADS_URL si disponible, sinon remplace par la racine /uploads
-    const uploadsBase =
-      window.MenuGo_CONFIG && window.MenuGo_CONFIG.UPLOADS_URL
-        ? window.MenuGo_CONFIG.UPLOADS_URL
-        : "/uploads";
     return url.replace(/^\/uploads/, uploadsBase);
   }
 
