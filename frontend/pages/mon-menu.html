@@ -70,6 +70,7 @@
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
   </head>
+
   <body>
     <div class="app menu-enter-pending">
       <main class="page">
@@ -339,5 +340,15 @@
     <script src="../js/vendor/dompurify.min.js" defer></script>
     <script src="../js/dom-safe.js" defer></script>
     <script src="../js/mon-menu.js" defer></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/sw.js")
+            .then((reg) => console.log("Service Worker enregistré !", reg))
+            .catch((err) => console.error("Erreur Service Worker :", err));
+        });
+      }
+    </script>
   </body>
 </html>
