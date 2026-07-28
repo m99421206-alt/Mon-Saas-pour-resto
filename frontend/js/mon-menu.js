@@ -689,7 +689,10 @@ async function loadPublicMenu() {
     return;
   }
 
-  const response = await fetch(`${API_BASE_URL}/menu/${restaurantId}`);
+  // Utiliser la racine du domaine (window.location.origin) au lieu de API_BASE_URL (/api)
+  const response = await fetch(
+    `${window.location.origin}/menu/${restaurantId}`,
+  );
   if (!response.ok) {
     throw new Error("Menu public indisponible.");
   }
