@@ -28,8 +28,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <!-- CSS en chemin absolu -->
-    <link rel="stylesheet" href="/frontend/css/dashboard.css" />
+    <!-- CSS (chemin ajusté selon l'alias Nginx /css/) -->
+    <link rel="stylesheet" href="/css/dashboard.css" />
 
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
@@ -64,8 +64,8 @@
       async
       src="https://www.googletagmanager.com/gtag/js?id=G-N40SHP116G"
     ></script>
-    <!-- Script analytics en chemin absolu -->
-    <script src="/frontend/js/analytics.js"></script>
+    <!-- Script analytics -->
+    <script src="/js/analytics.js"></script>
 
     <meta name="description" content="" />
     <link rel="canonical" href="" />
@@ -341,10 +341,10 @@
       </div>
     </div>
 
-    <!-- Scripts JavaScript en chemins absolus -->
-    <script src="/frontend/js/config.js" defer></script>
-    <script src="/frontend/js/vendor/dompurify.min.js" defer></script>
-    <script src="/frontend/js/dom-safe.js" defer></script>
-    <script src="/frontend/js/mon-menu.js" defer></script>
+    <!-- Scripts JS (chemins ajustés selon l'alias Nginx /js/) -->
+    <script src="/js/config.js" defer></script>
+    <script src="/js/vendor/dompurify.min.js" defer></script>
+    <script src="/js/dom-safe.js" defer></script>
+    <script src="/js/mon-menu.js" defer></script>
   </body>
 </html>
