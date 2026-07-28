@@ -99,7 +99,13 @@
       return null;
     }
 
-    const response = await fetch(API_URL + path, {
+    // Évite la duplication si path commence déjà par /api et API_URL se termine par /api
+    let cleanPath = path;
+    if (API_URL.endsWith("/api") && cleanPath.startsWith("/api")) {
+      cleanPath = cleanPath.substring(4); // Retire le '/api' du début du chemin
+    }
+
+    const response = await fetch(API_URL + cleanPath, {
       method: (options && options.method) || "GET",
       headers: {
         "Content-Type": "application/json",

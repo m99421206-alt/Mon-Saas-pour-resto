@@ -1,6 +1,5 @@
 ﻿/**
  * Serveur Express — AfricaMenu API
- * Étape 2 : JSON body, CORS, variables d’environnement, port configurable.
  */
 
 require("dotenv").config();
@@ -14,6 +13,8 @@ const { validateJwtSecretAtStartup } = require("./config/jwtSecret");
 const { validateAdminEmailsAtStartup } = require("./utils/platformAdmin");
 const { buildHelmetCspDirectives } = require("./config/csp");
 const { ping } = require("./config/database");
+
+// Importation des routes
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
@@ -28,9 +29,11 @@ var platformSettings = require("./services/platformSettings");
 
 const isProduction = process.env.NODE_ENV === "production";
 const app = express();
+
 if (isProduction) {
   app.set("trust proxy", 1);
 }
+
 const PORT = Number(process.env.PORT) || 4000;
 const HOST = process.env.HOST || "0.0.0.0";
 const LAN_URL = process.env.LAN_URL || "http://localhost:" + PORT;
@@ -58,6 +61,7 @@ function assertProductionConfig() {
   }
 }
 
+// Validation au démarrage
 validateJwtSecretAtStartup();
 assertProductionConfig();
 validateAdminEmailsAtStartup();
@@ -73,11 +77,6 @@ function isPrivateNetworkHost(hostname) {
   );
 }
 
-/**
- * Hors production : tout origine HTTP/HTTPS depuis localhost ou LAN privé est acceptée,
- * quel que soit le port (5500 mais aussi 8080, 63342 Live Server variant, etc.).
- * Sinon l’inscription / login peuvent « échouer » alors que le seul problème était le CORS.
- */
 function isAllowedDevOrigin(origin) {
   if (process.env.NODE_ENV === "production") {
     return false;
@@ -110,6 +109,7 @@ function isAllowedCorsOrigin(origin) {
   return false;
 }
 
+// Rate Limiters
 var registerRateLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: isProduction ? 10 : 30,
@@ -136,20 +136,20 @@ var passwordResetNotifyLimiter = rateLimit({
   message: { message: "Trop de demandes. Réessayez dans une minute." },
 });
 
-/* CORS avant les routes — préflight inclus (évite blocages inscription / login en dev). */
+// Middleware CORS
 app.use(
   cors({
     origin: function (origin, callback) {
       if (isAllowedCorsOrigin(origin)) {
         return callback(null, true);
       }
-
       return callback(new Error("Origine CORS non autorisée."));
     },
     credentials: true,
   }),
 );
 
+// Middleware Sécurité Helmet
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
@@ -160,12 +160,10 @@ app.use(
   }),
 );
 
-/* Corps des requêtes en JSON (POST / PUT) */
+// Body Parser
 app.use(express.json({ limit: "256kb" }));
 
-/* Images uploadées par les restaurants.
-   Les noms de fichiers sont uniques (timestamp + aléatoire), le contenu ne change
-   jamais : on peut donc activer un cache navigateur long + immutable. */
+// Servir le dossier des images /uploads publiquement
 app.use(
   "/uploads",
   express.static(path.join(__dirname, "../uploads"), {
@@ -179,7 +177,7 @@ app.use(
   }),
 );
 
-/* Route de santé : serveur + base de données */
+// Route de santé API
 app.get("/health", async function (req, res) {
   try {
     await ping();
@@ -194,40 +192,58 @@ app.get("/health", async function (req, res) {
   }
 });
 
-/* Limitation globale inscription ; login : 5 échecs → blocage (loginLockout.js) */
+// Rate limiting sur les routes d'authentification
 app.post("/register", registerRateLimiter);
 app.post("/login", loginRateLimiter);
 app.post("/password-reset-request", passwordResetNotifyLimiter);
 
-/* Authentification (étape 5) */
+/* -------------------------------------------------------------------------- */
+/*                            ROUTES PUBLIQUES                                */
+/* -------------------------------------------------------------------------- */
+
+// Consultation du menu public client (SANS authentification JWT)
+app.use("/menu", menuRoutes);
+app.get("/restaurant/:restaurantSlug", menuController.getPublicMenu);
+app.use(sitemapRoutes);
+
+/* -------------------------------------------------------------------------- */
+/*                            ROUTES SÉCURISÉES API                           */
+/* -------------------------------------------------------------------------- */
+
+// Authentification
 app.use("/api/auth", authRoutes);
 app.use("/api", authRoutes);
 
-/* Administration plateforme — avant /api (évite middleware compte resto sur /api/admin/*) */
+// Administration de la plateforme
 app.use("/api/admin", adminRoutes);
-/* Routes protégées sous /api (étape 6 — middleware JWT) */
+
+// Compte utilisateur & tableau de bord
 app.use("/api", userRoutes);
-/* CRUD catégories (étape 7) — JWT requis */
+
+// Gestion du menu (Catégories & Produits)
 app.use("/api/categories", categoryRoutes);
-/* CRUD produits (étape 8) — JWT requis */
 app.use("/api/products", productRoutes);
-/* Paramètres restaurant — JWT requis */
+
+// Configuration du restaurant
 app.use("/api/restaurant", restaurantRoutes);
-/* Upload images — JWT requis */
+
+// Upload d'images
 app.use("/upload", uploadRoutes);
-app.use(sitemapRoutes);
-/* Menu public client (étape 9) — sans JWT */
-app.use("/menu", menuRoutes);
-app.get("/restaurant/:restaurantSlug", menuController.getPublicMenu);
+
+/* -------------------------------------------------------------------------- */
+/*                       GESTION DES ERREURS & 404                            */
+/* -------------------------------------------------------------------------- */
 
 platformSettings.refresh().catch(function (e) {
   console.warn("[platform_settings]", e.message || e);
 });
 
+// Route introuvable
 app.use(function (req, res) {
   res.status(404).json({ message: "Route introuvable." });
 });
 
+// Gestionnaire d'erreurs global
 app.use(function (err, req, res, next) {
   if (res.headersSent) {
     return next(err);
@@ -250,6 +266,7 @@ app.use(function (err, req, res, next) {
   res.status(status).json({ message: message });
 });
 
+// Démarrage du serveur
 app.listen(PORT, HOST, function () {
   console.log("AfricaMenu API — http://localhost:" + PORT);
   console.log("AfricaMenu API réseau — " + LAN_URL);

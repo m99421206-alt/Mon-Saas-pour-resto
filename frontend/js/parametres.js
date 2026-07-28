@@ -24,9 +24,13 @@
   var bannerFileInput = document.getElementById("banner-file");
   var bannerPreview = document.getElementById("banner-preview");
   var bannerDropzone = document.getElementById("banner-dropzone");
-  var bannerDropzoneContent = document.getElementById("banner-dropzone-content");
+  var bannerDropzoneContent = document.getElementById(
+    "banner-dropzone-content",
+  );
   var themeColorTextInput = document.getElementById("theme-color-text");
-  var themeChoiceButtons = Array.from(document.querySelectorAll("[data-theme-color]"));
+  var themeChoiceButtons = Array.from(
+    document.querySelectorAll("[data-theme-color]"),
+  );
   var drawerRestaurant = document.getElementById("param-drawer-restaurant");
   var drawerEmail = document.getElementById("param-drawer-email");
   var logoutLink = document.getElementById("param-logout");
@@ -77,7 +81,13 @@
       return null;
     }
 
-    var response = await fetch(API_URL + path, {
+    // Évite la duplication /api/api
+    var cleanPath = path;
+    if (API_URL.endsWith("/api") && cleanPath.startsWith("/api")) {
+      cleanPath = cleanPath.substring(4);
+    }
+
+    var response = await fetch(API_URL + cleanPath, {
       method: (options && options.method) || "GET",
       headers: {
         "Content-Type": "application/json",
@@ -246,7 +256,10 @@
     });
 
     dropzone.addEventListener("drop", function (event) {
-      var file = event.dataTransfer && event.dataTransfer.files ? event.dataTransfer.files[0] : null;
+      var file =
+        event.dataTransfer && event.dataTransfer.files
+          ? event.dataTransfer.files[0]
+          : null;
       if (!file || !isAllowedImageFile(file)) {
         if (file) {
           setFeedback(UPLOAD_REJECT_MESSAGE, true, { toast: true });
@@ -265,7 +278,9 @@
   }
 
   function normalizeThemeColor(value) {
-    return /^#[0-9A-Fa-f]{6}$/.test(String(value || "").trim()) ? String(value).trim().toUpperCase() : "#FF7A00";
+    return /^#[0-9A-Fa-f]{6}$/.test(String(value || "").trim())
+      ? String(value).trim().toUpperCase()
+      : "#FF7A00";
   }
 
   function setThemeColor(value) {
@@ -279,9 +294,12 @@
   }
 
   function renderAccountInfo(user, restaurant) {
-    var restaurantName = restaurant && restaurant.name ? restaurant.name : "Nom du resto";
+    var restaurantName =
+      restaurant && restaurant.name ? restaurant.name : "Nom du resto";
     if (drawerRestaurant) drawerRestaurant.textContent = restaurantName;
-    if (drawerEmail) drawerEmail.textContent = user && user.email ? user.email : "email du resto";
+    if (drawerEmail)
+      drawerEmail.textContent =
+        user && user.email ? user.email : "email du resto";
     if (window.MenuGo_DashShell) {
       window.MenuGo_DashShell.populateProfile(user, restaurant);
     }
@@ -294,8 +312,18 @@
     whatsappInput.value = restaurant.whatsapp || "";
     logoInput.value = restaurant.logo_url || "";
     bannerInput.value = restaurant.banner_url || "";
-    setImagePreview(logoPreview, restaurant.logo_url || "", logoDropzone, logoDropzoneContent);
-    setImagePreview(bannerPreview, restaurant.banner_url || "", bannerDropzone, bannerDropzoneContent);
+    setImagePreview(
+      logoPreview,
+      restaurant.logo_url || "",
+      logoDropzone,
+      logoDropzoneContent,
+    );
+    setImagePreview(
+      bannerPreview,
+      restaurant.banner_url || "",
+      bannerDropzone,
+      bannerDropzoneContent,
+    );
     setThemeColor(restaurant.theme_color || "#FF7A00");
   }
 
@@ -318,7 +346,11 @@
       fillForm(restaurant);
       setFeedback("");
     } catch (error) {
-      setFeedback(error.message || "Impossible de charger les paramètres.", true, { toast: true });
+      setFeedback(
+        error.message || "Impossible de charger les paramètres.",
+        true,
+        { toast: true },
+      );
     }
   }
 
@@ -363,12 +395,17 @@
 
       if (!data) return;
 
-      localStorage.setItem(RESTAURANT_KEY, JSON.stringify(data.restaurant || null));
+      localStorage.setItem(
+        RESTAURANT_KEY,
+        JSON.stringify(data.restaurant || null),
+      );
       renderAccountInfo(getStoredJson(USER_KEY), data.restaurant);
       fillForm(data.restaurant);
       setFeedback("Paramètres enregistrés.", false, { toast: true });
     } catch (error) {
-      setFeedback(error.message || "Enregistrement impossible.", true, { toast: true });
+      setFeedback(error.message || "Enregistrement impossible.", true, {
+        toast: true,
+      });
     } finally {
       saveBtn.disabled = false;
     }
@@ -379,7 +416,12 @@
   }
 
   initDropzone(logoDropzone, logoFileInput, logoPreview, logoDropzoneContent);
-  initDropzone(bannerDropzone, bannerFileInput, bannerPreview, bannerDropzoneContent);
+  initDropzone(
+    bannerDropzone,
+    bannerFileInput,
+    bannerPreview,
+    bannerDropzoneContent,
+  );
 
   themeChoiceButtons.forEach(function (button) {
     button.addEventListener("click", function () {

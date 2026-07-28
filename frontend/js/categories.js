@@ -33,11 +33,13 @@
       Object.prototype.hasOwnProperty.call(subscription, "can_edit_menu") &&
       subscription.can_edit_menu === false;
 
-    document.querySelectorAll("[data-action='add-category']").forEach(function (btn) {
-      btn.disabled = menuEditLocked;
-      btn.setAttribute("aria-disabled", menuEditLocked ? "true" : "false");
-      btn.title = menuEditLocked ? EDIT_LOCK_MESSAGE : "";
-    });
+    document
+      .querySelectorAll("[data-action='add-category']")
+      .forEach(function (btn) {
+        btn.disabled = menuEditLocked;
+        btn.setAttribute("aria-disabled", menuEditLocked ? "true" : "false");
+        btn.title = menuEditLocked ? EDIT_LOCK_MESSAGE : "";
+      });
 
     if (menuEditLocked && !form.hidden) {
       closeForm();
@@ -78,7 +80,13 @@
       return null;
     }
 
-    const response = await fetch(API_URL + path, {
+    // Évite la duplication /api/api
+    let cleanPath = path;
+    if (API_URL.endsWith("/api") && cleanPath.startsWith("/api")) {
+      cleanPath = cleanPath.substring(4);
+    }
+
+    const response = await fetch(API_URL + cleanPath, {
       method: (options && options.method) || "GET",
       headers: {
         "Content-Type": "application/json",
@@ -98,7 +106,6 @@
     }
     return data;
   }
-
   function getStoredJson(key) {
     try {
       return JSON.parse(localStorage.getItem(key) || "null");
@@ -210,13 +217,19 @@
         setStatus(categories.length ? "" : "Aucune catégorie pour le moment.");
       }
     } catch (error) {
-      setStatus(error.message || "Impossible de charger les catégories.", true, { toast: true });
+      setStatus(
+        error.message || "Impossible de charger les catégories.",
+        true,
+        { toast: true },
+      );
     }
   }
 
-  document.querySelectorAll("[data-action='add-category']").forEach(function (el) {
-    el.addEventListener("click", onAddCategory);
-  });
+  document
+    .querySelectorAll("[data-action='add-category']")
+    .forEach(function (el) {
+      el.addEventListener("click", onAddCategory);
+    });
 
   form.addEventListener("submit", async function (event) {
     event.preventDefault();
@@ -247,9 +260,15 @@
 
       closeForm();
       await loadPage();
-      setStatus(wasEditing ? "Catégorie modifiée." : "Catégorie ajoutée.", false, { toast: true });
+      setStatus(
+        wasEditing ? "Catégorie modifiée." : "Catégorie ajoutée.",
+        false,
+        { toast: true },
+      );
     } catch (error) {
-      setStatus(error.message || "Enregistrement impossible.", true, { toast: true });
+      setStatus(error.message || "Enregistrement impossible.", true, {
+        toast: true,
+      });
     } finally {
       submitBtn.disabled = false;
     }
@@ -282,7 +301,9 @@
     }
 
     if (target.getAttribute("data-action") === "delete-category") {
-      const ok = window.confirm("Supprimer la catégorie \"" + category.name + "\" ?");
+      const ok = window.confirm(
+        'Supprimer la catégorie "' + category.name + '" ?',
+      );
       if (!ok) return;
 
       try {
@@ -293,7 +314,9 @@
         await loadPage();
         setStatus("Catégorie supprimée.", false, { toast: true });
       } catch (error) {
-        setStatus(error.message || "Suppression impossible.", true, { toast: true });
+        setStatus(error.message || "Suppression impossible.", true, {
+          toast: true,
+        });
       }
     }
   });
