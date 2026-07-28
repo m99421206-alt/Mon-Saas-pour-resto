@@ -674,7 +674,7 @@ async function loadPublicMenu() {
     return;
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/menu/${restaurantId}`);
+  const response = await fetch(`${API_BASE_URL}/menu/${restaurantId}`);
   if (!response.ok) {
     throw new Error("Menu public indisponible.");
   }
