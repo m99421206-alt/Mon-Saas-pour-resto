@@ -12,10 +12,10 @@
     /^172\.(1[6-9]|2\d|3[0-1])\./.test(hostname);
 
   // En local : http://localhost:4000
-  // En production : "" (car tes scripts ajoutent déjà "/api/...")
+  // En production : "/api" (pour que /me devienne /api/me)
   var defaultApiUrl = isLocalHost
     ? protocol + "//" + hostname + ":" + API_PORT
-    : ""; //  CORRIGÉ (remis à "")
+    : "/api"; // CORRIGÉ : On met "/api" pour router vers le backend via Nginx
 
   var existingConfig = window.MenuGo_CONFIG || {};
 

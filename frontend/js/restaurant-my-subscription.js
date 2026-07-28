@@ -64,7 +64,7 @@
     if (!apiUrl || !token) {
       return;
     }
-    fetch(apiUrl + "/api/me/admin-notify", {
+    fetch(apiUrl + "/me/admin-notify", {
       method: "POST",
       headers: {
         Accept: "application/json",

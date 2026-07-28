@@ -84,7 +84,8 @@
     submitBtn.textContent = "Connexion...";
 
     try {
-      const response = await fetch(API_URL + "/api/auth/login", {
+      // CORRECT :
+      const response = await fetch(API_URL + "/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

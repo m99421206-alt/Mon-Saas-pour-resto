@@ -36,7 +36,7 @@
       redirectToLogin();
       return null;
     }
-    var response = await fetch(apiUrl + "/api/me", {
+    var response = await fetch(apiUrl + "/me", {
       headers: { Authorization: "Bearer " + token },
     });
     var data = await readJson(response);
@@ -63,7 +63,9 @@
     var ae = el("dashboard-drawer-email");
     if (ar)
       ar.textContent =
-        restaurantName && restaurantName.trim() ? restaurantName : "Nom du resto";
+        restaurantName && restaurantName.trim()
+          ? restaurantName
+          : "Nom du resto";
     if (ae) ae.textContent = email && email.trim() ? email : "email du resto";
   }
 
@@ -74,10 +76,15 @@
 
     try {
       var apiUrl =
-        window.MenuGo_CONFIG && window.MenuGo_CONFIG.API_URL ?
-          window.MenuGo_CONFIG.API_URL
-        : "";
-      if (!root || !window.MenuGoRestaurantSubscription || !window.MenuGoRestaurantSubscription.renderInto) return;
+        window.MenuGo_CONFIG && window.MenuGo_CONFIG.API_URL
+          ? window.MenuGo_CONFIG.API_URL
+          : "";
+      if (
+        !root ||
+        !window.MenuGoRestaurantSubscription ||
+        !window.MenuGoRestaurantSubscription.renderInto
+      )
+        return;
 
       var me = await apiGetMe(apiUrl);
       if (!me) return;
@@ -89,7 +96,10 @@
 
       if (titleMain) {
         if (rn && String(rn).trim()) {
-          var short = rn.length > 40 ? String(rn).trim().slice(0, 38) + "…" : String(rn).trim();
+          var short =
+            rn.length > 40
+              ? String(rn).trim().slice(0, 38) + "…"
+              : String(rn).trim();
           titleMain.textContent = short + " — abonnement";
         } else {
           titleMain.textContent = "Mon abonnement";
@@ -98,15 +108,21 @@
 
       window.MenuGoRestaurantSubscription.renderInto(root, me);
 
-      if (window.MenuGo_SubscriptionAlerts && window.MenuGo_SubscriptionAlerts.mountClientBanner) {
+      if (
+        window.MenuGo_SubscriptionAlerts &&
+        window.MenuGo_SubscriptionAlerts.mountClientBanner
+      ) {
         window.MenuGo_SubscriptionAlerts.mountClientBanner(me);
       }
     } catch (e) {
-      if (titleMain) titleMain.textContent = "Impossible de charger votre abonnement";
+      if (titleMain)
+        titleMain.textContent = "Impossible de charger votre abonnement";
       if (subtitle) {
         subtitle.hidden = false;
         subtitle.textContent =
-          e && e.message ? String(e.message) : "Réessayez plus tard ou vérifiez votre connexion.";
+          e && e.message
+            ? String(e.message)
+            : "Réessayez plus tard ou vérifiez votre connexion.";
       }
       if (root) {
         root.innerHTML =
