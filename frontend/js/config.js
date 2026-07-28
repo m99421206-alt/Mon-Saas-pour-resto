@@ -11,13 +11,12 @@
     hostname.indexOf("10.") === 0 ||
     /^172\.(1[6-9]|2\d|3[0-1])\./.test(hostname);
 
-  // En local : http://localhost:4000
-  // En production : "" (chaîne vide pour utiliser le domaine courant)
+  // En local : http://localhost:4000/api
+  // En production : /api (renvoie directement vers Nginx /api)
   var defaultApiUrl = isLocalHost
-    ? protocol + "//" + hostname + ":" + API_PORT
-    : "";
+    ? protocol + "//" + hostname + ":" + API_PORT + "/api"
+    : "/api";
 
-  // Racine du serveur pour accéder au dossier /uploads
   var defaultUploadsUrl = isLocalHost
     ? protocol + "//" + hostname + ":" + API_PORT + "/uploads"
     : "/uploads";
@@ -36,7 +35,6 @@
       existingConfig.SUPPORT_WHATSAPP.trim() !== ""
         ? existingConfig.SUPPORT_WHATSAPP
         : "22399421206",
-
     PUBLIC_SITE_ORIGIN:
       typeof existingConfig.PUBLIC_SITE_ORIGIN === "string" &&
       existingConfig.PUBLIC_SITE_ORIGIN !== ""
