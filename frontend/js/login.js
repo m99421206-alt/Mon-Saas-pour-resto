@@ -84,8 +84,8 @@
     submitBtn.textContent = "Connexion...";
 
     try {
-      // CORRECT :
-      const response = await fetch(API_URL + "/auth/login", {
+      //  AJOUT DE /api DANS LE CHEMIN DE L'URL
+      const response = await fetch(API_URL + "/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -95,7 +95,6 @@
           password: password,
         }),
       });
-
       const data = await readJson(response);
 
       if (!response.ok) {
