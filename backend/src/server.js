@@ -1,5 +1,6 @@
 ﻿/**
  * Serveur Express — AfricaMenu API
+ * Étape 2 : JSON body, CORS, variables d’environnement, port configurable.
  */
 
 require("dotenv").config();
@@ -55,6 +56,9 @@ validateJwtSecretAtStartup();
 assertProductionConfig();
 validateAdminEmailsAtStartup();
 
+/**
+ * Détermine si le nom d'hôte appartient au réseau local / privé
+ */
 function isPrivateNetworkHost(hostname) {
   return (
     hostname === "localhost" ||
@@ -66,29 +70,72 @@ function isPrivateNetworkHost(hostname) {
   );
 }
 
+/**
+ * Hors production : tout origine HTTP/HTTPS depuis localhost ou LAN privé est acceptée,
+ * quel que soit le port (5500 mais aussi 8080, 63342 Live Server variant, etc.).
+ * Sinon l’inscription / login peuvent « échouer » alors que le seul problème était le CORS.
+ */
 function isAllowedDevOrigin(origin) {
-  if (process.env.NODE_ENV === "production") return false;
+  if (process.env.NODE_ENV === "production") {
+    return false;
+  }
+
   try {
     var url = new URL(origin);
-    return (
+    if (
       (url.protocol === "http:" || url.protocol === "https:") &&
       isPrivateNetworkHost(url.hostname)
-    );
+    ) {
+      return true;
+    }
   } catch (error) {
     return false;
   }
 }
 
 function isAllowedCorsOrigin(origin) {
-  if (!origin) return true;
-  return (
+  if (!origin) {
+    return true;
+  }
+
+  if (
     (!isProduction && allowedOrigins.includes("*")) ||
     allowedOrigins.includes(origin) ||
     isAllowedDevOrigin(origin)
-  );
+  ) {
+    return true;
+  }
+
+  return false;
 }
 
-/* Middlewares de sécurité & parsing */
+var registerRateLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: isProduction ? 10 : 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Trop de tentatives. Réessayez dans une minute." },
+});
+
+var loginRateLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: isProduction ? 20 : 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    message: "Trop de tentatives de connexion. Réessayez dans une minute.",
+  },
+});
+
+var passwordResetNotifyLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: isProduction ? 8 : 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "Trop de demandes. Réessayez dans une minute." },
+});
+
+/* CORS avant les routes — préflight inclus (évite blocages inscription / login en dev). */
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -99,6 +146,7 @@ app.use(
   }),
 );
 
+/* Middleware Sécurité Helmet */
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
@@ -109,9 +157,12 @@ app.use(
   }),
 );
 
+/* Corps des requêtes en JSON (POST / PUT) */
 app.use(express.json({ limit: "256kb" }));
 
-/* Fichiers statiques uploads */
+/* Images uploadées par les restaurants.
+   Les noms de fichiers sont uniques (timestamp + aléatoire), le contenu ne change
+   jamais : on peut donc activer un cache navigateur long + immutable. */
 app.use(
   "/uploads",
   express.static(path.join(__dirname, "../uploads"), {
@@ -125,8 +176,8 @@ app.use(
   }),
 );
 
-/* Healthcheck */
-app.get("/api/health", async (req, res) => {
+/* Route de santé : serveur + base de données */
+app.get("/health", async function (req, res) {
   try {
     await ping();
     return res.json({ ok: true, service: "AfricaMenu-api", db: "up" });
@@ -140,49 +191,41 @@ app.get("/api/health", async (req, res) => {
   }
 });
 
-// =================================================================
-//                 ROUTAGE STRICT ET CLAIR DE L'API
-// =================================================================
+/* Limitation globale inscription ; login : 5 échecs → blocage (loginLockout.js) */
+app.post("/register", registerRateLimiter);
+app.post("/login", loginRateLimiter);
+app.post("/password-reset-request", passwordResetNotifyLimiter);
 
-/* 1. Authentification (/api/register, /api/login, etc.) */
-app.use("/api", authRoutes); // Route principale propre pour le frontend
-app.use("/api/auth", authRoutes); // Alias de sécurité
-app.use("/auth", authRoutes); // Rétro-compatibilité
-app.use("/", authRoutes); // Fallback à la racine
+/* Authentification (étape 5) */
+app.use("/", authRoutes);
 
-/* 2. Utilisateurs & Profil (/api/me et /api/users) */
-app.use("/api/me", userRoutes);
-app.use("/api/users", userRoutes);
-
-/* 3. Administration */
+/* Administration plateforme — avant /api (évite middleware compte resto sur /api/admin/*) */
 app.use("/api/admin", adminRoutes);
-
-/* 4. Données métier (Espace client/Resto) */
+/* Routes protégées sous /api (étape 6 — middleware JWT) */
+app.use("/api", userRoutes);
+/* CRUD catégories (étape 7) — JWT requis */
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/restaurant", restaurantRoutes);
-app.use("/api/upload", uploadRoutes);
-
-/* 5. Menus Publics */
-app.use("/api/menu", menuRoutes);
+/* Upload images — JWT requis */
+app.use("/upload", uploadRoutes);
+app.use(sitemapRoutes);
+/* Menu public client (étape 9) — sans JWT */
 app.use("/menu", menuRoutes);
 app.get("/restaurant/:restaurantSlug", menuController.getPublicMenu);
 
-/* Sitemap */
-app.use(sitemapRoutes);
-
-// =================================================================
-//                     GESTION DES ERREURS
-// =================================================================
-
-/* 404 : Si aucune route ci-dessus n'a répondu, renvoyer du JSON et JAMAIS du HTML */
-app.use((req, res) => {
-  res.status(404).json({ ok: false, message: "Route API introuvable." });
+platformSettings.refresh().catch(function (e) {
+  console.warn("[platform_settings]", e.message || e);
 });
 
-/* Gestion globale des erreurs serveur */
-app.use((err, req, res, next) => {
-  if (res.headersSent) return next(err);
+app.use(function (req, res) {
+  res.status(404).json({ message: "Route introuvable." });
+});
+
+app.use(function (err, req, res, next) {
+  if (res.headersSent) {
+    return next(err);
+  }
 
   let status = err.status || err.statusCode || 500;
   if (status < 400 || status >= 600) status = 500;
@@ -203,6 +246,6 @@ platformSettings.refresh().catch((e) => {
   console.warn("[platform_settings]", e.message || e);
 });
 
-app.listen(PORT, HOST, () => {
+app.listen(PORT, HOST, function () {
   console.log("AfricaMenu API — http://localhost:" + PORT);
 });
