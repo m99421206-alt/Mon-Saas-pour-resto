@@ -443,12 +443,19 @@ function normalizeImageUrl(imageUrl, fallbackUrl) {
   if (!url || /^(javascript|data|vbscript):/i.test(url)) {
     return fallbackUrl || "";
   }
+
   if (url.indexOf("/uploads/") === 0) {
     if (url.indexOf("..") !== -1 || url.indexOf("\\") !== -1) {
       return fallbackUrl || "";
     }
-    return API_BASE_URL + url;
+    // Utilise UPLOADS_URL si disponible, sinon remplace par la racine /uploads
+    const uploadsBase =
+      window.MenuGo_CONFIG && window.MenuGo_CONFIG.UPLOADS_URL
+        ? window.MenuGo_CONFIG.UPLOADS_URL
+        : "/uploads";
+    return url.replace(/^\/uploads/, uploadsBase);
   }
+
   if (/^https?:\/\//i.test(url)) {
     return url;
   }
