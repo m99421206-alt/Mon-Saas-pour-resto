@@ -200,7 +200,8 @@ app.post("/login", loginRateLimiter);
 app.post("/password-reset-request", passwordResetNotifyLimiter);
 
 /* Authentification (étape 5) */
-app.use("/", authRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api", authRoutes);
 
 /* Administration plateforme — avant /api (évite middleware compte resto sur /api/admin/*) */
 app.use("/api/admin", adminRoutes);

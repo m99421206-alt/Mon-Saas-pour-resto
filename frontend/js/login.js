@@ -40,7 +40,7 @@
         JSON.stringify(data.restaurant || null),
       );
     } catch (e) {
-      console.warn("Storage inacessible", e);
+      console.warn("Storage inaccessible", e);
     }
   }
 
@@ -55,13 +55,10 @@
     return r.onboarding_seen === false;
   }
 
-  // ... (Garde la partie Modal Réinitialisation de Mot de Passe ici) ...
-
   form.addEventListener("submit", async function (e) {
     e.preventDefault();
     clearError();
 
-    //  FIX 1 : Force la minuscules et nettoie les espaces
     const emailInput = document.getElementById("login-email");
     const email = emailInput.value.trim().toLowerCase();
     const password = document.getElementById("login-password").value;
@@ -84,6 +81,7 @@
     submitBtn.textContent = "Connexion...";
 
     try {
+      // API_URL vaut "/api" en prod. Le chemin complet est /api/auth/login.
       const response = await fetch(API_URL + "/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -92,7 +90,7 @@
       const data = await readJson(response);
 
       if (!response.ok) {
-        showError(data.message || "Connexion impossible. Réessayez.");
+        showError(data.message || "Email ou mot de passe incorrect.");
         return;
       }
 
@@ -130,8 +128,6 @@
         window.location.href = "dashboard.html";
       }
     } catch (error) {
-      // Affiche le détail en alerte pour déboguer si le réseau mobile plante
-      alert("Erreur connexion: " + error.message);
       showError(
         "Impossible de contacter le serveur. Vérifiez votre connexion internet.",
       );

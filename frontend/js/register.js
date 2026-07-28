@@ -4,7 +4,8 @@
 (function () {
   "use strict";
 
-  const API_URL = window.MenuGo_CONFIG.API_URL;
+  // Configuration directe de l'URL API pour éviter l'erreur 405 (POST sur .html)
+  const API_URL = "https://africamenu.com/api";
   const TOKEN_KEY = "MenuGo_token";
   const USER_KEY = "MenuGo_user";
   const RESTAURANT_KEY = "MenuGo_restaurant";
@@ -42,7 +43,10 @@
   function saveSession(data) {
     localStorage.setItem(TOKEN_KEY, data.token);
     localStorage.setItem(USER_KEY, JSON.stringify(data.user || null));
-    localStorage.setItem(RESTAURANT_KEY, JSON.stringify(data.restaurant || null));
+    localStorage.setItem(
+      RESTAURANT_KEY,
+      JSON.stringify(data.restaurant || null),
+    );
   }
 
   form.addEventListener("submit", async function (e) {
@@ -61,14 +65,19 @@
     }
 
     var emailTrim = email.value.trim();
-    if (window.MenuGo_EmailValidate && !window.MenuGo_EmailValidate.isValidEmail(emailTrim)) {
+    if (
+      window.MenuGo_EmailValidate &&
+      !window.MenuGo_EmailValidate.isValidEmail(emailTrim)
+    ) {
       showError(window.MenuGo_EmailValidate.emailFormatMessage());
       email.focus();
       return;
     }
 
     if (!whatsapp || !whatsapp.value.trim()) {
-      showError("Indiquez votre numéro principal (WhatsApp pour les commandes).");
+      showError(
+        "Indiquez votre numéro principal (WhatsApp pour les commandes).",
+      );
       if (whatsapp) whatsapp.focus();
       return;
     }
@@ -76,7 +85,9 @@
     var phoneTrim = whatsapp.value.trim();
 
     if (!quartierInput) {
-      showError("Erreur de page : champ quartier introuvable. Rechargez la page.");
+      showError(
+        "Erreur de page : champ quartier introuvable. Rechargez la page.",
+      );
       return;
     }
 
@@ -131,13 +142,18 @@
       saveSession(data);
       if (data.is_platform_admin) {
         window.location.href = "admin-dashboard.html";
-      } else if (!data.restaurant || data.restaurant.onboarding_seen !== false) {
+      } else if (
+        !data.restaurant ||
+        data.restaurant.onboarding_seen !== false
+      ) {
         window.location.href = "dashboard.html";
       } else {
         window.location.href = "onboarding.html";
       }
     } catch (error) {
-      showError("Impossible de contacter le serveur. Vérifiez que l'API est lancée.");
+      showError(
+        "Impossible de contacter le serveur. Vérifiez que l'API est lancée.",
+      );
     } finally {
       submitBtn.disabled = false;
       submitBtn.textContent = "Créer mon compte";
