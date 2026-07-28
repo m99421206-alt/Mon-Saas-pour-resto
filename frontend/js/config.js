@@ -11,13 +11,8 @@
     hostname.indexOf("10.") === 0 ||
     /^172\.(1[6-9]|2\d|3[0-1])\./.test(hostname);
 
-<<<<<<< HEAD
-  // En local : http://localhost:4000/api
-  // En production : /api (renvoie directement vers Nginx /api)
-=======
-  // ✅ On ajoute /api à la fin en local pour correspondre au backend Express
-  // En production, on garde le chemin relatif "/api" pour Nginx
->>>>>>> 132f4b0 (fix: sauvegarde modifications cors et config api)
+  // En local, on pointe vers l'API sur le port 4000.
+  // En production, on utilise la route relative "/api" pour éviter tout blocage CORS/SSL sur mobile.
   var defaultApiUrl = isLocalHost
     ? protocol + "//" + hostname + ":" + API_PORT + "/api"
     : "/api";

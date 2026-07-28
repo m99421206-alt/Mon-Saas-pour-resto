@@ -14,7 +14,6 @@ const { validateJwtSecretAtStartup } = require("./config/jwtSecret");
 const { validateAdminEmailsAtStartup } = require("./utils/platformAdmin");
 const { buildHelmetCspDirectives } = require("./config/csp");
 const { ping } = require("./config/database");
-
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
@@ -29,26 +28,33 @@ var platformSettings = require("./services/platformSettings");
 
 const isProduction = process.env.NODE_ENV === "production";
 const app = express();
-
 if (isProduction) {
   app.set("trust proxy", 1);
 }
-
 const PORT = Number(process.env.PORT) || 4000;
 const HOST = process.env.HOST || "0.0.0.0";
 const LAN_URL = process.env.LAN_URL || "http://localhost:" + PORT;
 const allowedOrigins = (process.env.CORS_ORIGIN || "")
   .split(",")
-  .map((origin) => origin.trim())
+  .map(function (origin) {
+    return origin.trim();
+  })
   .filter(Boolean);
 
 function assertProductionConfig() {
-  if (!isProduction) return;
+  if (!isProduction) {
+    return;
+  }
+
   if (allowedOrigins.length === 0 || allowedOrigins.indexOf("*") !== -1) {
-    throw new Error("CORS_ORIGIN invalide en production.");
+    throw new Error(
+      "Configuration production invalide : CORS_ORIGIN doit contenir les origines exactes du frontend.",
+    );
   }
   if (!process.env.DB_PASSWORD) {
-    throw new Error("DB_PASSWORD doit être renseigné.");
+    throw new Error(
+      "Configuration production invalide : DB_PASSWORD doit être renseigné.",
+    );
   }
 }
 
@@ -56,9 +62,6 @@ validateJwtSecretAtStartup();
 assertProductionConfig();
 validateAdminEmailsAtStartup();
 
-/**
- * Détermine si le nom d'hôte appartient au réseau local / privé
- */
 function isPrivateNetworkHost(hostname) {
   return (
     hostname === "localhost" ||
@@ -82,12 +85,10 @@ function isAllowedDevOrigin(origin) {
 
   try {
     var url = new URL(origin);
-    if (
+    return (
       (url.protocol === "http:" || url.protocol === "https:") &&
       isPrivateNetworkHost(url.hostname)
-    ) {
-      return true;
-    }
+    );
   } catch (error) {
     return false;
   }
@@ -139,14 +140,16 @@ var passwordResetNotifyLimiter = rateLimit({
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (isAllowedCorsOrigin(origin)) return callback(null, true);
+      if (isAllowedCorsOrigin(origin)) {
+        return callback(null, true);
+      }
+
       return callback(new Error("Origine CORS non autorisée."));
     },
     credentials: true,
   }),
 );
 
-/* Middleware Sécurité Helmet */
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
@@ -170,7 +173,7 @@ app.use(
     immutable: true,
     etag: true,
     lastModified: true,
-    setHeaders: (res) => {
+    setHeaders: function (res) {
       res.setHeader("Cache-Control", "public, max-age=2592000, immutable");
     },
   }),
@@ -205,7 +208,9 @@ app.use("/api/admin", adminRoutes);
 app.use("/api", userRoutes);
 /* CRUD catégories (étape 7) — JWT requis */
 app.use("/api/categories", categoryRoutes);
+/* CRUD produits (étape 8) — JWT requis */
 app.use("/api/products", productRoutes);
+/* Paramètres restaurant — JWT requis */
 app.use("/api/restaurant", restaurantRoutes);
 /* Upload images — JWT requis */
 app.use("/upload", uploadRoutes);
@@ -227,10 +232,12 @@ app.use(function (err, req, res, next) {
     return next(err);
   }
 
-  let status = err.status || err.statusCode || 500;
-  if (status < 400 || status >= 600) status = 500;
+  var status = err.status || err.statusCode || 500;
+  if (status < 400 || status >= 600) {
+    status = 500;
+  }
 
-  const message =
+  var message =
     isProduction && status >= 500
       ? "Erreur serveur."
       : err.message || "Erreur serveur.";
@@ -239,13 +246,10 @@ app.use(function (err, req, res, next) {
     console.error(err);
   }
 
-  res.status(status).json({ ok: false, message: message });
-});
-
-platformSettings.refresh().catch((e) => {
-  console.warn("[platform_settings]", e.message || e);
+  res.status(status).json({ message: message });
 });
 
 app.listen(PORT, HOST, function () {
   console.log("AfricaMenu API — http://localhost:" + PORT);
+  console.log("AfricaMenu API réseau — " + LAN_URL);
 });
