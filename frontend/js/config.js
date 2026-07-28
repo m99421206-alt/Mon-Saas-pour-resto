@@ -11,11 +11,11 @@
     hostname.indexOf("10.") === 0 ||
     /^172\.(1[6-9]|2\d|3[0-1])\./.test(hostname);
 
-  // En local : http://localhost:4000/api (ou http://localhost:4000)
-  // En production : "/api"
+  // En local : http://localhost:4000
+  // En production : "" (chaîne vide pour utiliser le domaine courant)
   var defaultApiUrl = isLocalHost
-    ? protocol + "//" + hostname + ":" + API_PORT + "/api"
-    : "/api";
+    ? protocol + "//" + hostname + ":" + API_PORT
+    : "";
 
   // Racine du serveur pour accéder au dossier /uploads
   var defaultUploadsUrl = isLocalHost
@@ -26,7 +26,7 @@
 
   window.MenuGo_CONFIG = Object.assign({}, existingConfig, {
     API_URL: existingConfig.API_URL || defaultApiUrl,
-    UPLOADS_URL: existingConfig.UPLOADS_URL || defaultUploadsUrl, // <-- AJOUTÉ
+    UPLOADS_URL: existingConfig.UPLOADS_URL || defaultUploadsUrl,
     SUPPORT_EMAIL:
       typeof existingConfig.SUPPORT_EMAIL === "string"
         ? existingConfig.SUPPORT_EMAIL

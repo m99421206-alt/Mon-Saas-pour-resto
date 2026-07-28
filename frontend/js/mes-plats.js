@@ -49,11 +49,13 @@
       Object.prototype.hasOwnProperty.call(subscription, "can_edit_menu") &&
       subscription.can_edit_menu === false;
 
-    document.querySelectorAll("[data-action='add-plat']").forEach(function (btn) {
-      btn.disabled = menuEditLocked;
-      btn.setAttribute("aria-disabled", menuEditLocked ? "true" : "false");
-      btn.title = menuEditLocked ? EDIT_LOCK_MESSAGE : "";
-    });
+    document
+      .querySelectorAll("[data-action='add-plat']")
+      .forEach(function (btn) {
+        btn.disabled = menuEditLocked;
+        btn.setAttribute("aria-disabled", menuEditLocked ? "true" : "false");
+        btn.title = menuEditLocked ? EDIT_LOCK_MESSAGE : "";
+      });
 
     if (menuEditLocked) {
       if (!form.hidden) {
@@ -276,7 +278,9 @@
     }
 
     const resolved =
-      url.indexOf("blob:") === 0 || url.indexOf("http") === 0 ? url : resolveImageUrl(url);
+      url.indexOf("blob:") === 0 || url.indexOf("http") === 0
+        ? url
+        : resolveImageUrl(url);
 
     if (previewObjectUrl && previewObjectUrl !== resolved) {
       URL.revokeObjectURL(previewObjectUrl);
@@ -308,8 +312,13 @@
       return;
     }
 
-    if (!window.MenuGo_ImageCrop || typeof window.MenuGo_ImageCrop.open !== "function") {
-      setStatus("Recadrage indisponible. Rechargez la page.", true, { toast: true });
+    if (
+      !window.MenuGo_ImageCrop ||
+      typeof window.MenuGo_ImageCrop.open !== "function"
+    ) {
+      setStatus("Recadrage indisponible. Rechargez la page.", true, {
+        toast: true,
+      });
       clearImageFileInput();
       return;
     }
@@ -367,7 +376,11 @@
   }
 
   function formatProductPriceLabel(product) {
-    if (productHasSizes(product) && product.variants && product.variants.length) {
+    if (
+      productHasSizes(product) &&
+      product.variants &&
+      product.variants.length
+    ) {
       const prices = product.variants
         .map(function (variant) {
           return Number(variant.price);
@@ -388,15 +401,25 @@
   }
 
   function productHasSizes(product) {
-    return product.has_sizes === true || product.has_sizes === 1 || product.has_sizes === "1";
+    return (
+      product.has_sizes === true ||
+      product.has_sizes === 1 ||
+      product.has_sizes === "1"
+    );
   }
 
   function productIsVisible(product) {
-    if (!product || product.is_visible === undefined || product.is_visible === null) {
+    if (
+      !product ||
+      product.is_visible === undefined ||
+      product.is_visible === null
+    ) {
       return true;
     }
     return (
-      product.is_visible === true || product.is_visible === 1 || product.is_visible === "1"
+      product.is_visible === true ||
+      product.is_visible === 1 ||
+      product.is_visible === "1"
     );
   }
 
@@ -409,7 +432,8 @@
       image: product.image || null,
       has_sizes: productHasSizes(product) ? 1 : 0,
       is_visible: productIsVisible(product) ? 1 : 0,
-      variants: productHasSizes(product) && product.variants ? product.variants : [],
+      variants:
+        productHasSizes(product) && product.variants ? product.variants : [],
     };
     if (overrides) {
       Object.keys(overrides).forEach(function (key) {
@@ -451,7 +475,9 @@
       "</label>" +
       '<label class="plats-variant__label">Prix' +
       '<input class="plats-variant__input" data-variant-field="price" type="number" min="0" step="0.01" placeholder="Ex : 5000" value="' +
-      escapeHtml(variant && variant.price != null ? formatPrice(variant.price) : "") +
+      escapeHtml(
+        variant && variant.price != null ? formatPrice(variant.price) : "",
+      ) +
       '" />' +
       "</label>" +
       "</div>" +
@@ -479,21 +505,28 @@
   function readVariants() {
     return Array.from(variantsList.querySelectorAll(".plats-variant"))
       .map(function (row) {
-        const name = row.querySelector("[data-variant-field='name']").value.trim();
-        const price = Number(row.querySelector("[data-variant-field='price']").value);
+        const name = row
+          .querySelector("[data-variant-field='name']")
+          .value.trim();
+        const price = Number(
+          row.querySelector("[data-variant-field='price']").value,
+        );
         return {
           name: name,
           price: price,
         };
       })
       .filter(function (variant) {
-        return variant.name && Number.isFinite(variant.price) && variant.price >= 0;
+        return (
+          variant.name && Number.isFinite(variant.price) && variant.price >= 0
+        );
       });
   }
 
   async function uploadSelectedImages(currentImage) {
     let image = currentImage;
-    const file = pendingImageFile || (imageFileInput.files && imageFileInput.files[0]);
+    const file =
+      pendingImageFile || (imageFileInput.files && imageFileInput.files[0]);
 
     if (file) {
       setStatus("Upload de l'image du plat...");
@@ -540,9 +573,12 @@
       const article = document.createElement("article");
       const visible = productIsVisible(product);
       article.className =
-        "plats-card plats-card--no-media" + (visible ? "" : " plats-card--hidden");
+        "plats-card plats-card--no-media" +
+        (visible ? "" : " plats-card--hidden");
       const descHtml = product.description
-        ? '<p class="plats-card__desc">' + escapeHtml(product.description) + "</p>"
+        ? '<p class="plats-card__desc">' +
+          escapeHtml(product.description) +
+          "</p>"
         : "";
       const hiddenBadge = visible
         ? ""
@@ -585,7 +621,9 @@
 
   function openForm(product) {
     if (!categories.length) {
-      setStatus("Ajoutez d'abord une catégorie avant de créer un plat.", true, { toast: true });
+      setStatus("Ajoutez d'abord une catégorie avant de créer un plat.", true, {
+        toast: true,
+      });
       return;
     }
 
@@ -593,8 +631,11 @@
     form.hidden = false;
     nameInput.value = product ? product.name : "";
     priceInput.value = product ? formatPrice(product.price) : "";
-    descriptionInput.value = product && product.description ? product.description : "";
-    categorySelect.value = product ? String(product.category_id) : String(categories[0].id);
+    descriptionInput.value =
+      product && product.description ? product.description : "";
+    categorySelect.value = product
+      ? String(product.category_id)
+      : String(categories[0].id);
     imageInput.value = product && product.image ? product.image : "";
     clearImageFileInput();
     setImagePreview(imagePreview, imageInput.value);
@@ -648,7 +689,10 @@
     });
 
     dropzone.addEventListener("drop", function (event) {
-      const file = event.dataTransfer && event.dataTransfer.files ? event.dataTransfer.files[0] : null;
+      const file =
+        event.dataTransfer && event.dataTransfer.files
+          ? event.dataTransfer.files[0]
+          : null;
       if (!file) return;
       void handleImageFileSelection(file);
     });
@@ -687,12 +731,18 @@
       if (menuEditLocked) {
         setStatus(EDIT_LOCK_MESSAGE, true, { toast: true });
       } else if (!categories.length) {
-        setStatus("Ajoutez une catégorie avant de créer votre premier plat.", true, { toast: true });
+        setStatus(
+          "Ajoutez une catégorie avant de créer votre premier plat.",
+          true,
+          { toast: true },
+        );
       } else {
         setStatus(products.length ? "" : "Aucun plat pour le moment.");
       }
     } catch (error) {
-      setStatus(error.message || "Impossible de charger les plats.", true, { toast: true });
+      setStatus(error.message || "Impossible de charger les plats.", true, {
+        toast: true,
+      });
     }
   }
 
@@ -715,7 +765,9 @@
       return;
     }
     if (!Number.isFinite(price) || price < 0) {
-      setStatus("Le prix doit être un nombre positif ou nul.", true, { toast: true });
+      setStatus("Le prix doit être un nombre positif ou nul.", true, {
+        toast: true,
+      });
       priceInput.focus();
       return;
     }
@@ -727,8 +779,12 @@
 
     let variants = hasSizesInput.checked ? readVariants() : [];
     if (hasSizesInput.checked && !variants.length) {
-      setStatus("Ajoutez au moins une option avec un nom et un prix.", true, { toast: true });
-      const firstVariantInput = variantsList.querySelector("[data-variant-field='price']");
+      setStatus("Ajoutez au moins une option avec un nom et un prix.", true, {
+        toast: true,
+      });
+      const firstVariantInput = variantsList.querySelector(
+        "[data-variant-field='price']",
+      );
       if (firstVariantInput) {
         firstVariantInput.focus();
       }
@@ -738,7 +794,9 @@
     try {
       submitBtn.disabled = true;
       const wasEditing = Boolean(editingId);
-      setStatus(wasEditing ? "Modification en cours..." : "Création en cours...");
+      setStatus(
+        wasEditing ? "Modification en cours..." : "Création en cours...",
+      );
 
       const uploadedImage = await uploadSelectedImages(image || null);
       variants = hasSizesInput.checked ? readVariants() : [];
@@ -767,9 +825,13 @@
 
       closeForm();
       await loadPage();
-      setStatus(wasEditing ? "Plat modifié." : "Plat ajouté.", false, { toast: true });
+      setStatus(wasEditing ? "Plat modifié." : "Plat ajouté.", false, {
+        toast: true,
+      });
     } catch (error) {
-      setStatus(error.message || "Enregistrement impossible.", true, { toast: true });
+      setStatus(error.message || "Enregistrement impossible.", true, {
+        toast: true,
+      });
     } finally {
       submitBtn.disabled = false;
     }
@@ -781,7 +843,10 @@
   });
 
   imageFileInput.addEventListener("change", function () {
-    const file = imageFileInput.files && imageFileInput.files[0] ? imageFileInput.files[0] : null;
+    const file =
+      imageFileInput.files && imageFileInput.files[0]
+        ? imageFileInput.files[0]
+        : null;
     imageFileInput.value = "";
     void handleImageFileSelection(file);
   });
@@ -821,19 +886,25 @@
 
     try {
       checkbox.disabled = true;
-      setStatus(nextVisible ? "Affichage sur le menu client…" : "Masquage du plat…");
+      setStatus(
+        nextVisible ? "Affichage sur le menu client…" : "Masquage du plat…",
+      );
       await saveProductVisibility(product, nextVisible);
       renderProducts();
       setStatus(
-        nextVisible ?
-          "Plat visible sur le menu client."
-        : "Plat masqué du menu client (toujours modifiable ici).",
+        nextVisible
+          ? "Plat visible sur le menu client."
+          : "Plat masqué du menu client (toujours modifiable ici).",
         false,
         { toast: true },
       );
     } catch (error) {
       checkbox.checked = previousVisible;
-      setStatus(error.message || "Impossible de mettre à jour la visibilité.", true, { toast: true });
+      setStatus(
+        error.message || "Impossible de mettre à jour la visibilité.",
+        true,
+        { toast: true },
+      );
     } finally {
       checkbox.disabled = false;
     }
@@ -872,7 +943,9 @@
         await loadPage();
         setStatus("Plat supprimé.", false, { toast: true });
       } catch (error) {
-        setStatus(error.message || "Suppression impossible.", true, { toast: true });
+        setStatus(error.message || "Suppression impossible.", true, {
+          toast: true,
+        });
       }
     }
   });
