@@ -23,7 +23,7 @@
     />
 
     <!-- Configuration PWA -->
-    <link rel="manifest" href="/manifest.json" />
+
     <meta name="theme-color" content="#10B981" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -340,15 +340,5 @@
     <script src="../js/vendor/dompurify.min.js" defer></script>
     <script src="../js/dom-safe.js" defer></script>
     <script src="../js/mon-menu.js" defer></script>
-    <script>
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker
-            .register("/sw.js")
-            .then((reg) => console.log("Service Worker enregistré !", reg))
-            .catch((err) => console.error("Erreur Service Worker :", err));
-        });
-      }
-    </script>
   </body>
 </html>
