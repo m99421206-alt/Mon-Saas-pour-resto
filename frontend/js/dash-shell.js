@@ -2,7 +2,7 @@
  * AfricaMenu — Shell desktop / tablette pour pages restaurant
  * - Sidebar fixe sur grand écran
  * - Header desktop (profil, notifications, paramètres)
- * - Mise à jour profil depuis session
+ * - Mise à jour profil depuis session & lien dynamique "Mon Menu"
  */
 (function () {
   "use strict";
@@ -30,7 +30,9 @@
   }
 
   function getPageEyebrow() {
-    var active = document.querySelector(".dash-drawer__link.is-active .dash-drawer__label");
+    var active = document.querySelector(
+      ".dash-drawer__link.is-active .dash-drawer__label",
+    );
     if (active && active.textContent) {
       return active.textContent.trim();
     }
@@ -44,7 +46,9 @@
       .filter(Boolean);
     if (!parts.length) return "M";
     if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    return (
+      parts[0].charAt(0) + parts[parts.length - 1].charAt(0)
+    ).toUpperCase();
   }
 
   function ensureDashLayout() {
@@ -106,13 +110,29 @@
     });
   }
 
+  function updateMonMenuNavLink(restaurant) {
+    var monMenuLink = document.getElementById("nav-mon-menu-link");
+    if (!monMenuLink || !restaurant) return;
+
+    var target = restaurant.slug || restaurant.id;
+    if (!target) return;
+
+    var publicPath = restaurant.slug
+      ? "/restaurant/" + encodeURIComponent(restaurant.slug)
+      : "/menu/" + encodeURIComponent(restaurant.id);
+
+    monMenuLink.href = publicPath;
+  }
+
   function populateDashShellProfile(user, restaurant) {
     var rest = restaurant || getStoredRestaurant();
     var usr = user || getStoredUser();
-    var restName = rest && rest.name ? String(rest.name).trim() : "Mon restaurant";
+    var restName =
+      rest && rest.name ? String(rest.name).trim() : "Mon restaurant";
     var email = usr && usr.email ? String(usr.email).trim() : "email du resto";
 
     updateDrawerFooters(restName, email);
+    updateMonMenuNavLink(rest);
 
     var desktopTitle = document.getElementById("dash-desktop-restaurant");
     var desktopName = document.getElementById("dash-desktop-name");
@@ -167,7 +187,8 @@
     if (!adminToken) return;
 
     var main = document.querySelector(".dashboard-main");
-    if (!main || document.getElementById("dash-admin-impersonation-banner")) return;
+    if (!main || document.getElementById("dash-admin-impersonation-banner"))
+      return;
 
     var rest = getStoredRestaurant();
     var restName = rest && rest.name ? String(rest.name) : "ce restaurant";
@@ -218,8 +239,14 @@
 
       var safeReturn = returnUrl;
       if (window.MenuGo_DomSafe && window.MenuGo_DomSafe.sanitizeAppUrl) {
-        safeReturn = window.MenuGo_DomSafe.sanitizeAppUrl(returnUrl, "admin-restaurants.html");
-      } else if (/^(javascript|data):/i.test(String(returnUrl || "")) || /^https?:/i.test(String(returnUrl || ""))) {
+        safeReturn = window.MenuGo_DomSafe.sanitizeAppUrl(
+          returnUrl,
+          "admin-restaurants.html",
+        );
+      } else if (
+        /^(javascript|data):/i.test(String(returnUrl || "")) ||
+        /^https?:/i.test(String(returnUrl || ""))
+      ) {
         safeReturn = "admin-restaurants.html";
       }
       window.location.href = safeReturn;
@@ -250,7 +277,10 @@
   initAdminImpersonationBanner();
   initNotificationsPlaceholder();
 
-  if (window.MenuGo_SubscriptionAlerts && window.MenuGo_SubscriptionAlerts.fetchAndMountClientBanner) {
+  if (
+    window.MenuGo_SubscriptionAlerts &&
+    window.MenuGo_SubscriptionAlerts.fetchAndMountClientBanner
+  ) {
     window.MenuGo_SubscriptionAlerts.fetchAndMountClientBanner();
   }
 
