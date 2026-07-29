@@ -1,69 +1,47 @@
 ﻿/**
- * Page Mes plats — CRUD connecté à l'API.
+ * Page Mes Plats — gestion des plats (CRUD, upload, cropper, variantes).
  */
 (function () {
   "use strict";
 
-  const API_URL = window.MenuGo_CONFIG.API_URL;
-  const TOKEN_KEY = "MenuGo_token";
-  const USER_KEY = "MenuGo_user";
-  const RESTAURANT_KEY = "MenuGo_restaurant";
+  var API_URL = window.MenuGo_CONFIG.API_URL;
+  var TOKEN_KEY = "MenuGo_token";
+  var USER_KEY = "MenuGo_user";
+  var RESTAURANT_KEY = "MenuGo_restaurant";
 
-  const form = document.getElementById("plats-form");
-  const nameInput = document.getElementById("plats-name");
-  const priceInput = document.getElementById("plats-price");
-  const descriptionInput = document.getElementById("plats-description");
-  const categorySelect = document.getElementById("plats-category");
-  const imageInput = document.getElementById("plats-image");
-  const imageFileInput = document.getElementById("plats-image-file");
-  const imagePreview = document.getElementById("plats-image-preview");
-  const dropzone = document.getElementById("plats-dropzone");
-  const dropzoneContent = document.getElementById("plats-dropzone-content");
-  const hasSizesInput = document.getElementById("plats-has-sizes");
-  const visibleInput = document.getElementById("plats-is-visible");
-  const variantsSection = document.getElementById("plats-variants");
-  const variantsList = document.getElementById("plats-variants-list");
-  const addVariantBtn = document.getElementById("plats-variant-add");
-  const submitBtn = document.getElementById("plats-submit");
-  const cancelBtn = document.getElementById("plats-cancel");
-  const list = document.getElementById("plats-list");
-  const empty = document.getElementById("plats-empty");
-  const status = document.getElementById("plats-status");
-  const drawerRestaurant = document.getElementById("plats-drawer-restaurant");
-  const drawerEmail = document.getElementById("plats-drawer-email");
-  const logoutLink = document.getElementById("plats-logout");
+  var mainEl = document.getElementById("mes-plats-main");
+  var statusEl = document.getElementById("plats-status");
+  var formEl = document.getElementById("plats-form");
+  var listEl = document.getElementById("plats-list");
+  var emptyEl = document.getElementById("plats-empty");
+  var submitBtn = document.getElementById("plats-submit");
+  var cancelBtn = document.getElementById("plats-cancel");
 
-  let products = [];
-  let categories = [];
-  let editingId = null;
-  let menuEditLocked = false;
-  let pendingImageFile = null;
-  let previewObjectUrl = null;
+  var nameInput = document.getElementById("plats-name");
+  var priceInput = document.getElementById("plats-price");
+  var descInput = document.getElementById("plats-description");
+  var categorySelect = document.getElementById("plats-category");
+  var imageInput = document.getElementById("plats-image");
+  var imageFileInput = document.getElementById("plats-image-file");
+  var imagePreview = document.getElementById("plats-image-preview");
+  var dropzone = document.getElementById("plats-dropzone");
+  var dropzoneContent = document.getElementById("plats-dropzone-content");
+  var isVisibleCheck = document.getElementById("plats-is-visible");
+  var hasSizesCheck = document.getElementById("plats-has-sizes");
 
-  var EDIT_LOCK_MESSAGE =
-    "Votre abonnement a expiré. La modification du menu est désactivée — votre menu public reste visible. Ouvrez « Mon abonnement » pour le réactiver.";
+  var variantsSection = document.getElementById("plats-variants");
+  var variantsList = document.getElementById("plats-variants-list");
+  var variantAddBtn = document.getElementById("plats-variant-add");
 
-  function applyEditLock(subscription) {
-    menuEditLocked =
-      !!subscription &&
-      Object.prototype.hasOwnProperty.call(subscription, "can_edit_menu") &&
-      subscription.can_edit_menu === false;
+  var drawerRestaurant = document.getElementById("plats-drawer-restaurant");
+  var drawerEmail = document.getElementById("plats-drawer-email");
+  var logoutLink = document.getElementById("plats-logout");
 
-    document
-      .querySelectorAll("[data-action='add-plat']")
-      .forEach(function (btn) {
-        btn.disabled = menuEditLocked;
-        btn.setAttribute("aria-disabled", menuEditLocked ? "true" : "false");
-        btn.title = menuEditLocked ? EDIT_LOCK_MESSAGE : "";
-      });
+  if (!mainEl || !formEl) return;
 
-    if (menuEditLocked) {
-      if (!form.hidden) {
-        closeForm();
-      }
-      setStatus(EDIT_LOCK_MESSAGE, true, { toast: true });
-    }
-  }
+  var currentEditingId = null;
+  var categoriesCache = [];
+  var isSubmitting = false;
 
   function redirectToLogin() {
     window.location.href = "login.html";
@@ -75,36 +53,45 @@
     localStorage.removeItem(RESTAURANT_KEY);
   }
 
-  function setStatus(message, isError, options) {
-    status.textContent = message || "";
-    status.classList.toggle("is-error", Boolean(isError));
-    if (options && options.toast && message && window.MenuGo_Toast) {
-      if (isError) window.MenuGo_Toast.error(message);
-      else window.MenuGo_Toast.success(message);
+  function setStatus(message, isError) {
+    if (!statusEl) return;
+    statusEl.textContent = message || "";
+    statusEl.hidden = !message;
+    statusEl.classList.toggle("is-error", Boolean(isError));
+    if (isError && message && window.MenuGo_Toast) {
+      window.MenuGo_Toast.error(message);
+    }
+  }
+
+  function getStoredJson(key) {
+    try {
+      return JSON.parse(localStorage.getItem(key) || "null");
+    } catch (e) {
+      return null;
     }
   }
 
   async function readJson(response) {
     try {
       return await response.json();
-    } catch (error) {
+    } catch (e) {
       return {};
     }
   }
 
   async function apiRequest(path, options) {
-    const token = localStorage.getItem(TOKEN_KEY);
+    var token = localStorage.getItem(TOKEN_KEY);
     if (!token) {
       redirectToLogin();
       return null;
     }
 
-    let cleanPath = path;
+    var cleanPath = path;
     if (API_URL.endsWith("/api") && cleanPath.startsWith("/api")) {
       cleanPath = cleanPath.substring(4);
     }
 
-    const response = await fetch(API_URL + cleanPath, {
+    var response = await fetch(API_URL + cleanPath, {
       method: (options && options.method) || "GET",
       headers: {
         "Content-Type": "application/json",
@@ -113,29 +100,36 @@
       body: options && options.body ? JSON.stringify(options.body) : undefined,
     });
 
-    const data = response.status === 204 ? {} : await readJson(response);
+    var data = response.status === 204 ? {} : await readJson(response);
+
     if (response.status === 401) {
       clearSession();
       redirectToLogin();
       return null;
     }
     if (!response.ok) {
-      throw new Error(data.message || "Erreur API");
+      throw new Error(data.message || "Erreur serveur.");
     }
     return data;
   }
 
   async function uploadImage(file) {
-    const token = localStorage.getItem(TOKEN_KEY);
+    var token = localStorage.getItem(TOKEN_KEY);
     if (!token) {
       redirectToLogin();
       return null;
     }
 
-    const formData = new FormData();
+    var formData = new FormData();
     formData.append("image", file);
 
-    const response = await fetch(window.location.origin + "/upload", {
+    // Construction de l'URL pour passer par /api/upload (géré par Nginx)
+    var baseUrl = API_URL.replace(/\/+$/, "");
+    var endpoint = baseUrl.endsWith("/api")
+      ? baseUrl + "/upload"
+      : baseUrl + "/api/upload";
+
+    var response = await fetch(endpoint, {
       method: "POST",
       headers: {
         Authorization: "Bearer " + token,
@@ -143,7 +137,7 @@
       body: formData,
     });
 
-    const data = response.status === 204 ? {} : await readJson(response);
+    var data = response.status === 204 ? {} : await readJson(response);
     if (response.status === 401) {
       clearSession();
       redirectToLogin();
@@ -155,47 +149,11 @@
     return data.url;
   }
 
-  function getStoredJson(key) {
-    try {
-      return JSON.parse(localStorage.getItem(key) || "null");
-    } catch (error) {
-      return null;
-    }
-  }
-
-  function renderAccountInfo(me) {
-    const storedUser = getStoredJson(USER_KEY);
-    const storedRestaurant = getStoredJson(RESTAURANT_KEY);
-    const user = (me && me.user) || storedUser || {};
-    const restaurant = (me && me.restaurant) || storedRestaurant || {};
-
-    drawerRestaurant.textContent = restaurant.name || "Nom du resto";
-    drawerEmail.textContent = user.email || "email du resto";
-
-    if (window.MenuGo_DashShell) {
-      window.MenuGo_DashShell.populateProfile(user, restaurant);
-    }
-
-    if (me) {
-      localStorage.setItem(USER_KEY, JSON.stringify(user || null));
-      localStorage.setItem(RESTAURANT_KEY, JSON.stringify(restaurant || null));
-    }
-  }
-
-  function escapeHtml(value) {
-    return String(value == null ? "" : value)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-
   function resolveImageUrl(url) {
     if (!url) return "";
-    const strUrl = String(url);
+    var strUrl = String(url);
     if (strUrl.indexOf("/uploads/") === 0 || strUrl.indexOf("uploads/") === 0) {
-      const cleanPath = strUrl.startsWith("/") ? strUrl : "/" + strUrl;
+      var cleanPath = strUrl.startsWith("/") ? strUrl : "/" + strUrl;
       return window.location.origin + cleanPath;
     }
     return strUrl;
@@ -252,718 +210,466 @@
     return true;
   }
 
-  function clearImageFileInput() {
-    if (imageFileInput) {
-      imageFileInput.value = "";
-    }
-    pendingImageFile = null;
-    if (previewObjectUrl) {
-      URL.revokeObjectURL(previewObjectUrl);
-      previewObjectUrl = null;
-    }
-  }
-
-  function assignImageFile(file) {
-    if (!imageFileInput || !file) {
-      return;
-    }
-    const transfer = new DataTransfer();
-    transfer.items.add(file);
-    imageFileInput.files = transfer.files;
-    pendingImageFile = file;
-  }
-
-  function setImagePreview(preview, url) {
-    if (!preview) return;
+  function setImagePreview(url) {
+    if (!imagePreview) return;
     if (!url) {
-      if (previewObjectUrl) {
-        URL.revokeObjectURL(previewObjectUrl);
-        previewObjectUrl = null;
-      }
-      preview.hidden = true;
-      preview.removeAttribute("src");
+      imagePreview.hidden = true;
+      imagePreview.removeAttribute("src");
       if (dropzone) dropzone.classList.remove("has-preview");
       if (dropzoneContent) dropzoneContent.hidden = false;
       return;
     }
-
-    const resolved =
-      url.indexOf("blob:") === 0 || url.indexOf("http") === 0
-        ? url
-        : resolveImageUrl(url);
-
-    if (previewObjectUrl && previewObjectUrl !== resolved) {
-      URL.revokeObjectURL(previewObjectUrl);
-      previewObjectUrl = null;
-    }
-
-    if (resolved.indexOf("blob:") === 0) {
-      previewObjectUrl = resolved;
-    } else if (previewObjectUrl) {
-      URL.revokeObjectURL(previewObjectUrl);
-      previewObjectUrl = null;
-    }
-
-    preview.src = resolved;
-    preview.hidden = false;
+    imagePreview.src = resolveImageUrl(url);
+    imagePreview.hidden = false;
     if (dropzone) dropzone.classList.add("has-preview");
     if (dropzoneContent) dropzoneContent.hidden = true;
   }
 
-  async function handleImageFileSelection(file) {
+  function processImageFileWithCrop(file) {
     if (!file) {
-      setImagePreview(imagePreview, "");
+      setImagePreview(imageInput ? imageInput.value : "");
       return;
     }
     if (!isAllowedImageFile(file)) {
-      clearImageFileInput();
-      setImagePreview(imagePreview, "");
-      setStatus(UPLOAD_REJECT_MESSAGE, true, { toast: true });
+      if (imageFileInput) imageFileInput.value = "";
+      setImagePreview(imageInput ? imageInput.value : "");
+      setStatus(UPLOAD_REJECT_MESSAGE, true);
       return;
     }
-
-    if (
-      !window.MenuGo_ImageCrop ||
-      typeof window.MenuGo_ImageCrop.open !== "function"
-    ) {
-      setStatus("Recadrage indisponible. Rechargez la page.", true, {
-        toast: true,
+    setStatus("");
+    if (window.MenuGo_CropModal) {
+      window.MenuGo_CropModal.open(file, function (croppedFile) {
+        var transfer = new DataTransfer();
+        transfer.items.add(croppedFile);
+        if (imageFileInput) imageFileInput.files = transfer.files;
+        setImagePreview(URL.createObjectURL(croppedFile));
       });
-      clearImageFileInput();
-      return;
-    }
-
-    try {
-      setStatus("Recadrage de l'image…");
-      const croppedFile = await window.MenuGo_ImageCrop.open(file, {
-        aspectRatio: window.MenuGo_ImageCrop.ASPECT_RATIO_PRODUCT,
-        outputWidth: window.MenuGo_ImageCrop.OUTPUT_WIDTH_PRODUCT,
-        title: "Recadrer l'image du plat",
-      });
-      assignImageFile(croppedFile);
-      setImagePreview(imagePreview, URL.createObjectURL(croppedFile));
-      setStatus("Image prête. Enregistrez le plat pour l'envoyer.");
-    } catch (error) {
-      clearImageFileInput();
-      setImagePreview(imagePreview, "");
-      if (error && error.message && error.message.indexOf("annul") === -1) {
-        setStatus(error.message, true, { toast: true });
-      } else {
-        setStatus("");
-      }
+    } else {
+      setImagePreview(URL.createObjectURL(file));
     }
   }
 
-  function findCategoryName(categoryId) {
-    const category = categories.find(function (item) {
-      return item.id === Number(categoryId);
-    });
-    return category ? category.name : "Sans catégorie";
-  }
-
-  function formatPrice(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) {
-      return "0.00";
-    }
-    return number.toFixed(2);
-  }
-
-  function formatPriceDisplay(value) {
-    const number = Number(value);
-    if (!Number.isFinite(number)) {
-      return "0 F CFA";
-    }
-    if (Number.isInteger(number)) {
-      return number.toLocaleString("fr-FR") + " F CFA";
-    }
-    return (
-      number.toLocaleString("fr-FR", {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2,
-      }) + " F CFA"
-    );
-  }
-
-  function formatProductPriceLabel(product) {
-    if (
-      productHasSizes(product) &&
-      product.variants &&
-      product.variants.length
-    ) {
-      const prices = product.variants
-        .map(function (variant) {
-          return Number(variant.price);
-        })
-        .filter(function (price) {
-          return Number.isFinite(price);
-        });
-      if (prices.length) {
-        const min = Math.min.apply(null, prices);
-        const max = Math.max.apply(null, prices);
-        if (min === max) {
-          return formatPriceDisplay(min);
-        }
-        return formatPriceDisplay(min) + " – " + formatPriceDisplay(max);
-      }
-    }
-    return formatPriceDisplay(product.price);
-  }
-
-  function productHasSizes(product) {
-    return (
-      product.has_sizes === true ||
-      product.has_sizes === 1 ||
-      product.has_sizes === "1"
-    );
-  }
-
-  function productIsVisible(product) {
-    if (
-      !product ||
-      product.is_visible === undefined ||
-      product.is_visible === null
-    ) {
-      return true;
-    }
-    return (
-      product.is_visible === true ||
-      product.is_visible === 1 ||
-      product.is_visible === "1"
-    );
-  }
-
-  function buildProductBody(product, overrides) {
-    const payload = {
-      name: product.name,
-      price: Number(product.price),
-      category_id: Number(product.category_id),
-      description: product.description || null,
-      image: product.image || null,
-      has_sizes: productHasSizes(product) ? 1 : 0,
-      is_visible: productIsVisible(product) ? 1 : 0,
-      variants:
-        productHasSizes(product) && product.variants ? product.variants : [],
-    };
-    if (overrides) {
-      Object.keys(overrides).forEach(function (key) {
-        payload[key] = overrides[key];
-      });
-    }
-    return payload;
-  }
-
-  async function saveProductVisibility(product, isVisible) {
-    await apiRequest("/products/" + encodeURIComponent(product.id), {
-      method: "PUT",
-      body: buildProductBody(product, { is_visible: isVisible ? 1 : 0 }),
-    });
-    product.is_visible = isVisible ? 1 : 0;
-  }
-
-  function getDefaultVariants(product) {
-    if (product && product.variants && product.variants.length) {
-      return product.variants;
-    }
-
-    return [
-      { name: "Petit", price: "" },
-      { name: "Moyen", price: "" },
-      { name: "Grand", price: "" },
-    ];
-  }
-
-  function createVariantRow(variant) {
-    const row = document.createElement("article");
-    row.className = "plats-variant";
-    row.innerHTML =
-      '<div class="plats-variant__row">' +
-      '<label class="plats-variant__label">Nom' +
-      '<input class="plats-variant__input" data-variant-field="name" type="text" placeholder="Ex : Grand" value="' +
-      escapeHtml(variant && variant.name ? variant.name : "") +
-      '" />' +
-      "</label>" +
-      '<label class="plats-variant__label">Prix' +
-      '<input class="plats-variant__input" data-variant-field="price" type="number" min="0" step="0.01" placeholder="Ex : 5000" value="' +
-      escapeHtml(
-        variant && variant.price != null ? formatPrice(variant.price) : "",
-      ) +
-      '" />' +
-      "</label>" +
-      "</div>" +
-      '<button class="plats-variant__remove" type="button" data-action="remove-variant">Supprimer cette option</button>';
-    return row;
-  }
-
-  function renderVariantRows(variants) {
-    variantsList.innerHTML = "";
-    variants.forEach(function (variant) {
-      variantsList.appendChild(createVariantRow(variant));
-    });
-  }
-
-  function setVariantsVisible(isVisible, product) {
-    variantsSection.hidden = !isVisible;
-    if (isVisible && !variantsList.children.length) {
-      renderVariantRows(getDefaultVariants(product));
-    }
-    if (!isVisible) {
-      variantsList.innerHTML = "";
-    }
-  }
-
-  function readVariants() {
-    return Array.from(variantsList.querySelectorAll(".plats-variant"))
-      .map(function (row) {
-        const name = row
-          .querySelector("[data-variant-field='name']")
-          .value.trim();
-        const price = Number(
-          row.querySelector("[data-variant-field='price']").value,
-        );
-        return {
-          name: name,
-          price: price,
-        };
-      })
-      .filter(function (variant) {
-        return (
-          variant.name && Number.isFinite(variant.price) && variant.price >= 0
-        );
-      });
-  }
-
-  async function uploadSelectedImages(currentImage) {
-    let image = currentImage;
-    const file =
-      pendingImageFile || (imageFileInput.files && imageFileInput.files[0]);
-
-    if (file) {
-      setStatus("Upload de l'image du plat...");
-      image = await uploadImage(file);
-      imageInput.value = image || "";
-      clearImageFileInput();
-    }
-
-    return image;
-  }
-
-  function renderCategoryOptions() {
-    categorySelect.innerHTML = "";
-
-    if (!categories.length) {
-      const option = document.createElement("option");
-      option.value = "";
-      option.textContent = "Créez d'abord une catégorie";
-      categorySelect.appendChild(option);
-      return;
-    }
-
-    categories.forEach(function (category) {
-      const option = document.createElement("option");
-      option.value = String(category.id);
-      option.textContent = category.name;
-      categorySelect.appendChild(option);
-    });
-  }
-
-  function renderProducts() {
-    list.innerHTML = "";
-
-    if (!products.length) {
-      list.hidden = true;
-      empty.hidden = false;
-      return;
-    }
-
-    empty.hidden = true;
-    list.hidden = false;
-
-    products.forEach(function (product) {
-      const article = document.createElement("article");
-      const visible = productIsVisible(product);
-      article.className =
-        "plats-card plats-card--no-media" +
-        (visible ? "" : " plats-card--hidden");
-      const descHtml = product.description
-        ? '<p class="plats-card__desc">' +
-          escapeHtml(product.description) +
-          "</p>"
-        : "";
-      const hiddenBadge = visible
-        ? ""
-        : '<span class="plats-card__hidden-badge">Masqué du menu</span>';
-
-      article.innerHTML =
-        '<div class="plats-card__body">' +
-        hiddenBadge +
-        '<span class="plats-card__category">' +
-        escapeHtml(findCategoryName(product.category_id)) +
-        "</span>" +
-        '<h3 class="plats-card__name">' +
-        escapeHtml(product.name) +
-        "</h3>" +
-        '<p class="plats-card__price">' +
-        escapeHtml(formatProductPriceLabel(product)) +
-        "</p>" +
-        descHtml +
-        "</div>" +
-        '<div class="plats-card__footer">' +
-        '<label class="plats-card__visible">' +
-        '<input type="checkbox" data-action="toggle-visible" data-id="' +
-        product.id +
-        '"' +
-        (visible ? " checked" : "") +
-        " />" +
-        "<span>Visible</span>" +
-        "</label>" +
-        '<div class="plats-card__actions">' +
-        '<button type="button" class="plats-card__btn" data-action="edit-plat" data-id="' +
-        product.id +
-        '">Modifier</button>' +
-        '<button type="button" class="plats-card__btn plats-card__btn--danger" data-action="delete-plat" data-id="' +
-        product.id +
-        '">Supprimer</button>' +
-        "</div></div>";
-      list.appendChild(article);
-    });
-  }
-
-  function openForm(product) {
-    if (!categories.length) {
-      setStatus("Ajoutez d'abord une catégorie avant de créer un plat.", true, {
-        toast: true,
-      });
-      return;
-    }
-
-    editingId = product ? product.id : null;
-    form.hidden = false;
-    nameInput.value = product ? product.name : "";
-    priceInput.value = product ? formatPrice(product.price) : "";
-    descriptionInput.value =
-      product && product.description ? product.description : "";
-    categorySelect.value = product
-      ? String(product.category_id)
-      : String(categories[0].id);
-    imageInput.value = product && product.image ? product.image : "";
-    clearImageFileInput();
-    setImagePreview(imagePreview, imageInput.value);
-    hasSizesInput.checked = product ? productHasSizes(product) : false;
-    if (visibleInput) {
-      visibleInput.checked = product ? productIsVisible(product) : true;
-    }
-    renderVariantRows(getDefaultVariants(product));
-    setVariantsVisible(hasSizesInput.checked, product);
-    submitBtn.textContent = product ? "Modifier" : "Enregistrer";
-    nameInput.focus();
-  }
-
-  function closeForm() {
-    editingId = null;
-    form.hidden = true;
-    form.reset();
-    variantsList.innerHTML = "";
-    clearImageFileInput();
-    setImagePreview(imagePreview, "");
-    if (dropzone) dropzone.classList.remove("is-dragover");
+  function previewSelectedFile() {
+    var file =
+      imageFileInput && imageFileInput.files ? imageFileInput.files[0] : null;
+    processImageFileWithCrop(file);
   }
 
   function initDropzone() {
     if (!dropzone || !imageFileInput) return;
 
-    dropzone.addEventListener("click", function (event) {
-      if (event.target === imageFileInput) return;
+    dropzone.addEventListener("click", function (e) {
+      if (e.target === imageFileInput) return;
       imageFileInput.click();
     });
 
-    dropzone.addEventListener("keydown", function (event) {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
+    dropzone.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
         imageFileInput.click();
       }
     });
 
     ["dragenter", "dragover"].forEach(function (eventName) {
-      dropzone.addEventListener(eventName, function (event) {
-        event.preventDefault();
+      dropzone.addEventListener(eventName, function (e) {
+        e.preventDefault();
         dropzone.classList.add("is-dragover");
       });
     });
 
     ["dragleave", "drop"].forEach(function (eventName) {
-      dropzone.addEventListener(eventName, function (event) {
-        event.preventDefault();
+      dropzone.addEventListener(eventName, function (e) {
+        e.preventDefault();
         dropzone.classList.remove("is-dragover");
       });
     });
 
-    dropzone.addEventListener("drop", function (event) {
-      const file =
-        event.dataTransfer && event.dataTransfer.files
-          ? event.dataTransfer.files[0]
-          : null;
-      if (!file) return;
-      void handleImageFileSelection(file);
+    dropzone.addEventListener("drop", function (e) {
+      var file =
+        e.dataTransfer && e.dataTransfer.files ? e.dataTransfer.files[0] : null;
+      if (!file || !isAllowedImageFile(file)) {
+        if (file) setStatus(UPLOAD_REJECT_MESSAGE, true);
+        return;
+      }
+      var transfer = new DataTransfer();
+      transfer.items.add(file);
+      imageFileInput.files = transfer.files;
+      previewSelectedFile();
+    });
+
+    imageFileInput.addEventListener("change", previewSelectedFile);
+  }
+
+  function renderAccountInfo(user, restaurant) {
+    var name = restaurant && restaurant.name ? restaurant.name : "Nom du resto";
+    if (drawerRestaurant) drawerRestaurant.textContent = name;
+    if (drawerEmail)
+      drawerEmail.textContent =
+        user && user.email ? user.email : "email du resto";
+    if (window.MenuGo_DashShell) {
+      window.MenuGo_DashShell.populateProfile(user, restaurant);
+    }
+  }
+
+  function populateCategoriesSelect(categories) {
+    if (!categorySelect) return;
+    categorySelect.innerHTML = "";
+    if (!categories || categories.length === 0) {
+      var opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "Aucune catégorie disponible";
+      categorySelect.appendChild(opt);
+      return;
+    }
+    categories.forEach(function (cat) {
+      var opt = document.createElement("option");
+      opt.value = String(cat.id);
+      opt.textContent = cat.name;
+      categorySelect.appendChild(opt);
     });
   }
 
-  function onAddPlat() {
-    if (menuEditLocked) {
-      setStatus(EDIT_LOCK_MESSAGE, true, { toast: true });
+  function createVariantRow(variant) {
+    var row = document.createElement("div");
+    row.className = "plats-variant-row";
+
+    var nameVal = variant && variant.name ? variant.name : "";
+    var priceVal = variant && variant.price !== undefined ? variant.price : "";
+
+    row.innerHTML =
+      '<div class="plats-variant-row__fields">' +
+      '<input type="text" class="plats-form__input variant-name" placeholder="Ex: Petit / Normal / Grand" value="' +
+      window.MenuGo_DOMSafe.escapeAttr(nameVal) +
+      '" required />' +
+      '<input type="number" step="0.01" min="0" class="plats-form__input variant-price" placeholder="Prix" value="' +
+      window.MenuGo_DOMSafe.escapeAttr(priceVal) +
+      '" required />' +
+      "</div>" +
+      '<button type="button" class="plats-variant-row__remove" aria-label="Supprimer l\'option">&times;</button>';
+
+    row
+      .querySelector(".plats-variant-row__remove")
+      .addEventListener("click", function () {
+        row.remove();
+      });
+
+    return row;
+  }
+
+  function addVariantRow(variant) {
+    if (!variantsList) return;
+    variantsList.appendChild(createVariantRow(variant));
+  }
+
+  function collectVariants() {
+    if (!hasSizesCheck || !hasSizesCheck.checked) return [];
+    var rows = variantsList
+      ? Array.from(variantsList.querySelectorAll(".plats-variant-row"))
+      : [];
+    var result = [];
+
+    for (var i = 0; i < rows.length; i++) {
+      var nameEl = rows[i].querySelector(".variant-name");
+      var priceEl = rows[i].querySelector(".variant-price");
+      var vName = nameEl ? nameEl.value.trim() : "";
+      var vPrice = priceEl ? parseFloat(priceEl.value) : NaN;
+
+      if (!vName) {
+        throw new Error("Le nom de chaque variante est requis.");
+      }
+      if (isNaN(vPrice) || vPrice < 0) {
+        throw new Error(
+          "Le prix de chaque variante doit être un nombre valide.",
+        );
+      }
+
+      result.push({ name: vName, price: vPrice });
+    }
+
+    if (result.length === 0) {
+      throw new Error(
+        "Veuillez ajouter au moins une variante ou décocher l'option.",
+      );
+    }
+
+    return result;
+  }
+
+  function toggleVariantsSection() {
+    var active = Boolean(hasSizesCheck && hasSizesCheck.checked);
+    if (variantsSection) variantsSection.hidden = !active;
+    if (active && variantsList && variantsList.children.length === 0) {
+      addVariantRow();
+    }
+  }
+
+  function showForm(itemToEdit) {
+    setStatus("");
+    formEl.hidden = false;
+    if (listEl) listEl.hidden = true;
+    if (emptyEl) emptyEl.hidden = true;
+
+    currentEditingId = itemToEdit ? itemToEdit.id : null;
+    if (imageFileInput) imageFileInput.value = "";
+
+    if (itemToEdit) {
+      nameInput.value = itemToEdit.name || "";
+      priceInput.value = itemToEdit.price !== undefined ? itemToEdit.price : "";
+      descInput.value = itemToEdit.description || "";
+      if (categorySelect && itemToEdit.category_id) {
+        categorySelect.value = String(itemToEdit.category_id);
+      }
+      if (imageInput) imageInput.value = itemToEdit.image_url || "";
+      setImagePreview(itemToEdit.image_url || "");
+      if (isVisibleCheck)
+        isVisibleCheck.checked = Boolean(itemToEdit.is_visible);
+      if (hasSizesCheck) hasSizesCheck.checked = Boolean(itemToEdit.has_sizes);
+
+      if (variantsList) variantsList.innerHTML = "";
+      if (itemToEdit.has_sizes && Array.isArray(itemToEdit.variants)) {
+        itemToEdit.variants.forEach(function (v) {
+          addVariantRow(v);
+        });
+      }
+    } else {
+      formEl.reset();
+      if (imageInput) imageInput.value = "";
+      setImagePreview("");
+      if (isVisibleCheck) isVisibleCheck.checked = true;
+      if (hasSizesCheck) hasSizesCheck.checked = false;
+      if (variantsList) variantsList.innerHTML = "";
+    }
+
+    toggleVariantsSection();
+  }
+
+  function hideForm() {
+    formEl.hidden = true;
+    currentEditingId = null;
+    if (imageFileInput) imageFileInput.value = "";
+    loadPlats();
+  }
+
+  function renderPlatsList(items) {
+    if (!listEl || !emptyEl) return;
+
+    if (!items || items.length === 0) {
+      listEl.hidden = true;
+      emptyEl.hidden = false;
       return;
     }
-    setStatus("");
-    openForm(null);
+
+    emptyEl.hidden = true;
+    listEl.hidden = false;
+    listEl.innerHTML = "";
+
+    items.forEach(function (item) {
+      var card = document.createElement("article");
+      card.className = "plat-card";
+
+      var imgHtml = item.image_url
+        ? '<img class="plat-card__img" src="' +
+          window.MenuGo_DOMSafe.escapeAttr(resolveImageUrl(item.image_url)) +
+          '" alt="' +
+          window.MenuGo_DOMSafe.escapeAttr(item.name) +
+          '" />'
+        : '<div class="plat-card__no-img">Pas d\'image</div>';
+
+      var badgeClass = item.is_visible ? "is-visible" : "is-hidden";
+      var badgeText = item.is_visible ? "Visible" : "Masqué";
+
+      var priceText = item.has_sizes ? "Multiples prix" : item.price + " FCFA";
+
+      card.innerHTML =
+        '<div class="plat-card__media">' +
+        imgHtml +
+        '<span class="plat-card__badge ' +
+        badgeClass +
+        '">' +
+        badgeText +
+        "</span>" +
+        "</div>" +
+        '<div class="plat-card__content">' +
+        '<h3 class="plat-card__title">' +
+        window.MenuGo_DOMSafe.escapeHtml(item.name) +
+        "</h3>" +
+        '<p class="plat-card__desc">' +
+        window.MenuGo_DOMSafe.escapeHtml(item.description || "") +
+        "</p>" +
+        '<div class="plat-card__foot">' +
+        '<span class="plat-card__price">' +
+        window.MenuGo_DOMSafe.escapeHtml(priceText) +
+        "</span>" +
+        '<div class="plat-card__actions">' +
+        '<button type="button" class="plat-card__btn edit-btn" data-id="' +
+        item.id +
+        '">Éditer</button>' +
+        '<button type="button" class="plat-card__btn delete-btn" data-id="' +
+        item.id +
+        '">Supprimer</button>' +
+        "</div>" +
+        "</div>" +
+        "</div>";
+
+      card.querySelector(".edit-btn").addEventListener("click", function () {
+        showForm(item);
+      });
+
+      card.querySelector(".delete-btn").addEventListener("click", function () {
+        deletePlat(item.id);
+      });
+
+      listEl.appendChild(card);
+    });
   }
 
-  async function loadPage() {
+  async function loadPlats() {
     try {
       setStatus("Chargement des plats...");
-      renderAccountInfo(null);
 
-      const [me, categoriesData, productsData] = await Promise.all([
-        apiRequest("/me"),
-        apiRequest("/categories"),
-        apiRequest("/products"),
-      ]);
+      var storedUser = getStoredJson(USER_KEY);
+      var storedRestaurant = getStoredJson(RESTAURANT_KEY);
+      renderAccountInfo(storedUser, storedRestaurant);
 
-      if (!categoriesData || !productsData) return;
-
-      renderAccountInfo(me);
-      categories = categoriesData.categories || [];
-      products = productsData.products || [];
-      renderCategoryOptions();
-      renderProducts();
-
-      applyEditLock(me && me.subscription);
-
-      if (menuEditLocked) {
-        setStatus(EDIT_LOCK_MESSAGE, true, { toast: true });
-      } else if (!categories.length) {
-        setStatus(
-          "Ajoutez une catégorie avant de créer votre premier plat.",
-          true,
-          { toast: true },
-        );
-      } else {
-        setStatus(products.length ? "" : "Aucun plat pour le moment.");
+      var me = await apiRequest("/me");
+      if (me && me.user) {
+        localStorage.setItem(USER_KEY, JSON.stringify(me.user));
+        localStorage.setItem(RESTAURANT_KEY, JSON.stringify(me.restaurant));
+        renderAccountInfo(me.user, me.restaurant);
       }
-    } catch (error) {
-      setStatus(error.message || "Impossible de charger les plats.", true, {
-        toast: true,
-      });
+
+      var catsRes = await apiRequest("/categories");
+      categoriesCache = (catsRes && catsRes.categories) || [];
+      populateCategoriesSelect(categoriesCache);
+
+      var items = await apiRequest("/items");
+      renderPlatsList(items || []);
+      setStatus("");
+    } catch (e) {
+      setStatus(e.message || "Erreur de chargement.", true);
     }
   }
 
-  document.querySelectorAll("[data-action='add-plat']").forEach(function (el) {
-    el.addEventListener("click", onAddPlat);
-  });
+  async function deletePlat(id) {
+    if (!confirm("Voulez-vous vraiment supprimer ce plat ?")) return;
+    try {
+      setStatus("Suppression en cours...");
+      await apiRequest("/items/" + id, { method: "DELETE" });
+      if (window.MenuGo_Toast) window.MenuGo_Toast.success("Plat supprimé.");
+      loadPlats();
+    } catch (e) {
+      setStatus(e.message || "Erreur de suppression.", true);
+    }
+  }
 
-  form.addEventListener("submit", async function (event) {
-    event.preventDefault();
+  formEl.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    if (isSubmitting) return;
 
-    const name = nameInput.value.trim();
-    const price = Number(priceInput.value);
-    const categoryId = Number(categorySelect.value);
-    const description = descriptionInput.value.trim();
-    const image = imageInput.value.trim();
+    var name = nameInput.value.trim();
+    var price = parseFloat(priceInput.value);
+    var categoryId = categorySelect ? categorySelect.value : null;
 
     if (!name) {
-      setStatus("Le nom du plat est requis.", true, { toast: true });
+      setStatus("Le nom du plat est requis.", true);
       nameInput.focus();
       return;
     }
-    if (!Number.isFinite(price) || price < 0) {
-      setStatus("Le prix doit être un nombre positif ou nul.", true, {
-        toast: true,
-      });
+
+    if (!categoryId) {
+      setStatus("Veuillez sélectionner une catégorie.", true);
+      return;
+    }
+
+    var hasSizes = Boolean(hasSizesCheck && hasSizesCheck.checked);
+    if (!hasSizes && (isNaN(price) || price < 0)) {
+      setStatus("Veuillez saisir un prix valide.", true);
       priceInput.focus();
       return;
     }
-    if (!Number.isInteger(categoryId) || categoryId < 1) {
-      setStatus("Sélectionnez une catégorie valide.", true, { toast: true });
-      categorySelect.focus();
+
+    var variants = [];
+    try {
+      variants = collectVariants();
+    } catch (err) {
+      setStatus(err.message, true);
       return;
     }
 
-    let variants = hasSizesInput.checked ? readVariants() : [];
-    if (hasSizesInput.checked && !variants.length) {
-      setStatus("Ajoutez au moins une option avec un nom et un prix.", true, {
-        toast: true,
-      });
-      const firstVariantInput = variantsList.querySelector(
-        "[data-variant-field='price']",
-      );
-      if (firstVariantInput) {
-        firstVariantInput.focus();
-      }
-      return;
-    }
+    isSubmitting = true;
+    if (submitBtn) submitBtn.disabled = true;
+    setStatus("Enregistrement du plat...");
 
     try {
-      submitBtn.disabled = true;
-      const wasEditing = Boolean(editingId);
-      setStatus(
-        wasEditing ? "Modification en cours..." : "Création en cours...",
-      );
+      var imageUrl = imageInput ? imageInput.value.trim() : "";
 
-      const uploadedImage = await uploadSelectedImages(image || null);
-      variants = hasSizesInput.checked ? readVariants() : [];
-      const body = {
+      if (imageFileInput && imageFileInput.files && imageFileInput.files[0]) {
+        setStatus("Téléversement de l'image...");
+        imageUrl = await uploadImage(imageFileInput.files[0]);
+      }
+
+      var payload = {
         name: name,
-        price: price,
-        category_id: categoryId,
-        description: description || null,
-        image: uploadedImage || null,
-        has_sizes: hasSizesInput.checked ? 1 : 0,
-        is_visible: visibleInput && visibleInput.checked ? 1 : 0,
+        price: hasSizes ? (variants[0] ? variants[0].price : 0) : price,
+        description: descInput ? descInput.value.trim() : "",
+        category_id: parseInt(categoryId, 10),
+        image_url: imageUrl || null,
+        is_visible: Boolean(isVisibleCheck && isVisibleCheck.checked),
+        has_sizes: hasSizes,
         variants: variants,
       };
 
-      if (editingId) {
-        await apiRequest("/products/" + encodeURIComponent(editingId), {
+      setStatus("Enregistrement des données...");
+      if (currentEditingId) {
+        await apiRequest("/items/" + currentEditingId, {
           method: "PUT",
-          body: body,
+          body: payload,
         });
+        if (window.MenuGo_Toast)
+          window.MenuGo_Toast.success("Plat mis à jour.");
       } else {
-        await apiRequest("/products", {
+        await apiRequest("/items", {
           method: "POST",
-          body: body,
+          body: payload,
         });
+        if (window.MenuGo_Toast) window.MenuGo_Toast.success("Plat ajouté.");
       }
 
-      closeForm();
-      await loadPage();
-      setStatus(wasEditing ? "Plat modifié." : "Plat ajouté.", false, {
-        toast: true,
-      });
-    } catch (error) {
-      setStatus(error.message || "Enregistrement impossible.", true, {
-        toast: true,
-      });
+      hideForm();
+    } catch (err) {
+      setStatus(err.message || "Impossible d'enregistrer le plat.", true);
     } finally {
-      submitBtn.disabled = false;
+      isSubmitting = false;
+      if (submitBtn) submitBtn.disabled = false;
     }
   });
 
-  cancelBtn.addEventListener("click", function () {
-    closeForm();
-    setStatus("");
-  });
-
-  imageFileInput.addEventListener("change", function () {
-    const file =
-      imageFileInput.files && imageFileInput.files[0]
-        ? imageFileInput.files[0]
-        : null;
-    imageFileInput.value = "";
-    void handleImageFileSelection(file);
-  });
-
-  hasSizesInput.addEventListener("change", function () {
-    setVariantsVisible(hasSizesInput.checked, null);
-  });
-
-  addVariantBtn.addEventListener("click", function () {
-    variantsList.appendChild(createVariantRow({ name: "", price: "" }));
-  });
-
-  variantsList.addEventListener("click", function (event) {
-    const removeBtn = event.target.closest("[data-action='remove-variant']");
-    if (!removeBtn) return;
-    removeBtn.closest(".plats-variant").remove();
-  });
-
-  list.addEventListener("change", async function (event) {
-    const checkbox = event.target.closest("[data-action='toggle-visible']");
-    if (!checkbox) return;
-
-    const id = Number(checkbox.getAttribute("data-id"));
-    const product = products.find(function (item) {
-      return item.id === id;
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", function () {
+      hideForm();
     });
-    if (!product) return;
+  }
 
-    if (menuEditLocked) {
-      checkbox.checked = productIsVisible(product);
-      setStatus(EDIT_LOCK_MESSAGE, true, { toast: true });
-      return;
-    }
-
-    const nextVisible = checkbox.checked;
-    const previousVisible = productIsVisible(product);
-
-    try {
-      checkbox.disabled = true;
-      setStatus(
-        nextVisible ? "Affichage sur le menu client…" : "Masquage du plat…",
-      );
-      await saveProductVisibility(product, nextVisible);
-      renderProducts();
-      setStatus(
-        nextVisible
-          ? "Plat visible sur le menu client."
-          : "Plat masqué du menu client (toujours modifiable ici).",
-        false,
-        { toast: true },
-      );
-    } catch (error) {
-      checkbox.checked = previousVisible;
-      setStatus(
-        error.message || "Impossible de mettre à jour la visibilité.",
-        true,
-        { toast: true },
-      );
-    } finally {
-      checkbox.disabled = false;
-    }
-  });
-
-  list.addEventListener("click", async function (event) {
-    const target = event.target.closest("[data-action]");
-    if (!target) return;
-
-    const id = Number(target.getAttribute("data-id"));
-    const product = products.find(function (item) {
-      return item.id === id;
+  document.querySelectorAll('[data-action="add-plat"]').forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      showForm(null);
     });
-    if (!product) return;
-
-    if (menuEditLocked) {
-      setStatus(EDIT_LOCK_MESSAGE, true, { toast: true });
-      return;
-    }
-
-    if (target.getAttribute("data-action") === "edit-plat") {
-      setStatus("");
-      openForm(product);
-      return;
-    }
-
-    if (target.getAttribute("data-action") === "delete-plat") {
-      const ok = window.confirm('Supprimer le plat "' + product.name + '" ?');
-      if (!ok) return;
-
-      try {
-        setStatus("Suppression en cours...");
-        await apiRequest("/products/" + encodeURIComponent(id), {
-          method: "DELETE",
-        });
-        await loadPage();
-        setStatus("Plat supprimé.", false, { toast: true });
-      } catch (error) {
-        setStatus(error.message || "Suppression impossible.", true, {
-          toast: true,
-        });
-      }
-    }
   });
 
-  logoutLink?.addEventListener("click", function () {
-    clearSession();
-  });
+  if (hasSizesCheck) {
+    hasSizesCheck.addEventListener("change", toggleVariantsSection);
+  }
 
-  loadPage();
+  if (variantAddBtn) {
+    variantAddBtn.addEventListener("click", function () {
+      addVariantRow();
+    });
+  }
+
+  if (logoutLink) {
+    logoutLink.addEventListener("click", clearSession);
+  }
+
   initDropzone();
+  loadPlats();
 })();

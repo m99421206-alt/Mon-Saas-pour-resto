@@ -1,5 +1,5 @@
 ﻿/**
- * Page Paramètres — chargement et sauvegarde du restaurant.
+ * Page Paramètres — Gestion des informations du restaurant (Nom, WhatsApp, Logo, Bannière, Thème).
  */
 (function () {
   "use strict";
@@ -12,30 +12,31 @@
   var form = document.getElementById("parametres-form");
   var feedback = document.getElementById("parametres-feedback");
   var saveBtn = document.getElementById("parametres-save");
+
   var nameInput = document.getElementById("restaurant-name");
-  var descriptionInput = document.getElementById("restaurant-description");
+  var descInput = document.getElementById("restaurant-description");
   var whatsappInput = document.getElementById("whatsapp-number");
-  var logoInput = document.getElementById("logo-url");
+
   var logoFileInput = document.getElementById("logo-file");
+  var logoUrlInput = document.getElementById("logo-url");
   var logoPreview = document.getElementById("logo-preview");
   var logoDropzone = document.getElementById("logo-dropzone");
-  var logoDropzoneContent = document.getElementById("logo-dropzone-content");
-  var bannerInput = document.getElementById("banner-url");
+
   var bannerFileInput = document.getElementById("banner-file");
+  var bannerUrlInput = document.getElementById("banner-url");
   var bannerPreview = document.getElementById("banner-preview");
   var bannerDropzone = document.getElementById("banner-dropzone");
-  var bannerDropzoneContent = document.getElementById(
-    "banner-dropzone-content",
-  );
-  var themeColorTextInput = document.getElementById("theme-color-text");
-  var themeChoiceButtons = Array.from(
-    document.querySelectorAll("[data-theme-color]"),
-  );
+
+  var themeChoices = document.getElementById("theme-choices");
+  var themeColorInput = document.getElementById("theme-color-text");
+
   var drawerRestaurant = document.getElementById("param-drawer-restaurant");
   var drawerEmail = document.getElementById("param-drawer-email");
   var logoutLink = document.getElementById("param-logout");
 
   if (!form) return;
+
+  var isSubmitting = false;
 
   function redirectToLogin() {
     window.location.href = "login.html";
@@ -47,29 +48,28 @@
     localStorage.removeItem(RESTAURANT_KEY);
   }
 
-  function setFeedback(message, isError, options) {
+  function getStoredJson(key) {
+    try {
+      return JSON.parse(localStorage.getItem(key) || "null");
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function setFeedback(message, isError) {
     if (!feedback) return;
     feedback.textContent = message || "";
     feedback.hidden = !message;
     feedback.classList.toggle("is-error", Boolean(isError));
-    if (options && options.toast && message && window.MenuGo_Toast) {
-      if (isError) window.MenuGo_Toast.error(message);
-      else window.MenuGo_Toast.success(message);
-    }
-  }
-
-  function getStoredJson(key) {
-    try {
-      return JSON.parse(localStorage.getItem(key) || "null");
-    } catch (error) {
-      return null;
+    if (isError && message && window.MenuGo_Toast) {
+      window.MenuGo_Toast.error(message);
     }
   }
 
   async function readJson(response) {
     try {
       return await response.json();
-    } catch (error) {
+    } catch (e) {
       return {};
     }
   }
@@ -95,14 +95,15 @@
       body: options && options.body ? JSON.stringify(options.body) : undefined,
     });
 
-    var data = await readJson(response);
+    var data = response.status === 204 ? {} : await readJson(response);
+
     if (response.status === 401) {
       clearSession();
       redirectToLogin();
       return null;
     }
     if (!response.ok) {
-      throw new Error(data.message || "Erreur API");
+      throw new Error(data.message || "Erreur serveur.");
     }
     return data;
   }
@@ -117,7 +118,13 @@
     var formData = new FormData();
     formData.append("image", file);
 
-    var response = await fetch(window.location.origin + "/upload", {
+    // Construction dynamique de l'URL pour passer par /api/upload (supporté par Nginx)
+    var baseUrl = API_URL.replace(/\/+$/, "");
+    var endpoint = baseUrl.endsWith("/api")
+      ? baseUrl + "/upload"
+      : baseUrl + "/api/upload";
+
+    var response = await fetch(endpoint, {
       method: "POST",
       headers: {
         Authorization: "Bearer " + token,
@@ -125,7 +132,7 @@
       body: formData,
     });
 
-    var data = await readJson(response);
+    var data = response.status === 204 ? {} : await readJson(response);
     if (response.status === 401) {
       clearSession();
       redirectToLogin();
@@ -198,109 +205,124 @@
     return true;
   }
 
-  function setImagePreview(preview, url, dropzone, content) {
-    if (!preview) return;
+  function setPreview(previewEl, dropzoneEl, url) {
+    if (!previewEl) return;
+    var contentEl = dropzoneEl
+      ? dropzoneEl.querySelector(".param-dropzone__content")
+      : null;
+
     if (!url) {
-      preview.hidden = true;
-      preview.removeAttribute("src");
-      if (dropzone) dropzone.classList.remove("has-preview");
-      if (content) content.hidden = false;
+      previewEl.hidden = true;
+      previewEl.removeAttribute("src");
+      if (dropzoneEl) dropzoneEl.classList.remove("has-preview");
+      if (contentEl) contentEl.hidden = false;
       return;
     }
 
-    preview.src = resolveImageUrl(url);
-    preview.hidden = false;
-    if (dropzone) dropzone.classList.add("has-preview");
-    if (content) content.hidden = true;
+    previewEl.src = resolveImageUrl(url);
+    previewEl.hidden = false;
+    if (dropzoneEl) dropzoneEl.classList.add("has-preview");
+    if (contentEl) contentEl.hidden = true;
   }
 
-  function previewSelectedFile(input, preview, dropzone, content) {
-    var file = input && input.files ? input.files[0] : null;
-    if (!file) {
-      setImagePreview(preview, "", dropzone, content);
-      return;
-    }
-    if (!isAllowedImageFile(file)) {
-      input.value = "";
-      setImagePreview(preview, "", dropzone, content);
-      setFeedback(UPLOAD_REJECT_MESSAGE, true, { toast: true });
-      return;
-    }
-    setFeedback("");
-    setImagePreview(preview, URL.createObjectURL(file), dropzone, content);
-  }
+  function setupDropzone(dropzoneEl, fileInputEl, previewEl, hiddenUrlInput) {
+    if (!dropzoneEl || !fileInputEl) return;
 
-  function initDropzone(dropzone, fileInput, preview, content) {
-    if (!dropzone || !fileInput) return;
-
-    dropzone.addEventListener("click", function (event) {
-      if (event.target === fileInput) return;
-      fileInput.click();
+    dropzoneEl.addEventListener("click", function (e) {
+      if (e.target === fileInputEl) return;
+      fileInputEl.click();
     });
 
-    dropzone.addEventListener("keydown", function (event) {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        fileInput.click();
+    dropzoneEl.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        fileInputEl.click();
       }
     });
 
     ["dragenter", "dragover"].forEach(function (eventName) {
-      dropzone.addEventListener(eventName, function (event) {
-        event.preventDefault();
-        dropzone.classList.add("is-dragover");
+      dropzoneEl.addEventListener(eventName, function (e) {
+        e.preventDefault();
+        dropzoneEl.classList.add("is-dragover");
       });
     });
 
     ["dragleave", "drop"].forEach(function (eventName) {
-      dropzone.addEventListener(eventName, function (event) {
-        event.preventDefault();
-        dropzone.classList.remove("is-dragover");
+      dropzoneEl.addEventListener(eventName, function (e) {
+        e.preventDefault();
+        dropzoneEl.classList.remove("is-dragover");
       });
     });
 
-    dropzone.addEventListener("drop", function (event) {
+    dropzoneEl.addEventListener("drop", function (e) {
       var file =
-        event.dataTransfer && event.dataTransfer.files
-          ? event.dataTransfer.files[0]
-          : null;
+        e.dataTransfer && e.dataTransfer.files ? e.dataTransfer.files[0] : null;
       if (!file || !isAllowedImageFile(file)) {
-        if (file) {
-          setFeedback(UPLOAD_REJECT_MESSAGE, true, { toast: true });
-        }
+        if (file) setFeedback(UPLOAD_REJECT_MESSAGE, true);
         return;
       }
       var transfer = new DataTransfer();
       transfer.items.add(file);
-      fileInput.files = transfer.files;
-      previewSelectedFile(fileInput, preview, dropzone, content);
+      fileInputEl.files = transfer.files;
+      setFeedback("");
+      setPreview(previewEl, dropzoneEl, URL.createObjectURL(file));
     });
 
-    fileInput.addEventListener("change", function () {
-      previewSelectedFile(fileInput, preview, dropzone, content);
+    fileInputEl.addEventListener("change", function () {
+      var file = fileInputEl.files ? fileInputEl.files[0] : null;
+      if (file) {
+        if (!isAllowedImageFile(file)) {
+          fileInputEl.value = "";
+          setPreview(
+            previewEl,
+            dropzoneEl,
+            hiddenUrlInput ? hiddenUrlInput.value : "",
+          );
+          setFeedback(UPLOAD_REJECT_MESSAGE, true);
+          return;
+        }
+        setFeedback("");
+        setPreview(previewEl, dropzoneEl, URL.createObjectURL(file));
+      } else {
+        setPreview(
+          previewEl,
+          dropzoneEl,
+          hiddenUrlInput ? hiddenUrlInput.value : "",
+        );
+      }
     });
   }
 
-  function normalizeThemeColor(value) {
-    return /^#[0-9A-Fa-f]{6}$/.test(String(value || "").trim())
-      ? String(value).trim().toUpperCase()
-      : "#FF7A00";
+  function setSelectedThemeColor(color) {
+    var hexColor = String(color || "#FF7A00").toUpperCase();
+    if (themeColorInput) themeColorInput.value = hexColor;
+
+    if (!themeChoices) return;
+    var buttons = themeChoices.querySelectorAll(".param-theme-choice");
+    buttons.forEach(function (btn) {
+      var btnColor = (btn.getAttribute("data-theme-color") || "").toUpperCase();
+      var isMatch = btnColor === hexColor;
+      btn.setAttribute("aria-checked", isMatch ? "true" : "false");
+      btn.classList.toggle("is-active", isMatch);
+    });
   }
 
-  function setThemeColor(value) {
-    var color = normalizeThemeColor(value);
-    if (themeColorTextInput) themeColorTextInput.value = color;
-    themeChoiceButtons.forEach(function (button) {
-      var isActive = button.dataset.themeColor.toUpperCase() === color;
-      button.classList.toggle("is-active", isActive);
-      button.setAttribute("aria-checked", isActive ? "true" : "false");
+  function initThemeSelector() {
+    if (!themeChoices) return;
+    var buttons = themeChoices.querySelectorAll(".param-theme-choice");
+    buttons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var chosenColor = btn.getAttribute("data-theme-color");
+        if (chosenColor) {
+          setSelectedThemeColor(chosenColor);
+        }
+      });
     });
   }
 
   function renderAccountInfo(user, restaurant) {
-    var restaurantName =
-      restaurant && restaurant.name ? restaurant.name : "Nom du resto";
-    if (drawerRestaurant) drawerRestaurant.textContent = restaurantName;
+    var name = restaurant && restaurant.name ? restaurant.name : "Nom du resto";
+    if (drawerRestaurant) drawerRestaurant.textContent = name;
     if (drawerEmail)
       drawerEmail.textContent =
         user && user.email ? user.email : "email du resto";
@@ -311,107 +333,111 @@
 
   function fillForm(restaurant) {
     if (!restaurant) return;
-    nameInput.value = restaurant.name || "";
-    descriptionInput.value = restaurant.description || "";
-    whatsappInput.value = restaurant.whatsapp || "";
-    logoInput.value = restaurant.logo_url || "";
-    bannerInput.value = restaurant.banner_url || "";
-    setImagePreview(
-      logoPreview,
-      restaurant.logo_url || "",
-      logoDropzone,
-      logoDropzoneContent,
-    );
-    setImagePreview(
-      bannerPreview,
-      restaurant.banner_url || "",
-      bannerDropzone,
-      bannerDropzoneContent,
-    );
-    setThemeColor(restaurant.theme_color || "#FF7A00");
+    if (nameInput) nameInput.value = restaurant.name || "";
+    if (descInput) descInput.value = restaurant.description || "";
+    if (whatsappInput) whatsappInput.value = restaurant.whatsapp || "";
+
+    if (logoUrlInput) logoUrlInput.value = restaurant.logo_url || "";
+    setPreview(logoPreview, logoDropzone, restaurant.logo_url || "");
+
+    if (bannerUrlInput) bannerUrlInput.value = restaurant.banner_url || "";
+    setPreview(bannerPreview, bannerDropzone, restaurant.banner_url || "");
+
+    setSelectedThemeColor(restaurant.theme_color || "#FF7A00");
   }
 
-  async function loadPage() {
+  async function loadSettings() {
     try {
       setFeedback("Chargement des paramètres...");
+
       var storedUser = getStoredJson(USER_KEY);
       var storedRestaurant = getStoredJson(RESTAURANT_KEY);
       renderAccountInfo(storedUser, storedRestaurant);
-      fillForm(storedRestaurant);
+      if (storedRestaurant) fillForm(storedRestaurant);
 
       var me = await apiRequest("/me");
-      var restaurantData = await apiRequest("/restaurant");
-      if (!me || !restaurantData) return;
-
-      var restaurant = restaurantData.restaurant || me.restaurant;
-      localStorage.setItem(USER_KEY, JSON.stringify(me.user || null));
-      localStorage.setItem(RESTAURANT_KEY, JSON.stringify(restaurant || null));
-      renderAccountInfo(me.user, restaurant);
-      fillForm(restaurant);
+      if (me && me.restaurant) {
+        localStorage.setItem(USER_KEY, JSON.stringify(me.user));
+        localStorage.setItem(RESTAURANT_KEY, JSON.stringify(me.restaurant));
+        renderAccountInfo(me.user, me.restaurant);
+        fillForm(me.restaurant);
+      }
       setFeedback("");
-    } catch (error) {
-      setFeedback(
-        error.message || "Impossible de charger les paramètres.",
-        true,
-        { toast: true },
-      );
+    } catch (e) {
+      setFeedback(e.message || "Erreur de chargement.", true);
     }
   }
 
-  form.addEventListener("submit", async function (event) {
-    event.preventDefault();
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    if (isSubmitting) return;
 
-    var name = nameInput.value.trim();
+    var name = nameInput ? nameInput.value.trim() : "";
     if (!name) {
-      setFeedback("Le nom du restaurant est requis.", true, { toast: true });
-      nameInput.focus();
+      setFeedback("Le nom du restaurant est obligatoire.", true);
+      if (nameInput) nameInput.focus();
       return;
     }
 
-    saveBtn.disabled = true;
-    setFeedback("Enregistrement...");
+    isSubmitting = true;
+    if (saveBtn) saveBtn.disabled = true;
+    setFeedback("Enregistrement en cours...");
 
     try {
-      var logoUrl = logoInput.value.trim() || null;
-      var bannerUrl = bannerInput.value.trim() || null;
+      var logoUrl = logoUrlInput ? logoUrlInput.value.trim() : "";
+      var bannerUrl = bannerUrlInput ? bannerUrlInput.value.trim() : "";
 
-      if (logoFileInput.files && logoFileInput.files[0]) {
-        setFeedback("Upload du logo...");
+      if (logoFileInput && logoFileInput.files && logoFileInput.files[0]) {
+        setFeedback("Téléversement du logo...");
         logoUrl = await uploadImage(logoFileInput.files[0]);
       }
-      if (bannerFileInput.files && bannerFileInput.files[0]) {
-        setFeedback("Upload de la bannière...");
+
+      if (
+        bannerFileInput &&
+        bannerFileInput.files &&
+        bannerFileInput.files[0]
+      ) {
+        setFeedback("Téléversement de la bannière...");
         bannerUrl = await uploadImage(bannerFileInput.files[0]);
       }
 
-      setFeedback("Enregistrement...");
-      var data = await apiRequest("/restaurant", {
+      var payload = {
+        name: name,
+        description: descInput ? descInput.value.trim() : "",
+        whatsapp: whatsappInput ? whatsappInput.value.trim() : "",
+        logo_url: logoUrl || null,
+        banner_url: bannerUrl || null,
+        theme_color: themeColorInput ? themeColorInput.value : "#FF7A00",
+      };
+
+      setFeedback("Mise à jour du restaurant...");
+      var updatedResto = await apiRequest("/restaurant", {
         method: "PUT",
-        body: {
-          name: name,
-          description: descriptionInput.value.trim() || null,
-          whatsapp: whatsappInput.value.trim() || null,
-          logo_url: logoUrl,
-          banner_url: bannerUrl,
-          theme_color: normalizeThemeColor(themeColorTextInput.value),
-        },
+        body: payload,
       });
 
-      if (!data) return;
+      if (updatedResto) {
+        localStorage.setItem(RESTAURANT_KEY, JSON.stringify(updatedResto));
+        fillForm(updatedResto);
+        var currentUser = getStoredJson(USER_KEY);
+        renderAccountInfo(currentUser, updatedResto);
+      }
 
-      localStorage.setItem(
-        RESTAURANT_KEY,
-        JSON.stringify(data.restaurant || null),
+      if (logoFileInput) logoFileInput.value = "";
+      if (bannerFileInput) bannerFileInput.value = "";
+
+      if (window.MenuGo_Toast) {
+        window.MenuGo_Toast.success("Paramètres enregistrés avec succès.");
+      }
+      setFeedback("");
+    } catch (err) {
+      setFeedback(
+        err.message || "Impossible d'enregistrer les paramètres.",
+        true,
       );
-      renderAccountInfo(getStoredJson(USER_KEY), data.restaurant);
-      fillForm(data.restaurant);
-      setFeedback("Paramètres enregistrés.", false, { toast: true });
-    } catch (error) {
-      setFeedback(error.message || "Enregistrement impossible.", true, {
-        toast: true,
-      });
     } finally {
-      saveBtn.disabled = false;
+      isSubmitting = false;
+      if (saveBtn) saveBtn.disabled = false;
     }
   });
 
@@ -419,19 +445,8 @@
     logoutLink.addEventListener("click", clearSession);
   }
 
-  initDropzone(logoDropzone, logoFileInput, logoPreview, logoDropzoneContent);
-  initDropzone(
-    bannerDropzone,
-    bannerFileInput,
-    bannerPreview,
-    bannerDropzoneContent,
-  );
-
-  themeChoiceButtons.forEach(function (button) {
-    button.addEventListener("click", function () {
-      setThemeColor(button.dataset.themeColor);
-    });
-  });
-
-  loadPage();
+  setupDropzone(logoDropzone, logoFileInput, logoPreview, logoUrlInput);
+  setupDropzone(bannerDropzone, bannerFileInput, bannerPreview, bannerUrlInput);
+  initThemeSelector();
+  loadSettings();
 })();
