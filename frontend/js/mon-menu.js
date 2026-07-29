@@ -1,4 +1,6 @@
-const API_BASE_URL = window.MenuGo_CONFIG.API_URL;
+const API_BASE_URL = window.MenuGo_CONFIG
+  ? window.MenuGo_CONFIG.API_URL
+  : "/api";
 const NO_IMAGE_LABEL = "Aucune image disponible";
 const ORDER_DELETE_ICON_SRC = "../../assets/images/icone/supprimer.webp";
 
@@ -689,10 +691,18 @@ async function loadPublicMenu() {
     return;
   }
 
-  // Utiliser la racine du domaine (window.location.origin) au lieu de API_BASE_URL (/api)
-  const response = await fetch(
-    `${window.location.origin}/menu/${restaurantId}`,
-  );
+  // Utilise window.MenuGo_CONFIG.API_URL (https://africamenu.com/api)
+  const apiUrl = window.MenuGo_CONFIG ? window.MenuGo_CONFIG.API_URL : "/api";
+  const response = await fetch(`${apiUrl}/menu/${restaurantId}`);
+
+  // Sécurité pour s'assurer de ne pas traiter du HTML (404/500) en tant que JSON
+  const contentType = response.headers.get("content-type");
+  if (!contentType || !contentType.includes("application/json")) {
+    throw new Error(
+      "Le serveur a renvoyé du HTML au lieu de JSON (route introuvable ou erreur serveur).",
+    );
+  }
+
   if (!response.ok) {
     throw new Error("Menu public indisponible.");
   }
