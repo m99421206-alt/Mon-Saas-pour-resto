@@ -99,10 +99,9 @@
       return null;
     }
 
-    // Évite la duplication si path commence déjà par /api et API_URL se termine par /api
     let cleanPath = path;
     if (API_URL.endsWith("/api") && cleanPath.startsWith("/api")) {
-      cleanPath = cleanPath.substring(4); // Retire le '/api' du début du chemin
+      cleanPath = cleanPath.substring(4);
     }
 
     const response = await fetch(API_URL + cleanPath, {
@@ -136,7 +135,7 @@
     const formData = new FormData();
     formData.append("image", file);
 
-    const response = await fetch(API_URL + "/upload", {
+    const response = await fetch(window.location.origin + "/upload", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + token,
@@ -194,7 +193,12 @@
 
   function resolveImageUrl(url) {
     if (!url) return "";
-    return String(url).indexOf("/uploads/") === 0 ? API_URL + url : url;
+    const strUrl = String(url);
+    if (strUrl.indexOf("/uploads/") === 0 || strUrl.indexOf("uploads/") === 0) {
+      const cleanPath = strUrl.startsWith("/") ? strUrl : "/" + strUrl;
+      return window.location.origin + cleanPath;
+    }
+    return strUrl;
   }
 
   var UPLOAD_REJECT_MESSAGE =
@@ -450,7 +454,7 @@
   }
 
   async function saveProductVisibility(product, isVisible) {
-    await apiRequest("/api/products/" + encodeURIComponent(product.id), {
+    await apiRequest("/products/" + encodeURIComponent(product.id), {
       method: "PUT",
       body: buildProductBody(product, { is_visible: isVisible ? 1 : 0 }),
     });
@@ -719,9 +723,9 @@
       renderAccountInfo(null);
 
       const [me, categoriesData, productsData] = await Promise.all([
-        apiRequest("/api/me"),
-        apiRequest("/api/categories"),
-        apiRequest("/api/products"),
+        apiRequest("/me"),
+        apiRequest("/categories"),
+        apiRequest("/products"),
       ]);
 
       if (!categoriesData || !productsData) return;
@@ -818,12 +822,12 @@
       };
 
       if (editingId) {
-        await apiRequest("/api/products/" + encodeURIComponent(editingId), {
+        await apiRequest("/products/" + encodeURIComponent(editingId), {
           method: "PUT",
           body: body,
         });
       } else {
-        await apiRequest("/api/products", {
+        await apiRequest("/products", {
           method: "POST",
           body: body,
         });
@@ -943,7 +947,7 @@
 
       try {
         setStatus("Suppression en cours...");
-        await apiRequest("/api/products/" + encodeURIComponent(id), {
+        await apiRequest("/products/" + encodeURIComponent(id), {
           method: "DELETE",
         });
         await loadPage();

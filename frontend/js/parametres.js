@@ -81,7 +81,6 @@
       return null;
     }
 
-    // Évite la duplication /api/api
     var cleanPath = path;
     if (API_URL.endsWith("/api") && cleanPath.startsWith("/api")) {
       cleanPath = cleanPath.substring(4);
@@ -118,7 +117,7 @@
     var formData = new FormData();
     formData.append("image", file);
 
-    var response = await fetch(API_URL + "/upload", {
+    var response = await fetch(window.location.origin + "/upload", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + token,
@@ -140,7 +139,12 @@
 
   function resolveImageUrl(url) {
     if (!url) return "";
-    return url.indexOf("/uploads/") === 0 ? API_URL + url : url;
+    var strUrl = String(url);
+    if (strUrl.indexOf("/uploads/") === 0 || strUrl.indexOf("uploads/") === 0) {
+      var cleanPath = strUrl.startsWith("/") ? strUrl : "/" + strUrl;
+      return window.location.origin + cleanPath;
+    }
+    return strUrl;
   }
 
   var UPLOAD_REJECT_MESSAGE =
@@ -335,8 +339,8 @@
       renderAccountInfo(storedUser, storedRestaurant);
       fillForm(storedRestaurant);
 
-      var me = await apiRequest("/api/me");
-      var restaurantData = await apiRequest("/api/restaurant");
+      var me = await apiRequest("/me");
+      var restaurantData = await apiRequest("/restaurant");
       if (!me || !restaurantData) return;
 
       var restaurant = restaurantData.restaurant || me.restaurant;
@@ -381,7 +385,7 @@
       }
 
       setFeedback("Enregistrement...");
-      var data = await apiRequest("/api/restaurant", {
+      var data = await apiRequest("/restaurant", {
         method: "PUT",
         body: {
           name: name,
