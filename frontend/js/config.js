@@ -11,12 +11,11 @@
     hostname.indexOf("10.") === 0 ||
     /^172\.(1[6-9]|2\d|3[0-1])\./.test(hostname);
 
-  // En local, on pointe vers le port 4000.
-  // En production, si Nginx réécrit déjà /api/ vers le port backend ou si les routes Express sont directes,
-  // on utilise la racine sans doubler le préfixe.
+  // En local : http://localhost:4000/api
+  // En production : https://africamenu.com/api
   var defaultApiUrl = isLocalHost
     ? protocol + "//" + hostname + ":" + API_PORT + "/api"
-    : "";
+    : protocol + "//" + hostname + "/api";
 
   var defaultUploadsUrl = isLocalHost
     ? protocol + "//" + hostname + ":" + API_PORT + "/uploads"
