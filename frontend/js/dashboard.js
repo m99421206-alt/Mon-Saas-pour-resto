@@ -1,5 +1,5 @@
 ﻿/**
- * Dashboard AfricaMenu
+ * Dashboard AfricaMenu / MenuGo
  * - Drawer : ouverture / fermeture, overlay, Escape, aria-expanded
  * - Données : profil, restaurant, catégories et produits depuis l’API.
  */
@@ -67,7 +67,12 @@
       return null;
     }
 
-    const response = await fetch(API_URL + path, {
+    let cleanPath = path.startsWith("/") ? path : "/" + path;
+    if (API_URL.endsWith("/api") && cleanPath.startsWith("/api/")) {
+      cleanPath = cleanPath.substring(4);
+    }
+
+    const response = await fetch(API_URL + cleanPath, {
       headers: {
         Authorization: "Bearer " + token,
       },
@@ -114,7 +119,7 @@
     }
     return (
       resolvePublicSiteOrigin() +
-      (restaurant && restaurant.slug ? "/" : "/menu/") +
+      (restaurant && restaurant.slug ? "/restaurant/" : "/menu/") +
       encodeURIComponent(target)
     );
   }
@@ -178,7 +183,7 @@
       btn.disabled = Boolean(locked);
       btn.setAttribute(
         "title",
-        locked ? "Edition du menu désactivée (abonnement). " + label : "",
+        locked ? "Édition du menu désactivée (abonnement). " + label : "",
       );
     }
 
@@ -198,11 +203,12 @@
     const restaurantName =
       restaurant && restaurant.name ? restaurant.name : "votre restaurant";
 
-    title.textContent = "Bonjour, " + restaurantName;
-    drawerRestaurant.textContent = restaurantName;
-    drawerEmail.textContent = user.email || "email du resto";
-    categoriesCount.textContent = String(categories.length);
-    productsCount.textContent = String(products.length);
+    if (title) title.textContent = "Bonjour, " + restaurantName;
+    if (drawerRestaurant) drawerRestaurant.textContent = restaurantName;
+    if (drawerEmail) drawerEmail.textContent = user.email || "email du resto";
+    if (categoriesCount)
+      categoriesCount.textContent = String(categories.length);
+    if (productsCount) productsCount.textContent = String(products.length);
 
     if (window.MenuGo_DashShell) {
       window.MenuGo_DashShell.populateProfile(user, restaurant);
@@ -213,11 +219,11 @@
     localStorage.setItem(USER_KEY, JSON.stringify(user || null));
     localStorage.setItem(RESTAURANT_KEY, JSON.stringify(restaurant || null));
 
-    if (restaurant && restaurant.id) {
+    if (restaurant && (restaurant.slug || restaurant.id)) {
       const publicUrl = buildPublicMenuUrl(restaurant);
       document.body.setAttribute("data-menu-id", String(restaurant.id));
-      menuUrlInput.value = publicUrl;
-      viewMenuBtn.setAttribute("data-menu-url", publicUrl);
+      if (menuUrlInput) menuUrlInput.value = publicUrl;
+      if (viewMenuBtn) viewMenuBtn.setAttribute("data-menu-url", publicUrl);
       renderDashboardQrPreview(publicUrl);
     }
 
@@ -281,23 +287,12 @@
   }
 
   async function loadDashboard() {
-    if (
-      !title ||
-      !categoriesCount ||
-      !productsCount ||
-      !menuUrlInput ||
-      !viewMenuBtn
-    ) {
-      return;
-    }
-
     try {
       const me = await apiGet("/me");
       if (!me) {
         return;
       }
 
-      // Par une conversion explicite en booléen :
       const isPlatformAdmin =
         me.is_platform_admin === true ||
         me.is_platform_admin === 1 ||
@@ -328,18 +323,21 @@
         return;
       }
 
-      renderDashboard(
-        me,
-        categoriesData.categories || [],
-        productsData.products || [],
-      );
+      const categoriesList = Array.isArray(categoriesData)
+        ? categoriesData
+        : categoriesData.categories || [];
+      const productsList = Array.isArray(productsData)
+        ? productsData
+        : productsData.products || [];
+
+      renderDashboard(me, categoriesList, productsList);
     } catch (error) {
-      title.textContent = "Impossible de charger le dashboard";
+      if (title) title.textContent = "Impossible de charger le dashboard";
     }
   }
 
   function isOpen() {
-    return drawer.classList.contains("is-open");
+    return drawer && drawer.classList.contains("is-open");
   }
 
   function isDesktopNav() {
@@ -356,7 +354,7 @@
   }
 
   function openDrawer() {
-    if (isDesktopNav()) return;
+    if (!drawer || !overlay || isDesktopNav()) return;
     if (closeTimer) {
       window.clearTimeout(closeTimer);
       closeTimer = null;
@@ -379,7 +377,7 @@
   }
 
   function closeDrawer() {
-    if (isDesktopNav()) return;
+    if (!drawer || !overlay || isDesktopNav()) return;
     if (!isOpen()) return;
 
     overlay.classList.remove("is-visible");
@@ -429,12 +427,11 @@
       viewMenuBtn?.getAttribute("data-menu-url") ||
       (menuUrlInput ? menuUrlInput.value : "");
     if (explicitUrl) {
-      window.location.href = explicitUrl;
+      window.open(explicitUrl, "_blank");
     }
   }
 
   viewMenuBtn?.addEventListener("click", openPublicMenu);
-
   copyMenuBtn?.addEventListener("click", copyMenuUrl);
 
   window.addEventListener("resize", function () {

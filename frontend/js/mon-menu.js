@@ -1,23 +1,11 @@
+// Configuration & Constants
 const API_BASE_URL = window.MenuGo_CONFIG
   ? window.MenuGo_CONFIG.API_URL
   : "/api";
 const NO_IMAGE_LABEL = "Aucune image disponible";
 const ORDER_DELETE_ICON_SRC = "../../assets/images/icone/supprimer.webp";
 
-function getTrimmedDescription(value) {
-  if (value == null) {
-    return "";
-  }
-  return String(value).trim();
-}
-
-function hasVisibleDescription(value) {
-  return getTrimmedDescription(value).length > 0;
-}
-
-let categories = [{ id: "all", name: "Tout" }];
-let products = [];
-
+// DOM Elements
 const categoriesEl = document.getElementById("categories");
 const productsEl = document.getElementById("products");
 const appEl = document.querySelector(".app");
@@ -54,213 +42,31 @@ const orderBackEl = document.getElementById("order-back");
 const orderListEl = document.getElementById("order-list");
 const orderTotalEl = document.getElementById("order-total");
 const orderSubmitEl = document.getElementById("order-submit");
-let whatsappNumber = "22399421206";
 
+// State
+let categories = [{ id: "all", name: "Tout" }];
+let products = [];
+let whatsappNumber = "22399421206";
 let activeCategory = "all";
 let selectedProduct = null;
 let selectedVariant = null;
 let quantity = 1;
 let orderItems = [];
-let toastTimeout;
+let toastTimeout = null;
 let orderPreviousView = "menu";
 let favoriteIds = loadFavoriteIds();
-let detailEnterTimer;
+let detailEnterTimer = null;
 let menuEnterPlayed = false;
-let menuEnterTimer;
+let menuEnterTimer = null;
 let savedMenuScrollY = 0;
 
-/**
- * Le menu principal défile via le document (window).
- * .app a overflow:hidden et .page n'est pas un conteneur scrollable.
- */
-function getMenuScrollY() {
-  return (
-    window.pageYOffset ||
-    document.documentElement.scrollTop ||
-    document.body.scrollTop ||
-    0
-  );
+// String & Sanitization Helpers
+function getTrimmedDescription(value) {
+  return value == null ? "" : String(value).trim();
 }
 
-/**
- * Sauvegarde avant ouverture d'un overlay menu → détail/commande.
- * .app:has(#product-detail) verrouille la hauteur et le navigateur remet le scroll document à 0.
- */
-function saveMenuScrollPosition() {
-  savedMenuScrollY = getMenuScrollY();
-}
-
-/**
- * Restaure la position après fermeture, une frame après le déverrouillage CSS de .app.
- */
-function restoreMenuScrollPosition() {
-  var y = savedMenuScrollY;
-  requestAnimationFrame(function () {
-    try {
-      window.scrollTo({ top: y, left: 0, behavior: "instant" });
-    } catch (error) {
-      window.scrollTo(0, y);
-    }
-  });
-}
-
-/** Ferme l'overlay détail sans réafficher la barre WhatsApp (gérée par l'appelant). */
-function dismissProductDetailOverlay(restoreScroll) {
-  window.clearTimeout(detailEnterTimer);
-  productDetailEl.classList.remove("is-opening");
-  productDetailEl.classList.remove("is-layout-prep");
-  productDetailEl.hidden = true;
-  if (restoreScroll) {
-    restoreMenuScrollPosition();
-  }
-}
-
-function loadFavoriteIds() {
-  try {
-    return JSON.parse(localStorage.getItem("MenuGo_favorites")) || [];
-  } catch (error) {
-    return [];
-  }
-}
-
-function saveFavoriteIds() {
-  localStorage.setItem("MenuGo_favorites", JSON.stringify(favoriteIds));
-}
-
-function getCartStorageKey() {
-  const restaurantId = getRestaurantIdFromUrl();
-  return restaurantId ? "MenuGo_cart_" + restaurantId : null;
-}
-
-function getCartTotalItems() {
-  return orderItems.reduce(function (total, item) {
-    return total + (Number(item.quantity) || 0);
-  }, 0);
-}
-
-function saveCartToStorage() {
-  const storageKey = getCartStorageKey();
-  if (!storageKey) {
-    return;
-  }
-
-  try {
-    if (!orderItems.length) {
-      localStorage.removeItem(storageKey);
-      return;
-    }
-
-    const payload = orderItems.map(function (item) {
-      return {
-        key: item.key,
-        label: item.label,
-        price: item.price,
-        quantity: item.quantity,
-        productId: item.product ? item.product.id : null,
-      };
-    });
-
-    localStorage.setItem(storageKey, JSON.stringify(payload));
-  } catch (error) {
-    /* ignore quota / private mode */
-  }
-}
-
-function restoreCartFromStorage() {
-  const storageKey = getCartStorageKey();
-  if (!storageKey || !products.length) {
-    return;
-  }
-
-  try {
-    const raw = localStorage.getItem(storageKey);
-    if (!raw) {
-      return;
-    }
-
-    const stored = JSON.parse(raw);
-    if (!Array.isArray(stored)) {
-      return;
-    }
-
-    orderItems = stored
-      .map(function (entry) {
-        if (!entry || !entry.key) {
-          return null;
-        }
-
-        const product = products.find(function (item) {
-          return (
-            item.id === entry.productId ||
-            String(item.id) === String(entry.productId)
-          );
-        });
-
-        if (!product) {
-          return null;
-        }
-
-        return {
-          key: entry.key,
-          label: entry.label || product.name,
-          price: entry.price || product.price,
-          quantity: Math.max(0, Number(entry.quantity) || 0),
-          product: product,
-        };
-      })
-      .filter(function (item) {
-        return item && item.quantity > 0;
-      });
-  } catch (error) {
-    orderItems = [];
-  }
-}
-
-function animateCartBadge() {
-  if (!cartBadgeEl) {
-    return;
-  }
-
-  cartBadgeEl.classList.remove("cart-badge--pop");
-  void cartBadgeEl.offsetWidth;
-  cartBadgeEl.classList.add("cart-badge--pop");
-}
-
-function updateCartBadge(options) {
-  if (!cartBadgeEl) {
-    return;
-  }
-
-  const count = getCartTotalItems();
-  const shouldAnimate = Boolean(options && options.animate);
-  const badgeText = count > 99 ? "99+" : String(count);
-
-  if (count <= 0) {
-    cartBadgeEl.hidden = true;
-    cartBadgeEl.textContent = "0";
-    if (cartNavEl) {
-      cartNavEl.setAttribute("aria-label", "Panier");
-    }
-    return;
-  }
-
-  cartBadgeEl.hidden = false;
-  cartBadgeEl.textContent = badgeText;
-  if (cartNavEl) {
-    cartNavEl.setAttribute(
-      "aria-label",
-      "Panier, " + count + " article" + (count > 1 ? "s" : ""),
-    );
-  }
-
-  if (shouldAnimate) {
-    animateCartBadge();
-  }
-}
-
-function syncCartState(options) {
-  saveCartToStorage();
-  updateCartBadge(options);
+function hasVisibleDescription(value) {
+  return getTrimmedDescription(value).length > 0;
 }
 
 function escapeHtml(value) {
@@ -270,6 +76,117 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+function normalizeWhatsapp(value) {
+  if (!value || typeof value !== "string") {
+    return whatsappNumber;
+  }
+  return value.replace(/[^\d]/g, "") || whatsappNumber;
+}
+
+function normalizeImageUrl(imageUrl, fallbackUrl = "") {
+  if (!imageUrl || typeof imageUrl !== "string") {
+    return fallbackUrl;
+  }
+
+  const uploadsBase = window.MenuGo_CONFIG?.UPLOADS_URL || "/uploads";
+
+  if (window.MenuGo_DomSafe?.sanitizeImageSrc) {
+    const safe = window.MenuGo_DomSafe.sanitizeImageSrc(imageUrl, "");
+    if (safe) {
+      return safe.startsWith("/uploads/")
+        ? safe.replace(/^\/uploads/, uploadsBase)
+        : safe;
+    }
+    return fallbackUrl;
+  }
+
+  const url = imageUrl.trim();
+  if (!url || /^(javascript|data|vbscript):/i.test(url)) {
+    return fallbackUrl;
+  }
+
+  if (url.startsWith("/uploads/")) {
+    if (url.includes("..") || url.includes("\\")) {
+      return fallbackUrl;
+    }
+    return url.replace(/^\/uploads/, uploadsBase);
+  }
+
+  return /^https?:\/\//i.test(url) ? url : fallbackUrl;
+}
+
+// Formatting Helpers
+function formatQuantity(value) {
+  return String(value).padStart(2, "0");
+}
+
+function parsePrice(price) {
+  if (typeof price === "number") {
+    return Number.isFinite(price) ? price : 0;
+  }
+  const numericValue = Number(price);
+  if (Number.isFinite(numericValue)) {
+    return numericValue;
+  }
+  return (
+    Number(
+      String(price || "")
+        .replace(/[^\d,.-]/g, "")
+        .replace(/\s/g, "")
+        .replace(",", "."),
+    ) || 0
+  );
+}
+
+function formatPrice(value) {
+  return `${value.toLocaleString("fr-FR")} CFA`;
+}
+
+function formatApiPrice(price) {
+  const value = Number(price);
+  return Number.isFinite(value)
+    ? `${Math.round(value).toLocaleString("fr-FR")} CFA`
+    : "0 CFA";
+}
+
+// Scroll Management
+function getMenuScrollY() {
+  return (
+    window.pageYOffset ||
+    document.documentElement.scrollTop ||
+    document.body.scrollTop ||
+    0
+  );
+}
+
+function saveMenuScrollPosition() {
+  savedMenuScrollY = getMenuScrollY();
+}
+
+function restoreMenuScrollPosition() {
+  const y = savedMenuScrollY;
+  requestAnimationFrame(() => {
+    try {
+      window.scrollTo({ top: y, left: 0, behavior: "instant" });
+    } catch {
+      window.scrollTo(0, y);
+    }
+  });
+}
+
+// Favorites State
+function loadFavoriteIds() {
+  try {
+    return JSON.parse(localStorage.getItem("MenuGo_favorites")) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveFavoriteIds() {
+  localStorage.setItem("MenuGo_favorites", JSON.stringify(favoriteIds));
 }
 
 function isFavorite(productId) {
@@ -286,25 +203,14 @@ function updateFavoriteButton(button, productId) {
 
   button.classList.toggle("is-favorite", favorite);
   button.setAttribute("aria-pressed", String(favorite));
-  icon.className = `${getFavoriteIconClass(productId)} fa-heart`;
-}
-
-function setActiveNav(activeItem) {
-  [homeNavEl, favoritesNavEl, cartNavEl].forEach(function (item) {
-    item.classList.toggle("active", item === activeItem);
-    if (item === activeItem) {
-      item.setAttribute("aria-current", "page");
-    } else {
-      item.removeAttribute("aria-current");
-    }
-  });
+  if (icon) {
+    icon.className = `${getFavoriteIconClass(productId)} fa-heart`;
+  }
 }
 
 function toggleFavorite(productId, button) {
   if (isFavorite(productId)) {
-    favoriteIds = favoriteIds.filter(function (id) {
-      return id !== productId;
-    });
+    favoriteIds = favoriteIds.filter((id) => id !== productId);
   } else {
     favoriteIds.push(productId);
   }
@@ -316,18 +222,115 @@ function toggleFavorite(productId, button) {
   button.classList.add("is-bouncing");
 }
 
-function getRestaurantIdFromUrl() {
-  var searchParams = new URLSearchParams(window.location.search);
-  var idFromUrl = searchParams.get("id");
-  if (idFromUrl) {
-    return idFromUrl;
-  }
+// Navigation & Theme
+function setActiveNav(activeItem) {
+  [homeNavEl, favoritesNavEl, cartNavEl].forEach((item) => {
+    if (!item) return;
+    const isActive = item === activeItem;
+    item.classList.toggle("active", isActive);
+    if (isActive) {
+      item.setAttribute("aria-current", "page");
+    } else {
+      item.removeAttribute("aria-current");
+    }
+  });
+}
 
-  var path = String(window.location.pathname || "").trim();
+function isValidThemeColor(value) {
+  return typeof value === "string" && /^#[0-9A-Fa-f]{6}$/.test(value.trim());
+}
+
+function hexToRgb(hexColor) {
+  const normalized = hexColor.replace("#", "");
+  return {
+    r: parseInt(normalized.slice(0, 2), 16),
+    g: parseInt(normalized.slice(2, 4), 16),
+    b: parseInt(normalized.slice(4, 6), 16),
+  };
+}
+
+function applyThemeColor(value) {
+  if (!isValidThemeColor(value)) return;
+
+  const color = value.trim();
+  const { r, g, b } = hexToRgb(color);
+  const rootStyle = document.documentElement.style;
+
+  rootStyle.setProperty("--primary", color);
+  rootStyle.setProperty("--primary-soft", `${color}1f`);
+  rootStyle.setProperty("--primary-shadow", `rgba(${r}, ${g}, ${b}, 0.28)`);
+}
+
+// Meta & SEO Updates
+function setMetaTag(name, content) {
+  if (!name) return;
+  let meta = document.head.querySelector(`meta[name="${name}"]`);
+  if (!meta) {
+    meta = document.createElement("meta");
+    meta.setAttribute("name", name);
+    document.head.appendChild(meta);
+  }
+  meta.setAttribute("content", content || "");
+}
+
+function setMetaProperty(property, content) {
+  if (!property) return;
+  let meta = document.head.querySelector(`meta[property="${property}"]`);
+  if (!meta) {
+    meta = document.createElement("meta");
+    meta.setAttribute("property", property);
+    document.head.appendChild(meta);
+  }
+  meta.setAttribute("content", content || "");
+}
+
+function setLinkCanonical(url) {
+  let link = document.head.querySelector('link[rel="canonical"]');
+  if (!link) {
+    link = document.createElement("link");
+    link.setAttribute("rel", "canonical");
+    document.head.appendChild(link);
+  }
+  link.setAttribute("href", url || window.location.href);
+}
+
+function updateSeoTags(restaurant) {
+  const restaurantName = restaurant?.name || "AfricaMenu";
+  const description = getTrimmedDescription(
+    restaurant?.description ||
+      "Découvrez le menu de ce restaurant sur AfricaMenu.",
+  );
+  const currentUrl = `${window.location.origin}${window.location.pathname}`;
+
+  document.title = `${restaurantName} | AfricaMenu`;
+  setMetaTag("description", description);
+  setMetaProperty("og:title", `${restaurantName} | AfricaMenu`);
+  setMetaProperty("og:description", description);
+  setMetaProperty("og:url", currentUrl);
+  setMetaProperty("og:type", "website");
+  setMetaProperty("twitter:card", "summary_large_image");
+  setLinkCanonical(currentUrl);
+
+  if (restaurant?.banner_url) {
+    const imageUrl = normalizeImageUrl(
+      String(restaurant.banner_url).trim(),
+      "",
+    );
+    if (imageUrl) {
+      setMetaProperty("og:image", imageUrl);
+    }
+  }
+}
+
+// Cart Storage & State Syncing
+function getRestaurantIdFromUrl() {
+  const searchParams = new URLSearchParams(window.location.search);
+  const idFromUrl = searchParams.get("id");
+  if (idFromUrl) return idFromUrl;
+
+  const path = String(window.location.pathname || "").trim();
   if (path.length) {
-    var segments = path.split("/").filter(function (segment) {
-      return segment !== "";
-    });
+    const segments = path.split("/").filter(Boolean);
     if (segments.length >= 2 && segments[0] === "menu") {
       return decodeURIComponent(segments[1]);
     }
@@ -337,33 +340,134 @@ function getRestaurantIdFromUrl() {
   }
 
   try {
-    var storedRestaurant = JSON.parse(
+    const storedRestaurant = JSON.parse(
       localStorage.getItem("MenuGo_restaurant") || "null",
     );
-    return storedRestaurant && storedRestaurant.id
-      ? String(storedRestaurant.id)
-      : null;
-  } catch (error) {
+    return storedRestaurant?.id ? String(storedRestaurant.id) : null;
+  } catch {
     return null;
   }
 }
 
-function formatApiPrice(price) {
-  const value = Number(price);
-  if (!Number.isFinite(value)) {
-    return "0 CFA";
-  }
-
-  return `${Math.round(value).toLocaleString("fr-FR")} CFA`;
+function getCartStorageKey() {
+  const restaurantId = getRestaurantIdFromUrl();
+  return restaurantId ? `MenuGo_cart_${restaurantId}` : null;
 }
 
+function getCartTotalItems() {
+  return orderItems.reduce(
+    (total, item) => total + (Number(item.quantity) || 0),
+    0,
+  );
+}
+
+function saveCartToStorage() {
+  const storageKey = getCartStorageKey();
+  if (!storageKey) return;
+
+  try {
+    if (!orderItems.length) {
+      localStorage.removeItem(storageKey);
+      return;
+    }
+
+    const payload = orderItems.map((item) => ({
+      key: item.key,
+      label: item.label,
+      price: item.price,
+      quantity: item.quantity,
+      productId: item.product ? item.product.id : null,
+    }));
+
+    localStorage.setItem(storageKey, JSON.stringify(payload));
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
+function restoreCartFromStorage() {
+  const storageKey = getCartStorageKey();
+  if (!storageKey || !products.length) return;
+
+  try {
+    const raw = localStorage.getItem(storageKey);
+    if (!raw) return;
+
+    const stored = JSON.parse(raw);
+    if (!Array.isArray(stored)) return;
+
+    orderItems = stored
+      .map((entry) => {
+        if (!entry || !entry.key) return null;
+
+        const product = products.find(
+          (item) =>
+            item.id === entry.productId ||
+            String(item.id) === String(entry.productId),
+        );
+        if (!product) return null;
+
+        return {
+          key: entry.key,
+          label: entry.label || product.name,
+          price: entry.price || product.price,
+          quantity: Math.max(0, Number(entry.quantity) || 0),
+          product,
+        };
+      })
+      .filter((item) => item && item.quantity > 0);
+  } catch {
+    orderItems = [];
+  }
+}
+
+function animateCartBadge() {
+  if (!cartBadgeEl) return;
+  cartBadgeEl.classList.remove("cart-badge--pop");
+  void cartBadgeEl.offsetWidth;
+  cartBadgeEl.classList.add("cart-badge--pop");
+}
+
+function updateCartBadge(options) {
+  if (!cartBadgeEl) return;
+
+  const count = getCartTotalItems();
+  const shouldAnimate = Boolean(options?.animate);
+  const badgeText = count > 99 ? "99+" : String(count);
+
+  if (count <= 0) {
+    cartBadgeEl.hidden = true;
+    cartBadgeEl.textContent = "0";
+    cartNavEl?.setAttribute("aria-label", "Panier");
+    return;
+  }
+
+  cartBadgeEl.hidden = false;
+  cartBadgeEl.textContent = badgeText;
+  cartNavEl?.setAttribute(
+    "aria-label",
+    `Panier, ${count} article${count > 1 ? "s" : ""}`,
+  );
+
+  if (shouldAnimate) {
+    animateCartBadge();
+  }
+}
+
+function syncCartState(options) {
+  saveCartToStorage();
+  updateCartBadge(options);
+}
+
+// Media & Product Helpers
 function productHasImage(product) {
-  if (!product || !product.image) return false;
-  return String(product.image).trim().length > 0;
+  return Boolean(
+    product && product.image && String(product.image).trim().length > 0,
+  );
 }
 
 function getDetailImageUrl(product, variant) {
-  if (variant && variant.image && String(variant.image).trim()) {
+  if (variant?.image && String(variant.image).trim()) {
     return String(variant.image).trim();
   }
   if (productHasImage(product)) {
@@ -373,23 +477,15 @@ function getDetailImageUrl(product, variant) {
 }
 
 function markDetailMediaReady(isReady) {
-  if (!detailMediaEl) {
-    return;
-  }
-  detailMediaEl.classList.toggle("is-ready", isReady);
+  detailMediaEl?.classList.toggle("is-ready", isReady);
 }
 
 function resetDetailMedia() {
-  if (!detailMediaEl) {
-    return;
-  }
-  detailMediaEl.classList.remove("is-ready");
+  detailMediaEl?.classList.remove("is-ready");
 }
 
 function updateDetailMedia(product, variant) {
-  if (!detailImageEl || !detailImagePlaceholderEl) {
-    return;
-  }
+  if (!detailImageEl || !detailImagePlaceholderEl) return;
 
   resetDetailMedia();
 
@@ -400,15 +496,12 @@ function updateDetailMedia(product, variant) {
 
   if (imageUrl) {
     detailImageEl.hidden = false;
-    detailImageEl.onload = function () {
-      if (productDetailEl.hidden) {
-        return;
+    detailImageEl.onload = () => {
+      if (!productDetailEl.hidden) {
+        markDetailMediaReady(true);
       }
-      markDetailMediaReady(true);
     };
-    detailImageEl.onerror = function () {
-      resetDetailMedia();
-    };
+    detailImageEl.onerror = () => resetDetailMedia();
     detailImageEl.src = imageUrl;
     detailImageEl.alt = altText;
     detailImagePlaceholderEl.hidden = true;
@@ -431,148 +524,7 @@ function updateDetailMedia(product, variant) {
   }
 }
 
-function normalizeImageUrl(imageUrl, fallbackUrl) {
-  if (!imageUrl || typeof imageUrl !== "string") {
-    return fallbackUrl || "";
-  }
-
-  // Racine pour les fichiers statiques (ex: /uploads)
-  var uploadsBase =
-    window.MenuGo_CONFIG && window.MenuGo_CONFIG.UPLOADS_URL
-      ? window.MenuGo_CONFIG.UPLOADS_URL
-      : "/uploads";
-
-  // Si DomSafe est présent, on lui passe uploadsBase ou "" au lieu de API_BASE_URL
-  if (window.MenuGo_DomSafe && window.MenuGo_DomSafe.sanitizeImageSrc) {
-    var safe = window.MenuGo_DomSafe.sanitizeImageSrc(imageUrl, "");
-    if (safe) {
-      if (safe.indexOf("/uploads/") === 0) {
-        return safe.replace(/^\/uploads/, uploadsBase);
-      }
-      return safe;
-    }
-    return fallbackUrl || "";
-  }
-
-  const url = imageUrl.trim();
-  if (!url || /^(javascript|data|vbscript):/i.test(url)) {
-    return fallbackUrl || "";
-  }
-
-  if (url.indexOf("/uploads/") === 0) {
-    if (url.indexOf("..") !== -1 || url.indexOf("\\") !== -1) {
-      return fallbackUrl || "";
-    }
-    return url.replace(/^\/uploads/, uploadsBase);
-  }
-
-  if (/^https?:\/\//i.test(url)) {
-    return url;
-  }
-  return fallbackUrl || "";
-}
-
-function normalizeWhatsapp(value) {
-  if (!value || typeof value !== "string") {
-    return whatsappNumber;
-  }
-
-  return value.replace(/[^\d]/g, "") || whatsappNumber;
-}
-
-function isValidThemeColor(value) {
-  return typeof value === "string" && /^#[0-9A-Fa-f]{6}$/.test(value.trim());
-}
-
-function hexToRgb(hexColor) {
-  const normalized = hexColor.replace("#", "");
-  return {
-    r: parseInt(normalized.slice(0, 2), 16),
-    g: parseInt(normalized.slice(2, 4), 16),
-    b: parseInt(normalized.slice(4, 6), 16),
-  };
-}
-
-function applyThemeColor(value) {
-  if (!isValidThemeColor(value)) {
-    return;
-  }
-
-  const color = value.trim();
-  const rgb = hexToRgb(color);
-  document.documentElement.style.setProperty("--primary", color);
-  document.documentElement.style.setProperty("--primary-soft", color + "1f");
-  document.documentElement.style.setProperty(
-    "--primary-shadow",
-    `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.28)`,
-  );
-}
-
-function setMetaTag(name, content) {
-  if (!name) {
-    return;
-  }
-  var meta = document.head.querySelector('meta[name="' + name + '"]');
-  if (!meta) {
-    meta = document.createElement("meta");
-    meta.setAttribute("name", name);
-    document.head.appendChild(meta);
-  }
-  meta.setAttribute("content", content || "");
-}
-
-function setMetaProperty(property, content) {
-  if (!property) {
-    return;
-  }
-  var meta = document.head.querySelector('meta[property="' + property + '"]');
-  if (!meta) {
-    meta = document.createElement("meta");
-    meta.setAttribute("property", property);
-    document.head.appendChild(meta);
-  }
-  meta.setAttribute("content", content || "");
-}
-
-function setLinkCanonical(url) {
-  var link = document.head.querySelector('link[rel="canonical"]');
-  if (!link) {
-    link = document.createElement("link");
-    link.setAttribute("rel", "canonical");
-    document.head.appendChild(link);
-  }
-  link.setAttribute("href", url || window.location.href);
-}
-
-function updateSeoTags(restaurant) {
-  var restaurantName =
-    restaurant && restaurant.name ? restaurant.name : "AfricaMenu";
-  var description = getTrimmedDescription(
-    restaurant && restaurant.description
-      ? restaurant.description
-      : "Découvrez le menu de ce restaurant sur AfricaMenu.",
-  );
-  var currentUrl =
-    String(window.location.origin || "") +
-    String(window.location.pathname || "");
-
-  document.title = restaurantName + " | AfricaMenu";
-  setMetaTag("description", description);
-  setMetaProperty("og:title", restaurantName + " | AfricaMenu");
-  setMetaProperty("og:description", description);
-  setMetaProperty("og:url", currentUrl);
-  setMetaProperty("og:type", "website");
-  setMetaProperty("twitter:card", "summary_large_image");
-  setLinkCanonical(currentUrl);
-
-  if (restaurant && restaurant.banner_url) {
-    var imageUrl = normalizeImageUrl(String(restaurant.banner_url).trim(), "");
-    if (imageUrl) {
-      setMetaProperty("og:image", imageUrl);
-    }
-  }
-}
-
+// Restaurant API Application
 function applyRestaurantData(restaurant) {
   const heroBannerFrame = document.getElementById("hero-banner-frame");
   const heroCoverEl = document.getElementById("hero-cover");
@@ -583,9 +535,7 @@ function applyRestaurantData(restaurant) {
   const restaurantLogoEl = document.getElementById("restaurant-logo");
   const restaurantLogoWrap = document.getElementById("restaurant-logo-wrap");
 
-  if (!restaurant) {
-    return;
-  }
+  if (!restaurant) return;
 
   if (restaurant.name && restaurantNameEl) {
     restaurantNameEl.textContent = restaurant.name;
@@ -640,29 +590,29 @@ function applyRestaurantData(restaurant) {
   applyThemeColor(restaurant.theme_color);
 
   whatsappNumber = normalizeWhatsapp(restaurant.whatsapp);
-  whatsappEl.href = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
-    "Bonjour, je souhaite commander",
-  )}`;
+  if (whatsappEl) {
+    whatsappEl.href = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+      "Bonjour, je souhaite commander",
+    )}`;
+  }
 }
 
 function mapPublicMenuData(data) {
   const apiCategories = Array.isArray(data.categories) ? data.categories : [];
 
   categories = [{ id: "all", name: "Tout" }].concat(
-    apiCategories.map(function (category) {
-      return {
-        id: String(category.id),
-        name: category.name,
-      };
-    }),
+    apiCategories.map((category) => ({
+      id: String(category.id),
+      name: category.name,
+    })),
   );
 
-  products = apiCategories.flatMap(function (category) {
+  products = apiCategories.flatMap((category) => {
     const categoryProducts = Array.isArray(category.products)
       ? category.products
       : [];
 
-    return categoryProducts.map(function (product) {
+    return categoryProducts.map((product) => {
       const rawImage = product.image ? String(product.image).trim() : "";
       const image = rawImage ? normalizeImageUrl(rawImage, "") : "";
 
@@ -672,7 +622,7 @@ function mapPublicMenuData(data) {
         name: product.name,
         meta: getTrimmedDescription(product.description),
         price: formatApiPrice(product.price),
-        image: image,
+        image,
         detailImage: image,
         alt: product.name,
         hasSizes:
@@ -687,15 +637,11 @@ function mapPublicMenuData(data) {
 
 async function loadPublicMenu() {
   const restaurantId = getRestaurantIdFromUrl();
-  if (!restaurantId) {
-    return;
-  }
+  if (!restaurantId) return;
 
-  // Utilise window.MenuGo_CONFIG.API_URL (https://africamenu.com/api)
-  const apiUrl = window.MenuGo_CONFIG ? window.MenuGo_CONFIG.API_URL : "/api";
+  const apiUrl = window.MenuGo_CONFIG?.API_URL || "/api";
   const response = await fetch(`${apiUrl}/menu/${restaurantId}`);
 
-  // Sécurité pour s'assurer de ne pas traiter du HTML (404/500) en tant que JSON
   const contentType = response.headers.get("content-type");
   if (!contentType || !contentType.includes("application/json")) {
     throw new Error(
@@ -712,29 +658,12 @@ async function loadPublicMenu() {
   mapPublicMenuData(data);
 }
 
-async function initializeMenu() {
-  try {
-    await loadPublicMenu();
-  } catch (error) {
-    console.warn("Impossible de charger le menu public :", error.message);
-  }
-
-  restoreCartFromStorage();
-  updateCartBadge();
-
-  renderCategories();
-  showProducts("all");
-  playMenuEnterAnimation();
-}
-
 function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 function playMenuEnterAnimation() {
-  if (menuEnterPlayed || !appEl) {
-    return;
-  }
+  if (menuEnterPlayed || !appEl) return;
 
   menuEnterPlayed = true;
   window.clearTimeout(menuEnterTimer);
@@ -753,40 +682,41 @@ function playMenuEnterAnimation() {
   const pills = categoriesEl.querySelectorAll(".category-pill");
   const cards = productsEl.querySelectorAll(".product-card");
 
-  pills.forEach(function (pill, index) {
+  pills.forEach((pill, index) => {
     pill.style.setProperty(
       "--menu-enter-delay",
-      categoryBaseDelay + index * staggerMs + "ms",
+      `${categoryBaseDelay + index * staggerMs}ms`,
     );
   });
 
   const productsBaseDelay =
     categoryBaseDelay + pills.length * staggerMs + productsGap;
-  cards.forEach(function (card, index) {
+  cards.forEach((card, index) => {
     card.style.setProperty(
       "--menu-enter-delay",
-      productsBaseDelay + index * staggerMs + "ms",
+      `${productsBaseDelay + index * staggerMs}ms`,
     );
   });
 
   const whatsappDelay =
     productsBaseDelay + cards.length * staggerMs + whatsappGap;
   if (whatsappEl) {
-    whatsappEl.style.setProperty("--menu-enter-delay", whatsappDelay + "ms");
+    whatsappEl.style.setProperty("--menu-enter-delay", `${whatsappDelay}ms`);
   }
 
   appEl.classList.remove("menu-enter-pending");
 
-  requestAnimationFrame(function () {
-    requestAnimationFrame(function () {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
       appEl.classList.add("is-menu-opening");
-      menuEnterTimer = window.setTimeout(function () {
+      menuEnterTimer = window.setTimeout(() => {
         appEl.classList.remove("is-menu-opening");
       }, whatsappDelay + 380);
     });
   });
 }
 
+// Rendering UI Components
 function createCategoryButton(category) {
   const button = document.createElement("button");
   button.type = "button";
@@ -798,7 +728,7 @@ function createCategoryButton(category) {
     button.classList.add("active");
   }
 
-  button.addEventListener("click", function () {
+  button.addEventListener("click", () => {
     setActiveNav(homeNavEl);
     showProducts(String(category.id));
     button.scrollIntoView({
@@ -811,32 +741,62 @@ function createCategoryButton(category) {
   return button;
 }
 
+function renderCategories() {
+  if (!categoriesEl) return;
+  categoriesEl.innerHTML = "";
+  categories.forEach((category) => {
+    categoriesEl.appendChild(createCategoryButton(category));
+  });
+}
+
+function setActiveCategory(categoryId) {
+  activeCategory = categoryId;
+  document.querySelectorAll(".category-pill").forEach((button) => {
+    button.classList.toggle(
+      "active",
+      button.dataset.categoryId === String(categoryId),
+    );
+  });
+}
+
+function createProductsCategoryTitle(categoryName) {
+  const title = document.createElement("h3");
+  title.className = "products-category-title";
+  title.textContent = categoryName;
+  return title;
+}
+
 function createProductCard(product) {
   const card = document.createElement("article");
   card.className = "product-card";
+
   if (!hasVisibleDescription(product.meta)) {
     card.classList.add("product-card--no-meta");
   }
   if (!productHasImage(product)) {
     card.classList.add("product-card--no-image");
   }
+
   const productName = escapeHtml(product.name);
   const productMeta = escapeHtml(product.meta);
   const productPrice = escapeHtml(product.price);
   const productAlt = escapeHtml(product.alt);
   const favorite = isFavorite(product.id);
+
   const metaBlock = hasVisibleDescription(product.meta)
     ? `<p class="product-card__meta">${productMeta}</p>`
     : "";
+
   const heartBtn = `
-      <button
-        class="product-card__heart ${favorite ? "is-favorite" : ""}"
-        type="button"
-        aria-label="Ajouter ${productName} aux favoris"
-        aria-pressed="${favorite}"
-      >
-        <i class="${getFavoriteIconClass(product.id)} fa-heart" aria-hidden="true"></i>
-      </button>`;
+    <button
+      class="product-card__heart ${favorite ? "is-favorite" : ""}"
+      type="button"
+      aria-label="Ajouter ${productName} aux favoris"
+      aria-pressed="${favorite}"
+    >
+      <i class="${getFavoriteIconClass(product.id)} fa-heart" aria-hidden="true"></i>
+    </button>`;
+
   const mediaBlock = productHasImage(product)
     ? `
     <div class="product-card__media">
@@ -848,6 +808,7 @@ function createProductCard(product) {
       <div class="product-card__placeholder" role="img" aria-label="${escapeHtml(NO_IMAGE_LABEL)}">${escapeHtml(NO_IMAGE_LABEL)}</div>
       ${heartBtn}
     </div>`;
+
   card.innerHTML = `
     ${mediaBlock}
     <div class="product-card__body">
@@ -857,13 +818,10 @@ function createProductCard(product) {
     </div>
   `;
 
-  card.addEventListener("click", function () {
-    showProductDetail(product);
-  });
-
+  card.addEventListener("click", () => showProductDetail(product));
   card
     .querySelector(".product-card__heart")
-    .addEventListener("click", function (event) {
+    ?.addEventListener("click", (event) => {
       event.stopPropagation();
       toggleFavorite(product.id, event.currentTarget);
     });
@@ -875,16 +833,20 @@ function createSimilarProductCard(product) {
   const card = document.createElement("button");
   card.type = "button";
   card.className = "similar-card";
+
   const productName = escapeHtml(product.name);
   const productPrice = escapeHtml(product.price);
   const productAlt = escapeHtml(product.alt);
   const favorite = isFavorite(product.id);
+
   const imageBlock = productHasImage(product)
     ? `<img class="similar-card__image" src="${escapeHtml(product.image)}" alt="${productAlt}" loading="lazy" decoding="async" />`
     : `<div class="similar-card__placeholder" role="img" aria-label="${escapeHtml(NO_IMAGE_LABEL)}"><span>${escapeHtml(NO_IMAGE_LABEL)}</span></div>`;
+
   if (!productHasImage(product)) {
     card.classList.add("similar-card--no-image");
   }
+
   card.innerHTML = `
     <span
       class="similar-card__heart ${favorite ? "is-favorite" : ""}"
@@ -900,13 +862,10 @@ function createSimilarProductCard(product) {
     <span class="similar-card__name">${productName}</span>
   `;
 
-  card.addEventListener("click", function () {
-    showProductDetail(product);
-  });
-
+  card.addEventListener("click", () => showProductDetail(product));
   card
     .querySelector(".similar-card__heart")
-    .addEventListener("click", function (event) {
+    ?.addEventListener("click", (event) => {
       event.stopPropagation();
       toggleFavorite(product.id, event.currentTarget);
     });
@@ -914,31 +873,8 @@ function createSimilarProductCard(product) {
   return card;
 }
 
-function renderCategories() {
-  categoriesEl.innerHTML = "";
-  categories.forEach(function (category) {
-    categoriesEl.appendChild(createCategoryButton(category));
-  });
-}
-
-function setActiveCategory(categoryId) {
-  activeCategory = categoryId;
-  document.querySelectorAll(".category-pill").forEach(function (button) {
-    button.classList.toggle(
-      "active",
-      button.dataset.categoryId === String(categoryId),
-    );
-  });
-}
-
-function createProductsCategoryTitle(categoryName) {
-  const title = document.createElement("h3");
-  title.className = "products-category-title";
-  title.textContent = categoryName;
-  return title;
-}
-
 function showProducts(categoryId) {
+  if (!productsEl) return;
   setActiveCategory(categoryId);
   productsEl.innerHTML = "";
 
@@ -946,21 +882,17 @@ function showProducts(categoryId) {
     let hasProducts = false;
 
     categories
-      .filter(function (category) {
-        return category.id !== "all";
-      })
-      .forEach(function (category) {
-        const categoryProducts = products.filter(function (product) {
-          return String(product.categoryId) === String(category.id);
-        });
+      .filter((cat) => cat.id !== "all")
+      .forEach((category) => {
+        const categoryProducts = products.filter(
+          (product) => String(product.categoryId) === String(category.id),
+        );
 
-        if (!categoryProducts.length) {
-          return;
-        }
+        if (!categoryProducts.length) return;
 
         hasProducts = true;
         productsEl.appendChild(createProductsCategoryTitle(category.name));
-        categoryProducts.forEach(function (product) {
+        categoryProducts.forEach((product) => {
           productsEl.appendChild(createProductCard(product));
         });
       });
@@ -971,13 +903,12 @@ function showProducts(categoryId) {
       empty.textContent = "Aucun plat disponible pour le moment.";
       productsEl.appendChild(empty);
     }
-
     return;
   }
 
-  const visibleProducts = products.filter(function (product) {
-    return String(product.categoryId) === String(categoryId);
-  });
+  const visibleProducts = products.filter(
+    (product) => String(product.categoryId) === String(categoryId),
+  );
 
   if (!visibleProducts.length) {
     const empty = document.createElement("p");
@@ -987,22 +918,21 @@ function showProducts(categoryId) {
     return;
   }
 
-  visibleProducts.forEach(function (product) {
+  visibleProducts.forEach((product) => {
     productsEl.appendChild(createProductCard(product));
   });
 }
 
 function showFavoriteProducts() {
+  if (!productsEl) return;
   activeCategory = "";
   productsEl.innerHTML = "";
-  document.querySelectorAll(".category-pill").forEach(function (button) {
+  document.querySelectorAll(".category-pill").forEach((button) => {
     button.classList.remove("active");
   });
   setActiveNav(favoritesNavEl);
 
-  const favoriteProducts = products.filter(function (product) {
-    return isFavorite(product.id);
-  });
+  const favoriteProducts = products.filter((product) => isFavorite(product.id));
 
   if (!favoriteProducts.length) {
     const empty = document.createElement("p");
@@ -1012,132 +942,90 @@ function showFavoriteProducts() {
     return;
   }
 
-  favoriteProducts.forEach(function (product) {
+  favoriteProducts.forEach((product) => {
     productsEl.appendChild(createProductCard(product));
   });
 }
 
 function renderSimilarProducts(currentProduct) {
+  if (!similarProductsEl) return;
   similarProductsEl.innerHTML = "";
 
-  var section = similarProductsEl.closest(".similar-section");
-  var titleEl = document.getElementById("similar-title");
-  var catId =
-    currentProduct.categoryId !== undefined &&
-    currentProduct.categoryId !== null
-      ? String(currentProduct.categoryId)
-      : "";
+  const section = similarProductsEl.closest(".similar-section");
+  const titleEl = document.getElementById("similar-title");
+  const catId =
+    currentProduct.categoryId != null ? String(currentProduct.categoryId) : "";
 
-  /** Autres produits de la même catégorie (excluant le plat ouvert). */
-  var peers = products.filter(function (product) {
-    if (product.id === currentProduct.id) {
-      return false;
-    }
-    return String(product.categoryId) === catId;
-  });
+  const peers = products.filter(
+    (product) =>
+      product.id !== currentProduct.id && String(product.categoryId) === catId,
+  );
 
   if (!peers.length) {
-    if (section) {
-      section.hidden = true;
-    }
-    if (similarSeeAllEl) {
-      similarSeeAllEl.hidden = true;
-    }
+    if (section) section.hidden = true;
+    if (similarSeeAllEl) similarSeeAllEl.hidden = true;
     return;
   }
 
-  if (section) {
-    section.hidden = false;
-  }
-  if (similarSeeAllEl) {
-    similarSeeAllEl.hidden = peers.length < 2;
-  }
-  if (titleEl) {
-    titleEl.textContent = "Produits similaires";
-  }
+  if (section) section.hidden = false;
+  if (similarSeeAllEl) similarSeeAllEl.hidden = peers.length < 2;
+  if (titleEl) titleEl.textContent = "Produits similaires";
 
-  peers.forEach(function (product) {
+  peers.forEach((product) => {
     similarProductsEl.appendChild(createSimilarProductCard(product));
   });
 }
 
-function formatQuantity(value) {
-  return String(value).padStart(2, "0");
-}
-
-function parsePrice(price) {
-  if (typeof price === "number") {
-    return Number.isFinite(price) ? price : 0;
-  }
-  const numericValue = Number(price);
-  if (Number.isFinite(numericValue)) {
-    return numericValue;
-  }
-  return (
-    Number(
-      String(price || "")
-        .replace(/[^\d,.-]/g, "")
-        .replace(/\s/g, "")
-        .replace(",", "."),
-    ) || 0
-  );
-}
-
-function formatPrice(value) {
-  return `${value.toLocaleString("fr-FR")} CFA`;
-}
-
+// Product Detail & Variants
 function normalizeVariant(variant, index, product) {
   const fallbackNames = ["Petit", "Moyen", "Grand"];
-  const name =
-    variant && variant.name
-      ? String(variant.name)
-      : fallbackNames[index] || `Option ${index + 1}`;
-  const value =
-    variant && variant.price != null ? variant.price : product.price;
+  const name = variant?.name
+    ? String(variant.name)
+    : fallbackNames[index] || `Option ${index + 1}`;
+  const value = variant?.price != null ? variant.price : product.price;
   const image =
-    variant && variant.image && String(variant.image).trim()
+    variant?.image && String(variant.image).trim()
       ? normalizeImageUrl(variant.image, "")
       : productHasImage(product)
         ? product.detailImage || product.image
         : "";
 
   return {
-    id: variant && variant.id != null ? String(variant.id) : name.toLowerCase(),
-    name: name,
+    id: variant?.id != null ? String(variant.id) : name.toLowerCase(),
+    name,
     price: formatPrice(parsePrice(value)),
-    image: image,
+    image,
   };
 }
 
 function getProductVariants(product) {
-  if (!product || !product.hasSizes) {
-    return [];
-  }
-
+  if (!product?.hasSizes) return [];
   if (Array.isArray(product.variants) && product.variants.length) {
-    return product.variants.map(function (variant, index) {
-      return normalizeVariant(variant, index, product);
-    });
+    return product.variants.map((variant, index) =>
+      normalizeVariant(variant, index, product),
+    );
   }
-
   return [];
 }
 
 function setSelectedVariant(variant) {
   selectedVariant = variant;
-  detailPriceEl.textContent = variant ? variant.price : selectedProduct.price;
+  if (detailPriceEl) {
+    detailPriceEl.textContent = variant ? variant.price : selectedProduct.price;
+  }
   updateDetailMedia(selectedProduct, variant);
 
-  document.querySelectorAll(".size-option").forEach(function (button) {
+  document.querySelectorAll(".size-option").forEach((button) => {
     button.classList.toggle(
       "active",
-      variant && button.dataset.variantId === variant.id,
+      Boolean(variant && button.dataset.variantId === variant.id),
     );
   });
 }
 
 function renderProductVariants(product) {
+  if (!sizeOptionsEl || !detailSizeGroupEl) return;
+
   const variants = getProductVariants(product);
   sizeOptionsEl.innerHTML = "";
   detailSizeGroupEl.hidden = !variants.length;
@@ -1149,22 +1037,22 @@ function renderProductVariants(product) {
     return;
   }
 
-  variants.forEach(function (variant, index) {
+  variants.forEach((variant, index) => {
     const button = document.createElement("button");
     button.className = "size-option";
     button.type = "button";
     button.dataset.variantId = variant.id;
-    var nameSpan = document.createElement("span");
+
+    const nameSpan = document.createElement("span");
     nameSpan.textContent = variant.name;
-    var priceSmall = document.createElement("small");
+
+    const priceSmall = document.createElement("small");
     priceSmall.textContent = variant.price;
+
     button.appendChild(nameSpan);
     button.appendChild(priceSmall);
 
-    button.addEventListener("click", function () {
-      setSelectedVariant(variant);
-    });
-
+    button.addEventListener("click", () => setSelectedVariant(variant));
     sizeOptionsEl.appendChild(button);
 
     if (index === 0) {
@@ -1175,41 +1063,41 @@ function renderProductVariants(product) {
 
 function updateQuantity(value) {
   quantity = Math.max(1, parseInt(value, 10) || 1);
-  quantityValueEl.textContent = formatQuantity(quantity);
+  if (quantityValueEl) {
+    quantityValueEl.textContent = formatQuantity(quantity);
+  }
 }
 
+// Product Overlay Animations
 function prepareDetailImageLayout(callback) {
-  function finish() {
+  const finish = () => {
     markDetailMediaReady(true);
-    window.requestAnimationFrame(callback);
-  }
-
-  if (!detailImageEl || detailImageEl.hidden) {
-    finish();
-    return;
-  }
-
-  if (detailImageEl.complete && detailImageEl.naturalWidth) {
-    finish();
-    return;
-  }
-
-  const onReady = function () {
-    finish();
+    requestAnimationFrame(callback);
   };
 
+  if (
+    !detailImageEl ||
+    detailImageEl.hidden ||
+    (detailImageEl.complete && detailImageEl.naturalWidth)
+  ) {
+    finish();
+    return;
+  }
+
+  const onReady = () => finish();
   detailImageEl.addEventListener("load", onReady, { once: true });
-  window.setTimeout(function () {
+  window.setTimeout(() => {
     detailImageEl.removeEventListener("load", onReady);
     finish();
   }, 150);
 }
 
 function finishProductDetailEnterAnimation() {
-  productDetailEl.classList.remove("is-opening");
+  productDetailEl?.classList.remove("is-opening");
 }
 
 function playProductDetailEnterAnimation() {
+  if (!productDetailEl) return;
   window.clearTimeout(detailEnterTimer);
 
   if (prefersReducedMotion()) {
@@ -1223,20 +1111,21 @@ function playProductDetailEnterAnimation() {
 }
 
 function beginProductDetailEnterAnimation() {
+  if (!productDetailEl) return;
   productDetailEl.classList.add("is-layout-prep");
 
-  prepareDetailImageLayout(function () {
+  prepareDetailImageLayout(() => {
     productDetailEl.classList.remove("is-layout-prep");
     playProductDetailEnterAnimation();
   });
 }
 
 function showProductDetail(product) {
-  window.clearTimeout(detailEnterTimer);
-  productDetailEl.classList.remove("is-opening");
-  productDetailEl.classList.remove("is-layout-prep");
+  if (!productDetailEl) return;
 
-  /* Ne sauvegarder que depuis le menu (pas lors d'un changement via produits similaires). */
+  window.clearTimeout(detailEnterTimer);
+  productDetailEl.classList.remove("is-opening", "is-layout-prep");
+
   if (productDetailEl.hidden) {
     saveMenuScrollPosition();
   }
@@ -1244,6 +1133,7 @@ function showProductDetail(product) {
   selectedProduct = product;
   detailTitleEl.textContent = product.name;
   detailPriceEl.textContent = product.price;
+
   if (hasVisibleDescription(product.meta)) {
     detailDescriptionEl.textContent = getTrimmedDescription(product.meta);
     detailDescriptionEl.removeAttribute("hidden");
@@ -1251,12 +1141,14 @@ function showProductDetail(product) {
     detailDescriptionEl.textContent = "";
     detailDescriptionEl.hidden = true;
   }
+
   renderProductVariants(product);
   updateQuantity(1);
   renderSimilarProducts(product);
+
   productDetailEl.hidden = false;
-  whatsappEl.hidden = true;
-  bottomNavEl.hidden = true;
+  if (whatsappEl) whatsappEl.hidden = true;
+  if (bottomNavEl) bottomNavEl.hidden = true;
 
   if (productDetailScrollEl) {
     productDetailScrollEl.scrollTop = 0;
@@ -1265,42 +1157,52 @@ function showProductDetail(product) {
   beginProductDetailEnterAnimation();
 }
 
-function hideProductDetail() {
-  dismissProductDetailOverlay(true);
-  whatsappEl.hidden = false;
-  bottomNavEl.hidden = false;
+function dismissProductDetailOverlay(restoreScroll) {
+  if (!productDetailEl) return;
+  window.clearTimeout(detailEnterTimer);
+  productDetailEl.classList.remove("is-opening", "is-layout-prep");
+  productDetailEl.hidden = true;
+
+  if (restoreScroll) {
+    restoreMenuScrollPosition();
+  }
 }
 
+function hideProductDetail() {
+  dismissProductDetailOverlay(true);
+  if (whatsappEl) whatsappEl.hidden = false;
+  if (bottomNavEl) bottomNavEl.hidden = false;
+}
+
+// Toast Notifications
 function showCartToast(productName) {
-  if (!cartToastEl) {
-    return;
-  }
+  if (!cartToastEl) return;
 
   window.clearTimeout(toastTimeout);
 
   if (cartToastMsgEl) {
-    cartToastMsgEl.textContent =
-      (productName || "Produit") + " ajouté au panier";
+    cartToastMsgEl.textContent = `${productName || "Produit"} ajouté au panier`;
   }
 
   cartToastEl.classList.remove("is-leaving");
   cartToastEl.hidden = false;
 
-  window.requestAnimationFrame(function () {
+  requestAnimationFrame(() => {
     cartToastEl.classList.add("is-visible");
   });
 
-  toastTimeout = window.setTimeout(function () {
+  toastTimeout = window.setTimeout(() => {
     cartToastEl.classList.remove("is-visible");
     cartToastEl.classList.add("is-leaving");
 
-    toastTimeout = window.setTimeout(function () {
+    toastTimeout = window.setTimeout(() => {
       cartToastEl.classList.remove("is-leaving");
       cartToastEl.hidden = true;
     }, 260);
   }, 2400);
 }
 
+// Order Management
 function getSelectedOrderLine() {
   const variantSuffix = selectedVariant ? ` (${selectedVariant.name})` : "";
   const variantKey = selectedVariant ? selectedVariant.id : "default";
@@ -1309,22 +1211,18 @@ function getSelectedOrderLine() {
   return {
     key: `${selectedProduct.id}:${variantKey}`,
     product: selectedProduct,
-    label: selectedProduct.name + variantSuffix,
-    price: price,
-    quantity: quantity,
+    label: `${selectedProduct.name}${variantSuffix}`,
+    price,
+    quantity,
   };
 }
 
 function addSelectedProductToOrder(options) {
-  if (!selectedProduct) {
-    return;
-  }
+  if (!selectedProduct) return;
 
-  const shouldReplaceQuantity = Boolean(options && options.replaceQuantity);
+  const shouldReplaceQuantity = Boolean(options?.replaceQuantity);
   const line = getSelectedOrderLine();
-  const existingItem = orderItems.find(function (item) {
-    return item.key === line.key;
-  });
+  const existingItem = orderItems.find((item) => item.key === line.key);
   const previousTotal = getCartTotalItems();
 
   if (existingItem) {
@@ -1340,34 +1238,22 @@ function addSelectedProductToOrder(options) {
 }
 
 function calculateOrderTotal() {
-  return orderItems.reduce(function (total, item) {
-    return total + parsePrice(item.price) * item.quantity;
-  }, 0);
+  return orderItems.reduce(
+    (total, item) => total + parsePrice(item.price) * item.quantity,
+    0,
+  );
 }
 
 function updateOrderItemQuantity(itemKey, nextQuantity) {
-  const currentItem = orderItems.find(function (item) {
-    return item.key === itemKey;
-  });
+  const currentItem = orderItems.find((item) => item.key === itemKey);
   const previousQuantity = currentItem ? currentItem.quantity : 0;
 
   orderItems = orderItems
-    .map(function (item) {
-      if (item.key !== itemKey) {
-        return item;
-      }
-
-      return {
-        key: item.key,
-        product: item.product,
-        label: item.label,
-        price: item.price,
-        quantity: Math.max(0, nextQuantity),
-      };
+    .map((item) => {
+      if (item.key !== itemKey) return item;
+      return { ...item, quantity: Math.max(0, nextQuantity) };
     })
-    .filter(function (item) {
-      return item.quantity > 0;
-    });
+    .filter((item) => item.quantity > 0);
 
   renderOrder();
   syncCartState({ animate: nextQuantity > previousQuantity });
@@ -1378,6 +1264,7 @@ function createOrderItem(item) {
   row.className = "order-item";
   const itemLabel = escapeHtml(item.label);
   const itemPrice = escapeHtml(item.price);
+
   row.innerHTML = `
     <span class="order-item__name">${item.quantity} x ${itemLabel}</span>
     <span class="order-item__controls">
@@ -1394,28 +1281,24 @@ function createOrderItem(item) {
     </button>
   `;
 
-  row
-    .querySelector('[data-action="plus"]')
-    .addEventListener("click", function () {
-      updateOrderItemQuantity(item.key, item.quantity + 1);
-    });
+  row.querySelector('[data-action="plus"]')?.addEventListener("click", () => {
+    updateOrderItemQuantity(item.key, item.quantity + 1);
+  });
 
-  row
-    .querySelector('[data-action="minus"]')
-    .addEventListener("click", function () {
-      updateOrderItemQuantity(item.key, item.quantity - 1);
-    });
+  row.querySelector('[data-action="minus"]')?.addEventListener("click", () => {
+    updateOrderItemQuantity(item.key, item.quantity - 1);
+  });
 
-  row
-    .querySelector('[data-action="remove"]')
-    .addEventListener("click", function () {
-      updateOrderItemQuantity(item.key, 0);
-    });
+  row.querySelector('[data-action="remove"]')?.addEventListener("click", () => {
+    updateOrderItemQuantity(item.key, 0);
+  });
 
   return row;
 }
 
 function renderOrder() {
+  if (!orderListEl || !orderTotalEl) return;
+
   orderListEl.innerHTML = "";
 
   if (!orderItems.length) {
@@ -1424,7 +1307,7 @@ function renderOrder() {
     empty.textContent = "Votre commande est vide.";
     orderListEl.appendChild(empty);
   } else {
-    orderItems.forEach(function (item) {
+    orderItems.forEach((item) => {
       orderListEl.appendChild(createOrderItem(item));
     });
   }
@@ -1433,45 +1316,53 @@ function renderOrder() {
 }
 
 function showOrderPage() {
-  if (productDetailEl.hidden && orderPageEl.hidden) {
+  if (!orderPageEl) return;
+
+  if (productDetailEl?.hidden && orderPageEl.hidden) {
     saveMenuScrollPosition();
   }
-  orderPreviousView = productDetailEl.hidden ? "menu" : "detail";
+
+  orderPreviousView = productDetailEl?.hidden ? "menu" : "detail";
   dismissProductDetailOverlay(false);
+
   orderPageEl.hidden = false;
-  whatsappEl.hidden = true;
-  bottomNavEl.hidden = false;
+  if (whatsappEl) whatsappEl.hidden = true;
+  if (bottomNavEl) bottomNavEl.hidden = false;
+
   setActiveNav(cartNavEl);
   renderOrder();
 }
 
 function hideOrderPage(targetView) {
+  if (!orderPageEl) return;
   orderPageEl.hidden = true;
 
-  if (targetView === "detail") {
+  if (targetView === "detail" && productDetailEl) {
     productDetailEl.hidden = false;
-    whatsappEl.hidden = true;
-    bottomNavEl.hidden = true;
+    if (whatsappEl) whatsappEl.hidden = true;
+    if (bottomNavEl) bottomNavEl.hidden = true;
     setActiveNav(homeNavEl);
     return;
   }
 
   dismissProductDetailOverlay(false);
-  whatsappEl.hidden = false;
-  bottomNavEl.hidden = false;
+  if (whatsappEl) whatsappEl.hidden = false;
+  if (bottomNavEl) bottomNavEl.hidden = false;
+
   setActiveNav(homeNavEl);
   restoreMenuScrollPosition();
 }
 
+// WhatsApp Integration
 function getWhatsappGreeting() {
   const hour = new Date().getHours();
   return hour >= 18 || hour < 6 ? "Bonsoir" : "Bonjour";
 }
 
 function createOrderWhatsappMessage() {
-  const lines = orderItems.map(function (item) {
-    return `- ${item.quantity} x ${item.label} : ${item.price}`;
-  });
+  const lines = orderItems.map(
+    (item) => `- ${item.quantity} x ${item.label} : ${item.price}`,
+  );
 
   return [
     `${getWhatsappGreeting()}, je souhaite commander :`,
@@ -1488,75 +1379,92 @@ function openWhatsapp(productName) {
   window.open(url, "_blank", "noopener");
 }
 
-whatsappEl.addEventListener("click", function (event) {
-  event.preventDefault();
-  showOrderPage();
-});
+// Event Listeners Initialization
+function setupEventListeners() {
+  whatsappEl?.addEventListener("click", (event) => {
+    event.preventDefault();
+    showOrderPage();
+  });
 
-detailBackEl.addEventListener("click", hideProductDetail);
+  detailBackEl?.addEventListener("click", hideProductDetail);
 
-homeNavEl.addEventListener("click", function (event) {
-  event.preventDefault();
-  orderPageEl.hidden = true;
-  dismissProductDetailOverlay(true);
-  whatsappEl.hidden = false;
-  bottomNavEl.hidden = false;
-  setActiveNav(homeNavEl);
-  showProducts("all");
-});
+  homeNavEl?.addEventListener("click", (event) => {
+    event.preventDefault();
+    if (orderPageEl) orderPageEl.hidden = true;
+    dismissProductDetailOverlay(true);
+    if (whatsappEl) whatsappEl.hidden = false;
+    if (bottomNavEl) bottomNavEl.hidden = false;
+    setActiveNav(homeNavEl);
+    showProducts("all");
+  });
 
-quantityMinusEl.addEventListener("click", function () {
-  updateQuantity(quantity - 1);
-});
+  quantityMinusEl?.addEventListener("click", () =>
+    updateQuantity(quantity - 1),
+  );
+  quantityPlusEl?.addEventListener("click", () => updateQuantity(quantity + 1));
 
-quantityPlusEl.addEventListener("click", function () {
-  updateQuantity(quantity + 1);
-});
+  detailOrderEl?.addEventListener("click", () => {
+    addSelectedProductToOrder({ replaceQuantity: true });
+    showOrderPage();
+  });
 
-detailOrderEl.addEventListener("click", function () {
-  addSelectedProductToOrder({ replaceQuantity: true });
-  showOrderPage();
-});
+  detailAddEl?.addEventListener("click", () => {
+    addSelectedProductToOrder();
+    if (selectedProduct) {
+      showCartToast(selectedProduct.name);
+    }
+  });
 
-detailAddEl.addEventListener("click", function () {
-  addSelectedProductToOrder();
-  showCartToast(selectedProduct.name);
-});
+  orderBackEl?.addEventListener("click", () => {
+    hideOrderPage(orderPreviousView);
+  });
 
-orderBackEl.addEventListener("click", function () {
-  hideOrderPage(orderPreviousView);
-});
+  cartNavEl?.addEventListener("click", (event) => {
+    event.preventDefault();
+    showOrderPage();
+  });
 
-cartNavEl.addEventListener("click", function (event) {
-  event.preventDefault();
-  showOrderPage();
-});
+  favoritesNavEl?.addEventListener("click", (event) => {
+    event.preventDefault();
+    if (orderPageEl) orderPageEl.hidden = true;
+    dismissProductDetailOverlay(true);
+    if (whatsappEl) whatsappEl.hidden = false;
+    if (bottomNavEl) bottomNavEl.hidden = false;
+    showFavoriteProducts();
+  });
 
-favoritesNavEl.addEventListener("click", function (event) {
-  event.preventDefault();
-  orderPageEl.hidden = true;
-  dismissProductDetailOverlay(true);
-  whatsappEl.hidden = false;
-  bottomNavEl.hidden = false;
-  showFavoriteProducts();
-});
+  orderSubmitEl?.addEventListener("click", () => {
+    if (!orderItems.length) return;
+    const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+      createOrderWhatsappMessage(),
+    )}`;
+    window.open(url, "_blank", "noopener");
+  });
 
-orderSubmitEl.addEventListener("click", function () {
-  if (!orderItems.length) {
-    return;
+  if (similarSeeAllEl && similarProductsEl) {
+    similarSeeAllEl.addEventListener("click", () => {
+      similarProductsEl.scrollTo({
+        left: similarProductsEl.scrollWidth,
+        behavior: "smooth",
+      });
+    });
+  }
+}
+
+// Application Initialization
+async function initializeMenu() {
+  try {
+    await loadPublicMenu();
+  } catch (error) {
+    console.warn("Impossible de charger le menu public :", error.message);
   }
 
-  const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(createOrderWhatsappMessage())}`;
-  window.open(url, "_blank", "noopener");
-});
-
-if (similarSeeAllEl && similarProductsEl) {
-  similarSeeAllEl.addEventListener("click", function () {
-    similarProductsEl.scrollTo({
-      left: similarProductsEl.scrollWidth,
-      behavior: "smooth",
-    });
-  });
+  restoreCartFromStorage();
+  updateCartBadge();
+  renderCategories();
+  showProducts("all");
+  playMenuEnterAnimation();
+  setupEventListeners();
 }
 
 initializeMenu();

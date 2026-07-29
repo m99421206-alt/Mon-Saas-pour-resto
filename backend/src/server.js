@@ -192,16 +192,31 @@ app.get("/health", async function (req, res) {
   }
 });
 
+app.get("/api/health", async function (req, res) {
+  try {
+    await ping();
+    return res.json({ ok: true, service: "AfricaMenu-api", db: "up" });
+  } catch (error) {
+    return res.status(503).json({
+      ok: false,
+      service: "AfricaMenu-api",
+      db: "down",
+      message: isProduction ? "Service indisponible." : error.message,
+    });
+  }
+});
+
 // Rate limiting sur les routes d'authentification
-app.post("/register", registerRateLimiter);
-app.post("/login", loginRateLimiter);
-app.post("/password-reset-request", passwordResetNotifyLimiter);
+app.post("/api/auth/register", registerRateLimiter);
+app.post("/api/auth/login", loginRateLimiter);
+app.post("/api/auth/password-reset-request", passwordResetNotifyLimiter);
 
 /* -------------------------------------------------------------------------- */
 /*                            ROUTES PUBLIQUES                                */
 /* -------------------------------------------------------------------------- */
 
 // Consultation du menu public client (SANS authentification JWT)
+app.use("/api/menu", menuRoutes);
 app.use("/menu", menuRoutes);
 app.get("/restaurant/:restaurantSlug", menuController.getPublicMenu);
 app.use(sitemapRoutes);
@@ -212,12 +227,11 @@ app.use(sitemapRoutes);
 
 // Authentification
 app.use("/api/auth", authRoutes);
-app.use("/api", authRoutes);
 
 // Administration de la plateforme
 app.use("/api/admin", adminRoutes);
 
-// Compte utilisateur & tableau de bord
+// Compte utilisateur & tableau de bord (/api/me, etc.)
 app.use("/api", userRoutes);
 
 // Gestion du menu (Catégories & Produits)
@@ -227,7 +241,8 @@ app.use("/api/products", productRoutes);
 // Configuration du restaurant
 app.use("/api/restaurant", restaurantRoutes);
 
-// Upload d'images
+// Upload d'images (harmonisé sous /api/upload et /upload)
+app.use("/api/upload", uploadRoutes);
 app.use("/upload", uploadRoutes);
 
 /* -------------------------------------------------------------------------- */

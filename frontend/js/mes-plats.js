@@ -5,6 +5,7 @@
   "use strict";
 
   var API_URL = window.MenuGo_CONFIG.API_URL;
+  var UPLOADS_URL = window.MenuGo_CONFIG.UPLOADS_URL || "/uploads";
   var TOKEN_KEY = "MenuGo_token";
   var USER_KEY = "MenuGo_user";
   var RESTAURANT_KEY = "MenuGo_restaurant";
@@ -87,6 +88,9 @@
     }
 
     var cleanPath = path.startsWith("/") ? path : "/" + path;
+    if (API_URL.endsWith("/api") && cleanPath.startsWith("/api/")) {
+      cleanPath = cleanPath.substring(4);
+    }
 
     var response = await fetch(API_URL + cleanPath, {
       method: (options && options.method) || "GET",
@@ -120,7 +124,11 @@
     var formData = new FormData();
     formData.append("image", file);
 
-    var response = await fetch(API_URL + "/upload", {
+    var uploadPath = API_URL.endsWith("/api")
+      ? API_URL + "/upload"
+      : API_URL + "/api/upload";
+
+    var response = await fetch(uploadPath, {
       method: "POST",
       headers: {
         Authorization: "Bearer " + token,
@@ -143,9 +151,11 @@
   function resolveImageUrl(url) {
     if (!url) return "";
     var strUrl = String(url);
-    if (strUrl.indexOf("/uploads/") === 0 || strUrl.indexOf("uploads/") === 0) {
-      var cleanPath = strUrl.startsWith("/") ? strUrl : "/" + strUrl;
-      return window.location.origin + cleanPath;
+    if (strUrl.indexOf("/uploads/") === 0) {
+      return UPLOADS_URL.replace(/\/uploads\/?$/, "") + strUrl;
+    }
+    if (strUrl.indexOf("uploads/") === 0) {
+      return UPLOADS_URL.replace(/\/uploads\/?$/, "") + "/" + strUrl;
     }
     return strUrl;
   }
@@ -533,8 +543,13 @@
       categoriesCache = (catsRes && catsRes.categories) || [];
       populateCategoriesSelect(categoriesCache);
 
-      var items = await apiRequest("/items");
-      renderPlatsList(items || []);
+      var itemsRes = await apiRequest("/products");
+      var items = Array.isArray(itemsRes)
+        ? itemsRes
+        : itemsRes && itemsRes.products
+          ? itemsRes.products
+          : [];
+      renderPlatsList(items);
       setStatus("");
     } catch (e) {
       setStatus(e.message || "Erreur de chargement.", true);
@@ -545,7 +560,7 @@
     if (!confirm("Voulez-vous vraiment supprimer ce plat ?")) return;
     try {
       setStatus("Suppression en cours...");
-      await apiRequest("/items/" + id, { method: "DELETE" });
+      await apiRequest("/products/" + id, { method: "DELETE" });
       if (window.MenuGo_Toast) window.MenuGo_Toast.success("Plat supprimé.");
       loadPlats();
     } catch (e) {
@@ -612,14 +627,14 @@
 
       setStatus("Enregistrement des données...");
       if (currentEditingId) {
-        await apiRequest("/items/" + currentEditingId, {
+        await apiRequest("/products/" + currentEditingId, {
           method: "PUT",
           body: payload,
         });
         if (window.MenuGo_Toast)
           window.MenuGo_Toast.success("Plat mis à jour.");
       } else {
-        await apiRequest("/items", {
+        await apiRequest("/products", {
           method: "POST",
           body: payload,
         });
