@@ -4,8 +4,32 @@
 (function () {
   "use strict";
 
-  var API_URL = window.MenuGo_CONFIG.API_URL;
-  var UPLOADS_URL = window.MenuGo_CONFIG.UPLOADS_URL || "/uploads";
+  // --- Safe Helpers & Fallbacks ---
+  function safeEscapeHtml(value) {
+    var domSafe = window.MenuGo_DOMSafe || window.MenuGo_DomSafe;
+    if (domSafe && typeof domSafe.escapeHtml === "function") {
+      return domSafe.escapeHtml(value);
+    }
+    return String(value == null ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function safeEscapeAttr(value) {
+    var domSafe = window.MenuGo_DOMSafe || window.MenuGo_DomSafe;
+    if (domSafe && typeof domSafe.escapeAttr === "function") {
+      return domSafe.escapeAttr(value);
+    }
+    return safeEscapeHtml(value);
+  }
+
+  var API_URL =
+    (window.MenuGo_CONFIG && window.MenuGo_CONFIG.API_URL) || "/api";
+  var UPLOADS_URL =
+    (window.MenuGo_CONFIG && window.MenuGo_CONFIG.UPLOADS_URL) || "/uploads";
   var TOKEN_KEY = "MenuGo_token";
   var USER_KEY = "MenuGo_user";
   var RESTAURANT_KEY = "MenuGo_restaurant";
@@ -340,10 +364,10 @@
     row.innerHTML =
       '<div class="plats-variant-row__fields">' +
       '<input type="text" class="plats-form__input variant-name" placeholder="Ex: Petit / Normal / Grand" value="' +
-      window.MenuGo_DOMSafe.escapeAttr(nameVal) +
+      safeEscapeAttr(nameVal) +
       '" required />' +
       '<input type="number" step="0.01" min="0" class="plats-form__input variant-price" placeholder="Prix" value="' +
-      window.MenuGo_DOMSafe.escapeAttr(priceVal) +
+      safeEscapeAttr(priceVal) +
       '" required />' +
       "</div>" +
       '<button type="button" class="plats-variant-row__remove" aria-label="Supprimer l\'option">&times;</button>';
@@ -470,9 +494,9 @@
 
       var imgHtml = item.image_url
         ? '<img class="plat-card__img" src="' +
-          window.MenuGo_DOMSafe.escapeAttr(resolveImageUrl(item.image_url)) +
+          safeEscapeAttr(resolveImageUrl(item.image_url)) +
           '" alt="' +
-          window.MenuGo_DOMSafe.escapeAttr(item.name) +
+          safeEscapeAttr(item.name) +
           '" />'
         : '<div class="plat-card__no-img">Pas d\'image</div>';
 
@@ -492,14 +516,14 @@
         "</div>" +
         '<div class="plat-card__content">' +
         '<h3 class="plat-card__title">' +
-        window.MenuGo_DOMSafe.escapeHtml(item.name) +
+        safeEscapeHtml(item.name) +
         "</h3>" +
         '<p class="plat-card__desc">' +
-        window.MenuGo_DOMSafe.escapeHtml(item.description || "") +
+        safeEscapeHtml(item.description || "") +
         "</p>" +
         '<div class="plat-card__foot">' +
         '<span class="plat-card__price">' +
-        window.MenuGo_DOMSafe.escapeHtml(priceText) +
+        safeEscapeHtml(priceText) +
         "</span>" +
         '<div class="plat-card__actions">' +
         '<button type="button" class="plat-card__btn edit-btn" data-id="' +
