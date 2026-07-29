@@ -81,10 +81,7 @@
       return null;
     }
 
-    var cleanPath = path;
-    if (API_URL.endsWith("/api") && cleanPath.startsWith("/api")) {
-      cleanPath = cleanPath.substring(4);
-    }
+    var cleanPath = path.startsWith("/") ? path : "/" + path;
 
     var response = await fetch(API_URL + cleanPath, {
       method: (options && options.method) || "GET",
@@ -118,13 +115,7 @@
     var formData = new FormData();
     formData.append("image", file);
 
-    // Construction dynamique de l'URL pour passer par /api/upload (supporté par Nginx)
-    var baseUrl = API_URL.replace(/\/+$/, "");
-    var endpoint = baseUrl.endsWith("/api")
-      ? baseUrl + "/upload"
-      : baseUrl + "/api/upload";
-
-    var response = await fetch(endpoint, {
+    var response = await fetch(API_URL + "/upload", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + token,
