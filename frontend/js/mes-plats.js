@@ -490,15 +490,15 @@
 
     items.forEach(function (item) {
       var card = document.createElement("article");
-      card.className = "plats-card";
+      card.className = "plat-card";
 
       var imgHtml = item.image_url
-        ? '<img class="plats-card__img" src="' +
+        ? '<img class="plat-card__img" src="' +
           safeEscapeAttr(resolveImageUrl(item.image_url)) +
           '" alt="' +
           safeEscapeAttr(item.name) +
           '" />'
-        : '<div class="plats-card__no-img">Pas d\'image</div>';
+        : '<div class="plat-card__no-img">Pas d\'image</div>';
 
       var badgeClass = item.is_visible ? "is-visible" : "is-hidden";
       var badgeText = item.is_visible ? "Visible" : "Masqué";
@@ -506,30 +506,30 @@
       var priceText = item.has_sizes ? "Multiples prix" : item.price + " FCFA";
 
       card.innerHTML =
-        '<div class="plats-card__media">' +
+        '<div class="plat-card__media">' +
         imgHtml +
-        '<span class="plats-card__badge ' +
+        '<span class="plat-card__badge ' +
         badgeClass +
         '">' +
         badgeText +
         "</span>" +
         "</div>" +
-        '<div class="plats-card__content">' +
-        '<h3 class="plats-card__title">' +
+        '<div class="plat-card__content">' +
+        '<h3 class="plat-card__title">' +
         safeEscapeHtml(item.name) +
         "</h3>" +
-        '<p class="plats-card__desc">' +
+        '<p class="plat-card__desc">' +
         safeEscapeHtml(item.description || "") +
         "</p>" +
-        '<div class="plats-card__foot">' +
-        '<span class="plats-card__price">' +
+        '<div class="plat-card__foot">' +
+        '<span class="plat-card__price">' +
         safeEscapeHtml(priceText) +
         "</span>" +
-        '<div class="plats-card__actions">' +
-        '<button type="button" class="plats-card__btn edit-btn" data-id="' +
+        '<div class="plat-card__actions">' +
+        '<button type="button" class="plat-card__btn edit-btn" data-id="' +
         item.id +
         '">Éditer</button>' +
-        '<button type="button" class="plats-card__btn delete-btn" data-id="' +
+        '<button type="button" class="plat-card__btn delete-btn" data-id="' +
         item.id +
         '">Supprimer</button>' +
         "</div>" +
