@@ -474,11 +474,12 @@
     if (imageFileInput) imageFileInput.value = "";
     loadPlats();
   }
-
   function renderPlatsList(items) {
     if (!listEl || !emptyEl) return;
 
-    if (!items || items.length === 0) {
+    listEl.innerHTML = "";
+
+    if (!items || !items.length) {
       listEl.hidden = true;
       emptyEl.hidden = false;
       return;
@@ -486,65 +487,106 @@
 
     emptyEl.hidden = true;
     listEl.hidden = false;
-    listEl.innerHTML = "";
 
-    items.forEach(function (item) {
-      var card = document.createElement("article");
-      card.className = "plat-card";
+    items.forEach(function (product) {
+      var article = document.createElement("article");
 
-      var imgHtml = item.image_url
-        ? '<img class="plat-card__img" src="' +
-          safeEscapeAttr(resolveImageUrl(item.image_url)) +
-          '" alt="' +
-          safeEscapeAttr(item.name) +
-          '" />'
-        : '<div class="plat-card__no-img">Pas d\'image</div>';
+      var visible =
+        product.is_visible === true ||
+        product.is_visible === 1 ||
+        product.is_visible === "1";
 
-      var badgeClass = item.is_visible ? "is-visible" : "is-hidden";
-      var badgeText = item.is_visible ? "Visible" : "Masqué";
+      article.className =
+        "plats-card plats-card--no-media" +
+        (visible ? "" : " plats-card--hidden");
 
-      var priceText = item.has_sizes ? "Multiples prix" : item.price + " FCFA";
+      var category = categoriesCache.find(function (c) {
+        return Number(c.id) === Number(product.category_id);
+      });
 
-      card.innerHTML =
-        '<div class="plat-card__media">' +
-        imgHtml +
-        '<span class="plat-card__badge ' +
-        badgeClass +
-        '">' +
-        badgeText +
+      var categoryName = category ? category.name : "Sans catégorie";
+
+      var priceLabel;
+
+      if (
+        product.has_sizes &&
+        Array.isArray(product.variants) &&
+        product.variants.length
+      ) {
+        var prices = product.variants
+          .map(function (v) {
+            return Number(v.price);
+          })
+          .filter(Number.isFinite);
+
+        if (prices.length) {
+          var min = Math.min.apply(null, prices);
+          var max = Math.max.apply(null, prices);
+
+          if (min === max) {
+            priceLabel = min.toLocaleString("fr-FR") + " F CFA";
+          } else {
+            priceLabel =
+              min.toLocaleString("fr-FR") +
+              " F CFA – " +
+              max.toLocaleString("fr-FR") +
+              " F CFA";
+          }
+        } else {
+          priceLabel = "0 F CFA";
+        }
+      } else {
+        priceLabel =
+          Number(product.price || 0).toLocaleString("fr-FR") + " F CFA";
+      }
+
+      article.innerHTML =
+        '<div class="plats-card__body">' +
+        (visible
+          ? ""
+          : '<span class="plats-card__hidden-badge">Masqué du menu</span>') +
+        '<span class="plats-card__category">' +
+        safeEscapeHtml(categoryName) +
         "</span>" +
-        "</div>" +
-        '<div class="plat-card__content">' +
-        '<h3 class="plat-card__title">' +
-        safeEscapeHtml(item.name) +
+        '<h3 class="plats-card__name">' +
+        safeEscapeHtml(product.name) +
         "</h3>" +
-        '<p class="plat-card__desc">' +
-        safeEscapeHtml(item.description || "") +
+        '<p class="plats-card__price">' +
+        safeEscapeHtml(priceLabel) +
         "</p>" +
-        '<div class="plat-card__foot">' +
-        '<span class="plat-card__price">' +
-        safeEscapeHtml(priceText) +
-        "</span>" +
-        '<div class="plat-card__actions">' +
-        '<button type="button" class="plat-card__btn edit-btn" data-id="' +
-        item.id +
-        '">Éditer</button>' +
-        '<button type="button" class="plat-card__btn delete-btn" data-id="' +
-        item.id +
-        '">Supprimer</button>' +
+        (product.description
+          ? '<p class="plats-card__desc">' +
+            safeEscapeHtml(product.description) +
+            "</p>"
+          : "") +
         "</div>" +
+        '<div class="plats-card__footer">' +
+        '<label class="plats-card__visible">' +
+        '<input type="checkbox" class="toggle-visible" ' +
+        'data-id="' +
+        product.id +
+        '"' +
+        (visible ? " checked" : "") +
+        ">" +
+        "<span>Visible</span>" +
+        "</label>" +
+        '<div class="plats-card__actions">' +
+        '<button type="button" class="plats-card__btn edit-btn">Modifier</button>' +
+        '<button type="button" class="plats-card__btn plats-card__btn--danger delete-btn">Supprimer</button>' +
         "</div>" +
         "</div>";
 
-      card.querySelector(".edit-btn").addEventListener("click", function () {
-        showForm(item);
+      article.querySelector(".edit-btn").addEventListener("click", function () {
+        showForm(product);
       });
 
-      card.querySelector(".delete-btn").addEventListener("click", function () {
-        deletePlat(item.id);
-      });
+      article
+        .querySelector(".delete-btn")
+        .addEventListener("click", function () {
+          deletePlat(product.id);
+        });
 
-      listEl.appendChild(card);
+      listEl.appendChild(article);
     });
   }
 
