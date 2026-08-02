@@ -440,6 +440,21 @@
     }
   }
 
+  function resetFormState() {
+    if (formEl) formEl.reset();
+    if (nameInput) nameInput.value = "";
+    if (priceInput) priceInput.value = "";
+    if (descInput) descInput.value = "";
+    if (categorySelect) categorySelect.value = "";
+    if (imageInput) imageInput.value = "";
+    if (imageFileInput) imageFileInput.value = "";
+    if (isVisibleCheck) isVisibleCheck.checked = true;
+    if (hasSizesCheck) hasSizesCheck.checked = false;
+    if (variantsList) variantsList.innerHTML = "";
+    setImagePreview("");
+    toggleVariantsSection();
+  }
+
   function showForm(itemToEdit) {
     setStatus("");
     formEl.hidden = false;
@@ -469,18 +484,19 @@
         });
       }
     } else {
-      formEl.reset();
-      if (imageInput) imageInput.value = "";
-      setImagePreview("");
-      if (isVisibleCheck) isVisibleCheck.checked = true;
-      if (hasSizesCheck) hasSizesCheck.checked = false;
-      if (variantsList) variantsList.innerHTML = "";
+      resetFormState();
     }
 
     toggleVariantsSection();
+    window.requestAnimationFrame(function () {
+      if (formEl && !formEl.hidden) {
+        formEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
   }
 
   function hideForm() {
+    resetFormState();
     formEl.hidden = true;
     currentEditingId = null;
     if (imageFileInput) imageFileInput.value = "";
@@ -555,20 +571,7 @@
           Number(product.price || 0).toLocaleString("fr-FR") + " F CFA";
       }
 
-      var mediaHtml = "";
-      if (hasImage) {
-        mediaHtml =
-          '<div class="plats-card__media">' +
-          '<img src="' +
-          safeEscapeAttr(resolveImageUrl(product.image)) +
-          '" alt="' +
-          safeEscapeAttr(product.name) +
-          '" loading="lazy">' +
-          "</div>";
-      }
-
       article.innerHTML =
-        mediaHtml +
         '<div class="plats-card__body">' +
         (visible
           ? ""
@@ -603,6 +606,46 @@
         '<button type="button" class="plats-card__btn plats-card__btn--danger delete-btn">Supprimer</button>' +
         "</div>" +
         "</div>";
+
+      var visibleToggle = article.querySelector(".toggle-visible");
+      if (visibleToggle) {
+        visibleToggle.addEventListener("change", async function () {
+          var checkbox = this;
+          var nextVisible = Boolean(checkbox.checked);
+          var card = checkbox.closest(".plats-card");
+          var previousVisible = Boolean(visible);
+
+          if (card) {
+            card.classList.toggle("plats-card--hidden", !nextVisible);
+          }
+
+          checkbox.disabled = true;
+          setStatus("Mise à jour de la visibilité...");
+
+          try {
+            await apiRequest("/products/" + product.id, {
+              method: "PUT",
+              body: { is_visible: nextVisible },
+            });
+            product.is_visible = nextVisible;
+            visible = nextVisible;
+            if (window.MenuGo_Toast) {
+              window.MenuGo_Toast.success(
+                nextVisible ? "Plat rendu visible." : "Plat masqué.",
+              );
+            }
+            setStatus("");
+          } catch (err) {
+            checkbox.checked = previousVisible;
+            if (card) {
+              card.classList.toggle("plats-card--hidden", !previousVisible);
+            }
+            setStatus(err.message || "Mise à jour impossible.", true);
+          } finally {
+            checkbox.disabled = false;
+          }
+        });
+      }
 
       article.querySelector(".edit-btn").addEventListener("click", function () {
         showForm(product);
@@ -735,6 +778,7 @@
         if (window.MenuGo_Toast) window.MenuGo_Toast.success("Plat ajouté.");
       }
 
+      resetFormState();
       hideForm();
     } catch (err) {
       setStatus(err.message || "Impossible d'enregistrer le plat.", true);
