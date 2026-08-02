@@ -14,27 +14,51 @@
     hostname.indexOf("10.") === 0 ||
     /^172\.(1[6-9]|2\d|3[0-1])\./.test(hostname);
 
+  var existingConfig = window.MenuGo_CONFIG || {};
+  var publicOrigin =
+    typeof existingConfig.PUBLIC_SITE_ORIGIN === "string" &&
+    existingConfig.PUBLIC_SITE_ORIGIN.trim() !== ""
+      ? existingConfig.PUBLIC_SITE_ORIGIN.trim().replace(/\/+$/, "")
+      : window.location.origin;
+
   // En local : http://localhost:4000/api
   // En production : https://africamenu.com/api (sans slash final)
   var defaultApiUrl = isLocalHost
     ? protocol + "//" + hostname + ":" + API_PORT + "/api"
-    : protocol + "//" + hostname + "/api";
+    : publicOrigin + "/api";
 
   // En local : http://localhost:4000/uploads
   // En production : https://africamenu.com/uploads
   var defaultUploadsUrl = isLocalHost
     ? protocol + "//" + hostname + ":" + API_PORT + "/uploads"
-    : window.location.origin + "/uploads";
-
-  var existingConfig = window.MenuGo_CONFIG || {};
+    : publicOrigin + "/uploads";
 
   var cleanApiUrl = (existingConfig.API_URL || defaultApiUrl).replace(
     /\/+$/,
     "",
   );
-  var cleanUploadsUrl = (
-    existingConfig.UPLOADS_URL || defaultUploadsUrl
-  ).replace(/\/+$/, "");
+  var cleanUploadsUrl = String(
+    existingConfig.UPLOADS_URL || defaultUploadsUrl,
+  ).trim();
+  if (!cleanUploadsUrl) {
+    cleanUploadsUrl = defaultUploadsUrl;
+  }
+  if (
+    !/^https?:\/\//i.test(cleanUploadsUrl) &&
+    cleanUploadsUrl.indexOf("//") !== 0
+  ) {
+    if (cleanUploadsUrl.charAt(0) === "/") {
+      cleanUploadsUrl = publicOrigin + cleanUploadsUrl;
+    } else if (
+      cleanUploadsUrl.indexOf("uploads/") === 0 ||
+      cleanUploadsUrl.indexOf("./uploads/") === 0 ||
+      cleanUploadsUrl.indexOf("../uploads/") === 0
+    ) {
+      cleanUploadsUrl =
+        publicOrigin + "/" + cleanUploadsUrl.replace(/^\.\//, "");
+    }
+  }
+  cleanUploadsUrl = cleanUploadsUrl.replace(/\/+$/, "");
 
   window.MenuGo_CONFIG = Object.assign({}, existingConfig, {
     API_URL: cleanApiUrl,

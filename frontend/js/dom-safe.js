@@ -74,22 +74,29 @@
     if (/^(javascript|data|vbscript):/i.test(raw)) {
       return "";
     }
-    if (raw.indexOf("/uploads/") === 0) {
-      if (raw.indexOf("..") !== -1 || raw.indexOf("\\") !== -1 || /%2f|%5c/i.test(raw)) {
-        return "";
-      }
-      var filename = raw.slice("/uploads/".length);
-      if (!filename) {
-        return "";
-      }
-      if (!/\.(webp|jpe?g|png)$/i.test(filename)) {
-        return "";
-      }
-      var base = String(apiBase || "").replace(/\/$/, "");
-      return base ? base + raw : raw;
-    }
     if (/^https?:\/\//i.test(raw)) {
       return raw;
+    }
+
+    var normalized = raw.replace(/\\/g, "/");
+    if (normalized.indexOf("..") !== -1 || /%2f|%5c/i.test(raw)) {
+      return "";
+    }
+
+    if (normalized.indexOf("./uploads/") === 0) {
+      normalized = normalized.replace(/^\.\//, "/");
+    }
+    if (normalized.indexOf("uploads/") === 0) {
+      normalized = "/" + normalized;
+    }
+
+    if (normalized.indexOf("/uploads/") === 0) {
+      var filename = normalized.slice("/uploads/".length);
+      if (!filename || !/\.(webp|jpe?g|png)$/i.test(filename)) {
+        return "";
+      }
+      var base = String(apiBase || "").replace(/\/+$/, "");
+      return base ? base + normalized : normalized;
     }
     return "";
   }

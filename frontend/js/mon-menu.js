@@ -91,30 +91,36 @@ function normalizeImageUrl(imageUrl, fallbackUrl = "") {
   }
 
   const uploadsBase = window.MenuGo_CONFIG?.UPLOADS_URL || "/uploads";
+  const base = String(uploadsBase || "/uploads").replace(/\/+$/, "");
+  const raw = imageUrl.trim();
+
+  if (!raw || /^(javascript|data|vbscript):/i.test(raw)) {
+    return fallbackUrl;
+  }
 
   if (window.MenuGo_DomSafe?.sanitizeImageSrc) {
-    const safe = window.MenuGo_DomSafe.sanitizeImageSrc(imageUrl, "");
-    if (safe) {
-      return safe.startsWith("/uploads/")
-        ? safe.replace(/^\/uploads/, uploadsBase)
-        : safe;
-    }
-    return fallbackUrl;
+    const safe = window.MenuGo_DomSafe.sanitizeImageSrc(raw, base);
+    return safe || fallbackUrl;
   }
 
-  const url = imageUrl.trim();
-  if (!url || /^(javascript|data|vbscript):/i.test(url)) {
-    return fallbackUrl;
+  const normalized = raw.replace(/\\/g, "/");
+  if (/^https?:\/\//i.test(normalized)) {
+    return normalized;
   }
 
-  if (url.startsWith("/uploads/")) {
-    if (url.includes("..") || url.includes("\\")) {
-      return fallbackUrl;
-    }
-    return url.replace(/^\/uploads/, uploadsBase);
+  if (normalized.indexOf("./uploads/") === 0) {
+    return base + normalized.replace(/^\.\//, "");
   }
 
-  return /^https?:\/\//i.test(url) ? url : fallbackUrl;
+  if (normalized.startsWith("/uploads/")) {
+    return base + normalized.replace(/^\/uploads/, "");
+  }
+
+  if (normalized.startsWith("uploads/")) {
+    return base + "/" + normalized.slice("uploads/".length);
+  }
+
+  return fallbackUrl;
 }
 
 // Formatting Helpers
@@ -331,7 +337,10 @@ function getRestaurantIdFromUrl() {
   const path = String(window.location.pathname || "").trim();
   if (path.length) {
     const segments = path.split("/").filter(Boolean);
-    if (segments.length >= 2 && (segments[0] === "menu" || segments[0] === "restaurant")) {
+    if (
+      segments.length >= 2 &&
+      (segments[0] === "menu" || segments[0] === "restaurant")
+    ) {
       return decodeURIComponent(segments[1]);
     }
     if (segments.length === 1 && segments[0] !== "mon-menu.html") {

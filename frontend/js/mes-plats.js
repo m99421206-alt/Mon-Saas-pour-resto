@@ -174,12 +174,23 @@
 
   function resolveImageUrl(url) {
     if (!url) return "";
-    var strUrl = String(url);
+    var strUrl = String(url).trim();
+    if (!strUrl) return "";
+    var base = String(UPLOADS_URL || "/uploads").replace(/\/+$/, "");
+    if (/^(javascript|data|vbscript):/i.test(strUrl)) {
+      return "";
+    }
+    if (/^https?:\/\//i.test(strUrl)) {
+      return strUrl;
+    }
+    if (strUrl.indexOf("./uploads/") === 0) {
+      return base + strUrl.replace(/^\.\//, "");
+    }
     if (strUrl.indexOf("/uploads/") === 0) {
-      return UPLOADS_URL.replace(/\/uploads\/?$/, "") + strUrl;
+      return base + strUrl.replace(/^\/uploads/, "");
     }
     if (strUrl.indexOf("uploads/") === 0) {
-      return UPLOADS_URL.replace(/\/uploads\/?$/, "") + "/" + strUrl;
+      return base + "/" + strUrl.slice("uploads/".length);
     }
     return strUrl;
   }
