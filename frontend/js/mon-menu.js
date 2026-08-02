@@ -103,23 +103,6 @@ function normalizeImageUrl(imageUrl, fallbackUrl = "") {
     return safe || fallbackUrl;
   }
 
-  const normalized = raw.replace(/\\/g, "/");
-  if (/^https?:\/\//i.test(normalized)) {
-    return normalized;
-  }
-
-  if (normalized.indexOf("./uploads/") === 0) {
-    return base + normalized.replace(/^\.\//, "");
-  }
-
-  if (normalized.startsWith("/uploads/")) {
-    return base + normalized.replace(/^\/uploads/, "");
-  }
-
-  if (normalized.startsWith("uploads/")) {
-    return base + "/" + normalized.slice("uploads/".length);
-  }
-
   return fallbackUrl;
 }
 

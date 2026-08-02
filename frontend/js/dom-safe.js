@@ -74,31 +74,32 @@
     if (/^(javascript|data|vbscript):/i.test(raw)) {
       return "";
     }
-    if (/^https?:\/\//i.test(raw)) {
-      return raw;
-    }
 
     var normalized = raw.replace(/\\/g, "/");
+    if (/^https?:\/\//i.test(normalized)) {
+      return normalized;
+    }
     if (normalized.indexOf("..") !== -1 || /%2f|%5c/i.test(raw)) {
       return "";
     }
 
-    if (normalized.indexOf("./uploads/") === 0) {
-      normalized = normalized.replace(/^\.\//, "/");
-    }
-    if (normalized.indexOf("uploads/") === 0) {
-      normalized = "/" + normalized;
+    var relative = normalized.replace(/^\.\//, "");
+    if (relative.indexOf("/uploads/") === 0) {
+      relative = relative.slice("/uploads/".length);
+    } else if (relative.indexOf("uploads/") === 0) {
+      relative = relative.slice("uploads/".length);
+    } else if (relative === "/uploads" || relative === "uploads") {
+      relative = "";
+    } else if (relative.indexOf("/") === 0) {
+      relative = relative.slice(1);
     }
 
-    if (normalized.indexOf("/uploads/") === 0) {
-      var filename = normalized.slice("/uploads/".length);
-      if (!filename || !/\.(webp|jpe?g|png)$/i.test(filename)) {
-        return "";
-      }
-      var base = String(apiBase || "").replace(/\/+$/, "");
-      return base ? base + normalized : normalized;
+    if (!relative || !/\.(webp|jpe?g|png)$/i.test(relative)) {
+      return "";
     }
-    return "";
+
+    var base = String(apiBase || "").replace(/\/+$/, "");
+    return base ? base + "/" + relative : "/uploads/" + relative;
   }
 
   window.MenuGo_DomSafe = {
