@@ -3,7 +3,11 @@ const { removeUnusedUploads } = require("../utils/uploadCleanup");
 const { appendAuditFromRequest, AUDIT_ACTIONS } = require("../utils/auditLog");
 const ownership = require("../utils/restaurantOwnership");
 const uploadOwnership = require("../utils/uploadOwnership");
-const { parseProductBody, parseProductIdParams } = require("../validators/product");
+const {
+  parseProductBody,
+  parseProductVisibilityBody,
+  parseProductIdParams,
+} = require("../validators/product");
 
 function resolveRestaurantId(req) {
   if (req.restaurantId) {
@@ -28,7 +32,7 @@ function collectProductUploadUrls(image, variants) {
 async function rejectIfUploadUrlsForbidden(res, restaurantId, image, variants) {
   var uploadStatus = await uploadOwnership.assertUploadUrlsAllowedForRestaurant(
     collectProductUploadUrls(image, variants),
-    restaurantId
+    restaurantId,
   );
   if (uploadStatus === "forbidden") {
     await removeUnusedUploads(collectProductUploadUrls(image, variants));
@@ -37,7 +41,11 @@ async function rejectIfUploadUrlsForbidden(res, restaurantId, image, variants) {
   }
   if (uploadStatus === "invalid") {
     await removeUnusedUploads(collectProductUploadUrls(image, variants));
-    res.status(400).json({ message: "Image invalide. Utilisez une image uploadée par AfricaMenu." });
+    res
+      .status(400)
+      .json({
+        message: "Image invalide. Utilisez une image uploadée par AfricaMenu.",
+      });
     return true;
   }
   return false;
@@ -53,7 +61,7 @@ async function attachVariants(pool, products) {
   });
   var [variants] = await pool.query(
     "SELECT id, product_id, name, price, image, sort_order FROM product_variants WHERE product_id IN (?) ORDER BY product_id ASC, sort_order DESC, id DESC",
-    [ids]
+    [ids],
   );
   var byProduct = {};
   for (var i = 0; i < variants.length; i += 1) {
@@ -71,13 +79,21 @@ async function attachVariants(pool, products) {
 }
 
 async function replaceProductVariants(pool, productId, variants) {
-  await pool.query("DELETE FROM product_variants WHERE product_id = ?", [productId]);
+  await pool.query("DELETE FROM product_variants WHERE product_id = ?", [
+    productId,
+  ]);
 
   for (var i = 0; i < variants.length; i += 1) {
     var variant = variants[i];
     await pool.query(
       "INSERT INTO product_variants (product_id, name, price, image, sort_order) VALUES (?, ?, ?, ?, ?)",
-      [productId, variant.name, variant.price, variant.image, variant.sort_order]
+      [
+        productId,
+        variant.name,
+        variant.price,
+        variant.image,
+        variant.sort_order,
+      ],
     );
   }
 }
@@ -86,13 +102,15 @@ async function listProducts(req, res) {
   try {
     var restaurantId = resolveRestaurantId(req);
     if (!restaurantId) {
-      return res.status(404).json({ message: "Aucun restaurant associé à ce compte." });
+      return res
+        .status(404)
+        .json({ message: "Aucun restaurant associé à ce compte." });
     }
 
     var pool = getPool();
     var [rows] = await pool.query(
       "SELECT id, restaurant_id, category_id, name, description, price, image, has_sizes, is_visible FROM products WHERE restaurant_id = ? ORDER BY id DESC",
-      [restaurantId]
+      [restaurantId],
     );
     rows = await attachVariants(pool, rows);
     return res.json({ products: rows });
@@ -120,17 +138,24 @@ async function createProduct(req, res) {
     var restaurantId = resolveRestaurantId(req);
     if (!restaurantId) {
       await removeUnusedUploads(collectProductUploadUrls(image, variants));
-      return res.status(404).json({ message: "Aucun restaurant associé à ce compte." });
+      return res
+        .status(404)
+        .json({ message: "Aucun restaurant associé à ce compte." });
     }
 
-    var categoryOwnership = await ownership.assertCategoryOwnedByRestaurant(categoryId, restaurantId);
+    var categoryOwnership = await ownership.assertCategoryOwnedByRestaurant(
+      categoryId,
+      restaurantId,
+    );
     if (categoryOwnership === "forbidden") {
       await removeUnusedUploads(collectProductUploadUrls(image, variants));
       return ownership.sendForbidden(res);
     }
     if (categoryOwnership === "not_found") {
       await removeUnusedUploads(collectProductUploadUrls(image, variants));
-      return res.status(400).json({ message: "La catégorie n'appartient pas à votre restaurant." });
+      return res
+        .status(400)
+        .json({ message: "La catégorie n'appartient pas à votre restaurant." });
     }
 
     if (await rejectIfUploadUrlsForbidden(res, restaurantId, image, variants)) {
@@ -146,11 +171,24 @@ async function createProduct(req, res) {
 
       var [result] = await connection.query(
         "INSERT INTO products (restaurant_id, category_id, name, description, price, image, has_sizes, is_visible) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        [restaurantId, categoryId, name, description, price, image, hasSizes, isVisible]
+        [
+          restaurantId,
+          categoryId,
+          name,
+          description,
+          price,
+          image,
+          hasSizes,
+          isVisible,
+        ],
       );
       productId = result.insertId;
 
-      await replaceProductVariants(connection, productId, hasSizes ? variants : []);
+      await replaceProductVariants(
+        connection,
+        productId,
+        hasSizes ? variants : [],
+      );
       await connection.commit();
     } catch (error) {
       await connection.rollback();
@@ -193,7 +231,18 @@ async function updateProduct(req, res) {
   }
   var productId = idParsed.data.id;
 
-  var parsed = parseProductBody(req.body);
+  var visibilityOnlyUpdate =
+    req.body &&
+    typeof req.body === "object" &&
+    !Array.isArray(req.body) &&
+    Object.keys(req.body).length > 0 &&
+    Object.keys(req.body).every(function (key) {
+      return key === "is_visible";
+    });
+
+  var parsed = visibilityOnlyUpdate
+    ? parseProductVisibilityBody(req.body)
+    : parseProductBody(req.body);
   if (!parsed.ok) {
     return res.status(400).json({ message: parsed.message });
   }
@@ -211,10 +260,15 @@ async function updateProduct(req, res) {
     var restaurantId = resolveRestaurantId(req);
     if (!restaurantId) {
       await removeUnusedUploads(collectProductUploadUrls(image, variants));
-      return res.status(404).json({ message: "Aucun restaurant associé à ce compte." });
+      return res
+        .status(404)
+        .json({ message: "Aucun restaurant associé à ce compte." });
     }
 
-    var productOwnership = await ownership.assertProductOwnedByRestaurant(productId, restaurantId);
+    var productOwnership = await ownership.assertProductOwnedByRestaurant(
+      productId,
+      restaurantId,
+    );
     if (productOwnership === "forbidden") {
       await removeUnusedUploads(collectProductUploadUrls(image, variants));
       return ownership.sendForbidden(res);
@@ -222,20 +276,6 @@ async function updateProduct(req, res) {
     if (productOwnership === "not_found") {
       await removeUnusedUploads(collectProductUploadUrls(image, variants));
       return res.status(404).json({ message: "Produit introuvable." });
-    }
-
-    var categoryOwnership = await ownership.assertCategoryOwnedByRestaurant(categoryId, restaurantId);
-    if (categoryOwnership === "forbidden") {
-      await removeUnusedUploads(collectProductUploadUrls(image, variants));
-      return ownership.sendForbidden(res);
-    }
-    if (categoryOwnership === "not_found") {
-      await removeUnusedUploads(collectProductUploadUrls(image, variants));
-      return res.status(400).json({ message: "La catégorie n'appartient pas à votre restaurant." });
-    }
-
-    if (await rejectIfUploadUrlsForbidden(res, restaurantId, image, variants)) {
-      return;
     }
 
     var pool = getPool();
@@ -246,14 +286,40 @@ async function updateProduct(req, res) {
       await connection.beginTransaction();
 
       var [existingProducts] = await connection.query(
-        "SELECT image FROM products WHERE id = ? AND restaurant_id = ? LIMIT 1",
-        [productId, restaurantId]
+        "SELECT category_id, name, description, price, image, has_sizes, is_visible FROM products WHERE id = ? AND restaurant_id = ? LIMIT 1",
+        [productId, restaurantId],
       );
-      var [existingVariants] = await connection.query("SELECT image FROM product_variants WHERE product_id = ?", [
-        productId,
-      ]);
+      var [existingVariants] = await connection.query(
+        "SELECT name, price, image, sort_order FROM product_variants WHERE product_id = ? ORDER BY sort_order ASC, id ASC",
+        [productId],
+      );
 
-      if (existingProducts.length && existingProducts[0].image && existingProducts[0].image !== image) {
+      var currentProduct =
+        existingProducts && existingProducts.length
+          ? existingProducts[0]
+          : null;
+      if (visibilityOnlyUpdate && currentProduct) {
+        categoryId = currentProduct.category_id;
+        name = currentProduct.name;
+        price = currentProduct.price;
+        image = currentProduct.image;
+        description = currentProduct.description;
+        hasSizes = currentProduct.has_sizes;
+        variants = (existingVariants || []).map(function (variant) {
+          return {
+            name: variant.name,
+            price: variant.price,
+            image: variant.image,
+            sort_order: variant.sort_order,
+          };
+        });
+      }
+
+      if (
+        existingProducts.length &&
+        existingProducts[0].image &&
+        existingProducts[0].image !== image
+      ) {
         oldImages.push(existingProducts[0].image);
       }
       existingVariants.forEach(function (variant) {
@@ -264,7 +330,17 @@ async function updateProduct(req, res) {
 
       var [result] = await connection.query(
         "UPDATE products SET category_id = ?, name = ?, description = ?, price = ?, image = ?, has_sizes = ?, is_visible = ? WHERE id = ? AND restaurant_id = ?",
-        [categoryId, name, description, price, image, hasSizes, isVisible, productId, restaurantId]
+        [
+          categoryId,
+          name,
+          description,
+          price,
+          image,
+          hasSizes,
+          isVisible,
+          productId,
+          restaurantId,
+        ],
       );
 
       if (result.affectedRows === 0) {
@@ -272,7 +348,11 @@ async function updateProduct(req, res) {
         return res.status(404).json({ message: "Produit introuvable." });
       }
 
-      await replaceProductVariants(connection, productId, hasSizes ? variants : []);
+      await replaceProductVariants(
+        connection,
+        productId,
+        hasSizes ? variants : [],
+      );
       await connection.commit();
     } catch (error) {
       await connection.rollback();
@@ -322,10 +402,15 @@ async function deleteProduct(req, res) {
 
     var restaurantId = resolveRestaurantId(req);
     if (!restaurantId) {
-      return res.status(404).json({ message: "Aucun restaurant associé à ce compte." });
+      return res
+        .status(404)
+        .json({ message: "Aucun restaurant associé à ce compte." });
     }
 
-    var productOwnership = await ownership.assertProductOwnedByRestaurant(productId, restaurantId);
+    var productOwnership = await ownership.assertProductOwnedByRestaurant(
+      productId,
+      restaurantId,
+    );
     if (productOwnership === "forbidden") {
       return ownership.sendForbidden(res);
     }
@@ -336,9 +421,12 @@ async function deleteProduct(req, res) {
     var pool = getPool();
     var [existingProducts] = await pool.query(
       "SELECT image, name FROM products WHERE id = ? AND restaurant_id = ? LIMIT 1",
-      [productId, restaurantId]
+      [productId, restaurantId],
     );
-    var [existingVariants] = await pool.query("SELECT image FROM product_variants WHERE product_id = ?", [productId]);
+    var [existingVariants] = await pool.query(
+      "SELECT image FROM product_variants WHERE product_id = ?",
+      [productId],
+    );
     var oldImages = [];
 
     if (existingProducts.length && existingProducts[0].image) {
@@ -350,16 +438,19 @@ async function deleteProduct(req, res) {
       }
     });
 
-    var [result] = await pool.query("DELETE FROM products WHERE id = ? AND restaurant_id = ?", [
-      productId,
-      restaurantId,
-    ]);
+    var [result] = await pool.query(
+      "DELETE FROM products WHERE id = ? AND restaurant_id = ?",
+      [productId, restaurantId],
+    );
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Produit introuvable." });
     }
 
-    var pname = existingProducts.length && existingProducts[0].name ? String(existingProducts[0].name) : "";
+    var pname =
+      existingProducts.length && existingProducts[0].name
+        ? String(existingProducts[0].name)
+        : "";
 
     await removeUnusedUploads(oldImages);
 

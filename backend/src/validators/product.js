@@ -23,7 +23,12 @@ var productBodySchema = z
       .min(1, "Le nom du produit est requis.")
       .max(255, "Le nom ne doit pas dépasser 255 caractères."),
     description: z.union([z.string(), z.null()]).optional(),
-    price: z.coerce.number({ invalid_type_error: "Le prix doit être un nombre positif ou nul." }).finite().min(0),
+    price: z.coerce
+      .number({
+        invalid_type_error: "Le prix doit être un nombre positif ou nul.",
+      })
+      .finite()
+      .min(0),
     category_id: positiveIntId,
     image: z.union([z.string(), z.null()]).optional(),
     has_sizes: boolLikeField.optional(),
@@ -42,12 +47,19 @@ var productBodySchema = z
   })
   .transform(function (data) {
     var description =
-      data.description == null ? null : String(data.description).trim().slice(0, 5000) || null;
+      data.description == null
+        ? null
+        : String(data.description).trim().slice(0, 5000) || null;
     var hasSizes = data.has_sizes != null ? data.has_sizes : 1;
     var variants = [];
     if (Array.isArray(data.variants)) {
       data.variants.forEach(function (item) {
-        if (item && item.name && Number.isFinite(item.price) && item.price >= 0) {
+        if (
+          item &&
+          item.name &&
+          Number.isFinite(item.price) &&
+          item.price >= 0
+        ) {
           variants.push({
             name: item.name.trim().slice(0, 100),
             price: Number(Number(item.price).toFixed(2)),
@@ -72,6 +84,16 @@ var productBodySchema = z
     };
   });
 
+var productVisibilityBodySchema = z
+  .object({
+    is_visible: boolLikeField,
+  })
+  .transform(function (data) {
+    return {
+      isVisible: data.is_visible != null ? data.is_visible : 1,
+    };
+  });
+
 var productIdParamsSchema = z.object({
   id: positiveIntId,
 });
@@ -80,11 +102,16 @@ function parseProductBody(body) {
   return parseBody(productBodySchema, body);
 }
 
+function parseProductVisibilityBody(body) {
+  return parseBody(productVisibilityBodySchema, body);
+}
+
 function parseProductIdParams(params) {
   return parseParams(productIdParamsSchema, params);
 }
 
 module.exports = {
   parseProductBody: parseProductBody,
+  parseProductVisibilityBody: parseProductVisibilityBody,
   parseProductIdParams: parseProductIdParams,
 };

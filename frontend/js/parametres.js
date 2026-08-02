@@ -407,11 +407,16 @@
         body: payload,
       });
 
-      if (updatedResto) {
-        localStorage.setItem(RESTAURANT_KEY, JSON.stringify(updatedResto));
-        fillForm(updatedResto);
+      var savedRestaurant =
+        updatedResto && updatedResto.restaurant
+          ? updatedResto.restaurant
+          : updatedResto;
+
+      if (savedRestaurant) {
+        localStorage.setItem(RESTAURANT_KEY, JSON.stringify(savedRestaurant));
+        fillForm(savedRestaurant);
         var currentUser = getStoredJson(USER_KEY);
-        renderAccountInfo(currentUser, updatedResto);
+        renderAccountInfo(currentUser, savedRestaurant);
       }
 
       if (logoFileInput) logoFileInput.value = "";

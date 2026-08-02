@@ -177,17 +177,17 @@
     var strUrl = String(url).trim();
     if (!strUrl) return "";
     var base = String(UPLOADS_URL || "/uploads").replace(/\/+$/, "");
+    if (/^(javascript|data|vbscript):/i.test(strUrl)) {
+      return "";
+    }
+    if (/^(blob:|https?:\/\/)/i.test(strUrl)) {
+      return strUrl;
+    }
     if (
       window.MenuGo_DomSafe &&
       typeof window.MenuGo_DomSafe.sanitizeImageSrc === "function"
     ) {
       return window.MenuGo_DomSafe.sanitizeImageSrc(strUrl, base) || "";
-    }
-    if (/^(javascript|data|vbscript):/i.test(strUrl)) {
-      return "";
-    }
-    if (/^https?:\/\//i.test(strUrl)) {
-      return strUrl;
     }
     return strUrl;
   }
