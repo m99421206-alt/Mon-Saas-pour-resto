@@ -331,7 +331,7 @@ function getRestaurantIdFromUrl() {
   const path = String(window.location.pathname || "").trim();
   if (path.length) {
     const segments = path.split("/").filter(Boolean);
-    if (segments.length >= 2 && segments[0] === "menu") {
+    if (segments.length >= 2 && (segments[0] === "menu" || segments[0] === "restaurant")) {
       return decodeURIComponent(segments[1]);
     }
     if (segments.length === 1 && segments[0] !== "mon-menu.html") {

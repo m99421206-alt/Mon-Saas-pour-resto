@@ -44,6 +44,10 @@ server {
     try_files $uri $uri/ /frontend/pages/mon-menu.html;
   }
 
+  location /restaurant/ {
+    try_files $uri $uri/ /frontend/pages/mon-menu.html;
+  }
+
   location = /mon-menu.html {
     if ($arg_id) {
       return 301 /menu/$arg_id;

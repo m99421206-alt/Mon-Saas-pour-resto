@@ -444,8 +444,8 @@
       if (categorySelect && itemToEdit.category_id) {
         categorySelect.value = String(itemToEdit.category_id);
       }
-      if (imageInput) imageInput.value = itemToEdit.image_url || "";
-      setImagePreview(itemToEdit.image_url || "");
+      if (imageInput) imageInput.value = itemToEdit.image || "";
+      setImagePreview(itemToEdit.image || "");
       if (isVisibleCheck)
         isVisibleCheck.checked = Boolean(itemToEdit.is_visible);
       if (hasSizesCheck) hasSizesCheck.checked = Boolean(itemToEdit.has_sizes);
@@ -685,7 +685,7 @@
         price: hasSizes ? (variants[0] ? variants[0].price : 0) : price,
         description: descInput ? descInput.value.trim() : "",
         category_id: parseInt(categoryId, 10),
-        image_url: imageUrl || null,
+        image: imageUrl || null,
         is_visible: Boolean(isVisibleCheck && isVisibleCheck.checked),
         has_sizes: hasSizes,
         variants: variants,

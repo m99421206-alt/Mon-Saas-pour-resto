@@ -31,7 +31,7 @@ function normalizeStoredImageUrl(value) {
   }
 
   var filename = url.slice("/uploads/".length);
-  if (!filename || filename.indexOf("/") !== -1 || !hasAllowedImageExtension(filename)) {
+  if (!filename || !hasAllowedImageExtension(filename)) {
     return false;
   }
 

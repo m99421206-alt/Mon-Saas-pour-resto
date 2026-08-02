@@ -79,7 +79,7 @@
         return "";
       }
       var filename = raw.slice("/uploads/".length);
-      if (!filename || filename.indexOf("/") !== -1) {
+      if (!filename) {
         return "";
       }
       if (!/\.(webp|jpe?g|png)$/i.test(filename)) {
