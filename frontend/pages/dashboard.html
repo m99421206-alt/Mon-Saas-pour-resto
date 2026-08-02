@@ -28,7 +28,17 @@
 
     <!-- Configuration PWA -->
     <link rel="manifest" href="../manifest.json" />
-    <meta name="theme-color" content="#10B981" />
+    <!-- Barre d'adresse adaptée au thème système (Clair / Sombre) -->
+    <meta
+      name="theme-color"
+      content="#ffffff"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#18181b"
+      media="(prefers-color-scheme: dark)"
+    />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
