@@ -46,7 +46,7 @@ const orderSubmitEl = document.getElementById("order-submit");
 // State
 let categories = [{ id: "all", name: "Tout" }];
 let products = [];
-let whatsappNumber = "22399421206";
+let whatsappNumber = null;
 let activeCategory = "all";
 let selectedProduct = null;
 let selectedVariant = null;
@@ -487,6 +487,23 @@ function resetDetailMedia() {
 function updateDetailMedia(product, variant) {
   if (!detailImageEl || !detailImagePlaceholderEl) return;
 
+  window.DEBUG_IMAGE_TRACE = window.DEBUG_IMAGE_TRACE || [];
+  const traceEntry = {
+    timestamp: Date.now(),
+    stack: new Error().stack,
+    productId: product?.id,
+    productName: product?.name,
+    productImage: product?.image,
+    variantId: variant?.id,
+    variantImage: variant?.image,
+    imageUrl: getDetailImageUrl(product, variant),
+    before: {
+      src: detailImageEl.getAttribute("src"),
+      hidden: detailImageEl.hidden,
+      display: window.getComputedStyle(detailImageEl).display,
+    },
+  };
+
   resetDetailMedia();
 
   const imageUrl = getDetailImageUrl(product, variant);
@@ -496,13 +513,16 @@ function updateDetailMedia(product, variant) {
 
   if (imageUrl) {
     detailImageEl.hidden = false;
+
     detailImageEl.onload = () => {
       if (!productDetailEl.hidden) {
         markDetailMediaReady(true);
       }
     };
     detailImageEl.onerror = () => resetDetailMedia();
+
     detailImageEl.src = imageUrl;
+
     detailImageEl.alt = altText;
     detailImagePlaceholderEl.hidden = true;
 
@@ -516,12 +536,22 @@ function updateDetailMedia(product, variant) {
   } else {
     detailImageEl.onload = null;
     detailImageEl.onerror = null;
+
     detailImageEl.hidden = true;
+
     detailImageEl.removeAttribute("src");
+
     detailImageEl.alt = "";
     detailImagePlaceholderEl.hidden = false;
     markDetailMediaReady(true);
   }
+
+  traceEntry.after = {
+    src: detailImageEl.getAttribute("src"),
+    hidden: detailImageEl.hidden,
+    display: window.getComputedStyle(detailImageEl).display,
+  };
+  window.DEBUG_IMAGE_TRACE.push(traceEntry);
 }
 
 // Restaurant API Application
@@ -591,9 +621,26 @@ function applyRestaurantData(restaurant) {
 
   whatsappNumber = normalizeWhatsapp(restaurant.whatsapp);
   if (whatsappEl) {
-    whatsappEl.href = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
-      "Bonjour, je souhaite commander",
-    )}`;
+    if (whatsappNumber) {
+      whatsappEl.href = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+        "Bonjour, je souhaite commander",
+      )}`;
+      whatsappEl.setAttribute("aria-label", "Commander sur WhatsApp");
+      // Note: Visibility is managed by show/hide detail/order functions
+      // but we ensure it's not hidden by the 'hidden' attribute from HTML once data is here.
+      whatsappEl.hidden = false;
+    } else {
+      whatsappEl.hidden = true;
+      whatsappEl.removeAttribute("href");
+    }
+  }
+
+  // Update other WhatsApp related buttons
+  if (detailOrderEl) {
+    detailOrderEl.hidden = !whatsappNumber;
+  }
+  if (orderSubmitEl) {
+    orderSubmitEl.hidden = !whatsappNumber;
   }
 }
 
@@ -1170,7 +1217,7 @@ function dismissProductDetailOverlay(restoreScroll) {
 
 function hideProductDetail() {
   dismissProductDetailOverlay(true);
-  if (whatsappEl) whatsappEl.hidden = false;
+  if (whatsappEl && whatsappNumber) whatsappEl.hidden = false;
   if (bottomNavEl) bottomNavEl.hidden = false;
 }
 
@@ -1346,7 +1393,7 @@ function hideOrderPage(targetView) {
   }
 
   dismissProductDetailOverlay(false);
-  if (whatsappEl) whatsappEl.hidden = false;
+  if (whatsappEl && whatsappNumber) whatsappEl.hidden = false;
   if (bottomNavEl) bottomNavEl.hidden = false;
 
   setActiveNav(homeNavEl);
@@ -1392,7 +1439,7 @@ function setupEventListeners() {
     event.preventDefault();
     if (orderPageEl) orderPageEl.hidden = true;
     dismissProductDetailOverlay(true);
-    if (whatsappEl) whatsappEl.hidden = false;
+    if (whatsappEl && whatsappNumber) whatsappEl.hidden = false;
     if (bottomNavEl) bottomNavEl.hidden = false;
     setActiveNav(homeNavEl);
     showProducts("all");
@@ -1428,7 +1475,7 @@ function setupEventListeners() {
     event.preventDefault();
     if (orderPageEl) orderPageEl.hidden = true;
     dismissProductDetailOverlay(true);
-    if (whatsappEl) whatsappEl.hidden = false;
+    if (whatsappEl && whatsappNumber) whatsappEl.hidden = false;
     if (bottomNavEl) bottomNavEl.hidden = false;
     showFavoriteProducts();
   });
