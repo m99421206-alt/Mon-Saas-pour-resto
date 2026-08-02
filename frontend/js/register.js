@@ -4,8 +4,8 @@
 (function () {
   "use strict";
 
-  // Configuration directe de l'URL API pour éviter l'erreur 405 (POST sur .html)
-  const API_URL = "https://africamenu.com/api";
+  // Utilisation de l'URL API globale (config.js)
+  const API_URL = window.MenuGo_CONFIG?.API_URL || "https://africamenu.com/api";
   const TOKEN_KEY = "MenuGo_token";
   const USER_KEY = "MenuGo_user";
   const RESTAURANT_KEY = "MenuGo_restaurant";
@@ -114,7 +114,7 @@
     submitBtn.textContent = "Création...";
 
     try {
-      const response = await fetch(API_URL + "/register", {
+      const response = await fetch(API_URL + "/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
