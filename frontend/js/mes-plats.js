@@ -310,6 +310,10 @@
     });
 
     dropzone.addEventListener("drop", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropzone.classList.remove("is-dragover");
+
       var file =
         e.dataTransfer && e.dataTransfer.files ? e.dataTransfer.files[0] : null;
       if (!file || !isAllowedImageFile(file)) {
@@ -496,8 +500,11 @@
         product.is_visible === 1 ||
         product.is_visible === "1";
 
+      var hasImage = Boolean(product.image && String(product.image).trim());
+
       article.className =
-        "plats-card plats-card--no-media" +
+        "plats-card" +
+        (hasImage ? "" : " plats-card--no-media") +
         (visible ? "" : " plats-card--hidden");
 
       var category = categoriesCache.find(function (c) {
@@ -540,7 +547,20 @@
           Number(product.price || 0).toLocaleString("fr-FR") + " F CFA";
       }
 
+      var mediaHtml = "";
+      if (hasImage) {
+        mediaHtml =
+          '<div class="plats-card__media">' +
+          '<img src="' +
+          safeEscapeAttr(resolveImageUrl(product.image)) +
+          '" alt="' +
+          safeEscapeAttr(product.name) +
+          '" loading="lazy">' +
+          "</div>";
+      }
+
       article.innerHTML =
+        mediaHtml +
         '<div class="plats-card__body">' +
         (visible
           ? ""
