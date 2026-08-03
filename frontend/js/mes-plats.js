@@ -39,6 +39,11 @@
   var formEl = document.getElementById("plats-form");
   var listEl = document.getElementById("plats-list");
   var emptyEl = document.getElementById("plats-empty");
+  var emptyTitleEl = document.getElementById("plats-empty-title");
+  var emptyDescEl = document.getElementById("plats-empty-desc");
+  var searchInput = document.getElementById("plats-search-input");
+  var searchClearBtn = document.getElementById("plats-search-clear");
+  var searchCountEl = document.getElementById("plats-search-count");
   var submitBtn = document.getElementById("plats-submit");
   var cancelBtn = document.getElementById("plats-cancel");
 
@@ -66,6 +71,7 @@
 
   var currentEditingId = null;
   var categoriesCache = [];
+  var productsCache = [];
   var isSubmitting = false;
 
   function redirectToLogin() {
@@ -502,21 +508,105 @@
     if (imageFileInput) imageFileInput.value = "";
     loadPlats();
   }
+
+  function normalizeSearchText(value) {
+    return String(value == null ? "" : value)
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+  }
+
+  function getProductSearchText(product) {
+    var category = categoriesCache.find(function (c) {
+      return Number(c.id) === Number(product.category_id);
+    });
+    var categoryName = category ? category.name : "";
+    var priceText = "";
+
+    if (product.has_sizes && Array.isArray(product.variants)) {
+      priceText = product.variants
+        .map(function (variant) {
+          return variant && variant.price !== undefined
+            ? String(variant.price)
+            : "";
+        })
+        .filter(Boolean)
+        .join(" ");
+    }
+
+    return [
+      product.name,
+      categoryName,
+      product.description,
+      priceText,
+      product.price,
+    ]
+      .filter(function (value) {
+        return value != null && String(value).trim() !== "";
+      })
+      .join(" ");
+  }
+
+  function filterProductsBySearch(items, query) {
+    var normalizedQuery = normalizeSearchText(query || "").trim();
+    if (!normalizedQuery) {
+      return Array.isArray(items) ? items : [];
+    }
+
+    return (Array.isArray(items) ? items : []).filter(function (product) {
+      return (
+        normalizeSearchText(getProductSearchText(product)).indexOf(
+          normalizedQuery,
+        ) !== -1
+      );
+    });
+  }
+
+  function updateSearchUi(count, isSearchActive) {
+    if (searchCountEl) {
+      searchCountEl.textContent =
+        count <= 1 ? "1 plat trouvé" : count + " plats trouvés";
+      searchCountEl.hidden = false;
+    }
+
+    if (emptyTitleEl && emptyDescEl) {
+      if (isSearchActive) {
+        emptyTitleEl.textContent = "Aucun plat trouvé";
+        emptyDescEl.textContent =
+          "Essayez un autre mot-clé pour affiner la recherche.";
+      } else {
+        emptyTitleEl.textContent = "Aucun plat";
+        emptyDescEl.textContent =
+          "Commencez par ajouter des plats à votre menu digital.";
+      }
+    }
+  }
+
   function renderPlatsList(items) {
     if (!listEl || !emptyEl) return;
 
+    var filteredItems = filterProductsBySearch(
+      items,
+      searchInput ? searchInput.value : "",
+    );
+    var isSearchActive = Boolean(
+      searchInput && String(searchInput.value || "").trim(),
+    );
+
     listEl.innerHTML = "";
 
-    if (!items || !items.length) {
+    if (!filteredItems || !filteredItems.length) {
       listEl.hidden = true;
       emptyEl.hidden = false;
+      updateSearchUi(0, isSearchActive);
       return;
     }
 
     emptyEl.hidden = true;
     listEl.hidden = false;
+    updateSearchUi(filteredItems.length, isSearchActive);
 
-    items.forEach(function (product) {
+    filteredItems.forEach(function (product) {
       var article = document.createElement("article");
 
       var visible =
@@ -661,6 +751,12 @@
     });
   }
 
+  function handleSearchInput() {
+    if (!searchInput) return;
+    var query = searchInput.value || "";
+    renderPlatsList(productsCache, query);
+  }
+
   async function loadPlats() {
     try {
       setStatus("Chargement des plats...");
@@ -686,6 +782,7 @@
         : itemsRes && itemsRes.products
           ? itemsRes.products
           : [];
+      productsCache = items;
       renderPlatsList(items);
       setStatus("");
     } catch (e) {
@@ -812,6 +909,20 @@
 
   if (logoutLink) {
     logoutLink.addEventListener("click", clearSession);
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener("input", handleSearchInput);
+  }
+
+  if (searchClearBtn) {
+    searchClearBtn.addEventListener("click", function () {
+      if (searchInput) {
+        searchInput.value = "";
+        searchInput.focus();
+      }
+      handleSearchInput();
+    });
   }
 
   initDropzone();

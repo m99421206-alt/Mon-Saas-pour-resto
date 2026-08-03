@@ -587,8 +587,41 @@
   function setModalOpen(open) {
     var modal = document.getElementById("adm-resto-detail-modal");
     if (!modal) return;
-    modal.setAttribute("aria-hidden", open ? "false" : "true");
-    document.body.classList.toggle("adm-overlay-open", open);
+
+    var closeBtn = modal.querySelector(".adm-detail-modal__close");
+    var previouslyFocused = document.activeElement;
+    var opener = modal.__lastTrigger || null;
+
+    if (!open) {
+      if (previouslyFocused && modal.contains(previouslyFocused)) {
+        previouslyFocused.blur();
+      }
+      if (opener && typeof opener.focus === "function") {
+        window.setTimeout(function () {
+          opener.focus();
+        }, 0);
+      }
+      modal.setAttribute("aria-hidden", "true");
+      modal.removeAttribute("aria-modal");
+      modal.setAttribute("inert", "");
+      document.body.classList.remove("adm-overlay-open");
+      return;
+    }
+
+    modal.__lastTrigger =
+      previouslyFocused && previouslyFocused !== document.body
+        ? previouslyFocused
+        : null;
+    modal.setAttribute("aria-hidden", "false");
+    modal.setAttribute("aria-modal", "true");
+    modal.removeAttribute("inert");
+    document.body.classList.add("adm-overlay-open");
+
+    window.setTimeout(function () {
+      if (closeBtn && typeof closeBtn.focus === "function") {
+        closeBtn.focus();
+      }
+    }, 0);
   }
 
   function bindModalClose() {
@@ -600,14 +633,26 @@
       });
     });
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && modal.getAttribute("aria-hidden") === "false")
+      if (e.key === "Escape" && modal.getAttribute("aria-hidden") === "false") {
         setModalOpen(false);
+      }
     });
   }
 
   async function openDetail(restaurantId) {
     var token = localStorage.getItem(TOKEN_KEY);
+    var triggerButton =
+      document.activeElement && document.activeElement.tagName === "BUTTON"
+        ? document.activeElement
+        : null;
+    var modal = document.getElementById("adm-resto-detail-modal");
+    if (modal && triggerButton) {
+      modal.__lastTrigger = triggerButton;
+    }
     setModalOpen(true);
+    if (triggerButton && typeof triggerButton.focus === "function") {
+      triggerButton.blur();
+    }
     var titleEl = document.getElementById("adm-resto-detail-title");
     var bannerEl = document.getElementById("adm-resto-banner");
     if (titleEl) titleEl.textContent = "Chargement…";

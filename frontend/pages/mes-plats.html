@@ -298,6 +298,52 @@
         </div>
       </form>
 
+      <div style="margin: 0 0 14px">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 12px;
+            border: 1px solid rgba(15, 23, 42, 0.12);
+            border-radius: 999px;
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+          "
+        >
+          <span aria-hidden="true" style="font-size: 1rem">🔎</span>
+          <input
+            class="plats-form__input"
+            id="plats-search-input"
+            type="search"
+            placeholder="Rechercher un plat..."
+            autocomplete="off"
+            aria-label="Rechercher un plat"
+            style="border: 0; box-shadow: none; padding: 12px 0; min-width: 0"
+          />
+          <button
+            type="button"
+            id="plats-search-clear"
+            aria-label="Effacer la recherche"
+            style="
+              border: 0;
+              background: transparent;
+              padding: 0;
+              font-size: 1.1rem;
+              cursor: pointer;
+            "
+          >
+            ×
+          </button>
+        </div>
+        <p
+          id="plats-search-count"
+          class="plats-page-sub"
+          style="margin: 8px 0 0"
+          hidden
+        ></p>
+      </div>
+
       <section
         class="plats-list"
         id="plats-list"
@@ -319,7 +365,7 @@
           />
         </div>
         <h2 id="plats-empty-title" class="plats-empty__title">Aucun plat</h2>
-        <p class="plats-empty__desc">
+        <p id="plats-empty-desc" class="plats-empty__desc">
           Commencez par ajouter des plats à votre menu digital.
         </p>
         <button
