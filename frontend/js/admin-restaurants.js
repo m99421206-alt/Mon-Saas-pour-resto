@@ -44,12 +44,18 @@
     return String(cfg.API_URL || "").replace(/\/$/, "");
   }
 
+  function getUploadsBase() {
+    var cfg = window.MenuGo_CONFIG || {};
+    var value = String(cfg.UPLOADS_URL || "").trim();
+    return value ? value.replace(/\/$/, "") : "/uploads";
+  }
+
   function resolveMediaUrl(rel) {
     if (rel == null || String(rel).trim() === "") {
       return "";
     }
     if (window.MenuGo_DomSafe && window.MenuGo_DomSafe.sanitizeImageSrc) {
-      return window.MenuGo_DomSafe.sanitizeImageSrc(rel, getApiBase());
+      return window.MenuGo_DomSafe.sanitizeImageSrc(rel, getUploadsBase());
     }
     var u = String(rel).trim();
     if (/^(javascript|data|vbscript):/i.test(u)) {
@@ -61,7 +67,7 @@
     if (u.indexOf("/uploads/") !== 0 || u.indexOf("..") !== -1) {
       return "";
     }
-    var base = getApiBase();
+    var base = getUploadsBase();
     return base ? base + u : u;
   }
 
