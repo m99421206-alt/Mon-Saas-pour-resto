@@ -40,6 +40,21 @@ server {
     add_header Cache-Control "public, max-age=604800";
   }
 
+  # mon-menu.html et login.html chargent /css/... et /js/... (pas /frontend/css/)
+  location /css/ {
+    alias /var/www/africamenu/frontend/css/;
+    access_log off;
+    expires 7d;
+    add_header Cache-Control "public, max-age=604800";
+  }
+
+  location /js/ {
+    alias /var/www/africamenu/frontend/js/;
+    access_log off;
+    expires 7d;
+    add_header Cache-Control "public, max-age=604800";
+  }
+
   location /menu/ {
     try_files $uri $uri/ /frontend/pages/mon-menu.html;
   }
@@ -55,7 +70,7 @@ server {
     try_files /frontend/pages/mon-menu.html =404;
   }
 
-  location ~ ^/(?!api/|uploads/|assets/|frontend/|favicon\.ico|robots\.txt|sitemap\.xml)([^/.]+)$ {
+  location ~ ^/(?!api/|uploads/|assets/|frontend/|css/|js/|favicon\.ico|robots\.txt|sitemap\.xml)([^/.]+)$ {
     try_files $uri /frontend/pages/mon-menu.html;
   }
 
