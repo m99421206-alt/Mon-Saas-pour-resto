@@ -284,6 +284,21 @@ location /js/  { alias /var/www/africamenu/frontend/js/; }
 
 Sans `location /frontend/`, le menu public (`/menu/<slug>`) et la connexion renvoient **404** sur `config.js`, `menu-client.css`, etc.
 
+**Uploads d’images** (POST `/api/upload`) — sans `client_max_body_size`, nginx coupe à **1 Mo** (erreur **413**) avant l’API :
+
+```nginx
+client_max_body_size 64M;
+
+location /api/ {
+  client_max_body_size 64M;
+  proxy_read_timeout 120s;
+  proxy_send_timeout 120s;
+  # … proxy_pass, headers …
+}
+```
+
+La limite applicative (Multer) est configurable en admin (**1–64 Mo**, défaut **5 Mo**) ; nginx doit rester au moins égale à la valeur admin.
+
 ### Réécriture des URLs publiques propres
 
 Pour que les liens publics `/menu/<slug>` fonctionnent, le serveur statique doit réécrire ces requêtes vers la page `mon-menu.html` :
@@ -390,4 +405,6 @@ git tag -a v0.9.0-preprod -m "AfricaMenu prêt pour déploiement (pré-productio
 | QR ne s’ouvre pas sur mobile | En dev, renseigner `PUBLIC_SITE_ORIGIN` avec l’IP LAN ; en prod, laisser vide |
 | CSS/JS 404 en prod | Vérifier `location /frontend/` (et `/assets/`) dans nginx ; recharger `sudo nginx -t && sudo systemctl reload nginx` |
 | Menu public écran blanc | Onglet Réseau : `config.js` ou `mon-menu.js` en 404 → alias nginx manquant |
+| Upload image **413** | Ajouter `client_max_body_size 64M;` dans le bloc `server` ou `location /api/` nginx, puis `sudo nginx -t && sudo systemctl reload nginx` |
+| Upload refusé côté app | Limite admin (défaut **5 Mo**) dans Paramètres plateforme ; nginx doit être ≥ cette valeur |
 | `/health` db down            | MySQL arrêté ou mauvais `DB_*`                                                |
