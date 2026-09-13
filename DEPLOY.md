@@ -41,6 +41,15 @@ npm install
 cp .env.example .env
 ```
 
+Après une mise à jour des dépendances (`git pull`), réinstallez et redémarrez l’API :
+
+```bash
+cd backend
+npm install
+npm audit --omit=dev   # attendu : 0 vulnérabilité
+pm2 restart all        # ou votre commande de redémarrage
+```
+
 Éditez `backend/.env` : au minimum `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `JWT_SECRET`, `ADMIN_EMAILS`, `CORS_ORIGIN`.
 
 ### 2. Base MySQL

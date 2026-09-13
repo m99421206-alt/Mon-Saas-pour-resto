@@ -37,6 +37,10 @@ function buildUploadMw() {
     fileFilter: uploadImageValidation.createImageFileFilter(),
     limits: {
       fileSize: max,
+      files: 1,
+      fields: 8,
+      fieldNameSize: 128,
+      fieldSize: 2048,
     },
   });
 }
