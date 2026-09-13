@@ -299,6 +299,28 @@ location /api/ {
 
 La limite applicative (Multer) est configurable en admin (**1–64 Mo**, défaut **5 Mo**) ; nginx doit rester au moins égale à la valeur admin.
 
+### Erreur 500 sur `/frontend/pages/*.html`
+
+Symptôme : l’API répond (`/api/health` → 200) mais les pages statiques renvoient **500 nginx**.
+
+1. Lire la cause exacte :
+   ```bash
+   sudo tail -30 /var/log/nginx/africamenu.error.log
+   ```
+2. Vérifier que les fichiers existent :
+   ```bash
+   ls -la /var/www/africamenu/frontend/pages/categories.html
+   ls -la /var/www/africamenu/index.html
+   ```
+3. **Ne pas utiliser `alias` pour `/frontend/`** si `root` pointe déjà sur la racine du dépôt — les alias mal placés provoquent des 500. Utilisez la config simplifiée de [`nginx/africamenu.conf.example`](nginx/africamenu.conf.example) (seul `/uploads/` reste en alias).
+4. Si HTTPS (Certbot) : appliquez les mêmes `location` dans le bloc `listen 443 ssl`, pas seulement le port 80.
+5. Recharger :
+   ```bash
+   sudo nginx -t && sudo systemctl reload nginx
+   curl -sI https://africamenu.com/frontend/pages/login.html
+   ```
+   Attendu : **200 OK** (pas 500).
+
 ### Réécriture des URLs publiques propres
 
 Pour que les liens publics `/menu/<slug>` fonctionnent, le serveur statique doit réécrire ces requêtes vers la page `mon-menu.html` :
@@ -407,4 +429,5 @@ git tag -a v0.9.0-preprod -m "AfricaMenu prêt pour déploiement (pré-productio
 | Menu public écran blanc | Onglet Réseau : `config.js` ou `mon-menu.js` en 404 → alias nginx manquant |
 | Upload image **413** | Ajouter `client_max_body_size 64M;` dans le bloc `server` ou `location /api/` nginx, puis `sudo nginx -t && sudo systemctl reload nginx` |
 | Upload refusé côté app | Limite admin (défaut **5 Mo**) dans Paramètres plateforme ; nginx doit être ≥ cette valeur |
+| **500** sur pages HTML/CSS | Voir ci-dessous — souvent alias nginx cassé après édition manuelle |
 | `/health` db down            | MySQL arrêté ou mauvais `DB_*`                                                |

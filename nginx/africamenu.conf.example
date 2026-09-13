@@ -1,5 +1,11 @@
 # AfricaMenu nginx example configuration
 # Replace /var/www/africamenu with the actual path to your project root.
+#
+# IMPORTANT :
+# - Gardez vos lignes SSL Certbot (listen 443 ssl, ssl_certificate…) si HTTPS est actif.
+# - root sert /frontend/, /assets/ et index.html sans alias (plus fiable).
+# - Seul /uploads/ utilise alias (dossier backend/uploads).
+
 server {
   listen 80;
   server_name africamenu.com www.africamenu.com;
@@ -10,8 +16,7 @@ server {
   access_log /var/log/nginx/africamenu.access.log;
   error_log /var/log/nginx/africamenu.error.log warn;
 
-  # Nginx refuse par défaut au-delà de 1 Mo (413). L’API accepte jusqu’à 64 Mo
-  # (réglage admin « Limite uploads images », défaut 5 Mo).
+  # Nginx refuse par défaut au-delà de 1 Mo (413). L’API accepte jusqu’à 64 Mo.
   client_max_body_size 64M;
 
   location /api/ {
@@ -26,25 +31,23 @@ server {
     proxy_send_timeout 120s;
   }
 
+  location = /health {
+    proxy_pass http://127.0.0.1:4000/health;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+  }
+
+  location = /sitemap.xml {
+    proxy_pass http://127.0.0.1:4000/sitemap.xml;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+  }
+
   location /uploads/ {
     alias /var/www/africamenu/backend/uploads/;
     access_log off;
     expires 30d;
     add_header Cache-Control "public, max-age=2592000, immutable";
-  }
-
-  location /assets/ {
-    alias /var/www/africamenu/assets/;
-    access_log off;
-    expires 30d;
-    add_header Cache-Control "public, max-age=2592000, immutable";
-  }
-
-  location /frontend/ {
-    alias /var/www/africamenu/frontend/;
-    access_log off;
-    expires 7d;
-    add_header Cache-Control "public, max-age=604800";
   }
 
   # Raccourcis legacy (/css/, /js/) — le HTML utilise /frontend/css/ et /frontend/js/
@@ -62,13 +65,6 @@ server {
     add_header Cache-Control "public, max-age=604800";
   }
 
-  # Pages app (dashboard, admin, auth) — évite un 404 si accès direct sans /frontend/
-  location /pages/ {
-    alias /var/www/africamenu/frontend/pages/;
-    expires 1h;
-    add_header Cache-Control "public, max-age=3600";
-  }
-
   location /menu/ {
     try_files $uri $uri/ /frontend/pages/mon-menu.html;
   }
@@ -84,7 +80,7 @@ server {
     try_files /frontend/pages/mon-menu.html =404;
   }
 
-  location ~ ^/(?!api/|uploads/|assets/|frontend/|pages/|css/|js/|favicon\.ico|robots\.txt|sitemap\.xml)([^/.]+)$ {
+  location ~ ^/(?!api/|uploads/|css/|js/|favicon\.ico|robots\.txt|sitemap\.xml|health)([^/.]+)$ {
     try_files $uri /frontend/pages/mon-menu.html;
   }
 
