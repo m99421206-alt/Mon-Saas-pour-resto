@@ -278,6 +278,29 @@ async function updateProduct(req, res) {
       return res.status(404).json({ message: "Produit introuvable." });
     }
 
+    if (!visibilityOnlyUpdate) {
+      var categoryOwnership = await ownership.assertCategoryOwnedByRestaurant(
+        categoryId,
+        restaurantId,
+      );
+      if (categoryOwnership === "forbidden") {
+        await removeUnusedUploads(collectProductUploadUrls(image, variants));
+        return ownership.sendForbidden(res);
+      }
+      if (categoryOwnership === "not_found") {
+        await removeUnusedUploads(collectProductUploadUrls(image, variants));
+        return res
+          .status(400)
+          .json({ message: "La catégorie n'appartient pas à votre restaurant." });
+      }
+
+      if (
+        await rejectIfUploadUrlsForbidden(res, restaurantId, image, variants)
+      ) {
+        return;
+      }
+    }
+
     var pool = getPool();
     var connection = await pool.getConnection();
     var oldImages = [];
