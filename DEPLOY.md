@@ -260,17 +260,29 @@ Optimisations déjà en place dans le code :
 - **Scripts** : tous chargés avec `defer`.
 - **Menu client** : un seul appel API (`/menu/:id`), images `loading="lazy"`, bannière `fetchpriority="high"`.
 
-À configurer côté **hébergeur statique** (nginx, Netlify, Vercel…) pour le CSS/JS du dossier `frontend/` :
+À configurer côté **nginx** (obligatoire en production) — voir [`nginx/africamenu.conf.example`](nginx/africamenu.conf.example) :
 
 ```nginx
-# Exemple nginx — cache long pour les assets statiques
-location ~* \.(css|js)$ {
+# CSS/JS de l'app (chemins absolus /frontend/css/ et /frontend/js/ dans le HTML)
+location /frontend/ {
+  alias /var/www/africamenu/frontend/;
+  expires 7d;
   add_header Cache-Control "public, max-age=604800";
 }
-location ~* \.(png|jpg|jpeg|webp|svg|woff2)$ {
+
+# Landing + images marketing
+location /assets/ {
+  alias /var/www/africamenu/assets/;
+  expires 30d;
   add_header Cache-Control "public, max-age=2592000, immutable";
 }
+
+# Raccourcis legacy (anciennes URLs /css/ et /js/) — optionnel
+location /css/ { alias /var/www/africamenu/frontend/css/; }
+location /js/  { alias /var/www/africamenu/frontend/js/; }
 ```
+
+Sans `location /frontend/`, le menu public (`/menu/<slug>`) et la connexion renvoient **404** sur `config.js`, `menu-client.css`, etc.
 
 ### Réécriture des URLs publiques propres
 
@@ -376,4 +388,6 @@ git tag -a v0.9.0-preprod -m "AfricaMenu prêt pour déploiement (pré-productio
 | `JWT_SECRET manquant`        | Renseigner dans `.env`                                                        |
 | Admin 503                    | `ADMIN_EMAILS` vide en `NODE_ENV=production`                                  |
 | QR ne s’ouvre pas sur mobile | En dev, renseigner `PUBLIC_SITE_ORIGIN` avec l’IP LAN ; en prod, laisser vide |
+| CSS/JS 404 en prod | Vérifier `location /frontend/` (et `/assets/`) dans nginx ; recharger `sudo nginx -t && sudo systemctl reload nginx` |
+| Menu public écran blanc | Onglet Réseau : `config.js` ou `mon-menu.js` en 404 → alias nginx manquant |
 | `/health` db down            | MySQL arrêté ou mauvais `DB_*`                                                |
