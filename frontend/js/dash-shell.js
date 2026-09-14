@@ -114,12 +114,11 @@
     var monMenuLink = document.getElementById("nav-mon-menu-link");
     if (!monMenuLink || !restaurant) return;
 
-    var target = restaurant.slug || restaurant.id;
-    if (!target) return;
+    var pub = window.MenuGo_PublicMenuUrl;
+    if (!pub) return;
 
-    var publicPath = restaurant.slug
-      ? "/restaurant/" + encodeURIComponent(restaurant.slug)
-      : "/menu/" + encodeURIComponent(restaurant.id);
+    var publicPath = pub.buildPublicMenuPath(restaurant);
+    if (!publicPath) return;
 
     monMenuLink.href = publicPath;
   }

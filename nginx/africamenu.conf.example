@@ -80,8 +80,9 @@ server {
     try_files /frontend/pages/mon-menu.html =404;
   }
 
-  location ~ ^/(?!api/|uploads/|css/|js/|favicon\.ico|robots\.txt|sitemap\.xml|health)([^/.]+)$ {
-    try_files $uri /frontend/pages/mon-menu.html;
+  # Ancien format /<slug> → redirection canonique /restaurant/<slug>
+  location ~ ^/(?!api/|uploads/|css/|js/|frontend/|assets/|restaurant/|menu/|favicon\.ico|robots\.txt|sitemap\.xml|health)([^/.]+)$ {
+    return 301 /restaurant/$1;
   }
 
   location / {

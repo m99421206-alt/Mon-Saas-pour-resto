@@ -67,6 +67,7 @@ let menuEnterTimer = null;
 let savedMenuScrollY = 0;
 let menuLoading = false;
 let menuUiBound = false;
+let loadedRestaurantId = null;
 
 // String & Sanitization Helpers
 function getTrimmedDescription(value) {
@@ -350,8 +351,49 @@ function getRestaurantIdFromUrl() {
 }
 
 function getCartStorageKey() {
-  const restaurantId = getRestaurantIdFromUrl();
+  const restaurantId = loadedRestaurantId || getRestaurantIdFromUrl();
   return restaurantId ? `MenuGo_cart_${restaurantId}` : null;
+}
+
+function isPublicMenuPath(pathname) {
+  const path = String(pathname || "").replace(/\/+$/, "") || "/";
+  const segments = path.split("/").filter(Boolean);
+
+  if (!segments.length) {
+    return false;
+  }
+
+  if (segments[0] === "menu" || segments[0] === "restaurant") {
+    return segments.length >= 2;
+  }
+
+  if (segments[0] === "frontend" && segments[2] === "mon-menu.html") {
+    return true;
+  }
+
+  return segments.length === 1 && segments[0] !== "index.html";
+}
+
+function canonicalizePublicMenuUrl(restaurant) {
+  const pub = window.MenuGo_PublicMenuUrl;
+  if (!pub || !restaurant) {
+    return;
+  }
+
+  const canonicalPath = pub.buildPublicMenuPath(restaurant);
+  if (!canonicalPath || !isPublicMenuPath(window.location.pathname)) {
+    return;
+  }
+
+  const currentPath =
+    String(window.location.pathname || "").replace(/\/+$/, "") || "/";
+  if (currentPath === canonicalPath) {
+    return;
+  }
+
+  const nextUrl =
+    canonicalPath + window.location.search + window.location.hash;
+  window.history.replaceState(null, "", nextUrl);
 }
 
 function getCartTotalItems() {
@@ -566,6 +608,10 @@ function applyRestaurantData(restaurant) {
   const restaurantLogoWrap = document.getElementById("restaurant-logo-wrap");
 
   if (!restaurant) return;
+
+  if (restaurant.id != null) {
+    loadedRestaurantId = String(restaurant.id);
+  }
 
   if (restaurant.name && restaurantNameEl) {
     restaurantNameEl.textContent = restaurant.name;
@@ -811,6 +857,7 @@ async function loadPublicMenu() {
     );
   }
 
+  canonicalizePublicMenuUrl(body.restaurant);
   applyRestaurantData(body.restaurant);
   mapPublicMenuData(body);
 }

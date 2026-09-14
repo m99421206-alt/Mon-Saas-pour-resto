@@ -576,11 +576,14 @@
   }
 
   function openPublicMenu(restaurantId, restaurantSlug) {
-    var target = restaurantSlug ? String(restaurantSlug) : String(restaurantId);
-    var url =
-      restaurantSlug && restaurantSlug.length
-        ? "/" + encodeURIComponent(target)
-        : "/menu/" + encodeURIComponent(target);
+    var pub = window.MenuGo_PublicMenuUrl;
+    var restaurant = restaurantSlug
+      ? { id: restaurantId, slug: restaurantSlug }
+      : { id: restaurantId };
+    var url = pub
+      ? pub.buildPublicMenuUrl(restaurant)
+      : "/menu/" + encodeURIComponent(String(restaurantId));
+    if (!url) return;
     window.open(url, "_blank", "noopener,noreferrer");
   }
 

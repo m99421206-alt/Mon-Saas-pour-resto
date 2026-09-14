@@ -98,30 +98,9 @@
     }
   }
 
-  function resolvePublicSiteOrigin() {
-    var cfg = window.MenuGo_CONFIG || {};
-    var raw =
-      typeof cfg.PUBLIC_SITE_ORIGIN === "string"
-        ? cfg.PUBLIC_SITE_ORIGIN.trim().replace(/\/+$/, "")
-        : "";
-    return raw.length ? raw : window.location.origin;
-  }
-
   function buildPublicMenuUrl(restaurant) {
-    var target =
-      restaurant && restaurant.slug
-        ? String(restaurant.slug)
-        : restaurant && restaurant.id
-          ? String(restaurant.id)
-          : "";
-    if (!target) {
-      return "";
-    }
-    return (
-      resolvePublicSiteOrigin() +
-      (restaurant && restaurant.slug ? "/restaurant/" : "/menu/") +
-      encodeURIComponent(target)
-    );
+    var pub = window.MenuGo_PublicMenuUrl;
+    return pub ? pub.buildPublicMenuUrl(restaurant) : "";
   }
 
   function getDashboardQrDisplaySize() {
