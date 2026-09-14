@@ -10,6 +10,11 @@ const categoriesEl = document.getElementById("categories");
 const productsEl = document.getElementById("products");
 const appEl = document.querySelector(".app");
 const menuSkeletonEl = document.getElementById("menu-skeleton");
+const menuErrorEl = document.getElementById("menu-error");
+const menuErrorIconEl = document.getElementById("menu-error-icon");
+const menuErrorTitleEl = document.getElementById("menu-error-title");
+const menuErrorMessageEl = document.getElementById("menu-error-message");
+const menuErrorRetryEl = document.getElementById("menu-error-retry");
 const whatsappEl = document.getElementById("whatsapp");
 const bottomNavEl = document.querySelector(".bottom-nav");
 const homeNavEl = document.getElementById("home-nav");
@@ -60,6 +65,8 @@ let detailEnterTimer = null;
 let menuEnterPlayed = false;
 let menuEnterTimer = null;
 let savedMenuScrollY = 0;
+let menuLoading = false;
+let menuUiBound = false;
 
 // String & Sanitization Helpers
 function getTrimmedDescription(value) {
@@ -675,37 +682,177 @@ function mapPublicMenuData(data) {
   });
 }
 
+function createMenuLoadError(kind, status, message) {
+  const err = new Error(message);
+  err.menuLoadKind = kind;
+  err.menuLoadStatus = status;
+  return err;
+}
+
+function resolveMenuErrorPresentation(error) {
+  const kind =
+    error && error.menuLoadKind ? error.menuLoadKind : "unavailable";
+  const message =
+    error && error.message
+      ? error.message
+      : "Impossible de charger le menu pour le moment.";
+
+  const presets = {
+    missing_id: { title: "Lien incomplet", icon: "fa-link-slash" },
+    not_found: { title: "Menu introuvable", icon: "fa-store-slash" },
+    suspended: { title: "Menu indisponible", icon: "fa-ban" },
+    maintenance: { title: "Maintenance", icon: "fa-screwdriver-wrench" },
+    network: { title: "Hors connexion", icon: "fa-wifi" },
+    server: { title: "Service indisponible", icon: "fa-server" },
+    invalid_response: {
+      title: "Erreur de chargement",
+      icon: "fa-circle-exclamation",
+    },
+    unavailable: {
+      title: "Erreur de chargement",
+      icon: "fa-circle-exclamation",
+    },
+  };
+
+  const preset = presets[kind] || presets.unavailable;
+  return {
+    title: preset.title,
+    message: message,
+    icon: preset.icon,
+  };
+}
+
 async function loadPublicMenu() {
   const restaurantId = getRestaurantIdFromUrl();
-  if (!restaurantId) return;
-
-  const apiUrl = window.MenuGo_CONFIG?.API_URL || "/api";
-  const response = await fetch(`${apiUrl}/menu/${restaurantId}`);
-
-  const contentType = response.headers.get("content-type");
-  if (!contentType || !contentType.includes("application/json")) {
-    throw new Error(
-      "Le serveur a renvoyé du HTML au lieu de JSON (route introuvable ou erreur serveur).",
+  if (!restaurantId) {
+    throw createMenuLoadError(
+      "missing_id",
+      null,
+      "Ce lien ne contient pas de restaurant. Scannez le QR code du restaurant ou vérifiez l’adresse.",
     );
   }
 
-  if (!response.ok) {
-    throw new Error("Menu public indisponible.");
+  const apiUrl = window.MenuGo_CONFIG?.API_URL || "/api";
+  let response;
+
+  try {
+    response = await fetch(
+      `${apiUrl}/menu/${encodeURIComponent(restaurantId)}`,
+    );
+  } catch (fetchError) {
+    throw createMenuLoadError(
+      "network",
+      null,
+      "Connexion impossible. Vérifiez votre réseau mobile ou Wi‑Fi, puis réessayez.",
+    );
   }
 
-  const data = await response.json();
-  applyRestaurantData(data.restaurant);
-  mapPublicMenuData(data);
+  const contentType = response.headers.get("content-type") || "";
+  let body = null;
+
+  if (contentType.includes("application/json")) {
+    try {
+      body = await response.json();
+    } catch (parseError) {
+      body = null;
+    }
+  }
+
+  if (!response.ok) {
+    const serverMessage =
+      body && body.message ? String(body.message).trim() : "";
+
+    if (response.status === 404) {
+      throw createMenuLoadError(
+        "not_found",
+        404,
+        serverMessage || "Ce menu n’existe pas ou n’est plus disponible.",
+      );
+    }
+
+    if (response.status === 403) {
+      throw createMenuLoadError(
+        "suspended",
+        403,
+        serverMessage || "Ce menu est temporairement indisponible.",
+      );
+    }
+
+    if (response.status === 503 && body && body.maintenance) {
+      throw createMenuLoadError(
+        "maintenance",
+        503,
+        serverMessage ||
+          "La plateforme est en maintenance. Réessayez dans quelques minutes.",
+      );
+    }
+
+    if (response.status >= 500) {
+      throw createMenuLoadError(
+        "server",
+        response.status,
+        serverMessage ||
+          "Le service est momentanément indisponible. Réessayez bientôt.",
+      );
+    }
+
+    throw createMenuLoadError(
+      "unavailable",
+      response.status,
+      serverMessage || "Impossible d’afficher ce menu pour le moment.",
+    );
+  }
+
+  if (!body || !body.restaurant) {
+    throw createMenuLoadError(
+      "invalid_response",
+      null,
+      "Réponse serveur invalide. Réessayez ou contactez le restaurant.",
+    );
+  }
+
+  applyRestaurantData(body.restaurant);
+  mapPublicMenuData(body);
 }
 
 function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+function showMenuSkeleton() {
+  if (!menuSkeletonEl || !appEl) return;
+  menuSkeletonEl.hidden = false;
+  menuSkeletonEl.setAttribute("aria-busy", "true");
+  appEl.classList.add("menu-enter-pending");
+  appEl.classList.remove("is-menu-error");
+}
+
 function hideMenuSkeleton() {
   if (!menuSkeletonEl) return;
   menuSkeletonEl.hidden = true;
   menuSkeletonEl.removeAttribute("aria-busy");
+}
+
+function showMenuError(error) {
+  if (!menuErrorEl || !appEl) return;
+
+  const copy = resolveMenuErrorPresentation(error);
+  if (menuErrorTitleEl) menuErrorTitleEl.textContent = copy.title;
+  if (menuErrorMessageEl) menuErrorMessageEl.textContent = copy.message;
+  if (menuErrorIconEl) {
+    menuErrorIconEl.className = "fa-solid " + copy.icon;
+  }
+
+  menuErrorEl.hidden = false;
+  appEl.classList.add("is-menu-error");
+  appEl.classList.remove("menu-enter-pending");
+  appEl.classList.remove("is-menu-opening");
+}
+
+function hideMenuError() {
+  if (!menuErrorEl || !appEl) return;
+  menuErrorEl.hidden = true;
+  appEl.classList.remove("is-menu-error");
 }
 
 function playMenuEnterAnimation() {
@@ -1427,6 +1574,9 @@ function openWhatsapp(productName) {
 
 // Event Listeners Initialization
 function setupEventListeners() {
+  if (menuUiBound) return;
+  menuUiBound = true;
+
   whatsappEl?.addEventListener("click", (event) => {
     event.preventDefault();
     showOrderPage();
@@ -1499,19 +1649,37 @@ function setupEventListeners() {
 
 // Application Initialization
 async function initializeMenu() {
+  if (menuLoading) return;
+  menuLoading = true;
+
+  if (menuErrorRetryEl) menuErrorRetryEl.disabled = true;
+  hideMenuError();
+  showMenuSkeleton();
+
   try {
     await loadPublicMenu();
+    restoreCartFromStorage();
+    updateCartBadge();
+    renderCategories();
+    showProducts("all");
+    hideMenuSkeleton();
+    hideMenuError();
+    menuEnterPlayed = false;
+    playMenuEnterAnimation();
+    setupEventListeners();
   } catch (error) {
     console.warn("Impossible de charger le menu public :", error.message);
+    hideMenuSkeleton();
+    showMenuError(error);
+    setupEventListeners();
+  } finally {
+    menuLoading = false;
+    if (menuErrorRetryEl) menuErrorRetryEl.disabled = false;
   }
-
-  restoreCartFromStorage();
-  updateCartBadge();
-  renderCategories();
-  showProducts("all");
-  hideMenuSkeleton();
-  playMenuEnterAnimation();
-  setupEventListeners();
 }
+
+menuErrorRetryEl?.addEventListener("click", () => {
+  initializeMenu();
+});
 
 initializeMenu();
