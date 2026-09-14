@@ -1,6 +1,7 @@
 const fs = require("fs/promises");
 const path = require("path");
 const { getPool } = require("../config/database");
+const { removeRegistryEntryForUrl } = require("./uploadOwnership");
 
 const uploadsDir = path.join(__dirname, "../../uploads");
 
@@ -43,6 +44,7 @@ async function removeUnusedUpload(uploadUrl) {
 
   try {
     await fs.unlink(getUploadPath(normalizedUrl));
+    await removeRegistryEntryForUrl(normalizedUrl);
   } catch (error) {
     if (error.code !== "ENOENT") {
       throw error;

@@ -4,6 +4,84 @@ const { getPool } = require("../config/database");
 var UPLOAD_FORBIDDEN_MESSAGE =
   "Cette image appartient à un autre restaurant. Utilisez une image uploadée depuis votre compte.";
 
+var DEFAULT_UPLOAD_MAX_IMAGES = 100;
+
+function getUploadMaxImagesPerRestaurant() {
+  var n = Number(process.env.UPLOAD_MAX_IMAGES_PER_RESTAURANT);
+  if (!Number.isFinite(n) || n < 1) {
+    return DEFAULT_UPLOAD_MAX_IMAGES;
+  }
+  return Math.min(1000, Math.round(n));
+}
+
+async function countRestaurantUploads(restaurantId) {
+  var rid = Number(restaurantId);
+  if (!Number.isInteger(rid) || rid < 1) {
+    return 0;
+  }
+
+  try {
+    var pool = getPool();
+    var [rows] = await pool.query(
+      "SELECT COUNT(*) AS total FROM upload_files WHERE restaurant_id = ?",
+      [rid]
+    );
+    return Number(rows[0].total) || 0;
+  } catch (err) {
+    if (isMissingUploadRegistry(err)) {
+      return 0;
+    }
+    throw err;
+  }
+}
+
+async function assertRestaurantUploadQuota(restaurantId) {
+  var max = getUploadMaxImagesPerRestaurant();
+  var count = await countRestaurantUploads(restaurantId);
+
+  if (count >= max) {
+    return {
+      ok: false,
+      count: count,
+      max: max,
+      message:
+        "Limite atteinte : maximum " +
+        max +
+        " images par restaurant (" +
+        count +
+        "/" +
+        max +
+        "). Supprimez ou remplacez des photos existantes.",
+    };
+  }
+
+  return { ok: true, count: count, max: max };
+}
+
+async function removeRegistryEntryForFilename(filename) {
+  var name = String(filename || "").trim();
+  if (!name) {
+    return;
+  }
+
+  try {
+    var pool = getPool();
+    await pool.query("DELETE FROM upload_files WHERE filename = ? LIMIT 1", [name]);
+  } catch (err) {
+    if (!isMissingUploadRegistry(err)) {
+      throw err;
+    }
+  }
+}
+
+async function removeRegistryEntryForUrl(uploadUrl) {
+  var filename = getFilenameFromUploadUrl(uploadUrl);
+  if (!filename) {
+    return;
+  }
+  await removeRegistryEntryForFilename(filename);
+}
+
 function getFilenameFromUploadUrl(uploadUrl) {
   if (!uploadUrl || typeof uploadUrl !== "string" || uploadUrl.indexOf("/uploads/") !== 0) {
     return null;
@@ -143,6 +221,11 @@ function sendUploadForbidden(res) {
 
 module.exports = {
   UPLOAD_FORBIDDEN_MESSAGE: UPLOAD_FORBIDDEN_MESSAGE,
+  DEFAULT_UPLOAD_MAX_IMAGES: DEFAULT_UPLOAD_MAX_IMAGES,
+  getUploadMaxImagesPerRestaurant: getUploadMaxImagesPerRestaurant,
+  countRestaurantUploads: countRestaurantUploads,
+  assertRestaurantUploadQuota: assertRestaurantUploadQuota,
+  removeRegistryEntryForUrl: removeRegistryEntryForUrl,
   registerUploadForRestaurant: registerUploadForRestaurant,
   assertUploadUrlAllowedForRestaurant: assertUploadUrlAllowedForRestaurant,
   assertUploadUrlsAllowedForRestaurant: assertUploadUrlsAllowedForRestaurant,

@@ -9,7 +9,10 @@ var platformSettings = require("../services/platformSettings");
 const { appendAuditFromRequest, AUDIT_ACTIONS, getRestaurantIdForUserAudit } = require("../utils/auditLog");
 const uploadImageValidation = require("../utils/uploadImageValidation");
 const { optimizeUploadedImage } = require("../utils/optimizeUploadedImage");
-const { registerUploadForRestaurant } = require("../utils/uploadOwnership");
+const {
+  registerUploadForRestaurant,
+  assertRestaurantUploadQuota,
+} = require("../utils/uploadOwnership");
 
 const router = express.Router();
 const uploadsDir = path.join(__dirname, "../../uploads");
@@ -56,9 +59,26 @@ async function logUploadFailure(req, reason) {
 router.use(requireAuth);
 router.use(requireRestaurantOwner);
 
-router.post("/", requireRestaurantMenuEdit, function (req, res) {
+router.post("/", requireRestaurantMenuEdit, async function (req, res) {
   var maxBytes = platformSettings.getUploadMaxBytes();
   var maxMb = Math.round((maxBytes / (1024 * 1024)) * 10) / 10;
+
+  try {
+    var restaurantIdForQuota =
+      req.restaurantId || (await getRestaurantIdForUserAudit(req.user.id));
+    var quota = await assertRestaurantUploadQuota(restaurantIdForQuota);
+    if (!quota.ok) {
+      await logUploadFailure(req, quota.message);
+      return res.status(429).json({ message: quota.message });
+    }
+  } catch (quotaErr) {
+    if (process.env.NODE_ENV !== "production") {
+      console.error("[upload quota]", quotaErr);
+    }
+    return res.status(500).json({
+      message: "Impossible de vérifier le quota d’images pour ce restaurant.",
+    });
+  }
 
   buildUploadMw().single("image")(req, res, async function (err) {
     try {
