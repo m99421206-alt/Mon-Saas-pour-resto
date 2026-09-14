@@ -56,6 +56,9 @@ async function optimizeUploadedImage(file) {
   const baseName = path.basename(file.filename, path.extname(file.filename));
   const webpName = baseName + ".webp";
   const webpPath = path.join(dir, webpName);
+  // Sharp cannot read and write the same path. Uploads that are already .webp
+  // would otherwise fail (and the source file would be deleted).
+  const tempPath = path.join(dir, baseName + ".tmp.webp");
 
   try {
     const pipeline = sharp(originalPath, {
@@ -65,20 +68,23 @@ async function optimizeUploadedImage(file) {
     const metadata = await pipeline.metadata();
 
     if (!metadata || !metadata.width || !metadata.height) {
-      return rejectUploadedImage(originalPath, webpPath, REJECT_MESSAGE);
+      return rejectUploadedImage(originalPath, tempPath, REJECT_MESSAGE);
     }
 
     if (metadata.width > MAX_WIDTH) {
       pipeline.resize({ width: MAX_WIDTH, withoutEnlargement: true });
     }
 
-    await pipeline.webp({ quality: WEBP_QUALITY, effort: 4 }).toFile(webpPath);
+    await pipeline.webp({ quality: WEBP_QUALITY, effort: 4 }).toFile(tempPath);
+    await fs.promises.rename(tempPath, webpPath);
 
-    await fs.promises.unlink(originalPath).catch(function () {});
+    if (originalPath !== webpPath) {
+      await fs.promises.unlink(originalPath).catch(function () {});
+    }
 
     return { filename: webpName, optimized: true };
   } catch (err) {
-    return rejectUploadedImage(originalPath, webpPath, REJECT_MESSAGE);
+    return rejectUploadedImage(originalPath, tempPath, REJECT_MESSAGE);
   }
 }
 
