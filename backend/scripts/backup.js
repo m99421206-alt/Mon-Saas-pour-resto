@@ -144,10 +144,11 @@ async function archiveUploads(targetArchivePath) {
 
   if (process.platform === "win32") {
     var zipPath = targetArchivePath.replace(/\.tar\.gz$/i, ".zip");
+    // Archive le dossier uploads/ entier (pas uploads\*) pour conserver le préfixe uploads/ dans le zip.
     var psScript =
       "Compress-Archive -Path '" +
       uploadsDir.replace(/'/g, "''") +
-      "\\*' -DestinationPath '" +
+      "' -DestinationPath '" +
       zipPath.replace(/'/g, "''") +
       "' -Force";
     await runCommand("powershell.exe", ["-NoProfile", "-Command", psScript], { shell: false });

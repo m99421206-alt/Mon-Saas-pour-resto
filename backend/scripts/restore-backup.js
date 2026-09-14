@@ -7,6 +7,7 @@ require("dotenv").config();
 
 var childProcess = require("child_process");
 var fs = require("fs");
+var os = require("os");
 var path = require("path");
 var zlib = require("zlib");
 var readline = require("readline");
@@ -115,6 +116,83 @@ async function restoreDatabase(sqlPath) {
   });
 }
 
+async function clearUploadsDir() {
+  await fs.promises.mkdir(uploadsDir, { recursive: true });
+  var entries = await fs.promises.readdir(uploadsDir, { withFileTypes: true });
+  for (var i = 0; i < entries.length; i += 1) {
+    var entry = entries[i];
+    await fs.promises.rm(path.join(uploadsDir, entry.name), {
+      recursive: true,
+      force: true,
+    });
+  }
+}
+
+async function copyDirectoryContents(sourceDir, targetDir) {
+  await fs.promises.mkdir(targetDir, { recursive: true });
+  var entries = await fs.promises.readdir(sourceDir, { withFileTypes: true });
+  for (var i = 0; i < entries.length; i += 1) {
+    var entry = entries[i];
+    var fromPath = path.join(sourceDir, entry.name);
+    var toPath = path.join(targetDir, entry.name);
+    if (entry.isDirectory()) {
+      await copyDirectoryContents(fromPath, toPath);
+      continue;
+    }
+    await fs.promises.copyFile(fromPath, toPath);
+  }
+}
+
+async function normalizeExtractedUploads(stagingDir) {
+  var nestedUploadsDir = path.join(stagingDir, "uploads");
+  if (fs.existsSync(nestedUploadsDir)) {
+    console.log("[restore] Structure uploads/ détectée dans l’archive.");
+    await clearUploadsDir();
+    await copyDirectoryContents(nestedUploadsDir, uploadsDir);
+    return;
+  }
+
+  var stagingEntries = await fs.promises.readdir(stagingDir, { withFileTypes: true });
+  var hasPayload = stagingEntries.some(function (entry) {
+    return entry.isFile() || entry.isDirectory();
+  });
+  if (!hasPayload) {
+    throw new Error("Archive uploads vide ou illisible.");
+  }
+
+  console.log(
+    "[restore] Ancien format Windows détecté (fichiers à la racine du zip) — correction appliquée.",
+  );
+  await clearUploadsDir();
+  await copyDirectoryContents(stagingDir, uploadsDir);
+}
+
+async function restoreUploadsFromZip(archivePath) {
+  var stagingDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "africamenu-restore-uploads-"));
+  try {
+    var psScript =
+      "Expand-Archive -Path '" +
+      archivePath.replace(/'/g, "''") +
+      "' -DestinationPath '" +
+      stagingDir.replace(/'/g, "''") +
+      "' -Force";
+    await runCommand("powershell.exe", ["-NoProfile", "-Command", psScript], { shell: false });
+    await normalizeExtractedUploads(stagingDir);
+  } finally {
+    await fs.promises.rm(stagingDir, { recursive: true, force: true }).catch(function () {});
+  }
+}
+
+async function restoreUploadsFromTar(archivePath) {
+  var stagingDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), "africamenu-restore-uploads-"));
+  try {
+    await runCommand("tar", ["-xzf", archivePath, "-C", stagingDir], { shell: false });
+    await normalizeExtractedUploads(stagingDir);
+  } finally {
+    await fs.promises.rm(stagingDir, { recursive: true, force: true }).catch(function () {});
+  }
+}
+
 async function restoreUploads(backupFolder, uploadsFileName) {
   if (!uploadsFileName) {
     console.log("[restore] Aucune archive uploads dans cette sauvegarde.");
@@ -126,22 +204,14 @@ async function restoreUploads(backupFolder, uploadsFileName) {
     throw new Error("Archive uploads introuvable : " + archivePath);
   }
 
-  await fs.promises.mkdir(uploadsDir, { recursive: true });
-
   console.log("[restore] Extraction uploads/…");
 
   if (archivePath.toLowerCase().endsWith(".zip")) {
-    var psScript =
-      "Expand-Archive -Path '" +
-      archivePath.replace(/'/g, "''") +
-      "' -DestinationPath '" +
-      backendRoot.replace(/'/g, "''") +
-      "' -Force";
-    await runCommand("powershell.exe", ["-NoProfile", "-Command", psScript], { shell: false });
+    await restoreUploadsFromZip(archivePath);
     return;
   }
 
-  await runCommand("tar", ["-xzf", archivePath, "-C", backendRoot], { shell: false });
+  await restoreUploadsFromTar(archivePath);
 }
 
 function askConfirmation(message) {
