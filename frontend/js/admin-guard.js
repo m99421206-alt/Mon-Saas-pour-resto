@@ -2,6 +2,7 @@
  * Garde d’accès des pages administration plateforme.
  * — Non connecté → login.html
  * — Connecté sans droits admin → dashboard.html (restaurant)
+ * — Erreur réseau / serveur → bannière sur place (pas de fausse redirection)
  * — Admin plateforme → accès autorisé
  */
 (function () {
@@ -51,6 +52,45 @@
     }
   }
 
+  function isTruthyAdminFlag(value) {
+    return value === true || value === 1 || value === "1";
+  }
+
+  function hideAccessBanner() {
+    var el = document.getElementById("adm-access-banner");
+    if (!el) {
+      return;
+    }
+    el.textContent = "";
+    el.hidden = true;
+    el.classList.remove("adm-banner--warning", "adm-banner--error");
+  }
+
+  function showAccessBanner(message, variant) {
+    var el = document.getElementById("adm-access-banner");
+    if (!el) {
+      return;
+    }
+    el.textContent = message || "";
+    el.hidden = false;
+    el.classList.remove("adm-banner--warning", "adm-banner--error");
+    el.classList.add(
+      variant === "error" ? "adm-banner--error" : "adm-banner--warning",
+    );
+  }
+
+  function buildMeUrl(base) {
+    var p = "/api/me";
+    if (String(base).endsWith("/api") && p.indexOf("/api") === 0) {
+      p = p.replace(/^\/api/, "");
+    }
+    return String(base).replace(/\/$/, "") + "/" + String(p).replace(/^\//, "");
+  }
+
+  function isSuspendedAccountMessage(message) {
+    return /suspendu/i.test(String(message || ""));
+  }
+
   /**
    * Vérifie la session et le rôle admin avant d’afficher une page admin.
    * @param {{ loginNext?: string }} options
@@ -60,7 +100,6 @@
     var opts = options || {};
     var loginNext = opts.loginNext || getCurrentPage();
 
-    /* 1. JWT présent en localStorage ? */
     var token;
     try {
       token = localStorage.getItem(TOKEN_KEY);
@@ -74,21 +113,28 @@
 
     var base = getApiBase();
     if (!base) {
-      redirectToRestaurantDashboard();
+      showAccessBanner(
+        "Configuration API manquante. Vérifiez frontend/js/config.js (API_URL).",
+        "error",
+      );
       return false;
     }
 
-    /* 2. Vérification serveur : is_platform_admin (ADMIN_EMAILS côté API). */
-    var p = "/api/me";
-    if (String(base).endsWith("/api") && p.indexOf("/api") === 0) {
-      p = p.replace(/^\/api/, "");
+    var response;
+    var data = {};
+
+    try {
+      response = await fetch(buildMeUrl(base), {
+        headers: { Authorization: "Bearer " + token },
+      });
+      data = await readJson(response);
+    } catch (err) {
+      showAccessBanner(
+        "Impossible de joindre l’API. Vérifiez votre connexion et frontend/js/config.js (API_URL).",
+        "error",
+      );
+      return false;
     }
-    var url =
-      String(base).replace(/\/$/, "") + "/" + String(p).replace(/^\//, "");
-    var response = await fetch(url, {
-      headers: { Authorization: "Bearer " + token },
-    });
-    var data = await readJson(response);
 
     if (response.status === 401) {
       clearSession();
@@ -96,21 +142,62 @@
       return false;
     }
 
-    /* 3. Utilisateur connecté mais sans rôle administrateur plateforme. */
-    if (!data.is_platform_admin) {
+    if (response.status === 403) {
+      var forbiddenMessage = data.message ? String(data.message).trim() : "";
+      if (isSuspendedAccountMessage(forbiddenMessage)) {
+        clearSession();
+        redirectToLogin(loginNext);
+        return false;
+      }
       redirectToRestaurantDashboard();
       return false;
     }
 
+    if (response.status === 503) {
+      showAccessBanner(
+        (data.message && String(data.message).trim()) ||
+          "Administration temporairement indisponible. Réessayez plus tard.",
+        "error",
+      );
+      return false;
+    }
+
+    if (response.status >= 500) {
+      showAccessBanner(
+        (data.message && String(data.message).trim()) ||
+          "Erreur serveur lors de la vérification de l’accès administrateur.",
+        "error",
+      );
+      return false;
+    }
+
+    if (!response.ok) {
+      showAccessBanner(
+        (data.message && String(data.message).trim()) ||
+          "Impossible de vérifier l’accès administrateur.",
+        "error",
+      );
+      return false;
+    }
+
+    if (!isTruthyAdminFlag(data.is_platform_admin)) {
+      redirectToRestaurantDashboard();
+      return false;
+    }
+
+    hideAccessBanner();
     return true;
   }
 
   /**
-   * Réponses API admin : 401 → login, 403 → dashboard restaurant (pas de bannière).
-   * @returns {boolean} true si une redirection a été déclenchée
+   * Réponses API admin : 401 → login, 403 → dashboard restaurant,
+   * 503/5xx → bannière (reste sur la page).
+   * @returns {boolean} true si le chargement doit s’arrêter
    */
   function handleAdminApiStatus(status, options) {
-    var loginNext = (options && options.loginNext) || getCurrentPage();
+    var opts = options || {};
+    var loginNext = opts.loginNext || getCurrentPage();
+    var message = opts.message ? String(opts.message).trim() : "";
 
     if (status === 401) {
       clearSession();
@@ -119,7 +206,21 @@
     }
 
     if (status === 403) {
+      if (isSuspendedAccountMessage(message)) {
+        clearSession();
+        redirectToLogin(loginNext);
+        return true;
+      }
       redirectToRestaurantDashboard();
+      return true;
+    }
+
+    if (status === 503 || status >= 500) {
+      showAccessBanner(
+        message ||
+          "Service administrateur temporairement indisponible. Réessayez plus tard.",
+        "error",
+      );
       return true;
     }
 
@@ -132,6 +233,8 @@
     RESTAURANT_KEY: RESTAURANT_KEY,
     enforceAdminAccess: enforceAdminAccess,
     handleAdminApiStatus: handleAdminApiStatus,
+    showAccessBanner: showAccessBanner,
+    hideAccessBanner: hideAccessBanner,
     clearSession: clearSession,
     redirectToLogin: redirectToLogin,
     redirectToRestaurantDashboard: redirectToRestaurantDashboard,
