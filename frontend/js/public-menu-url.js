@@ -53,9 +53,22 @@
     return origin + path;
   }
 
+  function isCanonicalPublicMenuUrl(url) {
+    if (!url) {
+      return false;
+    }
+    try {
+      var parsed = new URL(String(url), resolvePublicSiteOrigin());
+      return /^\/restaurant\/[^/]+/.test(parsed.pathname);
+    } catch (e) {
+      return /^https?:\/\/[^/]+\/restaurant\/[^/]+/.test(String(url));
+    }
+  }
+
   window.MenuGo_PublicMenuUrl = {
     resolvePublicSiteOrigin: resolvePublicSiteOrigin,
     buildPublicMenuPath: buildPublicMenuPath,
     buildPublicMenuUrl: buildPublicMenuUrl,
+    isCanonicalPublicMenuUrl: isCanonicalPublicMenuUrl,
   };
 })();

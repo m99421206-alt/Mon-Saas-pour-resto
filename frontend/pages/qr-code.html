@@ -69,6 +69,19 @@
           </p>
           <p
             class="qr-phone-scan-warning"
+            id="qr-url-warning"
+            role="alert"
+            hidden
+          >
+            <strong>Lien QR à mettre à jour :</strong> l’adresse doit être de la
+            forme
+            <code>https://africamenu.com/restaurant/votre-slug</code>. Un ancien
+            QR (sans <code>/restaurant/</code>) ouvre la page d’accueil au lieu
+            du menu. Rechargez cette page (Ctrl+F5), vérifiez le lien ci-dessous,
+            puis <strong>téléchargez à nouveau</strong> l’image QR.
+          </p>
+          <p
+            class="qr-phone-scan-warning"
             id="qr-phone-scan-warning"
             role="alert"
             hidden
@@ -300,7 +313,6 @@
     <script src="/frontend/js/subscription-alerts.js" defer></script>
     <script src="/frontend/js/dashboard-toast.js" defer></script>
     <script src="/frontend/js/dash-shell.js" defer></script>
-    <script src="/frontend/js/dashboard.js" defer></script>
     <script src="/frontend/js/qr-code.js" defer></script>
   </body>
 </html>

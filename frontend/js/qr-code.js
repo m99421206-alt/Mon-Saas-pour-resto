@@ -93,6 +93,34 @@
     return pub ? pub.buildPublicMenuUrl(restaurant) : "";
   }
 
+  function applyShareUrl(restaurant, shareUrl) {
+    var pub = window.MenuGo_PublicMenuUrl;
+    var url = shareUrl || buildPublicMenuUrl(restaurant);
+    var warnEl = document.getElementById("qr-url-warning");
+
+    currentRestaurant = restaurant || currentRestaurant;
+    currentShareUrl = url;
+
+    if (urlInput) {
+      urlInput.value = url;
+    }
+
+    if (warnEl) {
+      var canonical = pub ? pub.isCanonicalPublicMenuUrl(url) : /\/restaurant\//.test(url);
+      warnEl.hidden = !!(url && canonical);
+    }
+
+    if (!url) {
+      setCopyFeedback(
+        "Impossible de générer le lien public (slug ou identifiant manquant).",
+        false,
+      );
+      return;
+    }
+
+    renderQrCode(url);
+  }
+
   function updateAccountInfo(user, restaurant) {
     var restaurantName =
       restaurant && restaurant.name ? restaurant.name : "Nom du resto";
@@ -236,24 +264,15 @@
       var data = await loadMe();
       if (!data || !data.restaurant) return;
 
-      currentRestaurant = data.restaurant;
-      currentShareUrl = buildPublicMenuUrl(data.restaurant);
       updateAccountInfo(data.user, data.restaurant);
-
-      if (urlInput) {
-        urlInput.value = currentShareUrl;
-      }
-      renderQrCode(currentShareUrl);
+      applyShareUrl(data.restaurant, buildPublicMenuUrl(data.restaurant));
     } catch (error) {
       setCopyFeedback(
         error.message || "Impossible de générer le QR code.",
         false,
       );
-      if (storedRestaurant && storedRestaurant.id) {
-        currentRestaurant = storedRestaurant;
-        currentShareUrl = buildPublicMenuUrl(storedRestaurant);
-        if (urlInput) urlInput.value = currentShareUrl;
-        renderQrCode(currentShareUrl);
+      if (storedRestaurant && (storedRestaurant.slug || storedRestaurant.id)) {
+        applyShareUrl(storedRestaurant, buildPublicMenuUrl(storedRestaurant));
       }
     }
   }
