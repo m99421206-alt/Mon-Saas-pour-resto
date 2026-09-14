@@ -9,6 +9,7 @@ const ORDER_DELETE_ICON_SRC = "../../assets/images/icone/supprimer.webp";
 const categoriesEl = document.getElementById("categories");
 const productsEl = document.getElementById("products");
 const appEl = document.querySelector(".app");
+const menuSkeletonEl = document.getElementById("menu-skeleton");
 const whatsappEl = document.getElementById("whatsapp");
 const bottomNavEl = document.querySelector(".bottom-nav");
 const homeNavEl = document.getElementById("home-nav");
@@ -699,6 +700,12 @@ async function loadPublicMenu() {
 
 function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function hideMenuSkeleton() {
+  if (!menuSkeletonEl) return;
+  menuSkeletonEl.hidden = true;
+  menuSkeletonEl.removeAttribute("aria-busy");
 }
 
 function playMenuEnterAnimation() {
@@ -1502,6 +1509,7 @@ async function initializeMenu() {
   updateCartBadge();
   renderCategories();
   showProducts("all");
+  hideMenuSkeleton();
   playMenuEnterAnimation();
   setupEventListeners();
 }
