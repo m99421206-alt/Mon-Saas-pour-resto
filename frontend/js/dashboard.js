@@ -12,11 +12,8 @@
   const RESTAURANT_KEY = "MenuGo_restaurant";
   const ADMIN_BACKUP_TOKEN = "MenuGo_admin_token";
 
-  const openBtn = document.getElementById("open-drawer");
-  const closeBtn = document.getElementById("close-drawer");
-  const drawer = document.getElementById("dash-drawer");
-  const overlay = document.getElementById("dash-overlay");
   const title = document.getElementById("dashboard-title");
+  const isDashboardPage = Boolean(title);
   const categoriesCount = document.getElementById("dashboard-categories-count");
   const productsCount = document.getElementById("dashboard-products-count");
   const drawerRestaurant = document.getElementById(
@@ -30,9 +27,6 @@
   const logoutLink = document.getElementById("dashboard-logout");
   const addProductBtn = document.getElementById("dashboard-add-product");
   const addCategoryBtn = document.getElementById("dashboard-add-category");
-
-  const TRANSITION_MS = 320;
-  let closeTimer = null;
 
   function redirectToLogin() {
     window.location.href = "login.html";
@@ -315,79 +309,9 @@
     }
   }
 
-  function isOpen() {
-    return drawer && drawer.classList.contains("is-open");
+  if (!isDashboardPage) {
+    return;
   }
-
-  function isDesktopNav() {
-    return window.MenuGo_DashShell && window.MenuGo_DashShell.isDesktop();
-  }
-
-  function toggleDrawer() {
-    if (isDesktopNav()) return;
-    if (isOpen()) {
-      closeDrawer();
-    } else {
-      openDrawer();
-    }
-  }
-
-  function openDrawer() {
-    if (!drawer || !overlay || isDesktopNav()) return;
-    if (closeTimer) {
-      window.clearTimeout(closeTimer);
-      closeTimer = null;
-    }
-
-    drawer.classList.add("is-open");
-    drawer.setAttribute("aria-hidden", "false");
-
-    overlay.hidden = false;
-    overlay.setAttribute("aria-hidden", "false");
-
-    window.requestAnimationFrame(function () {
-      overlay.classList.add("is-visible");
-    });
-
-    openBtn?.setAttribute("aria-expanded", "true");
-    openBtn?.classList.add("is-active");
-    document.body.classList.add("dash-drawer-open");
-    document.body.style.overflow = "hidden";
-  }
-
-  function closeDrawer() {
-    if (!drawer || !overlay || isDesktopNav()) return;
-    if (!isOpen()) return;
-
-    overlay.classList.remove("is-visible");
-    drawer.classList.remove("is-open");
-    drawer.setAttribute("aria-hidden", "true");
-    overlay.setAttribute("aria-hidden", "true");
-
-    openBtn?.setAttribute("aria-expanded", "false");
-    openBtn?.classList.remove("is-active");
-    document.body.classList.remove("dash-drawer-open");
-    document.body.style.overflow = "";
-
-    closeTimer = window.setTimeout(function () {
-      if (!drawer.classList.contains("is-open")) {
-        overlay.hidden = true;
-      }
-      closeTimer = null;
-    }, TRANSITION_MS);
-
-    openBtn?.focus({ preventScroll: true });
-  }
-
-  openBtn?.addEventListener("click", toggleDrawer);
-  closeBtn?.addEventListener("click", closeDrawer);
-  overlay?.addEventListener("click", closeDrawer);
-
-  document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape" && isOpen()) {
-      closeDrawer();
-    }
-  });
 
   logoutLink?.addEventListener("click", function () {
     clearSession();

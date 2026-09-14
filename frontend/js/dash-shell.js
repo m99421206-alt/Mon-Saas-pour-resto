@@ -266,12 +266,109 @@
     });
   }
 
+  function initMobileDrawer() {
+    var openBtn = document.getElementById("open-drawer");
+    var closeBtn = document.getElementById("close-drawer");
+    var drawer = document.getElementById("dash-drawer");
+    var overlay = document.getElementById("dash-overlay");
+    var TRANSITION_MS = 320;
+    var closeTimer = null;
+
+    if (!drawer || drawer.dataset.shellDrawerBound === "1") {
+      return;
+    }
+    drawer.dataset.shellDrawerBound = "1";
+
+    function isDrawerOpen() {
+      return drawer.classList.contains("is-open");
+    }
+
+    function openDrawer() {
+      if (!overlay || isDesktopShell()) return;
+      if (closeTimer) {
+        window.clearTimeout(closeTimer);
+        closeTimer = null;
+      }
+
+      drawer.classList.add("is-open");
+      drawer.setAttribute("aria-hidden", "false");
+
+      overlay.hidden = false;
+      overlay.setAttribute("aria-hidden", "false");
+
+      window.requestAnimationFrame(function () {
+        overlay.classList.add("is-visible");
+      });
+
+      if (openBtn) {
+        openBtn.setAttribute("aria-expanded", "true");
+        openBtn.classList.add("is-active");
+      }
+      document.body.classList.add("dash-drawer-open");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeDrawer() {
+      if (!overlay || isDesktopShell()) return;
+      if (!isDrawerOpen()) return;
+
+      overlay.classList.remove("is-visible");
+      drawer.classList.remove("is-open");
+      drawer.setAttribute("aria-hidden", "true");
+      overlay.setAttribute("aria-hidden", "true");
+
+      if (openBtn) {
+        openBtn.setAttribute("aria-expanded", "false");
+        openBtn.classList.remove("is-active");
+      }
+      document.body.classList.remove("dash-drawer-open");
+      document.body.style.overflow = "";
+
+      closeTimer = window.setTimeout(function () {
+        if (!drawer.classList.contains("is-open")) {
+          overlay.hidden = true;
+        }
+        closeTimer = null;
+      }, TRANSITION_MS);
+
+      if (openBtn && typeof openBtn.focus === "function") {
+        openBtn.focus({ preventScroll: true });
+      }
+    }
+
+    function toggleDrawer() {
+      if (isDesktopShell()) return;
+      if (isDrawerOpen()) {
+        closeDrawer();
+      } else {
+        openDrawer();
+      }
+    }
+
+    if (openBtn) {
+      openBtn.addEventListener("click", toggleDrawer);
+    }
+    if (closeBtn) {
+      closeBtn.addEventListener("click", closeDrawer);
+    }
+    if (overlay) {
+      overlay.addEventListener("click", closeDrawer);
+    }
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && isDrawerOpen() && !isDesktopShell()) {
+        closeDrawer();
+      }
+    });
+  }
+
   function initFromStorage() {
     populateDashShellProfile(getStoredUser(), getStoredRestaurant());
   }
 
   ensureDashLayout();
   syncDesktopDrawerState();
+  initMobileDrawer();
   initFromStorage();
   initAdminImpersonationBanner();
   initNotificationsPlaceholder();
