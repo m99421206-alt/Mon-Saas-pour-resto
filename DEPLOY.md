@@ -66,28 +66,81 @@ Puis, depuis `backend/` :
 npm run db:schema
 ```
 
-### 3. Migrations (bases existantes ou compléments)
+### 3. Migrations base de données
 
-Sur une **base vierge**, `db:schema` applique le schéma principal. Les scripts ci-dessous ajoutent ou ajustent des colonnes/tables — la plupart sont **idempotents** (safe à relancer).
+#### Installation neuve (base vide)
 
-Exécutez-les **dans cet ordre** si vous partez d’une ancienne base ou si une migration a échoué à mi-chemin :
+```bash
+cd backend
+npm run db:schema
+```
 
-| Ordre | Commande                             | Rôle                                         |
-| ----- | ------------------------------------ | -------------------------------------------- |
-| 1     | `npm run db:schema`                  | Schéma initial (`sql/schema.sql`)            |
-| 2     | `npm run db:settings`                | Colonnes restaurant (logo, bannière, thème…) |
-| 3     | `npm run db:admin-timestamps`        | Horodatage utilisateurs                      |
-| 4     | `npm run db:audit-log`               | Journal d’audit                              |
-| 5     | `npm run db:user-status`             | Statut compte utilisateur                    |
-| 6     | `npm run db:admin-restaurants`       | Données admin restaurants                    |
-| 7     | `npm run db:admin-subscriptions`     | Tables / colonnes abonnements admin          |
-| 8     | `npm run db:admin-platform-settings` | Paramètres plateforme                        |
-| 9     | `npm run db:subscription-plan-key`   | Clé de plan d’abonnement                     |
-| 10    | `npm run db:onboarding`              | Flags onboarding                             |
-| 11    | `npm run db:registration-fields`     | Champs inscription                           |
-| 12    | `npm run db:product-is-visible`      | Visibilité des plats sur le menu public      |
+Le fichier [`backend/sql/schema.sql`](backend/sql/schema.sql) crée **toutes** les tables et colonnes de la version actuelle. Aucune migration incrémentielle n’est requise ensuite.
 
-**Base neuve (recommandé pour test)** : `db:schema` puis les migrations 2–12 si le schéma seul ne couvre pas encore toutes les colonnes utilisées par votre version du code.
+Pour générer les slugs manquants sur d’éventuels restaurants de test importés à la main :
+
+```bash
+npm run db:restaurant-slugs
+```
+
+#### Mise à jour d’une base existante (local ou VPS)
+
+Après `git pull`, relancez **toutes** les migrations incrémentielles (idempotentes — safe à répéter) :
+
+```bash
+cd backend
+npm run db:migrate-all
+```
+
+Équivalent manuel (même ordre) :
+
+| Ordre | Commande | Rôle |
+| ----- | -------- | ---- |
+| 1 | `npm run db:settings` | Logo, bannière, thème, variantes produits |
+| 2 | `npm run db:admin-timestamps` | `created_at` sur users / products |
+| 3 | `npm run db:audit-log` | Table `audit_logs` |
+| 4 | `npm run db:audit-impersonation` | Colonnes impersonation admin dans `audit_logs` |
+| 5 | `npm run db:user-status` | `users.account_status` |
+| 6 | `npm run db:admin-restaurants` | Ville, statut abo, menu suspendu, `created_at` restaurant |
+| 7 | `npm run db:restaurant-slugs` | Colonne + index `slug`, génération pour lignes sans slug |
+| 8 | `npm run db:admin-subscriptions` | Dates et montant abonnement |
+| 9 | `npm run db:subscription-plan-key` | Clé de plan (`trial`, `monthly`, …) |
+| 10 | `npm run db:admin-platform-settings` | Table `platform_settings` |
+| 11 | `npm run db:onboarding` | Flags onboarding restaurant |
+| 12 | `npm run db:registration-fields` | `full_name`, `phone`, `country` |
+| 13 | `npm run db:product-is-visible` | `products.is_visible` (menu public) |
+| 14 | `npm run db:admin-notifications` | Table `admin_notifications` |
+| 15 | `npm run db:admin-notifications-group` | Regroupement / `updated_at` notifications |
+| 16 | `npm run db:performance-indexes` | Index SQL performance |
+| 17 | `npm run db:upload-registry` | Table `upload_files` (quota 100 images / restaurant) |
+
+#### Déploiement VPS (checklist migrations)
+
+```bash
+cd /var/www/africamenu
+git pull
+
+cd backend
+npm install
+npm run db:migrate-all    # après chaque mise à jour backend
+pm2 restart all
+```
+
+**Avant une migration risquée** (conversion WebP, grosse refonte) :
+
+```bash
+npm run backup
+npm run db:migrate-all
+# ou migration ciblée : npm run db:upload-registry
+pm2 restart all
+```
+
+#### Migrations optionnelles (données / assets)
+
+| Commande | Quand l’utiliser |
+| -------- | ---------------- |
+| `npm run db:uploads-webp` | Convertir d’anciens PNG/JPG déjà en base (dry-run puis `--apply`) |
+| `npm run assets:webp` | Convertir images statiques marketing (`assets/`, `docs/`) |
 
 > **Note :** `init-db.js` supprime automatiquement un BOM UTF-8 en tête de `schema.sql` (erreur MySQL fréquente sous Windows).
 
@@ -171,7 +224,7 @@ Redémarrez l’API. Cochez chaque parcours :
 | 6   | Catégories     | `frontend/pages/categories.html` — CRUD                              | ☐   |
 | 7   | Plats          | `frontend/pages/mes-plats.html` — CRUD + image                       | ☐   |
 | 8   | Paramètres     | `frontend/pages/parametres.html` — logo, bannière, thème             | ☐   |
-| 9   | Menu public    | `frontend/pages/mon-menu.html?id=<restaurantId>`                     | ☐   |
+| 9   | Menu public    | `https://votredomaine/restaurant/<slug>` (ou `/menu/<id>` legacy)     | ☐   |
 | 10  | QR code        | `frontend/pages/qr-code.html` — URL sans `PUBLIC_SITE_ORIGIN`        | ☐   |
 | 11  | Abonnement     | `frontend/pages/mon-abonnement.html`                                 | ☐   |
 | 12  | Admin autorisé | `frontend/pages/admin-dashboard.html` avec email dans `ADMIN_EMAILS` | ☐   |
@@ -231,11 +284,20 @@ En production : copier les sauvegardes **hors site** (rsync, S3, snapshot disque
 ### Restaurer une sauvegarde
 
 ```bash
-npm run backup:restore -- ../backups/africamenu_YYYYMMDD_HHMMSS
+# Linux / VPS — remplacer par le vrai dossier (ls ../backups/)
+npm run backup:restore -- ../backups/africamenu_20260914_183836 --yes
 ```
 
-Confirmer avec `oui` quand demandé (ou `--yes` pour script).  
+Confirmer avec `oui` quand demandé, ou ajouter **`--yes`** pour éviter la question interactive.  
 **Attention :** écrase la base courante et le dossier `uploads/`.
+
+Vérification Linux après restore :
+
+```bash
+ls uploads | wc -l
+du -sh uploads
+pm2 restart all
+```
 
 Restauration manuelle SQL :
 
@@ -332,30 +394,24 @@ Symptôme : l’API répond (`/api/health` → 200) mais les pages statiques ren
 
 ### Réécriture des URLs publiques propres
 
-Pour que les liens publics `/menu/<slug>` fonctionnent, le serveur statique doit réécrire ces requêtes vers la page `mon-menu.html` :
+Format **canonique** : `/restaurant/<slug>`. Legacy : `/menu/<id>`.
 
 ```nginx
-# Si le site est servi depuis la racine du dépôt
+location /restaurant/ {
+  try_files $uri $uri/ /frontend/pages/mon-menu.html;
+}
+
 location /menu/ {
   try_files $uri $uri/ /frontend/pages/mon-menu.html;
 }
 
-# Si le site est servi depuis `frontend/pages/`
-location /menu/ {
-  try_files $uri $uri/ /mon-menu.html;
+# Ancien format /<slug> → redirection canonique
+location ~ ^/(?!api/|uploads/|css/|js/|frontend/|assets/|restaurant/|menu/|favicon\.ico|robots\.txt|sitemap\.xml|health)([^/.]+)$ {
+  return 301 /restaurant/$1;
 }
 ```
 
-Si tu veux conserver les anciens liens legacy `mon-menu.html?id=123`, ajoute une redirection :
-
-```nginx
-location ~* /mon-menu\.html$ {
-  if ($arg_id) {
-    return 301 /menu/$arg_id;
-  }
-  try_files $uri =404;
-}
-```
+Voir [`nginx/africamenu.conf.example`](nginx/africamenu.conf.example) pour la config complète (`/health`, `/sitemap.xml`, `client_max_body_size`, etc.).
 
 > Note : si tu modifies un fichier CSS/JS, pense à versionner l’URL (`dashboard.css?v=2`) ou à vider le cache CDN, sinon les visiteurs garderont l’ancienne version en cache.
 
