@@ -229,8 +229,10 @@ Redémarrez l’API. Cochez chaque parcours :
 | 11  | Abonnement     | `frontend/pages/mon-abonnement.html`                                 | ☐   |
 | 12  | Admin autorisé | `frontend/pages/admin-dashboard.html` avec email dans `ADMIN_EMAILS` | ☐   |
 | 13  | Admin refusé   | Même pages admin avec compte restaurant **non** listé → 403          | ☐   |
-| 14  | Santé API      | `GET /health` → `db: up`                                             | ☐   |
-| 15  | Upload         | Paramètres ou Mes plats — image JPG/PNG                              | ☐   |
+| 14  | Santé API      | `GET https://votredomaine/health` → JSON `"db":"up"`                 | ☐   |
+| 15  | Sitemap SEO    | `GET https://votredomaine/sitemap.xml` → XML avec `/restaurant/`     | ☐   |
+| 16  | HTTPS          | `http://` redirige vers `https://`                                   | ☐   |
+| 17  | Upload         | Paramètres ou Mes plats — image JPG/PNG                              | ☐   |
 
 ---
 
@@ -459,13 +461,90 @@ Les images sont enregistrées dans `backend/uploads/`.
 
 ---
 
+## HTTPS, monitoring et SEO (production VPS)
+
+Config nginx complète : [`nginx/africamenu.conf.example`](nginx/africamenu.conf.example)  
+(inclut `/health`, `/api/health`, `/sitemap.xml`, redirection HTTP→HTTPS, menus `/restaurant/`).
+
+### 1. DNS
+
+Pointer `A` (et `AAAA` si IPv6) vers l’IP du VPS :
+
+| Enregistrement | Valeur        |
+| -------------- | ------------- |
+| `africamenu.com` | IP du VPS   |
+| `www.africamenu.com` | IP du VPS ou CNAME vers `@ |
+
+### 2. Certificat Let’s Encrypt (Certbot)
+
+```bash
+sudo apt update
+sudo apt install -y certbot python3-certbot-nginx
+
+# Copier / activer la config nginx (HTTP seul d’abord si besoin)
+sudo cp /var/www/africamenu/nginx/africamenu.conf.example /etc/nginx/sites-available/africamenu
+sudo ln -sf /etc/nginx/sites-available/africamenu /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+
+# Obtenir le certificat (Certbot modifie nginx ou utilise --nginx)
+sudo certbot --nginx -d africamenu.com -d www.africamenu.com
+
+# Renouvellement auto (timer systemd Certbot)
+sudo certbot renew --dry-run
+```
+
+**Important :** les blocs `location` (`/api/`, `/health`, `/sitemap.xml`, `/restaurant/`, etc.) doivent exister dans le **`server { listen 443 ssl … }`**, pas seulement sur le port 80. Sinon le site HTTPS répond mais `/health` ou `/sitemap.xml` renvoient `index.html`.
+
+### 3. Variables `.env` production
+
+```env
+NODE_ENV=production
+CORS_ORIGIN=https://africamenu.com
+SITE_ORIGIN=https://africamenu.com
+```
+
+`SITE_ORIGIN` force les URLs absolues du **sitemap** (`https://…/restaurant/<slug>`). Sans cela, l’API utilise `X-Forwarded-Proto` + `Host` (nécessite `proxy_set_header X-Forwarded-Proto $scheme` dans nginx — déjà dans l’exemple).
+
+### 4. Vérifications après déploiement
+
+```bash
+# Santé API (JSON, pas du HTML)
+curl -sS https://africamenu.com/health
+# Attendu : {"ok":true,"service":"AfricaMenu-api","db":"up"}
+
+curl -sS https://africamenu.com/api/health
+
+# Sitemap (XML, pas index.html)
+curl -sSI https://africamenu.com/sitemap.xml | head -5
+curl -sS https://africamenu.com/sitemap.xml | head -20
+
+# Robots
+curl -sS https://africamenu.com/robots.txt
+
+# Redirection HTTP → HTTPS
+curl -sSI http://africamenu.com/ | head -3
+# Attendu : HTTP/1.1 301 … Location: https://…
+```
+
+| Test | OK | Problème probable |
+| ---- | -- | ----------------- |
+| `/health` → JSON `db:"up"` | ✅ | PM2 arrêté, MySQL down, ou nginx sert `index.html` |
+| `/sitemap.xml` → XML `<urlset` | ✅ | Proxy nginx manquant sur le bloc HTTPS |
+| `/sitemap.xml` contient `https://` | ✅ | `SITE_ORIGIN` ou `X-Forwarded-Proto` manquant |
+| `robots.txt` → `Sitemap:` | ✅ | Fichier [`robots.txt`](robots.txt) absent à la racine web |
+
+### 5. Monitoring uptime (optionnel)
+
+Surveillez `GET https://africamenu.com/health` toutes les 5 min (UptimeRobot, Better Stack, cron + alerte). Alerte si status ≠ 200 ou `"db":"down"`.
+
+---
+
 ## Décisions reportées au jour J
 
 | Sujet               | Options                                                                       |
 | ------------------- | ----------------------------------------------------------------------------- |
 | Hébergement         | VPS + nginx, PaaS (Railway/Render), frontend statique séparé (Netlify/Vercel) |
 | Domaine             | ex. `africamenu.com`, sous-domaines `app.` / `api.`                           |
-| HTTPS               | Let’s Encrypt via Caddy ou nginx                                              |
 | Uploads             | Disque VPS vs cloud                                                           |
 | Paiement abonnement | WhatsApp manuel (actuel) vs passerelle future                                 |
 | Email               | Validation format (actuel) vs confirmation par lien                           |
@@ -496,3 +575,6 @@ git tag -a v0.9.0-preprod -m "AfricaMenu prêt pour déploiement (pré-productio
 | Upload refusé côté app | Limite admin (défaut **5 Mo**) dans Paramètres plateforme ; nginx doit être ≥ cette valeur |
 | **500** sur pages HTML/CSS | Voir ci-dessous — souvent alias nginx cassé après édition manuelle |
 | `/health` db down            | MySQL arrêté ou mauvais `DB_*`                                                |
+| `/health` renvoie du HTML    | Proxy `/health` absent du bloc **HTTPS** nginx → ajouter `location = /health` |
+| `/sitemap.xml` = page d’accueil | Idem — proxy manquant sur 443 ; voir [`nginx/africamenu.conf.example`](nginx/africamenu.conf.example) |
+| Sitemap en `http://`         | Renseigner `SITE_ORIGIN=https://…` dans `.env` + `X-Forwarded-Proto` nginx    |

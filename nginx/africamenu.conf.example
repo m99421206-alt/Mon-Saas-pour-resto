@@ -1,14 +1,45 @@
-# AfricaMenu nginx example configuration
-# Replace /var/www/africamenu with the actual path to your project root.
+# AfricaMenu — configuration nginx (exemple production)
+# Copier vers : /etc/nginx/sites-available/africamenu
+# Puis : sudo ln -sf /etc/nginx/sites-available/africamenu /etc/nginx/sites-enabled/
 #
-# IMPORTANT :
-# - Gardez vos lignes SSL Certbot (listen 443 ssl, ssl_certificate…) si HTTPS est actif.
-# - root sert /frontend/, /assets/ et index.html sans alias (plus fiable).
-# - Seul /uploads/ utilise alias (dossier backend/uploads).
+# Chemins : adapter /var/www/africamenu si besoin.
+#
+# AVANT Certbot (tests HTTP uniquement) :
+#   - Commentez le bloc « redirection HTTP → HTTPS »
+#   - Dupliquez le bloc « server HTTPS » en listen 80 sans lignes ssl_*
+#
+# APRÈS Certbot :
+#   - Gardez les deux blocs ci-dessous
+#   - Vérifiez que ssl_certificate pointe vers vos fichiers Let’s Encrypt
 
+# --- Redirection HTTP → HTTPS -------------------------------------------------
 server {
   listen 80;
+  listen [::]:80;
   server_name africamenu.com www.africamenu.com;
+
+  # Laisser passer le challenge Let’s Encrypt (renouvellement Certbot)
+  location ^~ /.well-known/acme-challenge/ {
+    root /var/www/africamenu;
+    allow all;
+  }
+
+  location / {
+    return 301 https://$host$request_uri;
+  }
+}
+
+# --- Site principal HTTPS -----------------------------------------------------
+server {
+  listen 443 ssl http2;
+  listen [::]:443 ssl http2;
+  server_name africamenu.com www.africamenu.com;
+
+  # Certificats Let’s Encrypt (Certbot les injecte souvent automatiquement)
+  ssl_certificate /etc/letsencrypt/live/africamenu.com/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/africamenu.com/privkey.pem;
+  include /etc/letsencrypt/options-ssl-nginx.conf;
+  ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
   root /var/www/africamenu;
   index index.html;
@@ -16,9 +47,9 @@ server {
   access_log /var/log/nginx/africamenu.access.log;
   error_log /var/log/nginx/africamenu.error.log warn;
 
-  # Nginx refuse par défaut au-delà de 1 Mo (413). L’API accepte jusqu’à 64 Mo.
   client_max_body_size 64M;
 
+  # --- API Express (port 4000) ------------------------------------------------
   location /api/ {
     client_max_body_size 64M;
     proxy_pass http://127.0.0.1:4000;
@@ -31,20 +62,45 @@ server {
     proxy_send_timeout 120s;
   }
 
+  # Santé (monitoring uptime — ne pas servir index.html)
   location = /health {
     proxy_pass http://127.0.0.1:4000/health;
     proxy_http_version 1.1;
     proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    access_log off;
   }
 
+  location = /api/health {
+    proxy_pass http://127.0.0.1:4000/api/health;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    access_log off;
+  }
+
+  # Sitemap SEO (menus publics /restaurant/<slug>)
   location = /sitemap.xml {
     proxy_pass http://127.0.0.1:4000/sitemap.xml;
     proxy_http_version 1.1;
     proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    expires 1h;
+    add_header Cache-Control "public, max-age=3600";
   }
 
+  # --- Fichiers statiques -----------------------------------------------------
   location /uploads/ {
     alias /var/www/africamenu/backend/uploads/;
+    access_log off;
+    expires 30d;
+    add_header Cache-Control "public, max-age=2592000, immutable";
+  }
+
+  location /assets/ {
+    alias /var/www/africamenu/assets/;
     access_log off;
     expires 30d;
     add_header Cache-Control "public, max-age=2592000, immutable";
@@ -65,6 +121,7 @@ server {
     add_header Cache-Control "public, max-age=604800";
   }
 
+  # Menus publics
   location /menu/ {
     try_files $uri $uri/ /frontend/pages/mon-menu.html;
   }

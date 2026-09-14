@@ -1,0 +1,7 @@
+# AfricaMenu — robots.txt (servi à la racine du site)
+# Adapter l’URL du sitemap si votre domaine diffère.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://africamenu.com/sitemap.xml
