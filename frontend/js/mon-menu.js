@@ -128,14 +128,16 @@ function parsePrice(price) {
   if (Number.isFinite(numericValue)) {
     return numericValue;
   }
-  return (
-    Number(
-      String(price || "")
-        .replace(/[^\d,.-]/g, "")
-        .replace(/\s/g, "")
-        .replace(",", "."),
-    ) || 0
-  );
+  const normalized = String(price || "")
+    .replace(/[^\d,.-]/g, "")
+    .replace(/[\s\u00a0\u202f\u2009]/g, "")
+    .replace(",", ".");
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function getOrderLineTotal(item) {
+  return parsePrice(item?.price) * (Number(item?.quantity) || 0);
 }
 
 function formatPrice(value) {
@@ -1478,10 +1480,7 @@ function addSelectedProductToOrder(options) {
 }
 
 function calculateOrderTotal() {
-  return orderItems.reduce(
-    (total, item) => total + parsePrice(item.price) * item.quantity,
-    0,
-  );
+  return orderItems.reduce((total, item) => total + getOrderLineTotal(item), 0);
 }
 
 function updateOrderItemQuantity(itemKey, nextQuantity) {
@@ -1503,7 +1502,7 @@ function createOrderItem(item) {
   const row = document.createElement("div");
   row.className = "order-item";
   const itemLabel = escapeHtml(item.label);
-  const itemPrice = escapeHtml(item.price);
+  const itemLinePrice = escapeHtml(formatPrice(getOrderLineTotal(item)));
 
   row.innerHTML = `
     <span class="order-item__name">${item.quantity} x ${itemLabel}</span>
@@ -1515,7 +1514,7 @@ function createOrderItem(item) {
         <i class="fa-solid fa-minus" aria-hidden="true"></i>
       </button>
     </span>
-    <span class="order-item__price">${itemPrice}</span>
+    <span class="order-item__price">${itemLinePrice}</span>
     <button class="order-remove-btn" type="button" data-action="remove" aria-label="Supprimer ${itemLabel}">
       <img src="${ORDER_DELETE_ICON_SRC}" alt="" width="18" height="18" decoding="async" />
     </button>
@@ -1601,7 +1600,8 @@ function getWhatsappGreeting() {
 
 function createOrderWhatsappMessage() {
   const lines = orderItems.map(
-    (item) => `- ${item.quantity} x ${item.label} : ${item.price}`,
+    (item) =>
+      `- ${item.quantity} x ${item.label} : ${formatPrice(getOrderLineTotal(item))}`,
   );
 
   return [
