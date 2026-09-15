@@ -11,6 +11,10 @@ var {
   parseAdminResetPasswordBody,
 } = require("../validators/profile");
 var { sendValidationError } = require("../validators/helpers");
+var {
+  collectUserRestaurantsUploadUrls,
+  forceDeleteUploadFiles,
+} = require("../utils/uploadCleanup");
 
 function parsePositiveInt(value, fallback) {
   var n = Number(value);
@@ -297,7 +301,16 @@ async function deleteUser(req, res) {
       detail: "Suppression du compte « " + String(target.email) + " »",
     });
 
+    var uploadUrls = await collectUserRestaurantsUploadUrls(id);
+
     await pool.query("DELETE FROM users WHERE id = ? LIMIT 1", [id]);
+
+    var cleanup = await forceDeleteUploadFiles(uploadUrls);
+    if (cleanup.failed > 0 && process.env.NODE_ENV !== "production") {
+      console.warn(
+        "[deleteUser] " + cleanup.failed + " fichier(s) non supprimé(s) sur " + cleanup.total
+      );
+    }
 
     return res.status(204).send();
   } catch (err) {

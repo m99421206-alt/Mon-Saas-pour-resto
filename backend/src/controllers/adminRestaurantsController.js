@@ -11,6 +11,10 @@ var {
   parseMenuSuspendedBody,
 } = require("../validators/restaurant");
 var { sendValidationError } = require("../validators/helpers");
+var {
+  collectRestaurantUploadUrls,
+  forceDeleteUploadFiles,
+} = require("../utils/uploadCleanup");
 
 var ALLOWED_SUB = ["trial", "active", "expired", "suspended"];
 
@@ -378,7 +382,19 @@ async function deleteRestaurant(req, res) {
       detail: "Suppression du restaurant « " + String(target.name || id) + " »",
     });
 
+    var uploadUrls = await collectRestaurantUploadUrls(id);
+
     await pool.query("DELETE FROM restaurants WHERE id = ? LIMIT 1", [id]);
+
+    var cleanup = await forceDeleteUploadFiles(uploadUrls);
+    if (cleanup.failed > 0 && process.env.NODE_ENV !== "production") {
+      console.warn(
+        "[deleteRestaurant] " +
+          cleanup.failed +
+          " fichier(s) non supprimé(s) sur " +
+          cleanup.total
+      );
+    }
 
     return res.status(204).send();
   } catch (err) {
