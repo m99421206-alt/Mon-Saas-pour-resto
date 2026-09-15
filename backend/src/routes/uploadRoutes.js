@@ -13,6 +13,10 @@ const {
   registerUploadForRestaurant,
   assertRestaurantUploadQuota,
 } = require("../utils/uploadOwnership");
+const {
+  uploadIpRateLimiter,
+  uploadUserRateLimiter,
+} = require("../middlewares/uploadRateLimit");
 
 const router = express.Router();
 const uploadsDir = path.join(__dirname, "../../uploads");
@@ -56,10 +60,11 @@ async function logUploadFailure(req, reason) {
   });
 }
 
+router.use(uploadIpRateLimiter);
 router.use(requireAuth);
 router.use(requireRestaurantOwner);
 
-router.post("/", requireRestaurantMenuEdit, async function (req, res) {
+router.post("/", uploadUserRateLimiter, requireRestaurantMenuEdit, async function (req, res) {
   var maxBytes = platformSettings.getUploadMaxBytes();
   var maxMb = Math.round((maxBytes / (1024 * 1024)) * 10) / 10;
 

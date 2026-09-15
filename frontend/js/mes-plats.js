@@ -172,8 +172,15 @@
       redirectToLogin();
       return null;
     }
+    if (response.status === 429) {
+      throw new Error(
+        data.error ||
+          data.message ||
+          "Trop de tentatives d'upload. Veuillez patienter avant de réessayer."
+      );
+    }
     if (!response.ok) {
-      throw new Error(data.message || "Upload impossible.");
+      throw new Error(data.error || data.message || "Upload impossible.");
     }
     return data.url;
   }
