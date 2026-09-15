@@ -6,7 +6,7 @@
 
 var { z } = require("zod");
 var { parseBody, parseParams } = require("./helpers");
-var { parseWhatsappOptional, positiveIntId } = require("./common");
+var { parseWhatsappOptional, positiveIntId, parseBoolTinyint, BOOL_TINYINT_MESSAGE } = require("./common");
 var { normalizeStoredImageUrl } = require("../utils/imageUrlValidation");
 
 var updateRestaurantSchema = z
@@ -84,9 +84,27 @@ var menuSuspendedSchema = z
     suspended: z.union([z.boolean(), z.number(), z.string()]).optional(),
     menu_suspended: z.union([z.boolean(), z.number(), z.string()]).optional(),
   })
+  .superRefine(function (data, ctx) {
+    var hasSuspended = data.suspended !== undefined && data.suspended !== null;
+    var hasMenuSuspended = data.menu_suspended !== undefined && data.menu_suspended !== null;
+    if (!hasSuspended && !hasMenuSuspended) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Indiquez suspended ou menu_suspended.",
+      });
+      return;
+    }
+    var raw = hasSuspended ? data.suspended : data.menu_suspended;
+    if (parseBoolTinyint(raw) === null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: BOOL_TINYINT_MESSAGE,
+      });
+    }
+  })
   .transform(function (data) {
     var raw = data.suspended != null ? data.suspended : data.menu_suspended;
-    return raw === true || raw === 1 || raw === "1" || raw === "true";
+    return parseBoolTinyint(raw);
   });
 
 function parseRestaurantIdParams(params) {

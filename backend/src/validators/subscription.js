@@ -6,7 +6,7 @@
 
 var { z } = require("zod");
 var { parseBody, parseParams } = require("./helpers");
-var { positiveIntId } = require("./common");
+var { positiveIntId, isValidDateYmd, DATE_YMD_MESSAGE } = require("./common");
 
 var restaurantIdParamsSchema = z.object({
   restaurantId: positiveIntId,
@@ -57,7 +57,14 @@ var adjustSchema = z
       typeof data.subscription_ends_at === "string" ?
         data.subscription_ends_at.trim().slice(0, 32)
       : "";
-    var hasExplicit = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(endsExplicit);
+    if (endsExplicit !== "" && !isValidDateYmd(endsExplicit)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: DATE_YMD_MESSAGE,
+        path: ["subscription_ends_at"],
+      });
+    }
+    var hasExplicit = isValidDateYmd(endsExplicit);
     var addDaysNum = Number(data.add_days);
     var touchesEndByDate = hasExplicit;
     var touchesEndByDays = Number.isFinite(addDaysNum) && addDaysNum !== 0;
@@ -91,7 +98,7 @@ var adjustSchema = z
       typeof data.subscription_ends_at === "string" ?
         data.subscription_ends_at.trim().slice(0, 32)
       : "";
-    var hasExplicit = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(endsExplicit);
+    var hasExplicit = isValidDateYmd(endsExplicit);
     var addDaysNum = Number(data.add_days);
     var planClean = null;
     if (Object.prototype.hasOwnProperty.call(data, "subscription_plan_key")) {

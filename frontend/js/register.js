@@ -135,7 +135,12 @@
       const data = await readJson(response);
 
       if (!response.ok) {
-        showError(data.message || "Inscription impossible. Réessayez.");
+        showError(
+          data.message ||
+            (response.status === 503
+              ? "Service temporairement indisponible. Réessayez dans quelques instants."
+              : "Inscription impossible. Réessayez.")
+        );
         return;
       }
 

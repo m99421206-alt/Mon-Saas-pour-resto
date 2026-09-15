@@ -18,6 +18,10 @@ const loginLockout = require("../utils/loginLockout");
 const { parseLoginBody, parseRegisterBody } = require("../validators/auth");
 const { sendValidationError } = require("../validators/helpers");
 const { generateUniqueSlug } = require("../utils/generateSlug");
+const {
+  isMysqlUnavailableError,
+  mysqlUnavailablePayload,
+} = require("../utils/mysqlErrors");
 
 function mapRestaurantAuth(row) {
   if (!row) return null;
@@ -100,10 +104,11 @@ async function register(req, res) {
   const principalPhoneDb = input.whatsapp;
   const cityDb = input.quartier;
 
-  const pool = getPool();
-  const connection = await pool.getConnection();
+  var connection = null;
 
   try {
+    const pool = getPool();
+    connection = await pool.getConnection();
     await connection.beginTransaction();
 
     const [existing] = await connection.query(
@@ -198,12 +203,28 @@ async function register(req, res) {
       restaurant: mapRestaurantAuth(restaurantRow),
     });
   } catch (error) {
-    await connection.rollback();
+    if (connection) {
+      try {
+        await connection.rollback();
+      } catch (rollbackErr) {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("[register] rollback:", rollbackErr.message || rollbackErr);
+        }
+      }
+    }
+    if (process.env.NODE_ENV !== "production") {
+      console.error("[register]", error);
+    }
+    if (isMysqlUnavailableError(error)) {
+      return res.status(503).json(mysqlUnavailablePayload());
+    }
     return res
       .status(500)
       .json({ message: "Erreur serveur lors de l'inscription." });
   } finally {
-    connection.release();
+    if (connection) {
+      connection.release();
+    }
   }
 }
 
@@ -316,6 +337,12 @@ async function login(req, res) {
       restaurant: restaurants[0] ? mapRestaurantAuth(restaurants[0]) : null,
     });
   } catch (error) {
+    if (process.env.NODE_ENV !== "production") {
+      console.error("[login]", error);
+    }
+    if (isMysqlUnavailableError(error)) {
+      return res.status(503).json(mysqlUnavailablePayload());
+    }
     return res
       .status(500)
       .json({ message: "Erreur serveur lors de la connexion." });

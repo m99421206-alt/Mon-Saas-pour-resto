@@ -6,7 +6,7 @@
 
 var { z } = require("zod");
 var { parseBody, parseParams } = require("./helpers");
-var { positiveIntId, boolLikeField } = require("./common");
+var { positiveIntId, boolTinyintInput, optionalBoolTinyintField } = require("./common");
 var { normalizeStoredImageUrl } = require("../utils/imageUrlValidation");
 
 var variantSchema = z.object({
@@ -31,8 +31,8 @@ var productBodySchema = z
       .min(0),
     category_id: positiveIntId,
     image: z.union([z.string(), z.null()]).optional(),
-    has_sizes: boolLikeField.optional(),
-    is_visible: boolLikeField.optional(),
+    has_sizes: optionalBoolTinyintField,
+    is_visible: optionalBoolTinyintField,
     variants: z.array(variantSchema).max(24).optional(),
   })
   .superRefine(function (data, ctx) {
@@ -86,11 +86,11 @@ var productBodySchema = z
 
 var productVisibilityBodySchema = z
   .object({
-    is_visible: boolLikeField,
+    is_visible: boolTinyintInput,
   })
   .transform(function (data) {
     return {
-      isVisible: data.is_visible != null ? data.is_visible : 1,
+      isVisible: data.is_visible,
     };
   });
 

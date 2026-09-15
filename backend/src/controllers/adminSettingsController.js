@@ -4,6 +4,8 @@
 
 var platformSettings = require("../services/platformSettings");
 var { appendAudit, AUDIT_ACTIONS, ACTOR_TYPES } = require("../utils/auditLog");
+var { parsePlatformSettingsBody } = require("../validators/settings");
+var { sendValidationError } = require("../validators/helpers");
 
 async function getSettings(req, res) {
   try {
@@ -17,9 +19,13 @@ async function getSettings(req, res) {
 
 async function putSettings(req, res) {
   try {
-    var patch = req.body || {};
-    if (typeof patch !== "object") {
-      return res.status(400).json({ message: "Corps JSON invalide." });
+    var parsed = parsePlatformSettingsBody(req.body || {});
+    if (sendValidationError(parsed, res)) {
+      return;
+    }
+    var patch = parsed.data;
+    if (!Object.keys(patch).length) {
+      return res.status(400).json({ message: "Aucun paramètre valide à mettre à jour." });
     }
 
     var result = await platformSettings.savePartial(patch);
