@@ -6,6 +6,7 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
+    "test": "node --test src/utils/publicMenuLookup.test.js src/utils/generateSlug.test.js",
     "dev": "node --watch src/server.js",
     "db:schema": "node scripts/init-db.js",
     "db:migrate-all": "node scripts/migrate-all.js",

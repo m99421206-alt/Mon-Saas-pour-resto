@@ -768,6 +768,13 @@ function resolveMenuErrorPresentation(error) {
   };
 }
 
+function shouldLookupPublicMenuBySlug() {
+  const segments = String(window.location.pathname || "")
+    .split("/")
+    .filter(Boolean);
+  return segments[0] === "restaurant";
+}
+
 async function loadPublicMenu() {
   const restaurantId = getRestaurantIdFromUrl();
   if (!restaurantId) {
@@ -779,11 +786,12 @@ async function loadPublicMenu() {
   }
 
   const apiUrl = window.MenuGo_CONFIG?.API_URL || "/api";
+  const lookupQuery = shouldLookupPublicMenuBySlug() ? "?lookup=slug" : "";
   let response;
 
   try {
     response = await fetch(
-      `${apiUrl}/menu/${encodeURIComponent(restaurantId)}`,
+      `${apiUrl}/menu/${encodeURIComponent(restaurantId)}${lookupQuery}`,
     );
   } catch (fetchError) {
     throw createMenuLoadError(

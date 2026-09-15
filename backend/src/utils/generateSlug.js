@@ -29,11 +29,23 @@ function generateSlug(name) {
   return slug;
 }
 
-function generateUniqueSlug(connection, rawName, excludeId) {
-  var baseSlug = generateSlug(rawName);
+/**
+ * Les menus publics partagent /api/menu/:param entre slugs et ids.
+ * Un slug uniquement numérique (« 12 ») serait lu comme restaurants.id.
+ */
+function toPublicSlugBase(name) {
+  var baseSlug = generateSlug(name);
   if (!baseSlug) {
     baseSlug = "restaurant";
   }
+  if (/^\d+$/.test(baseSlug)) {
+    baseSlug = "r-" + baseSlug;
+  }
+  return baseSlug;
+}
+
+function generateUniqueSlug(connection, rawName, excludeId) {
+  var baseSlug = toPublicSlugBase(rawName);
 
   if (baseSlug.length > 170) {
     baseSlug = baseSlug.slice(0, 170).replace(/-+$/g, "");
@@ -71,5 +83,6 @@ function generateUniqueSlug(connection, rawName, excludeId) {
 
 module.exports = {
   generateSlug: generateSlug,
+  toPublicSlugBase: toPublicSlugBase,
   generateUniqueSlug: generateUniqueSlug,
 };
