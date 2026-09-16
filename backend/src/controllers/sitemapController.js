@@ -21,22 +21,32 @@ function formatDate(value) {
 }
 
 function buildUrlEntry(entry) {
+  if (!entry || !entry.loc) {
+    return "";
+  }
+
+  var lines = ["  <url>", "    <loc>" + escapeXml(entry.loc) + "</loc>"];
+  if (entry.lastmod) {
+    lines.push("    <lastmod>" + escapeXml(entry.lastmod) + "</lastmod>");
+  }
+  if (entry.changefreq) {
+    lines.push("    <changefreq>" + escapeXml(entry.changefreq) + "</changefreq>");
+  }
+  if (entry.priority != null && entry.priority !== "") {
+    lines.push("    <priority>" + escapeXml(entry.priority) + "</priority>");
+  }
+  lines.push("  </url>");
+  return lines.join("\n");
+}
+
+function buildSitemapXml(urls) {
+  var body = urls.map(buildUrlEntry).filter(Boolean).join("\n");
   return [
-    "  <url>",
-    "    <loc>" + escapeXml(entry.loc) + "</loc>",
-    entry.lastmod
-      ? "    <lastmod>" + escapeXml(entry.lastmod) + "</lastmod>"
-      : null,
-    entry.changefreq
-      ? "    <changefreq>" + escapeXml(entry.changefreq) + "</changefreq>"
-      : null,
-    entry.priority
-      ? "    <priority>" + escapeXml(entry.priority) + "</priority>"
-      : null,
-    "  </url>",
-  ]
-    .filter(Boolean)
-    .join("\n");
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    body,
+    "</urlset>",
+  ].join("\n");
 }
 
 function getSiteOrigin(req) {
@@ -80,47 +90,93 @@ function getStaticPages(baseUrl) {
   ];
 }
 
-async function getSitemap(req, res) {
+function isMissingMenuSuspendedColumn(err) {
+  return err && (err.code === "ER_BAD_FIELD_ERROR" || err.errno === 1054);
+}
+
+async function fetchPublicRestaurants(pool) {
+  var queryWithMenuFilter =
+    "SELECT slug, created_at FROM restaurants " +
+    "WHERE slug IS NOT NULL AND TRIM(slug) <> '' AND COALESCE(menu_suspended, 0) = 0 " +
+    "ORDER BY created_at DESC";
+
   try {
-    var baseUrl = getSiteOrigin(req);
-    var pool = getPool();
+    var [rows] = await pool.query(queryWithMenuFilter);
+    return rows;
+  } catch (err) {
+    if (!isMissingMenuSuspendedColumn(err)) {
+      throw err;
+    }
+  }
 
-    var [restaurants] = await pool.query(
-      "SELECT slug, created_at FROM restaurants WHERE slug IS NOT NULL AND TRIM(slug) <> '' AND COALESCE(menu_suspended, 0) = 0 ORDER BY created_at DESC",
-    );
+  var [fallbackRows] = await pool.query(
+    "SELECT slug, created_at FROM restaurants " +
+      "WHERE slug IS NOT NULL AND TRIM(slug) <> '' " +
+      "ORDER BY created_at DESC",
+  );
+  return fallbackRows;
+}
 
-    var urls = getStaticPages(baseUrl);
-    for (var i = 0; i < restaurants.length; i += 1) {
-      var restaurant = restaurants[i];
-      if (!restaurant || !restaurant.slug) {
-        continue;
-      }
+function appendRestaurantUrls(urls, baseUrl, restaurants) {
+  var seen = new Set(
+    urls.map(function (entry) {
+      return entry.loc;
+    }),
+  );
 
-      urls.push({
-        loc:
-          baseUrl +
-          "/restaurant/" +
-          encodeURIComponent(String(restaurant.slug)),
-        lastmod:
-          formatDate(restaurant.created_at) ||
-          new Date().toISOString().slice(0, 10),
-        changefreq: "weekly",
-        priority: "0.6",
-      });
+  for (var i = 0; i < restaurants.length; i += 1) {
+    var restaurant = restaurants[i];
+    if (!restaurant || !restaurant.slug) {
+      continue;
     }
 
-    var xml = [
-      '<?xml version="1.0" encoding="UTF-8"?>',
-      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-      urls.map(buildUrlEntry).join("\n"),
-      "</urlset>",
-    ].join("\n");
+    var slug = String(restaurant.slug).trim();
+    if (!slug) {
+      continue;
+    }
 
-    res.setHeader("Content-Type", "application/xml");
-    return res.send(xml);
-  } catch (err) {
-    return res.status(500).json({ message: "Erreur serveur." });
+    var loc = baseUrl + "/restaurant/" + encodeURIComponent(slug);
+    if (seen.has(loc)) {
+      continue;
+    }
+    seen.add(loc);
+
+    urls.push({
+      loc: loc,
+      lastmod:
+        formatDate(restaurant.created_at) ||
+        new Date().toISOString().slice(0, 10),
+      changefreq: "weekly",
+      priority: "0.6",
+    });
   }
+}
+
+async function getSitemap(req, res) {
+  var baseUrl = getSiteOrigin(req);
+  var urls = getStaticPages(baseUrl);
+
+  try {
+    var pool = getPool();
+    var restaurants = await fetchPublicRestaurants(pool);
+    appendRestaurantUrls(urls, baseUrl, restaurants);
+  } catch (err) {
+    if (process.env.NODE_ENV !== "production") {
+      console.error("[sitemap]", err);
+    }
+  }
+
+  if (!urls.length) {
+    urls.push({
+      loc: baseUrl + "/",
+      lastmod: new Date().toISOString().slice(0, 10),
+      changefreq: "daily",
+      priority: "1.0",
+    });
+  }
+
+  res.setHeader("Content-Type", "application/xml; charset=utf-8");
+  return res.status(200).send(buildSitemapXml(urls));
 }
 
 module.exports = {
