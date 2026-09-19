@@ -14,6 +14,8 @@
       ? window.AFRICA_LANDING_WHATSAPP.trim()
       : "22399421206";
   const REVEAL_SELECTOR = "[data-reveal], [data-reveal-group]";
+  const LANDING_FALLBACK_MS = 1600;
+  let landingFallbackTimer = 0;
 
   function prefersReducedMotion() {
     return (
@@ -30,16 +32,40 @@
   }
 
   /**
+   * Affiche header + hero (+ sections visibles) — filet de sécurité si l’anim ne part pas.
+   */
+  function forceLandingVisible(revealAll) {
+    document.body.classList.add("landing-ready");
+    const hero = document.querySelector(".reveal-hero");
+    if (hero) hero.classList.add("is-ready");
+
+    if (revealAll) {
+      document.querySelectorAll(REVEAL_SELECTOR).forEach((el) => {
+        el.classList.add("is-visible");
+      });
+    }
+  }
+
+  function clearLandingFallback() {
+    if (!landingFallbackTimer) return;
+    window.clearTimeout(landingFallbackTimer);
+    landingFallbackTimer = 0;
+  }
+
+  function scheduleLandingFallback() {
+    clearLandingFallback();
+    landingFallbackTimer = window.setTimeout(() => {
+      forceLandingVisible(true);
+    }, LANDING_FALLBACK_MS);
+  }
+
+  /**
    * Header + Hero au chargement (sans attendre le scroll).
    */
   function initLandingEntrance() {
     if (prefersReducedMotion()) {
-      document.body.classList.add("landing-ready");
-      const hero = document.querySelector(".reveal-hero");
-      if (hero) hero.classList.add("is-ready");
-      document.querySelectorAll(REVEAL_SELECTOR).forEach((el) => {
-        el.classList.add("is-visible");
-      });
+      forceLandingVisible(true);
+      clearLandingFallback();
       return;
     }
 
@@ -48,6 +74,7 @@
       window.requestAnimationFrame(() => {
         const hero = document.querySelector(".reveal-hero");
         if (hero) hero.classList.add("is-ready");
+        clearLandingFallback();
       });
     });
   }
@@ -95,30 +122,28 @@
 
     nodes.forEach((el) => observer.observe(el));
 
-    /* Filet de sécurité mobile : révéler les blocs visibles restés masqués */
-    if (mobile) {
-      let revealFallbackTimer = 0;
+    /* Filet de sécurité : révéler les blocs visibles restés masqués */
+    let revealFallbackTimer = 0;
 
-      const revealVisiblePending = () => {
-        nodes.forEach((el) => {
-          if (el.classList.contains("is-visible")) return;
-          const rect = el.getBoundingClientRect();
-          if (rect.top < window.innerHeight * 0.92 && rect.bottom > 0) {
-            el.classList.add("is-visible");
-            observer.unobserve(el);
-          }
-        });
-      };
+    const revealVisiblePending = () => {
+      nodes.forEach((el) => {
+        if (el.classList.contains("is-visible")) return;
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight * 0.92 && rect.bottom > 0) {
+          el.classList.add("is-visible");
+          observer.unobserve(el);
+        }
+      });
+    };
 
-      const scheduleRevealFallback = () => {
-        window.clearTimeout(revealFallbackTimer);
-        revealFallbackTimer = window.setTimeout(revealVisiblePending, 180);
-      };
+    const scheduleRevealFallback = () => {
+      window.clearTimeout(revealFallbackTimer);
+      revealFallbackTimer = window.setTimeout(revealVisiblePending, 180);
+    };
 
-      window.addEventListener("scroll", scheduleRevealFallback, { passive: true });
-      window.addEventListener("resize", scheduleRevealFallback, { passive: true });
-      window.setTimeout(revealVisiblePending, 1200);
-    }
+    window.addEventListener("scroll", scheduleRevealFallback, { passive: true });
+    window.addEventListener("resize", scheduleRevealFallback, { passive: true });
+    window.setTimeout(revealVisiblePending, 800);
   }
 
   /**
@@ -343,7 +368,8 @@
     });
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
+  function bootLanding() {
+    document.documentElement.classList.add("js-landing");
     initLandingEntrance();
     initHeaderScrollState();
     initScrollReveal();
@@ -353,5 +379,13 @@
     initInternalAnchors();
     initCtaHooks();
     initFooterYear();
-  });
+  }
+
+  scheduleLandingFallback();
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootLanding);
+  } else {
+    bootLanding();
+  }
 })();

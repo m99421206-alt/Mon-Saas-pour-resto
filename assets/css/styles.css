@@ -2673,6 +2673,7 @@ body.install-modal-open {
 }
 
 /* ----------------------------------------------------------------------------- Animations landing (CSS + IntersectionObserver) */
+/* Masquage initial uniquement si html.js-landing (JS chargé) — sinon contenu visible. */
 
 :root {
   --motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -2680,8 +2681,8 @@ body.install-modal-open {
   --motion-distance: 18px;
 }
 
-body:not(.landing-ready) .site-header .brand,
-body:not(.landing-ready) .site-header__bar-tools {
+html.js-landing body:not(.landing-ready) .site-header .brand,
+html.js-landing body:not(.landing-ready) .site-header__bar-tools {
   opacity: 0;
   transform: translateY(-10px);
 }
@@ -2700,7 +2701,7 @@ body.landing-ready .site-header__bar-tools {
 }
 
 @media (min-width: 48rem) {
-  body:not(.landing-ready) .site-header__nav {
+  html.js-landing body:not(.landing-ready) .site-header__nav {
     opacity: 0;
     transform: translateY(-8px);
   }
@@ -2716,33 +2717,33 @@ body.landing-ready .site-header__bar-tools {
 }
 
 /* Hero — séquence au chargement */
-.reveal-hero:not(.is-ready) .hero__title,
-.reveal-hero:not(.is-ready) .hero__lead,
-.reveal-hero:not(.is-ready) .hero__ctas,
-.reveal-hero:not(.is-ready) .hero__chip,
-.reveal-hero:not(.is-ready) .hero__phone-wrap,
-.reveal-hero:not(.is-ready) .hero__qr-thumb,
-.reveal-hero:not(.is-ready) .hero__qr-caption {
+html.js-landing .reveal-hero:not(.is-ready) .hero__title,
+html.js-landing .reveal-hero:not(.is-ready) .hero__lead,
+html.js-landing .reveal-hero:not(.is-ready) .hero__ctas,
+html.js-landing .reveal-hero:not(.is-ready) .hero__chip,
+html.js-landing .reveal-hero:not(.is-ready) .hero__phone-wrap,
+html.js-landing .reveal-hero:not(.is-ready) .hero__qr-thumb,
+html.js-landing .reveal-hero:not(.is-ready) .hero__qr-caption {
   opacity: 0;
 }
 
-.reveal-hero:not(.is-ready) .hero__title,
-.reveal-hero:not(.is-ready) .hero__lead,
-.reveal-hero:not(.is-ready) .hero__ctas {
+html.js-landing .reveal-hero:not(.is-ready) .hero__title,
+html.js-landing .reveal-hero:not(.is-ready) .hero__lead,
+html.js-landing .reveal-hero:not(.is-ready) .hero__ctas {
   transform: translateY(var(--motion-distance));
 }
 
-.reveal-hero:not(.is-ready) .hero__chip {
+html.js-landing .reveal-hero:not(.is-ready) .hero__chip {
   transform: translateY(14px);
   animation: none;
 }
 
-.reveal-hero:not(.is-ready) .hero__phone-wrap {
+html.js-landing .reveal-hero:not(.is-ready) .hero__phone-wrap {
   transform: translateY(22px) scale(0.985);
   animation: none;
 }
 
-.reveal-hero:not(.is-ready) .hero__qr-thumb {
+html.js-landing .reveal-hero:not(.is-ready) .hero__qr-thumb {
   transform: scale(0.94);
 }
 
@@ -2826,7 +2827,7 @@ body.landing-ready .site-header__bar-tools {
 }
 
 /* Scroll reveal — éléments individuels */
-[data-reveal] {
+html.js-landing [data-reveal]:not(.is-visible) {
   opacity: 0;
   transform: translateY(var(--motion-distance));
   transition:
@@ -2840,7 +2841,7 @@ body.landing-ready .site-header__bar-tools {
 }
 
 /* Scroll reveal — groupes avec décalage */
-[data-reveal-group] > * {
+html.js-landing [data-reveal-group]:not(.is-visible) > * {
   opacity: 0;
   transform: translateY(20px);
   transition:
@@ -2885,13 +2886,13 @@ body.landing-ready .site-header__bar-tools {
 }
 
 /* Fonctionnalités — cartes 1–2 depuis la gauche, 3–4 depuis la droite */
-.feature-grid[data-reveal-group] > li:nth-child(1),
-.feature-grid[data-reveal-group] > li:nth-child(2) {
+html.js-landing .feature-grid[data-reveal-group]:not(.is-visible) > li:nth-child(1),
+html.js-landing .feature-grid[data-reveal-group]:not(.is-visible) > li:nth-child(2) {
   transform: translateX(-64px);
 }
 
-.feature-grid[data-reveal-group] > li:nth-child(3),
-.feature-grid[data-reveal-group] > li:nth-child(4) {
+html.js-landing .feature-grid[data-reveal-group]:not(.is-visible) > li:nth-child(3),
+html.js-landing .feature-grid[data-reveal-group]:not(.is-visible) > li:nth-child(4) {
   transform: translateX(64px);
 }
 
@@ -2925,10 +2926,10 @@ body.landing-ready .site-header__bar-tools {
     overflow-x: clip;
   }
 
-  .feature-grid[data-reveal-group] > li:nth-child(1),
-  .feature-grid[data-reveal-group] > li:nth-child(2),
-  .feature-grid[data-reveal-group] > li:nth-child(3),
-  .feature-grid[data-reveal-group] > li:nth-child(4) {
+  html.js-landing .feature-grid[data-reveal-group]:not(.is-visible) > li:nth-child(1),
+  html.js-landing .feature-grid[data-reveal-group]:not(.is-visible) > li:nth-child(2),
+  html.js-landing .feature-grid[data-reveal-group]:not(.is-visible) > li:nth-child(3),
+  html.js-landing .feature-grid[data-reveal-group]:not(.is-visible) > li:nth-child(4) {
     transform: translateY(14px);
   }
 
@@ -2953,7 +2954,7 @@ body.landing-ready .site-header__bar-tools {
 }
 
 /* Showcase — carte flottante après le visuel */
-.showcase__visual:not(.is-visible) .showcase__float-card {
+html.js-landing .showcase__visual:not(.is-visible) .showcase__float-card {
   opacity: 0;
   transform: translateY(12px);
 }
