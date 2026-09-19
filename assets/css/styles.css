@@ -2920,14 +2920,35 @@ body.landing-ready .site-header__bar-tools {
 }
 
 @media (max-width: 47.9375rem) {
-  .feature-grid[data-reveal-group] > li:nth-child(1),
-  .feature-grid[data-reveal-group] > li:nth-child(2) {
-    transform: translateX(-36px);
+  /* Cartes empilées : fade-up (évite débordement horizontal du slide latéral) */
+  .features {
+    overflow-x: clip;
   }
 
+  .feature-grid[data-reveal-group] > li:nth-child(1),
+  .feature-grid[data-reveal-group] > li:nth-child(2),
   .feature-grid[data-reveal-group] > li:nth-child(3),
   .feature-grid[data-reveal-group] > li:nth-child(4) {
-    transform: translateX(36px);
+    transform: translateY(14px);
+  }
+
+  .feature-grid[data-reveal-group].is-visible > li:nth-child(1),
+  .feature-grid[data-reveal-group].is-visible > li:nth-child(2),
+  .feature-grid[data-reveal-group].is-visible > li:nth-child(3),
+  .feature-grid[data-reveal-group].is-visible > li:nth-child(4) {
+    transform: none;
+  }
+
+  /* Hero : pas d’animation infinie (perf scroll sur petits écrans) */
+  .hero__phone-wrap,
+  .hero__chip {
+    animation: none !important;
+    will-change: auto;
+  }
+
+  [data-reveal],
+  [data-reveal-group] > * {
+    --motion-duration: 0.45s;
   }
 }
 

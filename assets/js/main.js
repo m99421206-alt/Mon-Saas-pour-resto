@@ -22,6 +22,13 @@
     );
   }
 
+  function isMobileViewport() {
+    return (
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(max-width: 47.9375rem)").matches
+    );
+  }
+
   /**
    * Header + Hero au chargement (sans attendre le scroll).
    */
@@ -72,6 +79,7 @@
       return;
     }
 
+    const mobile = isMobileViewport();
     const observer = new IntersectionObserver(
       (entries, obs) => {
         entries.forEach((entry) => {
@@ -80,10 +88,37 @@
           obs.unobserve(entry.target);
         });
       },
-      { root: null, rootMargin: "0px 0px -7% 0px", threshold: 0.14 }
+      mobile
+        ? { root: null, rootMargin: "0px 0px 10% 0px", threshold: 0.04 }
+        : { root: null, rootMargin: "0px 0px -7% 0px", threshold: 0.14 }
     );
 
     nodes.forEach((el) => observer.observe(el));
+
+    /* Filet de sécurité mobile : révéler les blocs visibles restés masqués */
+    if (mobile) {
+      let revealFallbackTimer = 0;
+
+      const revealVisiblePending = () => {
+        nodes.forEach((el) => {
+          if (el.classList.contains("is-visible")) return;
+          const rect = el.getBoundingClientRect();
+          if (rect.top < window.innerHeight * 0.92 && rect.bottom > 0) {
+            el.classList.add("is-visible");
+            observer.unobserve(el);
+          }
+        });
+      };
+
+      const scheduleRevealFallback = () => {
+        window.clearTimeout(revealFallbackTimer);
+        revealFallbackTimer = window.setTimeout(revealVisiblePending, 180);
+      };
+
+      window.addEventListener("scroll", scheduleRevealFallback, { passive: true });
+      window.addEventListener("resize", scheduleRevealFallback, { passive: true });
+      window.setTimeout(revealVisiblePending, 1200);
+    }
   }
 
   /**
