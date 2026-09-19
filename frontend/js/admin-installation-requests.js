@@ -199,8 +199,8 @@
       return row.getAttribute("data-request-id");
     }
     var dropdown = el.closest(".ir-dropdown");
-    if (dropdown && dropdown.id && dropdown.id.indexOf("ir-menu-") === 0) {
-      return dropdown.id.slice("ir-menu-".length);
+    if (dropdown && dropdown.getAttribute("data-request-id")) {
+      return dropdown.getAttribute("data-request-id");
     }
     var cell = el.closest(".ir-actions-cell, .ir-card-actions");
     if (cell) {
@@ -266,9 +266,7 @@
   function renderMenuHtml(row) {
     var actions = getActionsForStatus(row.status, row);
     var html =
-      '<div class="ir-dropdown" id="ir-menu-' +
-      row.id +
-      '" data-request-id="' +
+      '<div class="ir-dropdown" data-request-id="' +
       row.id +
       '">';
     actions.forEach(function (act) {
@@ -924,7 +922,8 @@
         ev.preventDefault();
         ev.stopPropagation();
         var id = menuBtn.getAttribute("data-menu");
-        var dropdown = document.getElementById("ir-menu-" + id);
+        var actionsCell = menuBtn.closest(".ir-actions-cell, .ir-card-actions");
+        var dropdown = actionsCell ? actionsCell.querySelector(".ir-dropdown") : null;
         var wasOpen = dropdown && dropdown.classList.contains("is-open");
         closeAllMenus();
         if (!wasOpen && dropdown) {

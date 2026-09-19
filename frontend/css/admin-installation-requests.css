@@ -210,6 +210,8 @@
   padding: 0.85rem 1rem;
   background: var(--adm-surface, #fff);
   cursor: pointer;
+  overflow: visible;
+  position: relative;
 }
 
 .ir-card__head {
@@ -235,6 +237,8 @@
   margin-top: 0.5rem;
   text-align: right;
   width: auto;
+  position: relative;
+  overflow: visible;
 }
 
 .ir-detail-panel {
@@ -447,10 +451,22 @@
   .ir-cards-list {
     display: flex;
     flex-direction: column;
+    overflow: visible;
   }
 
   .ir-kpi-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ir-menu-btn {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0.5rem;
+    touch-action: manipulation;
+  }
+
+  .ir-dropdown {
+    z-index: 400;
   }
 }
 
