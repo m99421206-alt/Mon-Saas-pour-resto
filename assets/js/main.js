@@ -261,6 +261,40 @@
     });
   }
 
+  /**
+   * Menu démo dans le mockup Hero : rendu à 390×844 px puis scale pour remplir l'écran.
+   */
+  function initHeroPhoneIframeScale() {
+    const screen = document.querySelector(".hero__phone-screen");
+    const viewport = document.querySelector(".hero__phone-iframe-viewport");
+    const iframe = document.querySelector(".hero__phone-iframe");
+    if (!screen || !viewport || !iframe) return;
+
+    const BASE_W = 390;
+
+    function markReady() {
+      viewport.classList.add("is-ready");
+    }
+
+    iframe.addEventListener("load", markReady, { once: true });
+
+    function updateScale() {
+      const w = screen.clientWidth;
+      const h = screen.clientHeight;
+      if (!w || !h) return;
+      const scale = w / BASE_W;
+      iframe.style.transform = `scale(${scale})`;
+    }
+
+    updateScale();
+
+    if ("ResizeObserver" in window) {
+      new ResizeObserver(updateScale).observe(screen);
+    } else {
+      window.addEventListener("resize", updateScale, { passive: true });
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     initLandingWhatsAppLinks();
     initContactForm();
@@ -269,5 +303,6 @@
     initInternalAnchors();
     initCtaHooks();
     initFooterYear();
+    initHeroPhoneIframeScale();
   });
 })();

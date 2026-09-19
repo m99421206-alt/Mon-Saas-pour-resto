@@ -1043,17 +1043,58 @@ p {
   aspect-ratio: 9 / 19.35;
 }
 
-.hero__phone-iframe {
+.hero__phone-iframe-viewport {
   position: absolute;
   inset: 0;
   z-index: 1;
+  overflow: hidden;
+  background: #fff;
+}
+
+.hero__phone-iframe-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    110deg,
+    #f3f4f6 8%,
+    #fff 18%,
+    #f3f4f6 33%
+  );
+  background-size: 200% 100%;
+  animation: hero-phone-shimmer 1.2s ease-in-out infinite;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.hero__phone-iframe-viewport.is-ready .hero__phone-iframe-loading {
+  opacity: 0;
+}
+
+.hero__phone-iframe {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 1;
   display: block;
-  width: 100%;
-  height: 100%;
-  margin: 0;
+  width: 390px;
+  height: 844px;
+  margin: 0 0 0 -195px;
   padding: 0;
   border: 0;
   background: #fff;
+  transform-origin: top center;
+  will-change: transform;
+}
+
+@keyframes hero-phone-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+
+  100% {
+    background-position: -100% 0;
+  }
 }
 
 /* Cartes & QR flottants (au-dessus du téléphone — z-index + position haute) */
@@ -2719,6 +2760,10 @@ body.install-modal-open {
   .hero__phone-wrap,
   .hero__chip {
     animation: none !important;
+  }
+
+  .hero__phone-iframe-loading {
+    animation: none;
   }
 
   .hero__chip {
