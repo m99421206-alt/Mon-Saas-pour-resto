@@ -16,10 +16,24 @@
     />
 
     <!-- Favicon & Icônes Écran d'accueil (iOS / Android) -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/x-icon" href="/frontend/favicon.ico" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/frontend/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/frontend/favicon-16x16.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/frontend/apple-touch-icon.png"
+    />
 
     <!-- Configuration PWA -->
     <link rel="manifest" href="/site.webmanifest" />
@@ -157,10 +171,13 @@
 
     <main>
       <!-- ========== Hero premium (2 colonnes + mockup) ========== -->
-      <section class="hero hero--premium section" aria-labelledby="hero-title">
+      <section
+        class="hero hero--premium section reveal-hero"
+        aria-labelledby="hero-title"
+      >
         <div class="container hero__layout">
           <div class="hero__grid">
-            <div class="hero__col hero__col--text" data-reveal>
+            <div class="hero__col hero__col--text">
               <h1 id="hero-title" class="hero__title hero__title--premium">
                 Votre menu digital,<br />
                 sans prise de tête.
@@ -206,7 +223,7 @@
               </div>
             </div>
 
-            <div class="hero__col hero__col--visual" data-reveal>
+            <div class="hero__col hero__col--visual">
               <div class="hero__scene">
                 <div class="hero__chip hero__chip--qr" aria-hidden="true">
                   <div class="hero__chip-inner hero__chip-inner--qr">
@@ -236,18 +253,22 @@
                   <div class="hero__phone">
                     <span class="hero__phone-dynamic" aria-hidden="true"></span>
                     <div class="hero__phone-screen">
-                      <div class="hero__phone-iframe-viewport">
-                        <span
-                          class="hero__phone-iframe-loading"
-                          aria-hidden="true"
-                        ></span>
-                        <iframe
-                          src="/restaurant/africamenu"
-                          class="hero__phone-iframe"
-                          title="Menu de démonstration AfricaMenu"
-                          loading="eager"
-                        ></iframe>
-                      </div>
+                      <picture>
+                        <source
+                          srcset="assets/images/icone/visiel_upscaled.webp"
+                          type="image/webp"
+                        />
+                        <img
+                          src="assets/images/icone/visiel_upscaled.png"
+                          alt="Aperçu du menu digital AfricaMenu sur smartphone."
+                          class="hero__phone-img"
+                          width="780"
+                          height="1662"
+                          decoding="async"
+                          fetchpriority="high"
+                          draggable="false"
+                        />
+                      </picture>
                     </div>
                   </div>
                 </div>
@@ -265,9 +286,9 @@
       >
         <div class="container">
           <h2 id="features-title" class="visually-hidden">Fonctionnalités</h2>
-          <ul class="feature-grid">
+          <ul class="feature-grid" data-reveal-group>
             <li>
-              <article class="feature-card" data-reveal>
+              <article class="feature-card">
                 <div class="feature-card__icon-wrap" aria-hidden="true">
                   <img
                     src="assets/images/icone/tel.webp"
@@ -284,7 +305,7 @@
               </article>
             </li>
             <li>
-              <article class="feature-card" data-reveal>
+              <article class="feature-card">
                 <div class="feature-card__icon-wrap" aria-hidden="true">
                   <img
                     src="assets/images/icone/qrcode.webp"
@@ -301,7 +322,7 @@
               </article>
             </li>
             <li>
-              <article class="feature-card" data-reveal>
+              <article class="feature-card">
                 <div class="feature-card__icon-wrap" aria-hidden="true">
                   <img
                     src="assets/images/icone/commande.webp"
@@ -318,7 +339,7 @@
               </article>
             </li>
             <li>
-              <article class="feature-card" data-reveal>
+              <article class="feature-card">
                 <div class="feature-card__icon-wrap" aria-hidden="true">
                   <img
                     src="assets/images/icone/miseajour.webp"
@@ -347,12 +368,20 @@
         <div class="container container--narrow">
           <div class="showcase__visual" data-reveal>
             <div class="showcase__visual-img">
-              <img
-                src="assets/images/icone/bamako_saveurs_premium_ad.png"
-                alt="Exemple de menu digital Bamako Saveurs sur AfricaMenu"
-                width="800"
-                height="450"
-              />
+              <picture>
+                <source
+                  srcset="assets/images/icone/bamako_saveurs_premium_ad.webp"
+                  type="image/webp"
+                />
+                <img
+                  src="assets/images/icone/bamako_saveurs_premium_ad.png"
+                  alt="Exemple de menu digital Bamako Saveurs sur AfricaMenu"
+                  width="800"
+                  height="1422"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </picture>
             </div>
 
             <aside
@@ -383,10 +412,10 @@
               </div>
             </aside>
           </div>
-          <h2 id="showcase-title" class="showcase__title">
+          <h2 id="showcase-title" class="showcase__title" data-reveal>
             Tout ce dont vous avez besoin
           </h2>
-          <p class="showcase__subtitle">
+          <p class="showcase__subtitle" data-reveal>
             Une solution complète pensée spécifiquement pour les restaurants,
             maquis et fast-foods
           </p>
@@ -400,12 +429,14 @@
         aria-labelledby="steps-title"
       >
         <div class="container container--narrow">
-          <h2 id="steps-title" class="steps__title">Comment ça marche ?</h2>
-          <p class="steps__intro">
+          <h2 id="steps-title" class="steps__title" data-reveal>
+            Comment ça marche ?
+          </h2>
+          <p class="steps__intro" data-reveal>
             Lancez votre menu digital en 3 étapes simples.
           </p>
-          <ol class="steps__list">
-            <li class="steps__item" data-reveal>
+          <ol class="steps__list" data-reveal-group>
+            <li class="steps__item">
               <span class="steps__num" aria-hidden="true">1</span>
               <h3 class="steps__item-title">Envoyez votre menu</h3>
               <p class="steps__item-text">
@@ -413,7 +444,7 @@
                 menu sur WhatsApp.
               </p>
             </li>
-            <li class="steps__item" data-reveal>
+            <li class="steps__item">
               <span class="steps__num" aria-hidden="true">2</span>
               <h3 class="steps__item-title">Nous configurons tout</h3>
               <p class="steps__item-text">
@@ -421,7 +452,7 @@
                 prix, vos photos et votre identité visuelle.
               </p>
             </li>
-            <li class="steps__item" data-reveal>
+            <li class="steps__item">
               <span class="steps__num" aria-hidden="true">3</span>
               <h3 class="steps__item-title">Recevez votre menu</h3>
               <p class="steps__item-text">
@@ -451,10 +482,9 @@
             </p>
           </header>
 
-          <div class="pricing__grid">
+          <div class="pricing__grid" data-reveal-group>
             <article
               class="pricing-card pricing-card--featured pricing-card--setup"
-              data-reveal
             >
               <span class="pricing-card__badge"> Installation clé en main</span>
               <div class="pricing-card__top">
@@ -540,10 +570,7 @@
               </a>
             </article>
 
-            <article
-              class="pricing-card pricing-card--subscription"
-              data-reveal
-            >
+            <article class="pricing-card pricing-card--subscription">
               <span class="pricing-card__ribbon">30 jours gratuits inclus</span>
               <div class="pricing-card__top">
                 <span
@@ -607,7 +634,7 @@
                 Une partie du prix mensuel garantit une expérience fiable jour
                 après jour pour vous et vos clients.
               </p>
-              <ul class="pricing-why__list">
+              <ul class="pricing-why__list" data-reveal-group>
                 <li>
                   <span class="pricing-why__check" aria-hidden="true"></span>
                   Hébergement sécurisé
@@ -651,8 +678,8 @@
             </p>
           </header>
 
-          <div class="contact__cards">
-            <article class="contact-card contact-card--wa" data-reveal>
+          <div class="contact__cards" data-reveal-group>
+            <article class="contact-card contact-card--wa">
               <div
                 class="contact-card__icon-wrap contact-card__icon-wrap--wa"
                 aria-hidden="true"
@@ -681,7 +708,7 @@
               </a>
             </article>
 
-            <article class="contact-card contact-card--phone" data-reveal>
+            <article class="contact-card contact-card--phone">
               <div
                 class="contact-card__icon-wrap contact-card__icon-wrap--phone"
                 aria-hidden="true"
@@ -710,7 +737,7 @@
               <p class="contact-card__hint">Disponible tous les jours</p>
             </article>
 
-            <article class="contact-card contact-card--loc" data-reveal>
+            <article class="contact-card contact-card--loc">
               <div
                 class="contact-card__icon-wrap contact-card__icon-wrap--loc"
                 aria-hidden="true"
@@ -834,7 +861,7 @@
         id="commencer"
         aria-labelledby="cta-band-title"
       >
-        <div class="container container--narrow cta-band__inner">
+        <div class="container container--narrow cta-band__inner" data-reveal-group>
           <h2 id="cta-band-title" class="cta-band__title">
             Prêt à moderniser votre restaurant
           </h2>
@@ -872,7 +899,7 @@
 
     <footer class="site-footer">
       <div class="container">
-        <div class="site-footer__inner">
+        <div class="site-footer__inner" data-reveal>
           <div class="site-footer__brand-block">
             <a href="#top" class="site-footer__brand-link">
               <span class="site-footer__logo" aria-hidden="true">

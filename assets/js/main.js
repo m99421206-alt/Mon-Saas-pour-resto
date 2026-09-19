@@ -13,14 +13,61 @@
     typeof window.AFRICA_LANDING_WHATSAPP === "string" && window.AFRICA_LANDING_WHATSAPP.trim()
       ? window.AFRICA_LANDING_WHATSAPP.trim()
       : "22399421206";
-  const REVEAL_SELECTOR = "[data-reveal]";
+  const REVEAL_SELECTOR = "[data-reveal], [data-reveal-group]";
+
+  function prefersReducedMotion() {
+    return (
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    );
+  }
 
   /**
-   * Active l’IntersectionObserver si disponible pour ajouter .is-visible.
+   * Header + Hero au chargement (sans attendre le scroll).
+   */
+  function initLandingEntrance() {
+    if (prefersReducedMotion()) {
+      document.body.classList.add("landing-ready");
+      const hero = document.querySelector(".reveal-hero");
+      if (hero) hero.classList.add("is-ready");
+      document.querySelectorAll(REVEAL_SELECTOR).forEach((el) => {
+        el.classList.add("is-visible");
+      });
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      document.body.classList.add("landing-ready");
+      window.requestAnimationFrame(() => {
+        const hero = document.querySelector(".reveal-hero");
+        if (hero) hero.classList.add("is-ready");
+      });
+    });
+  }
+
+  /**
+   * Ombre légère du header sticky au scroll.
+   */
+  function initHeaderScrollState() {
+    const header = document.querySelector(".site-header");
+    if (!header) return;
+
+    const sync = () => {
+      header.classList.toggle("is-scrolled", window.scrollY > 6);
+    };
+
+    sync();
+    window.addEventListener("scroll", sync, { passive: true });
+  }
+
+  /**
+   * IntersectionObserver — fade-up au scroll (data-reveal + data-reveal-group).
    */
   function initScrollReveal() {
     const nodes = document.querySelectorAll(REVEAL_SELECTOR);
-    if (!nodes.length || !("IntersectionObserver" in window)) {
+    if (!nodes.length) return;
+
+    if (prefersReducedMotion() || !("IntersectionObserver" in window)) {
       nodes.forEach((el) => el.classList.add("is-visible"));
       return;
     }
@@ -33,7 +80,7 @@
           obs.unobserve(entry.target);
         });
       },
-      { root: null, rootMargin: "0px 0px -8% 0px", threshold: 0.12 }
+      { root: null, rootMargin: "0px 0px -7% 0px", threshold: 0.14 }
     );
 
     nodes.forEach((el) => observer.observe(el));
@@ -261,48 +308,15 @@
     });
   }
 
-  /**
-   * Menu démo dans le mockup Hero : rendu à 390×844 px puis scale pour remplir l'écran.
-   */
-  function initHeroPhoneIframeScale() {
-    const screen = document.querySelector(".hero__phone-screen");
-    const viewport = document.querySelector(".hero__phone-iframe-viewport");
-    const iframe = document.querySelector(".hero__phone-iframe");
-    if (!screen || !viewport || !iframe) return;
-
-    const BASE_W = 390;
-
-    function markReady() {
-      viewport.classList.add("is-ready");
-    }
-
-    iframe.addEventListener("load", markReady, { once: true });
-
-    function updateScale() {
-      const w = screen.clientWidth;
-      const h = screen.clientHeight;
-      if (!w || !h) return;
-      const scale = w / BASE_W;
-      iframe.style.transform = `scale(${scale})`;
-    }
-
-    updateScale();
-
-    if ("ResizeObserver" in window) {
-      new ResizeObserver(updateScale).observe(screen);
-    } else {
-      window.addEventListener("resize", updateScale, { passive: true });
-    }
-  }
-
   document.addEventListener("DOMContentLoaded", () => {
+    initLandingEntrance();
+    initHeaderScrollState();
+    initScrollReveal();
     initLandingWhatsAppLinks();
     initContactForm();
     initSiteHeaderMenu();
-    initScrollReveal();
     initInternalAnchors();
     initCtaHooks();
     initFooterYear();
-    initHeroPhoneIframeScale();
   });
 })();
