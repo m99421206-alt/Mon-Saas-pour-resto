@@ -50,13 +50,6 @@
     }
   };
 
-  const wantsOnboarding = (data) => {
-    if (!data || data.is_platform_admin) {
-      return false;
-    }
-    return data.restaurant?.onboarding_seen === false;
-  };
-
   const isSafeNextPage = (url) => {
     if (!url || typeof url !== "string") return false;
     if (url.includes("/") || url.includes("\\") || url.includes(".."))
@@ -112,12 +105,7 @@
       const params = new URLSearchParams(window.location.search);
       const next = params.get("next");
 
-      if (
-        wantsOnboarding(data) &&
-        !(isSafeNextPage(next) && isAdminNextPage(next))
-      ) {
-        window.location.href = "onboarding.html";
-      } else if (isSafeNextPage(next)) {
+      if (isSafeNextPage(next)) {
         window.location.href = next;
       } else if (data.is_platform_admin) {
         window.location.href = "admin-dashboard.html";

@@ -11,13 +11,12 @@ const {
   createAdminNotification,
   NOTIFICATION_TYPES,
 } = require("../services/adminNotificationService");
-const platformSettings = require("../services/platformSettings");
 const { normalizeWhatsapp } = require("../utils/whatsappNormalize");
 const { isPlatformAdminEmail } = require("../utils/platformAdmin");
 const loginLockout = require("../utils/loginLockout");
 const { parseLoginBody, parseRegisterBody } = require("../validators/auth");
 const { sendValidationError } = require("../validators/helpers");
-const { generateUniqueSlug } = require("../utils/generateSlug");
+const { createRestaurantAccount } = require("../services/restaurantSignupService");
 const {
   isMysqlUnavailableError,
   mysqlUnavailablePayload,
@@ -97,67 +96,17 @@ async function register(req, res) {
     return;
   }
   var input = parsed.data;
-  const email = input.email;
-  const password = input.password;
-  const restaurantName = input.restaurantName;
-  const fullName = input.fullName;
-  const principalPhoneDb = input.whatsapp;
-  const cityDb = input.quartier;
-
-  var connection = null;
 
   try {
-    const pool = getPool();
-    connection = await pool.getConnection();
-    await connection.beginTransaction();
-
-    const [existing] = await connection.query(
-      "SELECT id FROM users WHERE email = ? LIMIT 1",
-      [email],
-    );
-    if (existing.length) {
-      await connection.rollback();
-      return res.status(409).json({ message: "Cet email est déjà utilisé." });
-    }
-
-    const rounds = Number(process.env.BCRYPT_SALT_ROUNDS) || 10;
-    const passwordHash = await bcrypt.hash(password, rounds);
-
-    const [userResult] = await connection.query(
-      "INSERT INTO users (email, full_name, phone, password) VALUES (?, ?, ?, ?)",
-      [email, fullName, principalPhoneDb, passwordHash],
-    );
-
-    const userId = userResult.insertId;
-
-    const trialDays = platformSettings.getTrialPeriodDays();
-    const restaurantSlug = await generateUniqueSlug(connection, restaurantName);
-
-    const [restaurantResult] = await connection.query(
-      "INSERT INTO restaurants " +
-        "(user_id, name, slug, city, country, description, whatsapp, subscription_status, subscription_started_at, subscription_ends_at, subscription_amount_cfa, subscription_plan_key) " +
-        "VALUES (?, ?, ?, ?, ?, ?, ?, 'trial', NOW(), DATE_ADD(NOW(), INTERVAL ? DAY), 0, 'trial')",
-      [
-        userId,
-        restaurantName,
-        restaurantSlug,
-        cityDb,
-        null,
-        null,
-        principalPhoneDb,
-        trialDays,
-      ],
-    );
-
-    const restaurantId = restaurantResult.insertId;
-    const [[restaurantRow]] = await connection.query(
-      "SELECT id, name, slug, city, country, whatsapp, subscription_status, subscription_started_at, subscription_ends_at, subscription_plan_key, " +
-        "COALESCE(onboarding_seen, 0) AS onboarding_seen, COALESCE(needs_setup_help, 0) AS needs_setup_help " +
-        "FROM restaurants WHERE id = ? LIMIT 1",
-      [restaurantId],
-    );
-
-    await connection.commit();
+    var created = await createRestaurantAccount(input);
+    var userId = created.userId;
+    var restaurantId = created.restaurantId;
+    var restaurantRow = created.restaurantRow;
+    var email = created.email;
+    var fullName = created.fullName;
+    var restaurantName = created.restaurantName;
+    var principalPhoneDb = created.whatsapp;
+    var cityDb = created.quartier;
 
     await appendAudit({
       userId: userId,
@@ -203,14 +152,8 @@ async function register(req, res) {
       restaurant: mapRestaurantAuth(restaurantRow),
     });
   } catch (error) {
-    if (connection) {
-      try {
-        await connection.rollback();
-      } catch (rollbackErr) {
-        if (process.env.NODE_ENV !== "production") {
-          console.warn("[register] rollback:", rollbackErr.message || rollbackErr);
-        }
-      }
+    if (error && error.code === "EMAIL_IN_USE") {
+      return res.status(409).json({ message: "Cet email est déjà utilisé." });
     }
     if (process.env.NODE_ENV !== "production") {
       console.error("[register]", error);
@@ -221,10 +164,6 @@ async function register(req, res) {
     return res
       .status(500)
       .json({ message: "Erreur serveur lors de l'inscription." });
-  } finally {
-    if (connection) {
-      connection.release();
-    }
   }
 }
 

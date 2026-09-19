@@ -147,13 +147,8 @@
       saveSession(data);
       if (data.is_platform_admin) {
         window.location.href = "admin-dashboard.html";
-      } else if (
-        !data.restaurant ||
-        data.restaurant.onboarding_seen !== false
-      ) {
-        window.location.href = "dashboard.html";
       } else {
-        window.location.href = "onboarding.html";
+        window.location.href = "dashboard.html";
       }
     } catch (error) {
       showError(

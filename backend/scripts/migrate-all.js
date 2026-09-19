@@ -29,6 +29,8 @@ var migrations = [
   { file: "migrate-admin-notifications-group.js", label: "Notifications admin (regroupement)" },
   { file: "migrate-performance-indexes.js", label: "Index performance" },
   { file: "migrate-upload-registry.js", label: "Registre upload_files (quota images)" },
+  { file: "migrate-setup-assistance-requests.js", label: "Demandes d'assistance installation" },
+  { file: "migrate-setup-assistance-crm.js", label: "CRM demandes d'installation" },
 ];
 
 function runMigration(entry) {

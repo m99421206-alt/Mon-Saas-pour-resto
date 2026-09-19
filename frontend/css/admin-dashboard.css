@@ -854,6 +854,52 @@ body.adm-sidebar-open {
 
 /* Demandes d’assistance installation (tableau admin dashboard) */
 
+.adm-setup-help-filter__select {
+  font: inherit;
+  font-size: 0.875rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--adm-border);
+  background: var(--adm-surface);
+  color: var(--adm-text);
+}
+
+.adm-setup-status {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.adm-setup-status--new {
+  background: rgba(59, 130, 246, 0.12);
+  color: #1d4ed8;
+}
+
+.adm-setup-status--contacted {
+  background: rgba(234, 179, 8, 0.16);
+  color: #a16207;
+}
+
+.adm-setup-status--progress {
+  background: rgba(255, 107, 0, 0.14);
+  color: #c2410c;
+}
+
+.adm-setup-status--done {
+  background: rgba(34, 197, 94, 0.14);
+  color: #15803d;
+}
+
+.adm-setup-linked {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--adm-text-muted);
+  align-self: center;
+}
+
 .adm-setup-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1058,3 +1104,22 @@ body.adm-sidebar-open {
     pointer-events: none;
   }
 }
+
+/* Badges statut — aperçu demandes d'installation */
+.ir-status {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.ir-status--new { background: #dbeafe; color: #1d4ed8; }
+.ir-status--contacted { background: #e0e7ff; color: #4338ca; }
+.ir-status--info_received { background: #cffafe; color: #0e7490; }
+.ir-status--in_progress { background: #fef3c7; color: #b45309; }
+.ir-status--ready_to_review { background: #fce7f3; color: #be185d; }
+.ir-status--correction_needed { background: #fee2e2; color: #b91c1c; }
+.ir-status--completed { background: #dcfce7; color: #15803d; }
+.ir-status--cancelled { background: #f1f5f9; color: #64748b; }

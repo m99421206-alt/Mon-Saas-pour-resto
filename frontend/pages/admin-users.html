@@ -67,6 +67,11 @@
               </a>
             </li>
             <li>
+              <a href="admin-installation-requests.html" class="adm-sidebar__link"
+                >Demandes d'installation</a
+              >
+            </li>
+            <li>
               <a
                 href="admin-users.html"
                 class="adm-sidebar__link is-active"
@@ -197,9 +202,18 @@
 
       <main id="admin-main" class="adm-main">
         <div class="adm-main__inner adm-page--users">
-          <header class="adm-page-head">
-            <h1 class="adm-page-title">Utilisateurs</h1>
-            <p class="adm-page-subtitle">Liste des comptes.</p>
+          <header class="adm-page-head adm-page-head--with-action">
+            <div>
+              <h1 class="adm-page-title">Utilisateurs</h1>
+              <p class="adm-page-subtitle">Liste des comptes.</p>
+            </div>
+            <button
+              type="button"
+              class="adm-btn adm-btn--primary adm-page-head__action"
+              id="adm-user-create-open"
+            >
+              + Ajouter
+            </button>
           </header>
 
           <div
@@ -392,6 +406,141 @@
             Modifier le mot de passe
           </button>
         </div>
+      </div>
+    </div>
+
+    <div
+      id="adm-user-create-modal"
+      class="adm-detail-modal adm-create-user-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-hidden="true"
+      aria-labelledby="adm-user-create-title"
+    >
+      <div
+        class="adm-detail-modal__backdrop"
+        data-close-create-user
+        tabindex="-1"
+      ></div>
+      <div class="adm-detail-modal__panel">
+        <div class="adm-detail-modal__head">
+          <div class="adm-detail-modal__titlewrap">
+            <h3 id="adm-user-create-title">Créer un restaurant</h3>
+            <p class="adm-detail-modal__email">
+              Mêmes informations que l'inscription restaurant.
+            </p>
+          </div>
+          <button
+            type="button"
+            class="adm-detail-modal__close"
+            aria-label="Fermer"
+            data-close-create-user
+          >
+            ×
+          </button>
+        </div>
+        <form id="adm-user-create-form" class="adm-create-user-form" novalidate>
+          <div class="adm-pwd-field">
+            <label for="adm-create-restaurant-name">Nom du restaurant</label>
+            <input
+              id="adm-create-restaurant-name"
+              name="restaurantName"
+              type="text"
+              autocomplete="organization"
+              required
+              maxlength="255"
+            />
+          </div>
+          <div class="adm-pwd-field">
+            <label for="adm-create-full-name">Nom du gérant</label>
+            <input
+              id="adm-create-full-name"
+              name="fullName"
+              type="text"
+              autocomplete="name"
+              required
+              maxlength="160"
+            />
+          </div>
+          <div class="adm-pwd-field">
+            <label for="adm-create-whatsapp">WhatsApp</label>
+            <input
+              id="adm-create-whatsapp"
+              name="whatsapp"
+              type="tel"
+              autocomplete="tel"
+              placeholder="+223 00 00 00 00"
+              required
+            />
+          </div>
+          <div class="adm-pwd-field">
+            <label for="adm-create-quartier">Quartier</label>
+            <input
+              id="adm-create-quartier"
+              name="quartier"
+              type="text"
+              autocomplete="off"
+              required
+              maxlength="120"
+            />
+          </div>
+          <div class="adm-pwd-field">
+            <label for="adm-create-email">Adresse email</label>
+            <input
+              id="adm-create-email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+            />
+          </div>
+          <div class="adm-pwd-field">
+            <label for="adm-create-password">Mot de passe</label>
+            <input
+              id="adm-create-password"
+              name="password"
+              type="password"
+              autocomplete="new-password"
+              minlength="8"
+              required
+            />
+          </div>
+          <div class="adm-pwd-field">
+            <label for="adm-create-password-confirm">Confirmer le mot de passe</label>
+            <input
+              id="adm-create-password-confirm"
+              name="passwordConfirm"
+              type="password"
+              autocomplete="new-password"
+              minlength="8"
+              required
+            />
+          </div>
+          <p
+            id="adm-user-create-error"
+            class="adm-pwd-error"
+            role="alert"
+            hidden
+          ></p>
+          <p
+            id="adm-user-create-success"
+            class="adm-pwd-success"
+            role="status"
+            hidden
+          ></p>
+          <div class="adm-pwd-actions">
+            <button type="button" class="adm-btn" data-close-create-user>
+              Annuler
+            </button>
+            <button
+              type="submit"
+              class="adm-btn adm-btn--primary"
+              id="adm-user-create-submit"
+            >
+              Créer le compte
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 

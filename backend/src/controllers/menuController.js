@@ -1,4 +1,5 @@
 const { getPool } = require("../config/database");
+var publicMenuIdentity = require("../services/publicMenuIdentityService");
 
 async function getPublicMenu(req, res) {
   try {
@@ -155,6 +156,74 @@ async function getPublicMenu(req, res) {
   }
 }
 
+async function getPublicMenuManifest(req, res) {
+  try {
+    var restaurant = await publicMenuIdentity.resolveRestaurantByParam(
+      req.params.restaurantId,
+    );
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant introuvable." });
+    }
+    if (restaurant.suspended) {
+      return res.status(403).json({ message: "Ce menu est temporairement indisponible." });
+    }
+
+    var etag = publicMenuIdentity.manifestEtag(restaurant);
+    if (req.headers["if-none-match"] === etag) {
+      return res.status(304).end();
+    }
+
+    var manifest = publicMenuIdentity.buildManifest(restaurant, req);
+    res.setHeader("Content-Type", "application/manifest+json; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=300, stale-while-revalidate=600");
+    res.setHeader("ETag", etag);
+    res.setHeader("Vary", "Accept-Encoding");
+    return res.json(manifest);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Erreur serveur." });
+  }
+}
+
+async function getPublicMenuIcon(req, res) {
+  try {
+    var size = Number(String(req.params.size || "").replace(/\.png$/i, ""));
+    if (!publicMenuIdentity.ALLOWED_ICON_SIZES.includes(size)) {
+      return res.status(400).json({ message: "Taille d'icône invalide." });
+    }
+
+    var restaurant = await publicMenuIdentity.resolveRestaurantByParam(
+      req.params.restaurantId,
+    );
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant introuvable." });
+    }
+    if (restaurant.suspended) {
+      return res.status(403).json({ message: "Ce menu est temporairement indisponible." });
+    }
+
+    var etag = publicMenuIdentity.iconEtag(restaurant, size);
+    if (req.headers["if-none-match"] === etag) {
+      return res.status(304).end();
+    }
+
+    var buffer = await publicMenuIdentity.renderIconPng(restaurant, size);
+    if (!buffer) {
+      return res.status(404).json({ message: "Icône indisponible." });
+    }
+
+    res.setHeader("Content-Type", "image/png");
+    res.setHeader("Cache-Control", "public, max-age=604800, stale-while-revalidate=86400");
+    res.setHeader("ETag", etag);
+    return res.send(buffer);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Erreur serveur." });
+  }
+}
+
 module.exports = {
   getPublicMenu: getPublicMenu,
+  getPublicMenuManifest: getPublicMenuManifest,
+  getPublicMenuIcon: getPublicMenuIcon,
 };

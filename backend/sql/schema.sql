@@ -132,6 +132,53 @@ CREATE TABLE IF NOT EXISTS `audit_logs` (
     ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `setup_assistance_requests` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `source` VARCHAR(16) NOT NULL COMMENT 'landing ou onboarding',
+  `restaurant_id` INT UNSIGNED NULL,
+  `restaurant_name` VARCHAR(160) NOT NULL DEFAULT '',
+  `contact_name` VARCHAR(160) NOT NULL DEFAULT '',
+  `phone` VARCHAR(32) NULL,
+  `city` VARCHAR(120) NULL,
+  `status` VARCHAR(32) NOT NULL DEFAULT 'new',
+  `linked_restaurant_id` INT UNSIGNED NULL,
+  `last_contacted_at` TIMESTAMP NULL DEFAULT NULL,
+  `last_activity_at` TIMESTAMP NULL DEFAULT NULL,
+  `checklist_json` JSON NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_setup_assist_status_created` (`status`, `created_at`),
+  KEY `idx_setup_assist_restaurant` (`restaurant_id`),
+  KEY `idx_setup_assist_linked` (`linked_restaurant_id`),
+  KEY `idx_setup_assist_source` (`source`),
+  CONSTRAINT `fk_setup_assist_restaurant`
+    FOREIGN KEY (`restaurant_id`) REFERENCES `restaurants` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_setup_assist_linked_restaurant`
+    FOREIGN KEY (`linked_restaurant_id`) REFERENCES `restaurants` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `setup_assistance_request_events` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `request_id` BIGINT UNSIGNED NOT NULL,
+  `event_type` VARCHAR(48) NOT NULL,
+  `detail` VARCHAR(2048) NULL,
+  `admin_user_id` INT UNSIGNED NULL,
+  `payload_json` JSON NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_setup_events_request_created` (`request_id`, `created_at`),
+  KEY `idx_setup_events_type` (`event_type`),
+  CONSTRAINT `fk_setup_events_request`
+    FOREIGN KEY (`request_id`) REFERENCES `setup_assistance_requests` (`id`)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_setup_events_admin`
+    FOREIGN KEY (`admin_user_id`) REFERENCES `users` (`id`)
+    ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS `admin_notifications` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `type` VARCHAR(48) NOT NULL,

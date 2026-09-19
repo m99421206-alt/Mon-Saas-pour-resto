@@ -14,6 +14,11 @@ router.use(function maintenanceGate(req, res, next) {
   next();
 });
 
+router.get(
+  "/:restaurantId/manifest.webmanifest",
+  menuController.getPublicMenuManifest,
+);
+router.get("/:restaurantId/icons/:size", menuController.getPublicMenuIcon);
 router.get("/:restaurantId", menuController.getPublicMenu);
 
 module.exports = router;

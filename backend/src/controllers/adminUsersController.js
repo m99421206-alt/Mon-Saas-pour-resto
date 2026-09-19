@@ -10,7 +10,17 @@ var {
   parsePatchUserStatusBody,
   parseAdminResetPasswordBody,
 } = require("../validators/profile");
+var { parseRegisterBody } = require("../validators/auth");
 var { sendValidationError } = require("../validators/helpers");
+var { createRestaurantAccount } = require("../services/restaurantSignupService");
+var {
+  createAdminNotification,
+  NOTIFICATION_TYPES,
+} = require("../services/adminNotificationService");
+var {
+  isMysqlUnavailableError,
+  mysqlUnavailablePayload,
+} = require("../utils/mysqlErrors");
 var {
   collectUserRestaurantsUploadUrls,
   forceDeleteUploadFiles,
@@ -274,6 +284,76 @@ async function patchUserPassword(req, res) {
   }
 }
 
+async function postCreateUser(req, res) {
+  var parsed = parseRegisterBody(req.body);
+  if (sendValidationError(parsed, res)) {
+    return;
+  }
+
+  var adminId = Number(req.user && req.user.id);
+  var input = parsed.data;
+
+  try {
+    var created = await createRestaurantAccount(input);
+
+    await appendAudit({
+      userId: adminId,
+      restaurantId: created.restaurantId,
+      actorType: ACTOR_TYPES.ADMIN,
+      action: AUDIT_ACTIONS.USER_REGISTER,
+      detail:
+        "Création manuelle du compte « " +
+        created.restaurantName +
+        " » (" +
+        created.email +
+        ")",
+    });
+
+    await createAdminNotification({
+      type: NOTIFICATION_TYPES.NEW_RESTAURANT,
+      userId: created.userId,
+      restaurantId: created.restaurantId,
+      restaurantName: created.restaurantName,
+      phone: created.whatsapp,
+      detail:
+        "Restaurant créé par l'admin — " +
+        created.restaurantName +
+        " — Téléphone : " +
+        (created.whatsapp || "—") +
+        " — Quartier : " +
+        created.quartier,
+      linkUrl: "admin-restaurants.html",
+    });
+
+    return res.status(201).json({
+      ok: true,
+      message: "Compte restaurant créé avec succès.",
+      user: {
+        id: created.userId,
+        email: created.email,
+        full_name: created.fullName,
+        phone: created.whatsapp,
+      },
+      restaurant: {
+        id: created.restaurantId,
+        name: created.restaurantName,
+        slug: created.restaurantRow.slug || null,
+        quartier: created.quartier,
+        whatsapp: created.whatsapp,
+      },
+    });
+  } catch (err) {
+    if (err && err.code === "EMAIL_IN_USE") {
+      return res.status(409).json({ message: "Cet email est déjà utilisé." });
+    }
+    console.error(err);
+    if (isMysqlUnavailableError(err)) {
+      return res.status(503).json(mysqlUnavailablePayload());
+    }
+    return res.status(500).json({ message: "Erreur serveur lors de la création." });
+  }
+}
+
 async function deleteUser(req, res) {
   try {
     var idParsed = parseUserIdParams(req.params);
@@ -321,6 +401,7 @@ async function deleteUser(req, res) {
 
 module.exports = {
   listUsers: listUsers,
+  postCreateUser: postCreateUser,
   getUserDetail: getUserDetail,
   patchUserStatus: patchUserStatus,
   patchUserPassword: patchUserPassword,

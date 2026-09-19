@@ -276,17 +276,6 @@
         return;
       }
 
-      if (
-        !me.is_platform_admin &&
-        me.restaurant &&
-        me.restaurant.onboarding_seen === false
-      ) {
-        if (!isAdminImpersonating()) {
-          window.location.replace("onboarding.html");
-          return;
-        }
-      }
-
       const [categoriesData, productsData] = await Promise.all([
         apiGet("/categories"),
         apiGet("/products"),

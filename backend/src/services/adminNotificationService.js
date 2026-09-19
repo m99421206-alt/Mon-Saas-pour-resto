@@ -12,6 +12,7 @@ var GROUP_PREFIX = "__MG_G__";
 var NOTIFICATION_TYPES = {
   PASSWORD_RESET: "password_reset",
   SUPPORT: "support",
+  INSTALLATION_REQUEST: "installation_request",
   NEW_RESTAURANT: "new_restaurant",
   PAYMENT_RECEIVED: "payment_received",
   SUBSCRIPTION_EXPIRING: "subscription_expiring",
@@ -28,6 +29,7 @@ var NOTIFICATION_TYPES = {
 var CENTER_TYPES = [
   NOTIFICATION_TYPES.PASSWORD_RESET,
   NOTIFICATION_TYPES.SUPPORT,
+  NOTIFICATION_TYPES.INSTALLATION_REQUEST,
   NOTIFICATION_TYPES.NEW_RESTAURANT,
   NOTIFICATION_TYPES.PAYMENT_RECEIVED,
   NOTIFICATION_TYPES.SUBSCRIPTION_EXPIRING,
@@ -40,6 +42,7 @@ var GROUPABLE_TYPES = [NOTIFICATION_TYPES.SUPPORT, NOTIFICATION_TYPES.PASSWORD_R
 var TYPE_LABELS = {
   password_reset: "Réinitialisation mot de passe",
   support: "Message support",
+  installation_request: "Demande d'installation",
   new_restaurant: "Nouveau restaurant inscrit",
   payment_received: "Paiement reçu",
   subscription_expiring: "Abonnement expire bientôt",
@@ -52,6 +55,7 @@ var TYPE_LABELS = {
 var TYPE_LINKS = {
   password_reset: "admin-users.html",
   support: "admin-dashboard.html",
+  installation_request: "admin-installation-requests.html",
   new_restaurant: "admin-restaurants.html",
   payment_received: "admin-subscriptions.html",
   subscription_expiring: "admin-subscriptions.html",

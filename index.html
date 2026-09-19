@@ -133,9 +133,10 @@
           </p>
           <div class="site-header__nav-actions">
             <a
-              href="frontend/pages/register.html"
+              href="#demander-installation"
               class="link-login link-login--cta"
-              >Créer mon compte</a
+              data-open-install-modal
+              >Demander une installation</a
             >
             <a
               href="frontend/pages/login.html"
@@ -161,17 +162,19 @@
           <div class="hero__grid">
             <div class="hero__col hero__col--text" data-reveal>
               <h1 id="hero-title" class="hero__title hero__title--premium">
-                Un simple <br />scan.<br />
-                Un menu complet.
+                Votre menu digital,<br />
+                sans prise de tête.
               </h1>
               <p class="hero__lead hero__lead--premium">
-                AfricaMenu permet à vos clients d’accéder instantanément à votre
-                menu via QR code.
+                Vous nous envoyez votre menu. Nous nous occupons du reste.<br />
+                Menu digital, QR code, photos, catégories, prix et commandes
+                WhatsApp&nbsp;: nous configurons tout pour votre restaurant.
               </p>
               <div class="hero__ctas">
                 <a
-                  href="frontend/pages/register.html"
+                  href="#demander-installation"
                   class="btn btn--primary btn--lg hero__cta-primary"
+                  data-open-install-modal
                 >
                   Demander une installation
                   <span class="btn__icon" aria-hidden="true">
@@ -235,12 +238,13 @@
                     <div class="hero__phone-screen">
                       <img
                         src="assets/images/icone/visiel.webp"
-                        alt="Aperçu du menu digital AfricaMenu avec plats et prix sur smartphone."
+                        alt="Aperçu du menu digital AfricaMenu sur smartphone."
+                        class="hero__phone-img"
                         width="780"
                         height="1688"
-                        class="hero__phone-img"
                         decoding="async"
                         fetchpriority="high"
+                        draggable="false"
                       />
                     </div>
                   </div>
@@ -401,26 +405,26 @@
           <ol class="steps__list">
             <li class="steps__item" data-reveal>
               <span class="steps__num" aria-hidden="true">1</span>
-              <h3 class="steps__item-title">Créez votre compte</h3>
+              <h3 class="steps__item-title">Envoyez votre menu</h3>
               <p class="steps__item-text">
-                Inscrivez-vous avec le nom de votre restaurant et votre numéro
-                WhatsApp.
+                Photo, PDF ou ancien menu papier. Envoyez-nous simplement votre
+                menu sur WhatsApp.
               </p>
             </li>
             <li class="steps__item" data-reveal>
               <span class="steps__num" aria-hidden="true">2</span>
-              <h3 class="steps__item-title">Ajoutez vos plats</h3>
+              <h3 class="steps__item-title">Nous configurons tout</h3>
               <p class="steps__item-text">
-                Créez vos catégories, ajoutez vos plats avec leurs prix et de
-                belles photos.
+                Nous créons votre restaurant, vos catégories, vos plats, vos
+                prix, vos photos et votre identité visuelle.
               </p>
             </li>
             <li class="steps__item" data-reveal>
               <span class="steps__num" aria-hidden="true">3</span>
-              <h3 class="steps__item-title">Partagez votre menu</h3>
+              <h3 class="steps__item-title">Recevez votre menu</h3>
               <p class="steps__item-text">
-                Téléchargez votre QR code, imprimez-le et placez-le sur vos
-                tables.
+                Nous vous envoyons votre lien et votre QR code. Vous vérifiez,
+                puis votre menu est prêt à être partagé.
               </p>
             </li>
           </ol>
@@ -579,10 +583,11 @@
                 <li>Accès au tableau de bord</li>
               </ul>
               <a
-                href="frontend/pages/register.html"
+                href="#demander-installation"
                 class="pricing-card__btn pricing-card__btn--cta"
+                data-open-install-modal
               >
-                Essayer gratuitement
+                Demander une installation
               </a>
             </article>
           </div>
@@ -836,10 +841,11 @@
             améliorer l’expérience de leurs clients.
           </p>
           <a
-            href="frontend/pages/register.html"
+            href="#demander-installation"
             class="btn btn--on-orange btn--xl"
+            data-open-install-modal
           >
-            <span>Commencer maintenant</span>
+            <span>Demander une installation</span>
             <span class="btn__icon btn__icon--muted" aria-hidden="true">
               <svg
                 width="20"
@@ -886,8 +892,11 @@
           <nav class="site-footer__nav" aria-label="Liens utiles">
             <a href="#tarifs" class="site-footer__link">Tarifs</a>
             <a href="#contact" class="site-footer__link">Contact</a>
-            <a href="frontend/pages/register.html" class="site-footer__link"
-              >Créer un compte</a
+            <a
+              href="#demander-installation"
+              class="site-footer__link"
+              data-open-install-modal
+              >Demander une installation</a
             >
             <a href="frontend/pages/login.html" class="site-footer__link"
               >Connexion</a
@@ -909,7 +918,145 @@
       Connexion (placeholder)
     </div>
 
+    <!-- Modal — demande d'installation -->
+    <div
+      id="install-request-modal"
+      class="install-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-hidden="true"
+      aria-labelledby="install-request-title"
+    >
+      <button
+        type="button"
+        class="install-modal__backdrop"
+        data-close-install-modal
+        aria-label="Fermer"
+        tabindex="-1"
+      ></button>
+      <div class="install-modal__panel">
+        <div class="install-modal__head">
+          <div>
+            <h2 id="install-request-title" class="install-modal__title">
+              Demander une installation
+            </h2>
+            <p class="install-modal__intro">
+              Remplissez ce formulaire. Nous vous contacterons sur WhatsApp.
+            </p>
+          </div>
+          <button
+            type="button"
+            class="install-modal__close"
+            aria-label="Fermer"
+            data-close-install-modal
+          >
+            ×
+          </button>
+        </div>
+
+        <form
+          id="install-request-form"
+          class="contact-form"
+          action="#"
+          method="post"
+          novalidate
+        >
+          <p
+            id="install-request-error"
+            class="install-modal__error"
+            role="alert"
+            hidden
+          ></p>
+          <div class="contact-form__field">
+            <label class="contact-form__label" for="install-restaurant-name"
+              >Nom du restaurant</label
+            >
+            <input
+              id="install-restaurant-name"
+              class="contact-form__input"
+              name="restaurantName"
+              type="text"
+              autocomplete="organization"
+              required
+              maxlength="160"
+            />
+          </div>
+          <div class="contact-form__field">
+            <label class="contact-form__label" for="install-full-name"
+              >Votre nom</label
+            >
+            <input
+              id="install-full-name"
+              class="contact-form__input"
+              name="fullName"
+              type="text"
+              autocomplete="name"
+              required
+              maxlength="160"
+            />
+          </div>
+          <div class="contact-form__field">
+            <label class="contact-form__label" for="install-whatsapp"
+              >WhatsApp</label
+            >
+            <input
+              id="install-whatsapp"
+              class="contact-form__input"
+              name="whatsapp"
+              type="tel"
+              autocomplete="tel"
+              placeholder="+223 00 00 00 00"
+              required
+            />
+          </div>
+          <div class="contact-form__field">
+            <label class="contact-form__label" for="install-city">Ville</label>
+            <input
+              id="install-city"
+              class="contact-form__input"
+              name="city"
+              type="text"
+              autocomplete="address-level2"
+              required
+              maxlength="120"
+            />
+          </div>
+          <div class="contact-form__actions">
+            <button
+              type="submit"
+              class="btn btn--primary contact-form__submit"
+              id="install-request-submit"
+            >
+              Envoyer ma demande
+            </button>
+          </div>
+        </form>
+
+        <div id="install-request-success" class="install-modal__success" hidden>
+          <h3 class="install-modal__success-title">
+            Merci&nbsp;! Votre demande a bien été reçue.
+          </h3>
+          <p class="install-modal__success-text">
+            Nous allons vous contacter sur WhatsApp pour récupérer votre menu.
+          </p>
+          <div class="contact-form__actions">
+            <button
+              type="button"
+              class="btn btn--primary contact-form__submit"
+              data-close-install-modal
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="demander-installation" class="visually-hidden" tabindex="-1"></div>
+
     <!-- WhatsApp « Installation complète » : optionnel — <script>window.AFRICA_LANDING_WHATSAPP="+223XXXXXXXX";</script> -->
+    <script src="/frontend/js/config.js"></script>
+    <script src="/assets/js/landing-install-request.js"></script>
     <script src="/assets/js/main.js"></script>
   </body>
 </html>

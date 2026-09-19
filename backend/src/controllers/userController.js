@@ -326,8 +326,11 @@ async function postOnboardingMarkSeen(req, res) {
 async function postOnboardingRequestHelp(req, res) {
   try {
     var pool = getPool();
+    var setupAssistanceService = require("../services/setupAssistanceService");
     var [rows] = await pool.query(
-      "SELECT id, name FROM restaurants WHERE user_id = ? ORDER BY id ASC LIMIT 1",
+      "SELECT r.id, r.name, r.whatsapp, r.city, u.full_name " +
+        "FROM restaurants r INNER JOIN users u ON u.id = r.user_id " +
+        "WHERE r.user_id = ? ORDER BY r.id ASC LIMIT 1",
       [req.user.id],
     );
     if (!rows.length) {
@@ -338,6 +341,13 @@ async function postOnboardingRequestHelp(req, res) {
       "UPDATE restaurants SET needs_setup_help = 1, onboarding_seen = 1 WHERE id = ?",
       [rid],
     );
+    try {
+      await setupAssistanceService.createOnboardingRequest(rows[0]);
+    } catch (setupErr) {
+      if (!setupAssistanceService.isMissingTableError(setupErr)) {
+        throw setupErr;
+      }
+    }
     await appendAuditFromRequest(req, {
       restaurantId: rid,
       action: AUDIT_ACTIONS.ONBOARDING_SETUP_REQUEST,
@@ -352,7 +362,7 @@ async function postOnboardingRequestHelp(req, res) {
       restaurantId: rid,
       restaurantName: String(rows[0].name || "—"),
       detail: "Demande d'assistance installation (onboarding)",
-      linkUrl: "admin-dashboard.html",
+      linkUrl: "admin-installation-requests.html",
     });
     return res.json({
       ok: true,
@@ -406,7 +416,7 @@ async function postAdminNotify(req, res) {
         restaurantName: restoName,
         phone: phone,
         detail: detail + (r.email ? " — " + String(r.email) : ""),
-        linkUrl: "admin-dashboard.html",
+        linkUrl: "admin-installation-requests.html",
       });
     } else {
       await appendAuditFromRequest(req, {

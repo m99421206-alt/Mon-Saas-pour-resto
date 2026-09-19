@@ -9,6 +9,25 @@
   min-width: 0;
 }
 
+.adm-page-head--with-action {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.adm-page-head__action {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.adm-create-user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
 .adm-toolbar {
   margin-top: 0.85rem;
   display: flex;

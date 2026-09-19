@@ -210,6 +210,7 @@ app.get("/api/health", async function (req, res) {
 app.post("/api/auth/register", registerRateLimiter);
 app.post("/api/auth/login", loginRateLimiter);
 app.post("/api/auth/password-reset-request", passwordResetNotifyLimiter);
+app.post("/api/auth/installation-request", passwordResetNotifyLimiter);
 
 /* -------------------------------------------------------------------------- */
 /*                            ROUTES PUBLIQUES                                */

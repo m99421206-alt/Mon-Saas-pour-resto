@@ -59,6 +59,7 @@ router.delete(
 );
 
 router.get("/users", requireAuth, requirePlatformAdmin, adminUsersController.listUsers);
+router.post("/users", requireAuth, requirePlatformAdmin, adminUsersController.postCreateUser);
 router.get("/users/:id", requireAuth, requirePlatformAdmin, adminUsersController.getUserDetail);
 router.patch("/users/:id/status", requireAuth, requirePlatformAdmin, adminUsersController.patchUserStatus);
 router.patch("/users/:id/password", requireAuth, requirePlatformAdmin, adminUsersController.patchUserPassword);
@@ -121,7 +122,50 @@ router.patch(
 router.get("/settings", requireAuth, requirePlatformAdmin, adminSettingsController.getSettings);
 router.put("/settings", requireAuth, requirePlatformAdmin, adminSettingsController.putSettings);
 
+router.get("/setup-help/stats", requireAuth, requirePlatformAdmin, adminSetupHelpController.getSetupHelpStats);
 router.get("/setup-help", requireAuth, requirePlatformAdmin, adminSetupHelpController.listSetupHelp);
+router.get(
+  "/setup-help/:id",
+  requireAuth,
+  requirePlatformAdmin,
+  adminSetupHelpController.getSetupHelpDetail,
+);
+router.patch(
+  "/setup-help/:id/status",
+  requireAuth,
+  requirePlatformAdmin,
+  adminSetupHelpController.patchSetupHelpStatus,
+);
+router.post(
+  "/setup-help/:id/contact",
+  requireAuth,
+  requirePlatformAdmin,
+  adminSetupHelpController.postSetupHelpContact,
+);
+router.post(
+  "/setup-help/:id/notes",
+  requireAuth,
+  requirePlatformAdmin,
+  adminSetupHelpController.postSetupHelpNote,
+);
+router.patch(
+  "/setup-help/:id/checklist",
+  requireAuth,
+  requirePlatformAdmin,
+  adminSetupHelpController.patchSetupHelpChecklist,
+);
+router.patch(
+  "/setup-help/:id/link-restaurant",
+  requireAuth,
+  requirePlatformAdmin,
+  adminSetupHelpController.patchSetupHelpLinkRestaurant,
+);
+router.post(
+  "/setup-help/:id/create-restaurant",
+  requireAuth,
+  requirePlatformAdmin,
+  adminSetupHelpController.postSetupHelpCreateRestaurant,
+);
 router.post(
   "/restaurants/:id/setup-help/complete",
   requireAuth,

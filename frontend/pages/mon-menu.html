@@ -14,12 +14,18 @@
       content="upgrade-insecure-requests"
     />
 
-    <!-- Favicon & Icône Écran d'accueil (iOS / Android) -->
-    <link rel="icon" type="image/png" href="/assets/images/icone/logo.png" />
+    <!-- Favicon & PWA — fallback AfricaMenu, remplacé par le logo restaurant au chargement -->
+    <link
+      rel="icon"
+      type="image/png"
+      href="/assets/images/icone/logo.webp"
+      id="pwa-favicon"
+    />
     <link
       rel="apple-touch-icon"
       sizes="180x180"
-      href="/assets/images/icone/logo.png"
+      href="/assets/images/icone/logo.webp"
+      id="pwa-apple-touch-icon"
     />
 
     <!-- Configuration PWA -->

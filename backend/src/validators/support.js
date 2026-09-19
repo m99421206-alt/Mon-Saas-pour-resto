@@ -6,6 +6,7 @@
 
 var { z } = require("zod");
 var { parseBody } = require("./helpers");
+var { parseWhatsappRequired } = require("./common");
 
 var adminNotifySchema = z.object({
   type: z.enum(["support", "subscription", "issue"], {
@@ -55,7 +56,65 @@ function parsePasswordResetRequestBody(body) {
   return parseBody(passwordResetRequestSchema, body);
 }
 
+var installationRequestSchema = z
+  .object({
+    restaurantName: z
+      .string({ required_error: "Le nom du restaurant est obligatoire." })
+      .trim()
+      .min(1, "Le nom du restaurant est obligatoire.")
+      .max(160, "Le nom ne doit pas dépasser 160 caractères."),
+    fullName: z
+      .string({ required_error: "Votre nom est obligatoire." })
+      .trim()
+      .min(1, "Votre nom est obligatoire.")
+      .max(160, "Le nom ne doit pas dépasser 160 caractères."),
+    whatsapp: z.string().optional(),
+    phone: z.string().optional(),
+    city: z.string().optional(),
+    quartier: z.string().optional(),
+  })
+  .superRefine(function (data, ctx) {
+    var rawPhone =
+      typeof data.whatsapp === "string" && data.whatsapp.trim() ?
+        data.whatsapp
+      : typeof data.phone === "string" && data.phone.trim() ?
+        data.phone
+      : "";
+    var wa = parseWhatsappRequired(rawPhone || null);
+    if (!wa.ok) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: wa.message, path: ["whatsapp"] });
+    }
+    var cityVal = String(data.city || data.quartier || "").trim();
+    if (!cityVal) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Indiquez votre ville.",
+        path: ["city"],
+      });
+    }
+  })
+  .transform(function (data) {
+    var rawPhone =
+      typeof data.whatsapp === "string" && data.whatsapp.trim() ?
+        data.whatsapp
+      : typeof data.phone === "string" && data.phone.trim() ?
+        data.phone
+      : "";
+    var wa = parseWhatsappRequired(rawPhone || null);
+    return {
+      restaurantName: data.restaurantName,
+      fullName: data.fullName,
+      whatsapp: wa.ok ? wa.value : "",
+      city: String(data.city || data.quartier || "").trim().slice(0, 120),
+    };
+  });
+
+function parseInstallationRequestBody(body) {
+  return parseBody(installationRequestSchema, body);
+}
+
 module.exports = {
   parseAdminNotifyBody: parseAdminNotifyBody,
   parsePasswordResetRequestBody: parsePasswordResetRequestBody,
+  parseInstallationRequestBody: parseInstallationRequestBody,
 };

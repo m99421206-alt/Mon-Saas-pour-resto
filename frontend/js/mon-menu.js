@@ -294,6 +294,110 @@ function setLinkCanonical(url) {
   link.setAttribute("href", url || window.location.href);
 }
 
+function hashIdentityString(value) {
+  const raw = String(value || "");
+  let hash = 0;
+  for (let i = 0; i < raw.length; i += 1) {
+    hash = (hash << 5) - hash + raw.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(36);
+}
+
+function getPwaRestaurantKey(restaurant) {
+  if (!restaurant) {
+    return null;
+  }
+  if (restaurant.slug) {
+    return String(restaurant.slug).trim();
+  }
+  if (restaurant.id != null) {
+    return String(restaurant.id);
+  }
+  return null;
+}
+
+function getPwaIdentityVersion(restaurant) {
+  return hashIdentityString(
+    [
+      restaurant?.id,
+      restaurant?.logo_url || "",
+      restaurant?.name || "",
+      restaurant?.theme_color || "",
+    ].join("|"),
+  );
+}
+
+function setOrCreateHeadLink(rel, attrs) {
+  const selectorParts = [`link[rel="${rel}"]`];
+  if (attrs.id) {
+    selectorParts[0] = `#${attrs.id}`;
+  } else if (attrs.sizes) {
+    selectorParts.push(`[sizes="${attrs.sizes}"]`);
+  }
+  let link = document.head.querySelector(selectorParts.join(""));
+  if (!link) {
+    link = document.createElement("link");
+    link.rel = rel;
+    document.head.appendChild(link);
+  }
+  Object.keys(attrs).forEach((key) => {
+    if (key === "href") {
+      link.setAttribute("href", attrs.href);
+    } else if (key === "type") {
+      link.type = attrs.type;
+    } else if (key === "sizes") {
+      link.sizes = attrs.sizes;
+    } else if (key === "id") {
+      link.id = attrs.id;
+    }
+  });
+  link.setAttribute("data-restaurant-pwa", "1");
+  return link;
+}
+
+function updatePwaIdentity(restaurant) {
+  if (!restaurant) {
+    return;
+  }
+
+  const restaurantKey = getPwaRestaurantKey(restaurant);
+  if (!restaurantKey) {
+    return;
+  }
+
+  const version = getPwaIdentityVersion(restaurant);
+  const apiBase = String(window.MenuGo_CONFIG?.API_URL || "/api").replace(
+    /\/$/,
+    "",
+  );
+  const iconBase = `${apiBase}/menu/${encodeURIComponent(restaurantKey)}/icons`;
+  const manifestUrl = `${apiBase}/menu/${encodeURIComponent(restaurantKey)}/manifest.webmanifest?v=${version}`;
+
+  setOrCreateHeadLink("manifest", {
+    id: "pwa-manifest",
+    href: manifestUrl,
+  });
+
+  setOrCreateHeadLink("icon", {
+    id: "pwa-favicon",
+    href: `${iconBase}/32.png?v=${version}`,
+    type: "image/png",
+    sizes: "32x32",
+  });
+
+  setOrCreateHeadLink("apple-touch-icon", {
+    id: "pwa-apple-touch-icon",
+    href: `${iconBase}/180.png?v=${version}`,
+    sizes: "180x180",
+  });
+
+  const themeColor = isValidThemeColor(restaurant.theme_color)
+    ? restaurant.theme_color.trim()
+    : "#ffffff";
+  setMetaTag("theme-color", themeColor);
+}
+
 function updateSeoTags(restaurant) {
   const restaurantName = restaurant?.name || "AfricaMenu";
   const description = getTrimmedDescription(
@@ -320,6 +424,8 @@ function updateSeoTags(restaurant) {
       setMetaProperty("og:image", imageUrl);
     }
   }
+
+  updatePwaIdentity(restaurant);
 }
 
 // Cart Storage & State Syncing

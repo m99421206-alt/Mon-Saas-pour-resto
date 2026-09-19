@@ -227,6 +227,39 @@
     }
   }
 
+  async function fetchAdminPatch(path, token, body) {
+    var base = getApiBase();
+    if (!base || !token) {
+      return { ok: false, status: 0, data: null };
+    }
+    try {
+      var p = String(path || "");
+      if (String(base).endsWith("/api") && p.indexOf("/api") === 0) {
+        p = p.replace(/^\/api/, "");
+      }
+      var url =
+        String(base).replace(/\/$/, "") + "/" + String(p).replace(/^\//, "");
+      var response = await fetch(url, {
+        method: "PATCH",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify(body || {}),
+      });
+      var data = null;
+      try {
+        data = await response.json();
+      } catch (e) {
+        data = null;
+      }
+      return { ok: response.ok, status: response.status, data: data };
+    } catch (err) {
+      return { ok: false, status: 0, data: null };
+    }
+  }
+
   async function fetchAdminPost(path, token) {
     var base = getApiBase();
     if (!base || !token) {
@@ -396,7 +429,43 @@
     });
   }
 
-  function renderSetupHelpRows(items, forbidden) {
+  function setupHelpPreviewStatusClass(status) {
+    var st = String(status || "").toLowerCase();
+    return "ir-status ir-status--" + st.replace(/[^a-z_]/g, "");
+  }
+
+  function formatRelativeActivity(iso) {
+    if (!iso) return "—";
+    try {
+      var diff = Date.now() - new Date(iso).getTime();
+      var mins = Math.floor(diff / 60000);
+      if (mins < 1) return "À l'instant";
+      if (mins < 60) return "Il y a " + mins + " min";
+      var hours = Math.floor(mins / 60);
+      if (hours < 24) return "Il y a " + hours + " h";
+      return formatDateShort(iso);
+    } catch (e) {
+      return "—";
+    }
+  }
+
+  async function loadSetupHelpPreview() {
+    var token = localStorage.getItem(TOKEN_KEY);
+    var setupRes = await fetchAdminJson(
+      "/api/admin/setup-help?pageSize=5&filter=in_progress",
+      token,
+    );
+    if (guardApiStatus(setupRes.status)) {
+      return;
+    }
+    if (setupRes.ok && setupRes.data && Array.isArray(setupRes.data.items)) {
+      renderSetupHelpPreview(setupRes.data.items, false);
+    } else {
+      renderSetupHelpPreview([], setupRes.status === 503);
+    }
+  }
+
+  function renderSetupHelpPreview(items, forbidden) {
     var tbody = document.getElementById("adm-setup-help-body");
     if (!tbody) {
       return;
@@ -406,7 +475,7 @@
     if (forbidden) {
       var tr0 = document.createElement("tr");
       tr0.className = "adm-table__placeholder";
-      tr0.innerHTML = '<td colspan="5">Données indisponibles.</td>';
+      tr0.innerHTML = '<td colspan="4">Données indisponibles.</td>';
       tbody.appendChild(tr0);
       return;
     }
@@ -415,45 +484,31 @@
       var trE = document.createElement("tr");
       trE.className = "adm-table__placeholder";
       trE.innerHTML =
-        '<td colspan="5">Aucune demande d’assistance en cours.</td>';
+        '<td colspan="4">Aucune demande en cours. <a href="admin-installation-requests.html">Voir toutes les demandes</a></td>';
       tbody.appendChild(trE);
       return;
     }
 
     items.forEach(function (row) {
       var tr = document.createElement("tr");
-      var digits = waDigits(row.phone);
-      var waUrl = buildRestaurantWaUrl(digits, row.name);
-      var nameCell = escapeHtml(row.name || "—");
-      var emailCell = escapeHtml(row.email || "—");
-      var phoneCell = escapeHtml(row.phone || "—");
-      var dateCell = row.created_at
-        ? escapeHtml(formatActivityDate(row.created_at))
-        : "—";
-
-      var actionsHtml =
-        '<div class="adm-setup-actions">' +
-        '<a class="adm-mini-btn adm-mini-btn--wa"' +
-        (waUrl === "#"
-          ? ' href="#" role="button" aria-disabled="true"'
-          : ' href="' + waUrl + '" target="_blank" rel="noopener noreferrer"') +
-        '>Contacter<br /><span class="adm-mini-btn__hint">WhatsApp resto</span></a>' +
-        '<button type="button" class="adm-mini-btn adm-mini-btn--done" data-setup-done="' +
-        escapeHtml(String(Number(row.id) || "")) +
-        '">Installation<br /><span class="adm-mini-btn__hint">terminée</span></button>' +
-        "</div>";
-
+      tr.style.cursor = "pointer";
+      tr.addEventListener("click", function () {
+        window.location.href =
+          "admin-installation-requests.html?id=" + encodeURIComponent(String(row.id));
+      });
+      var statusLabel = escapeHtml(row.status_label || row.status || "—");
+      var statusClass = setupHelpPreviewStatusClass(row.status);
       tr.innerHTML =
         "<td>" +
-        nameCell +
+        escapeHtml(row.restaurant_name || "—") +
         "</td><td>" +
-        emailCell +
-        "</td><td>" +
-        phoneCell +
-        "</td><td>" +
-        dateCell +
-        "</td><td>" +
-        actionsHtml +
+        escapeHtml(row.contact_name || "—") +
+        '</td><td><span class="' +
+        statusClass +
+        '">' +
+        statusLabel +
+        "</span></td><td>" +
+        escapeHtml(formatRelativeActivity(row.last_activity_at)) +
         "</td>";
       tbody.appendChild(tr);
     });
@@ -486,7 +541,7 @@
       showAccessBanner(statsRes.data.message, "error");
       clearStatsDisplay();
       renderActivity([]);
-      renderSetupHelpRows([], true);
+      renderSetupHelpPreview([], true);
       renderSubWatchRows([], true);
       return;
     }
@@ -499,7 +554,7 @@
       );
       clearStatsDisplay();
       renderActivity([]);
-      renderSetupHelpRows([], true);
+      renderSetupHelpPreview([], true);
       renderSubWatchRows([], true);
       return;
     }
@@ -540,21 +595,7 @@
       }
     }
 
-    var setupRes = await fetchAdminJson(
-      "/api/admin/setup-help?pageSize=50",
-      token,
-    );
-    if (guardApiStatus(setupRes.status)) {
-      return;
-    } else if (
-      setupRes.ok &&
-      setupRes.data &&
-      Array.isArray(setupRes.data.items)
-    ) {
-      renderSetupHelpRows(setupRes.data.items, false);
-    } else {
-      renderSetupHelpRows([], false);
-    }
+    await loadSetupHelpPreview();
 
     var watchRes = await fetchAdminJson(
       "/api/admin/subscriptions/expiring",
@@ -621,68 +662,6 @@
     );
   }
 
-  function bindSetupHelpDelegation() {
-    var tbody = document.getElementById("adm-setup-help-body");
-    if (!tbody || tbody.dataset.delegBound === "1") {
-      return;
-    }
-    tbody.dataset.delegBound = "1";
-    tbody.addEventListener("click", function (ev) {
-      var btn = ev.target.closest("[data-setup-done]");
-      if (!btn || btn.disabled) {
-        return;
-      }
-      var id = btn.getAttribute("data-setup-done");
-      if (!id || !/^-?\d+$/.test(id)) {
-        return;
-      }
-      if (
-        !confirm("Marquer l’installation de ce restaurant comme terminée ?")
-      ) {
-        return;
-      }
-      var token = localStorage.getItem(TOKEN_KEY);
-      if (!token) {
-        clearSessionAndRedirectLogin();
-        return;
-      }
-
-      btn.disabled = true;
-
-      fetchAdminPost(
-        "/api/admin/restaurants/" + id + "/setup-help/complete",
-        token,
-      )
-        .then(function (res) {
-          if (guardApiStatus(res.status)) {
-            return;
-          }
-          if (!res.ok) {
-            btn.disabled = false;
-            alert(
-              (res.data && res.data.message) || "Impossible de mettre à jour.",
-            );
-            return;
-          }
-          return fetchAdminJson("/api/admin/setup-help?pageSize=50", token);
-        })
-        .then(function (refRes) {
-          if (!refRes) {
-            return;
-          }
-          if (refRes.status === 401) {
-            clearSessionAndRedirectLogin();
-            return;
-          }
-          if (refRes.ok && refRes.data && Array.isArray(refRes.data.items)) {
-            renderSetupHelpRows(refRes.data.items, false);
-          } else {
-            renderSetupHelpRows([], false);
-          }
-        });
-    });
-  }
-
   async function init() {
     var allowed = await window.MenuGo_AdminGuard.enforceAdminAccess({
       loginNext: LOGIN_NEXT,
@@ -690,7 +669,6 @@
     if (!allowed) {
       return;
     }
-    bindSetupHelpDelegation();
     initShell();
     loadDashboardData();
   }

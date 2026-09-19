@@ -950,6 +950,165 @@
     await loadUsers();
   }
 
+  function setCreateUserModalOpen(open) {
+    var modal = document.getElementById("adm-user-create-modal");
+    if (!modal) {
+      return;
+    }
+    modal.setAttribute("aria-hidden", open ? "false" : "true");
+    document.body.classList.toggle("adm-overlay-open", Boolean(open));
+  }
+
+  function resetCreateUserForm() {
+    var form = document.getElementById("adm-user-create-form");
+    var errEl = document.getElementById("adm-user-create-error");
+    var okEl = document.getElementById("adm-user-create-success");
+    if (form) {
+      form.reset();
+    }
+    if (errEl) {
+      errEl.hidden = true;
+      errEl.textContent = "";
+    }
+    if (okEl) {
+      okEl.hidden = true;
+      okEl.textContent = "";
+    }
+  }
+
+  function bindCreateUserModal() {
+    var openBtn = document.getElementById("adm-user-create-open");
+    var modal = document.getElementById("adm-user-create-modal");
+    var form = document.getElementById("adm-user-create-form");
+    var submitBtn = document.getElementById("adm-user-create-submit");
+
+    if (openBtn) {
+      openBtn.addEventListener("click", function () {
+        resetCreateUserForm();
+        setCreateUserModalOpen(true);
+        var first = document.getElementById("adm-create-restaurant-name");
+        if (first) {
+          first.focus();
+        }
+      });
+    }
+
+    if (modal) {
+      modal.querySelectorAll("[data-close-create-user]").forEach(function (el) {
+        el.addEventListener("click", function () {
+          setCreateUserModalOpen(false);
+        });
+      });
+    }
+
+    document.addEventListener("keydown", function (e) {
+      if (
+        e.key === "Escape" &&
+        modal &&
+        modal.getAttribute("aria-hidden") === "false"
+      ) {
+        setCreateUserModalOpen(false);
+      }
+    });
+
+    if (!form) {
+      return;
+    }
+
+    form.addEventListener("submit", async function (ev) {
+      ev.preventDefault();
+      var errEl = document.getElementById("adm-user-create-error");
+      var okEl = document.getElementById("adm-user-create-success");
+      if (errEl) {
+        errEl.hidden = true;
+        errEl.textContent = "";
+      }
+      if (okEl) {
+        okEl.hidden = true;
+        okEl.textContent = "";
+      }
+
+      var password = String(
+        (document.getElementById("adm-create-password") || {}).value || "",
+      );
+      var confirmPassword = String(
+        (document.getElementById("adm-create-password-confirm") || {}).value ||
+          "",
+      );
+      if (password !== confirmPassword) {
+        if (errEl) {
+          errEl.textContent = "Les mots de passe ne correspondent pas.";
+          errEl.hidden = false;
+        }
+        return;
+      }
+
+      var payload = {
+        restaurantName: String(
+          (document.getElementById("adm-create-restaurant-name") || {}).value ||
+            "",
+        ).trim(),
+        fullName: String(
+          (document.getElementById("adm-create-full-name") || {}).value || "",
+        ).trim(),
+        whatsapp: String(
+          (document.getElementById("adm-create-whatsapp") || {}).value || "",
+        ).trim(),
+        quartier: String(
+          (document.getElementById("adm-create-quartier") || {}).value || "",
+        ).trim(),
+        email: String(
+          (document.getElementById("adm-create-email") || {}).value || "",
+        ).trim(),
+        password: password,
+      };
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+      }
+
+      var token = localStorage.getItem(TOKEN_KEY);
+      var res = await fetchJson("POST", "/api/admin/users", token, {
+        body: payload,
+      });
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+      }
+
+      if (guardApiStatus(res.status)) {
+        return;
+      }
+
+      if (!res.ok) {
+        var msg =
+          res.data && res.data.message ?
+            res.data.message
+          : res.data && res.data.errors && res.data.errors[0] ?
+            res.data.errors[0].message
+          : "Création impossible.";
+        if (errEl) {
+          errEl.textContent = msg;
+          errEl.hidden = false;
+        }
+        return;
+      }
+
+      if (okEl) {
+        okEl.textContent =
+          res.data && res.data.message ?
+            res.data.message
+          : "Compte restaurant créé avec succès.";
+        okEl.hidden = false;
+      }
+
+      await loadUsers();
+      window.setTimeout(function () {
+        setCreateUserModalOpen(false);
+      }, 1200);
+    });
+  }
+
   async function deleteUser(idStr) {
     if (
       !confirm(
@@ -995,6 +1154,7 @@
     initShell();
     bindModalClose();
     bindPasswordModal();
+    bindCreateUserModal();
     attachToolbar();
 
     var qInput = document.getElementById("users-q");

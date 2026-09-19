@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta
+      name="description"
+      content="Administration AfricaMenu — demandes d'installation."
+    />
+    <title>Demandes d'installation — Admin AfricaMenu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media = 'all'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
+    <link rel="stylesheet" href="/frontend/css/admin-dashboard.css" />
+    <link rel="stylesheet" href="/frontend/css/admin-notifications.css" />
+    <link rel="stylesheet" href="/frontend/css/admin-installation-requests.css" />
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-N40SHP116G"
+    ></script>
+    <script src="/frontend/js/analytics.js"></script>
+  </head>
+  <body class="adm-app">
+    <a class="adm-skip-link" href="#admin-main">Aller au contenu principal</a>
+
+    <aside
+      class="adm-sidebar"
+      id="adm-sidebar-panel"
+      aria-label="Navigation administration plateforme"
+    >
+      <div class="adm-sidebar__inner">
+        <header class="adm-sidebar__head">
+          <a href="../../index.html" class="adm-sidebar__brand">
+            <span class="adm-sidebar__logo" aria-hidden="true">
+              <img
+                src="../../assets/images/icone/logo.webp"
+                alt="AfricaMenu"
+                width="36"
+                height="36"
+              />
+            </span>
+            <span class="adm-sidebar__brand-text"
+              >AfricaMenu <span class="adm-sidebar__badge">Admin</span></span
+            >
+          </a>
+        </header>
+
+        <nav class="adm-sidebar__nav" aria-label="Sections admin">
+          <ul class="adm-sidebar__list">
+            <li>
+              <a href="admin-dashboard.html" class="adm-sidebar__link"
+                >Tableau de bord</a
+              >
+            </li>
+            <li>
+              <a
+                href="admin-installation-requests.html"
+                class="adm-sidebar__link is-active"
+                aria-current="page"
+                >Demandes d'installation</a
+              >
+            </li>
+            <li>
+              <a href="admin-users.html" class="adm-sidebar__link">Utilisateurs</a>
+            </li>
+            <li>
+              <a href="admin-restaurants.html" class="adm-sidebar__link"
+                >Restaurants</a
+              >
+            </li>
+            <li>
+              <a href="admin-subscriptions.html" class="adm-sidebar__link"
+                >Abonnements</a
+              >
+            </li>
+            <li>
+              <a href="admin-settings.html" class="adm-sidebar__link"
+                >Paramètres</a
+              >
+            </li>
+            <li>
+              <a href="admin-activity-log.html" class="adm-sidebar__link"
+                >Journal d'activité</a
+              >
+            </li>
+            <li>
+              <a href="admin-notifications.html" class="adm-sidebar__link"
+                >Notifications</a
+              >
+            </li>
+          </ul>
+        </nav>
+
+        <footer class="adm-sidebar__foot">
+          <a
+            href="login.html"
+            class="adm-sidebar__link adm-sidebar__link--muted"
+            >Quitter l'admin</a
+          >
+        </footer>
+      </div>
+    </aside>
+
+    <div class="adm-overlay" id="adm-overlay" aria-hidden="true"></div>
+
+    <div class="adm-layout">
+      <header class="adm-header">
+        <div class="adm-header__inner">
+          <button
+            type="button"
+            class="adm-header__menu-btn"
+            id="adm-open-sidebar"
+            aria-label="Ouvrir le menu de navigation"
+            aria-controls="adm-sidebar-panel"
+            aria-expanded="false"
+          >
+            <span class="adm-header__menu-icon" aria-hidden="true"></span>
+          </button>
+          <div class="adm-header__spacer"></div>
+        </div>
+      </header>
+
+      <main id="admin-main" class="adm-main">
+        <div class="adm-main__inner">
+          <header class="adm-page-head adm-page-head--row">
+            <div>
+              <h1 class="adm-page-title">Demandes d'installation</h1>
+              <p class="adm-page-subtitle">
+                Gérez les demandes d'installation de la réception jusqu'à la mise
+                en ligne du menu.
+              </p>
+            </div>
+            <button type="button" class="adm-btn adm-btn--primary" id="ir-refresh">
+              Actualiser
+            </button>
+          </header>
+
+          <div id="adm-access-banner" class="adm-banner" role="alert" hidden></div>
+
+          <section class="ir-kpi-grid" id="ir-kpi-grid" aria-label="Indicateurs"></section>
+
+          <section class="adm-section ir-table-section">
+            <div class="ir-toolbar">
+              <div class="ir-toolbar__search-wrap">
+                <label class="visually-hidden" for="ir-search">Rechercher</label>
+                <input
+                  id="ir-search"
+                  class="ir-toolbar__search"
+                  type="search"
+                  placeholder="Restaurant, responsable, WhatsApp, ville…"
+                  autocomplete="off"
+                />
+              </div>
+              <div class="ir-toolbar__filter">
+                <label class="visually-hidden" for="ir-filter">Filtrer</label>
+                <select id="ir-filter">
+                  <option value="all">Toutes</option>
+                  <option value="new" selected>Nouvelles</option>
+                  <option value="to_contact">À contacter</option>
+                  <option value="in_progress">En cours</option>
+                  <option value="to_review">À vérifier</option>
+                  <option value="completed">Terminées</option>
+                  <option value="cancelled">Annulées</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="adm-table-wrap">
+              <table class="adm-table ir-table">
+                <caption class="visually-hidden">
+                  Liste des demandes d'installation
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Restaurant</th>
+                    <th scope="col">Responsable</th>
+                    <th scope="col">WhatsApp</th>
+                    <th scope="col">Ville</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Statut</th>
+                    <th scope="col">Dernière activité</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="ir-table-body">
+                  <tr class="adm-table__placeholder">
+                    <td colspan="8">Chargement…</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <ul id="ir-cards-list" class="ir-cards-list" aria-label="Demandes (mobile)"></ul>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <!-- Détail demande -->
+    <div
+      id="ir-detail-modal"
+      class="adm-detail-modal ir-detail-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-hidden="true"
+      aria-labelledby="ir-detail-title"
+    >
+      <div class="adm-detail-modal__backdrop" data-close-detail tabindex="-1"></div>
+      <div class="adm-detail-modal__panel ir-detail-panel">
+        <div class="adm-detail-modal__head">
+          <div class="adm-detail-modal__titlewrap">
+            <h3 id="ir-detail-title">Détail de la demande</h3>
+            <p id="ir-detail-subtitle" class="adm-detail-modal__email"></p>
+          </div>
+          <button
+            type="button"
+            class="adm-detail-modal__close"
+            aria-label="Fermer"
+            data-close-detail
+          >
+            ×
+          </button>
+        </div>
+        <div id="ir-detail-content" class="ir-detail-content"></div>
+      </div>
+    </div>
+
+    <!-- Création restaurant -->
+    <div
+      id="ir-create-modal"
+      class="adm-detail-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-hidden="true"
+      aria-labelledby="ir-create-title"
+    >
+      <div class="adm-detail-modal__backdrop" data-close-create tabindex="-1"></div>
+      <div class="adm-detail-modal__panel">
+        <div class="adm-detail-modal__head">
+          <div class="adm-detail-modal__titlewrap">
+            <h3 id="ir-create-title">Créer le compte restaurant</h3>
+          </div>
+          <button type="button" class="adm-detail-modal__close" data-close-create>×</button>
+        </div>
+        <form id="ir-create-form" class="ir-create-form" novalidate>
+          <div class="ir-field">
+            <label for="ir-create-restaurant">Nom du restaurant</label>
+            <input id="ir-create-restaurant" name="restaurantName" required />
+          </div>
+          <div class="ir-field">
+            <label for="ir-create-fullname">Nom du gérant</label>
+            <input id="ir-create-fullname" name="fullName" required />
+          </div>
+          <div class="ir-field">
+            <label for="ir-create-whatsapp">WhatsApp</label>
+            <input id="ir-create-whatsapp" name="whatsapp" type="tel" required />
+          </div>
+          <div class="ir-field">
+            <label for="ir-create-quartier">Quartier / Ville</label>
+            <input id="ir-create-quartier" name="quartier" required />
+          </div>
+          <div class="ir-field">
+            <label for="ir-create-email">Email</label>
+            <input id="ir-create-email" name="email" type="email" required />
+          </div>
+          <div class="ir-field">
+            <label for="ir-create-password">Mot de passe</label>
+            <input id="ir-create-password" name="password" type="password" minlength="8" required />
+          </div>
+          <p id="ir-create-error" class="ir-error" role="alert" hidden></p>
+          <div class="ir-form-actions">
+            <button type="button" class="adm-btn" data-close-create>Annuler</button>
+            <button type="submit" class="adm-btn adm-btn--primary">Créer le compte</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="/frontend/js/config.js" defer></script>
+    <script src="/frontend/js/admin-guard.js" defer></script>
+    <script src="/frontend/js/admin-notifications-widget.js" defer></script>
+    <script src="/frontend/js/admin-installation-requests.js" defer></script>
+  </body>
+</html>
