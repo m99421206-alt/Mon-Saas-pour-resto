@@ -81,12 +81,6 @@ function getStaticPages(baseUrl) {
       changefreq: "monthly",
       priority: "0.7",
     },
-    {
-      loc: baseUrl + "/frontend/pages/register.html",
-      lastmod: today,
-      changefreq: "monthly",
-      priority: "0.7",
-    },
   ];
 }
 

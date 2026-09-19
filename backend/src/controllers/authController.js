@@ -7,16 +7,11 @@ const {
   AUDIT_ACTIONS,
   ACTOR_TYPES,
 } = require("../utils/auditLog");
-const {
-  createAdminNotification,
-  NOTIFICATION_TYPES,
-} = require("../services/adminNotificationService");
 const { normalizeWhatsapp } = require("../utils/whatsappNormalize");
 const { isPlatformAdminEmail } = require("../utils/platformAdmin");
 const loginLockout = require("../utils/loginLockout");
-const { parseLoginBody, parseRegisterBody } = require("../validators/auth");
+const { parseLoginBody } = require("../validators/auth");
 const { sendValidationError } = require("../validators/helpers");
-const { createRestaurantAccount } = require("../services/restaurantSignupService");
 const {
   isMysqlUnavailableError,
   mysqlUnavailablePayload,
@@ -91,80 +86,10 @@ async function logLoginFailure(params) {
 }
 
 async function register(req, res) {
-  var parsed = parseRegisterBody(req.body);
-  if (sendValidationError(parsed, res)) {
-    return;
-  }
-  var input = parsed.data;
-
-  try {
-    var created = await createRestaurantAccount(input);
-    var userId = created.userId;
-    var restaurantId = created.restaurantId;
-    var restaurantRow = created.restaurantRow;
-    var email = created.email;
-    var fullName = created.fullName;
-    var restaurantName = created.restaurantName;
-    var principalPhoneDb = created.whatsapp;
-    var cityDb = created.quartier;
-
-    await appendAudit({
-      userId: userId,
-      restaurantId: restaurantId,
-      actorType: ACTOR_TYPES.RESTAURANT,
-      action: AUDIT_ACTIONS.USER_REGISTER,
-      detail:
-        "Inscription nouveau compte (« " +
-        restaurantName +
-        " », quartier : " +
-        cityDb +
-        ")",
-    });
-
-    await createAdminNotification({
-      type: NOTIFICATION_TYPES.NEW_RESTAURANT,
-      userId: userId,
-      restaurantId: restaurantId,
-      restaurantName: restaurantName,
-      phone: principalPhoneDb,
-      detail:
-        "Restaurant : " +
-        restaurantName +
-        " — Téléphone : " +
-        (principalPhoneDb || "—") +
-        " — Quartier : " +
-        cityDb,
-      linkUrl: "admin-restaurants.html",
-    });
-
-    const token = signToken({ userId: userId });
-
-    return res.status(201).json({
-      message: "Compte créé avec succès.",
-      token: token,
-      is_platform_admin: isPlatformAdminEmail(email),
-      user: {
-        id: userId,
-        email: email,
-        full_name: fullName,
-        phone: principalPhoneDb,
-      },
-      restaurant: mapRestaurantAuth(restaurantRow),
-    });
-  } catch (error) {
-    if (error && error.code === "EMAIL_IN_USE") {
-      return res.status(409).json({ message: "Cet email est déjà utilisé." });
-    }
-    if (process.env.NODE_ENV !== "production") {
-      console.error("[register]", error);
-    }
-    if (isMysqlUnavailableError(error)) {
-      return res.status(503).json(mysqlUnavailablePayload());
-    }
-    return res
-      .status(500)
-      .json({ message: "Erreur serveur lors de l'inscription." });
-  }
+  return res.status(403).json({
+    message:
+      "L'inscription publique est désactivée. Contactez AfricaMenu pour créer votre compte restaurant.",
+  });
 }
 
 async function login(req, res) {
