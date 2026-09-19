@@ -94,6 +94,16 @@ function normalizeWhatsapp(value) {
   return value.replace(/[^\d]/g, "") || whatsappNumber;
 }
 
+function openExternalUrl(url) {
+  const link = document.createElement("a");
+  link.href = url;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
 function normalizeImageUrl(imageUrl, fallbackUrl = "") {
   if (!imageUrl || typeof imageUrl !== "string") {
     return fallbackUrl;
@@ -1722,7 +1732,7 @@ function openWhatsapp(productName) {
     ? `Bonjour, je souhaite commander : ${productName}`
     : "Bonjour, je souhaite passer une commande.";
   const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
-  window.open(url, "_blank", "noopener");
+  openExternalUrl(url);
 }
 
 // Event Listeners Initialization
@@ -1787,7 +1797,7 @@ function setupEventListeners() {
     const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
       createOrderWhatsappMessage(),
     )}`;
-    window.open(url, "_blank", "noopener");
+    openExternalUrl(url);
   });
 
   if (similarSeeAllEl && similarProductsEl) {
