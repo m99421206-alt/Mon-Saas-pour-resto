@@ -452,10 +452,11 @@
   async function loadSetupHelpPreview() {
     var token = localStorage.getItem(TOKEN_KEY);
     var setupRes = await fetchAdminJson(
-      "/api/admin/setup-help?pageSize=5&filter=in_progress",
+      "/api/admin/setup-help?pageSize=5&filter=active",
       token,
     );
     if (guardApiStatus(setupRes.status)) {
+      renderSetupHelpPreview([], setupRes.status === 503);
       return;
     }
     if (setupRes.ok && setupRes.data && Array.isArray(setupRes.data.items)) {
@@ -484,7 +485,7 @@
       var trE = document.createElement("tr");
       trE.className = "adm-table__placeholder";
       trE.innerHTML =
-        '<td colspan="4">Aucune demande en cours. <a href="admin-installation-requests.html">Voir toutes les demandes</a></td>';
+        '<td colspan="4">Aucune demande active. <a href="admin-installation-requests.html">Voir toutes les demandes</a></td>';
       tbody.appendChild(trE);
       return;
     }
@@ -578,8 +579,10 @@
     }
 
     var actRes = await fetchAdminJson("/api/admin/activity?limit=10", token);
+    var setupHelpPromise = loadSetupHelpPreview();
 
     if (guardApiStatus(actRes.status)) {
+      await setupHelpPromise;
       return;
     }
 
@@ -595,7 +598,7 @@
       }
     }
 
-    await loadSetupHelpPreview();
+    await setupHelpPromise;
 
     var watchRes = await fetchAdminJson(
       "/api/admin/subscriptions/expiring",
