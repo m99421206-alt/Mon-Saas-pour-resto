@@ -189,7 +189,7 @@
 
   function getFilter() {
     var sel = document.getElementById("ir-filter");
-    return sel ? String(sel.value || "new").trim() : "new";
+    return sel ? String(sel.value || "active").trim() : "active";
   }
 
   function resolveRequestId(el) {

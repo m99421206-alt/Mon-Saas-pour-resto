@@ -193,6 +193,7 @@ button {
 .adm-sidebar__link {
   display: flex;
   align-items: center;
+  gap: 0.45rem;
   padding: 0.65rem 0.75rem;
   border-radius: 0.65rem;
   color: var(--adm-text-muted);
@@ -218,6 +219,24 @@ button {
   color: var(--adm-accent);
   background: var(--adm-accent-soft);
   font-weight: 600;
+}
+
+.adm-sidebar__count {
+  margin-left: auto;
+  flex-shrink: 0;
+  min-width: 1.35rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: var(--adm-accent, #2563eb);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.adm-sidebar__count[hidden] {
+  display: none !important;
 }
 
 .adm-sidebar__link--muted {
