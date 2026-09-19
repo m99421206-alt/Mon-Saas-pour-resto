@@ -520,6 +520,7 @@
 
     var token = localStorage.getItem(TOKEN_KEY);
     var base = getApiBase();
+    var setupHelpPromise = loadSetupHelpPreview();
 
     if (!base) {
       showAccessBanner(
@@ -529,12 +530,14 @@
       clearStatsDisplay();
       renderActivity([]);
       renderSubWatchRows([], true);
+      await setupHelpPromise;
       return;
     }
 
     var statsRes = await fetchAdminJson("/api/admin/stats", token);
 
     if (guardApiStatus(statsRes.status)) {
+      await setupHelpPromise;
       return;
     }
 
@@ -542,8 +545,8 @@
       showAccessBanner(statsRes.data.message, "error");
       clearStatsDisplay();
       renderActivity([]);
-      renderSetupHelpPreview([], true);
       renderSubWatchRows([], true);
+      await setupHelpPromise;
       return;
     }
 
@@ -555,8 +558,8 @@
       );
       clearStatsDisplay();
       renderActivity([]);
-      renderSetupHelpPreview([], true);
       renderSubWatchRows([], true);
+      await setupHelpPromise;
       return;
     }
 
@@ -579,7 +582,6 @@
     }
 
     var actRes = await fetchAdminJson("/api/admin/activity?limit=10", token);
-    var setupHelpPromise = loadSetupHelpPreview();
 
     if (guardApiStatus(actRes.status)) {
       await setupHelpPromise;
