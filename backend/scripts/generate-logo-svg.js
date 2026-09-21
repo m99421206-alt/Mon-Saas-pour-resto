@@ -12,7 +12,6 @@ const TMP = path.join(ROOT, "assets", "images", "icone", "_logo-data-trace.png")
 const SIZE = 512;
 const TRACE_SIZE = 1024;
 const CORNER_RADIUS = 112;
-const VIEW_PAD = 10;
 const WHITE_THRESHOLD = 235;
 
 function isWhite(r, g, b) {
@@ -397,16 +396,24 @@ async function main() {
     }
   }
 
-  const viewSize = SIZE + VIEW_PAD * 2;
+  const coverScale = Math.max(SIZE / frame.width, SIZE / frame.height);
+  const coverTx =
+    Math.round(((SIZE - frame.width * coverScale) / 2 - frame.x * coverScale) * 100) /
+    100;
+  const coverTy =
+    Math.round(((SIZE - frame.height * coverScale) / 2 - frame.y * coverScale) * 100) /
+    100;
+  const coverScaleRounded = Math.round(coverScale * 10000) / 10000;
+
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}" viewBox="${-VIEW_PAD} ${-VIEW_PAD} ${viewSize} ${viewSize}" role="img" aria-label="AfricaMenu">
+<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}" viewBox="0 0 ${SIZE} ${SIZE}" role="img" aria-label="AfricaMenu">
   <defs>
     <clipPath id="africamenu-logo-clip">
-      <rect x="${frame.x}" y="${frame.y}" width="${frame.width}" height="${frame.height}" rx="${frame.rx}"/>
+      <rect width="${SIZE}" height="${SIZE}" rx="${CORNER_RADIUS}"/>
     </clipPath>
   </defs>
-  <rect x="${frame.x}" y="${frame.y}" width="${frame.width}" height="${frame.height}" rx="${frame.rx}" fill="${orange}"/>
-  <g clip-path="url(#africamenu-logo-clip)" fill="#FFFFFF">
+  <rect width="${SIZE}" height="${SIZE}" rx="${CORNER_RADIUS}" fill="${orange}"/>
+  <g clip-path="url(#africamenu-logo-clip)" fill="#FFFFFF" transform="translate(${coverTx} ${coverTy}) scale(${coverScaleRounded})">
     ${finderShapes.join("\n    ")}
     ${dataPaths.join("\n")}
   </g>

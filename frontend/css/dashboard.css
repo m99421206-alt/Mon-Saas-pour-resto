@@ -76,21 +76,23 @@ body.dashboard-page {
 }
 
 .dash-brand__logo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
   flex-shrink: 0;
   line-height: 0;
-  background: transparent;
+  overflow: hidden;
+  border-radius: 28%;
+  background: #fff;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.16);
 }
 
 .dash-brand__logo img {
   display: block;
-  width: 2.5rem;
-  height: 2.5rem;
-  padding: 0.1875rem;
-  box-sizing: border-box;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* Glyphe blanc type fourchette / couteau (placeholder CSS) */

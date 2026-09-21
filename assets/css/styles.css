@@ -231,12 +231,10 @@ p {
     z-index: 3;
   }
 
-  .brand__logo img {
+  .brand__logo {
     width: 2.25rem;
     height: 2.25rem;
-    padding: 0.1875rem;
-    box-sizing: border-box;
-    object-fit: contain;
+    border-radius: 28%;
   }
 
   .site-header__bar-tools {
@@ -674,23 +672,25 @@ p {
   gap: 0.625rem;
 }
 
-/* Logo AfricaMenu — image seule (sans fond orange placeholder) */
+/* Logo AfricaMenu — même cadrage que .restaurant__logo (menu public) */
 .brand__logo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
   flex-shrink: 0;
   line-height: 0;
-  background: transparent;
+  overflow: hidden;
+  border-radius: 28%;
+  background: #fff;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.16);
 }
 
 .brand__logo img {
   display: block;
-  width: 2.75rem;
-  height: 2.75rem;
-  padding: 0.1875rem;
-  box-sizing: border-box;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .brand__name {
@@ -2460,21 +2460,24 @@ body.install-modal-open {
 }
 
 .site-footer__logo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
   flex-shrink: 0;
   line-height: 0;
-  background: transparent;
+  overflow: hidden;
+  border-radius: 28%;
+  background: #fff;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.16);
   border: none;
 }
 
 .site-footer__logo img {
-  width: 2.5rem;
-  height: 2.5rem;
-  padding: 0.1875rem;
-  box-sizing: border-box;
-  object-fit: contain;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .site-footer__brand-name {

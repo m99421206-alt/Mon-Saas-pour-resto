@@ -143,19 +143,23 @@ button {
 }
 
 .adm-sidebar__logo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
   flex-shrink: 0;
   line-height: 0;
+  overflow: hidden;
+  border-radius: 28%;
+  background: #fff;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.16);
 }
 
 .adm-sidebar__logo img {
-  width: 2.25rem;
-  height: 2.25rem;
-  padding: 0.1875rem;
-  box-sizing: border-box;
-  object-fit: contain;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .adm-sidebar__brand-text {

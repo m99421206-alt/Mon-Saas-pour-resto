@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="-10 -10 532 532" role="img" aria-label="AfricaMenu">
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="AfricaMenu">
   <defs>
     <clipPath id="africamenu-logo-clip">
-      <rect x="11.53" y="10.57" width="494.71" height="488.95" rx="108.22"/>
+      <rect width="512" height="512" rx="112"/>
     </clipPath>
   </defs>
-  <rect x="11.53" y="10.57" width="494.71" height="488.95" rx="108.22" fill="#FF6C01"/>
-  <g clip-path="url(#africamenu-logo-clip)" fill="#FFFFFF">
+  <rect width="512" height="512" rx="112" fill="#FF6C01"/>
+  <g clip-path="url(#africamenu-logo-clip)" fill="#FFFFFF" transform="translate(-15.07 -11.06) scale(1.0471)">
     <rect x="72" y="68" width="131" height="131" rx="29"/>
     <rect x="97" y="93" width="80" height="80" rx="19" fill="#FF6C01"/>
     <circle cx="137" cy="133" r="18"/>
