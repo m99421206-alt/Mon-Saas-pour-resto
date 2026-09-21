@@ -5,7 +5,7 @@
       <rect width="512" height="512" rx="112"/>
     </clipPath>
   </defs>
-  <rect width="512" height="512" rx="112" fill="#FF6C01"/>
+  <rect width="512" height="512" fill="#FF6C01"/>
   <g clip-path="url(#africamenu-logo-clip)" fill="#FFFFFF" transform="translate(-15.07 -11.06) scale(1.0471)">
     <rect x="72" y="68" width="131" height="131" rx="29"/>
     <rect x="97" y="93" width="80" height="80" rx="19" fill="#FF6C01"/>

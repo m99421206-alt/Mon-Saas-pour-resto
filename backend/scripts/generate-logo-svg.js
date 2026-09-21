@@ -412,7 +412,7 @@ async function main() {
       <rect width="${SIZE}" height="${SIZE}" rx="${CORNER_RADIUS}"/>
     </clipPath>
   </defs>
-  <rect width="${SIZE}" height="${SIZE}" rx="${CORNER_RADIUS}" fill="${orange}"/>
+  <rect width="${SIZE}" height="${SIZE}" fill="${orange}"/>
   <g clip-path="url(#africamenu-logo-clip)" fill="#FFFFFF" transform="translate(${coverTx} ${coverTy}) scale(${coverScaleRounded})">
     ${finderShapes.join("\n    ")}
     ${dataPaths.join("\n")}
