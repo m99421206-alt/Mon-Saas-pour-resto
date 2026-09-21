@@ -11,10 +11,63 @@ const TMP = path.join(ROOT, "assets", "images", "icone", "_logo-data-trace.png")
 const SIZE = 512;
 const TRACE_SIZE = 1024;
 const CORNER_RADIUS = 112;
+const VIEW_PAD = 10;
 const WHITE_THRESHOLD = 235;
 
 function isWhite(r, g, b) {
   return r > WHITE_THRESHOLD && g > WHITE_THRESHOLD && b > WHITE_THRESHOLD;
+}
+
+function isOrange(r, g, b, a) {
+  return a > 20 && r > 200 && g > 90 && b < 90 && !isWhite(r, g, b);
+}
+
+function computePlacement(canvasSize, pngW, pngH) {
+  const scale = Math.min(canvasSize / pngW, canvasSize / pngH);
+  return {
+    scale,
+    offsetX: (canvasSize - pngW * scale) / 2,
+    offsetY: (canvasSize - pngH * scale) / 2,
+    drawW: pngW * scale,
+    drawH: pngH * scale,
+  };
+}
+
+function detectOrangeBounds(data, width, height) {
+  let minX = width;
+  let minY = height;
+  let maxX = 0;
+  let maxY = 0;
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const i = (y * width + x) * 4;
+      if (!isOrange(data[i], data[i + 1], data[i + 2], data[i + 3])) continue;
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
+    }
+  }
+
+  return {
+    minX,
+    minY,
+    maxX,
+    maxY,
+    width: maxX - minX + 1,
+    height: maxY - minY + 1,
+  };
+}
+
+function logoFrameFromBounds(bounds, placement) {
+  return {
+    x: placement.offsetX + bounds.minX * placement.scale,
+    y: placement.offsetY + bounds.minY * placement.scale,
+    width: bounds.width * placement.scale,
+    height: bounds.height * placement.scale,
+    rx: CORNER_RADIUS * ((bounds.width * placement.scale) / SIZE),
+  };
 }
 
 function sampleOrange(data, width, height) {
@@ -150,16 +203,17 @@ function eraseBox(mask, width, box, padding) {
   }
 }
 
-function scaleBox(box, factor) {
+function mapBox(box, fromPl, toPl) {
+  const ratio = toPl.scale / fromPl.scale;
   return {
-    minX: box.minX / factor,
-    minY: box.minY / factor,
-    maxX: box.maxX / factor,
-    maxY: box.maxY / factor,
-    cx: box.cx / factor,
-    cy: box.cy / factor,
-    width: box.width / factor,
-    height: box.height / factor,
+    minX: (box.minX - fromPl.offsetX) * ratio + toPl.offsetX,
+    minY: (box.minY - fromPl.offsetY) * ratio + toPl.offsetY,
+    maxX: (box.maxX - fromPl.offsetX) * ratio + toPl.offsetX,
+    maxY: (box.maxY - fromPl.offsetY) * ratio + toPl.offsetY,
+    cx: (box.cx - fromPl.offsetX) * ratio + toPl.offsetX,
+    cy: (box.cy - fromPl.offsetY) * ratio + toPl.offsetY,
+    width: box.width * ratio,
+    height: box.height * ratio,
   };
 }
 
@@ -180,11 +234,19 @@ function renderFinder(component, orange) {
   ];
 }
 
-function scalePath(pathData, factor) {
-  return pathData.replace(
-    /-?\d*\.?\d+(?:e[-+]?\d+)?/gi,
-    (num) => String(Math.round((Number(num) / factor) * 100) / 100),
-  );
+function transformPath(pathData, fromPl, toPl) {
+  const ratio = toPl.scale / fromPl.scale;
+  let axis = 0;
+
+  return pathData.replace(/-?\d*\.?\d+(?:e[-+]?\d+)?/gi, (num) => {
+    const value = Number(num);
+    const mapped =
+      axis % 2 === 0
+        ? (value - fromPl.offsetX) * ratio + toPl.offsetX
+        : (value - fromPl.offsetY) * ratio + toPl.offsetY;
+    axis += 1;
+    return String(Math.round(mapped * 100) / 100);
+  });
 }
 
 function traceDataPaths() {
@@ -213,26 +275,34 @@ function splitSubpaths(pathData) {
     .filter(Boolean);
 }
 
-function keepDataSubpath(subpath) {
+function keepDataSubpath(subpath, frame) {
   const match = subpath.match(/^M\s*([-\d.]+)[,\s]+([-\d.]+)/i);
   if (!match) return false;
   const x = Number(match[1]);
   const y = Number(match[2]);
-  const margin = 54;
-  if (x < margin || y < margin || x > SIZE - margin || y > SIZE - margin) {
+  const margin = Math.max(24, frame.width * 0.08);
+  if (
+    x < frame.x + margin ||
+    y < frame.y + margin ||
+    x > frame.x + frame.width - margin ||
+    y > frame.y + frame.height - margin
+  ) {
     return false;
   }
-  if (y > 472 && subpath.length < 260) return false;
+  if (y > frame.y + frame.height - margin * 2 && subpath.length < 260) {
+    return false;
+  }
   return subpath.length > 48;
 }
 
-function extractDataPaths(tracedSvg, factor) {
-  const scale = TRACE_SIZE / SIZE;
+function extractDataPaths(tracedSvg, tracePl, sizePl, frame) {
   const output = [];
 
   for (const match of tracedSvg.matchAll(/<path[^>]*d="([^"]+)"/gi)) {
-    const scaled = scalePath(match[1], scale);
-    const subpaths = splitSubpaths(scaled).filter(keepDataSubpath);
+    const mapped = transformPath(match[1], tracePl, sizePl);
+    const subpaths = splitSubpaths(mapped).filter((subpath) =>
+      keepDataSubpath(subpath, frame),
+    );
     if (!subpaths.length) continue;
     output.push(`    <path d="${subpaths.join(" ")}" fill="#FFFFFF"/>`);
   }
@@ -240,9 +310,32 @@ function extractDataPaths(tracedSvg, factor) {
   return output;
 }
 
+function roundFrame(frame) {
+  return {
+    x: Math.round(frame.x * 100) / 100,
+    y: Math.round(frame.y * 100) / 100,
+    width: Math.round(frame.width * 100) / 100,
+    height: Math.round(frame.height * 100) / 100,
+    rx: Math.round(frame.rx * 100) / 100,
+  };
+}
+
 async function main() {
+  const meta = await sharp(SRC).metadata();
+  const pngW = meta.width;
+  const pngH = meta.height;
+
+  const native = await sharp(SRC).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const nativeBounds = detectOrangeBounds(native.data, pngW, pngH);
+  const tracePl = computePlacement(TRACE_SIZE, pngW, pngH);
+  const sizePl = computePlacement(SIZE, pngW, pngH);
+  const frame = roundFrame(logoFrameFromBounds(nativeBounds, sizePl));
+
   const { data, info } = await sharp(SRC)
-    .resize(TRACE_SIZE, TRACE_SIZE, { fit: "cover", position: "centre" })
+    .resize(TRACE_SIZE, TRACE_SIZE, {
+      fit: "contain",
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    })
     .ensureAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true });
@@ -286,21 +379,24 @@ async function main() {
     .toFile(TMP);
 
   const tracedSvg = await traceDataPaths();
-  const dataPaths = extractDataPaths(tracedSvg, TRACE_SIZE / SIZE);
+  const dataPaths = extractDataPaths(tracedSvg, tracePl, sizePl, frame);
 
   const finderShapes = [];
   for (const finder of [finderTL, finderTR, finderBL]) {
-    if (finder) finderShapes.push(...renderFinder(scaleBox(finder, 2), orange));
+    if (finder) {
+      finderShapes.push(...renderFinder(mapBox(finder, tracePl, sizePl), orange));
+    }
   }
 
+  const viewSize = SIZE + VIEW_PAD * 2;
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}" viewBox="0 0 ${SIZE} ${SIZE}" role="img" aria-label="AfricaMenu">
+<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}" viewBox="${-VIEW_PAD} ${-VIEW_PAD} ${viewSize} ${viewSize}" role="img" aria-label="AfricaMenu">
   <defs>
     <clipPath id="africamenu-logo-clip">
-      <rect width="${SIZE}" height="${SIZE}" rx="${CORNER_RADIUS}"/>
+      <rect x="${frame.x}" y="${frame.y}" width="${frame.width}" height="${frame.height}" rx="${frame.rx}"/>
     </clipPath>
   </defs>
-  <rect width="${SIZE}" height="${SIZE}" rx="${CORNER_RADIUS}" fill="${orange}"/>
+  <rect x="${frame.x}" y="${frame.y}" width="${frame.width}" height="${frame.height}" rx="${frame.rx}" fill="${orange}"/>
   <g clip-path="url(#africamenu-logo-clip)" fill="#FFFFFF">
     ${finderShapes.join("\n    ")}
     ${dataPaths.join("\n")}
@@ -311,7 +407,7 @@ async function main() {
   fs.writeFileSync(OUT, svg, "utf8");
   fs.unlinkSync(TMP);
   console.log(
-    `Logo SVG généré : ${OUT} (${svg.length} octets, orange ${orange})`,
+    `Logo SVG généré : ${OUT} (${svg.length} octets, orange ${orange}, cadre ${frame.width}x${frame.height}@${frame.x},${frame.y})`,
   );
 }
 

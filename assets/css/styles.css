@@ -234,6 +234,8 @@ p {
   .brand__logo img {
     width: 2.25rem;
     height: 2.25rem;
+    padding: 0.1875rem;
+    box-sizing: border-box;
     object-fit: contain;
   }
 
@@ -686,6 +688,8 @@ p {
   display: block;
   width: 2.75rem;
   height: 2.75rem;
+  padding: 0.1875rem;
+  box-sizing: border-box;
   object-fit: contain;
 }
 
@@ -2468,6 +2472,8 @@ body.install-modal-open {
 .site-footer__logo img {
   width: 2.5rem;
   height: 2.5rem;
+  padding: 0.1875rem;
+  box-sizing: border-box;
   object-fit: contain;
 }
 
