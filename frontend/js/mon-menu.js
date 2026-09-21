@@ -127,18 +127,24 @@ function normalizeImageUrl(imageUrl, fallbackUrl = "") {
 
 const MENU_IMAGE_VARIANTS = [128, 400, 800];
 
-function buildVariantUploadPath(uploadUrl, width) {
+function extractUploadPath(uploadUrl) {
   if (!uploadUrl || typeof uploadUrl !== "string") {
     return "";
   }
-  const trimmed = uploadUrl.trim();
-  if (trimmed.indexOf("/uploads/") !== 0 || !/\.webp$/i.test(trimmed)) {
+  const raw = uploadUrl.trim().split("?")[0];
+  const idx = raw.indexOf("/uploads/");
+  if (idx === -1) {
     return "";
   }
-  if (/-\d+w\.webp$/i.test(trimmed)) {
+  return raw.slice(idx);
+}
+
+function buildVariantUploadPath(uploadUrl, width) {
+  const uploadPath = extractUploadPath(uploadUrl);
+  if (!uploadPath || !/\.webp$/i.test(uploadPath) || /-\d+w\.webp$/i.test(uploadPath)) {
     return "";
   }
-  return trimmed.replace(/\.webp$/i, `-${width}w.webp`);
+  return uploadPath.replace(/\.webp$/i, `-${width}w.webp`);
 }
 
 function buildResponsiveImageAttrs(uploadUrl, options = {}) {
@@ -163,8 +169,12 @@ function buildResponsiveImageAttrs(uploadUrl, options = {}) {
 
   srcsetParts.push(`${fullSrc} 1200w`);
 
+  const preferredWidth = options.preferredSrcWidth || primaryWidth;
+  const preferredPath = buildVariantUploadPath(uploadUrl, preferredWidth);
+  const preferredSrc = normalizeImageUrl(preferredPath, "");
+
   return {
-    src: fullSrc,
+    src: preferredSrc || fullSrc,
     srcset: srcsetParts.join(", "),
     sizes,
   };
@@ -183,7 +193,7 @@ function buildResponsiveImgHtml(className, uploadUrl, alt, options = {}) {
     ? ` srcset="${escapeHtml(attrs.srcset)}" sizes="${escapeHtml(attrs.sizes)}"`
     : "";
 
-  return `<img class="${className}" src="${escapeHtml(attrs.src)}"${srcsetAttr} alt="${alt}" ${loadingAttr} decoding="async" />`;
+  return `<img class="${className}" src="${escapeHtml(attrs.src)}"${srcsetAttr} alt="${alt}" ${loadingAttr} decoding="async" onerror="if(this.dataset.fallback){this.src=this.dataset.fallback;this.removeAttribute('srcset');this.removeAttribute('sizes');this.onerror=null;}" data-fallback="${escapeHtml(normalizeImageUrl(uploadUrl, ""))}" />`;
 }
 
 function applyResponsiveImageToElement(imgEl, uploadUrl, options = {}) {
@@ -191,7 +201,19 @@ function applyResponsiveImageToElement(imgEl, uploadUrl, options = {}) {
   const attrs = buildResponsiveImageAttrs(uploadUrl, options);
   if (!attrs.src) return;
 
+  const fallbackSrc = normalizeImageUrl(uploadUrl, "");
   imgEl.src = attrs.src;
+  if (fallbackSrc && fallbackSrc !== attrs.src) {
+    imgEl.dataset.fallback = fallbackSrc;
+    imgEl.onerror = function onVariantImageError() {
+      if (this.dataset.fallback) {
+        this.src = this.dataset.fallback;
+        this.removeAttribute("srcset");
+        this.removeAttribute("sizes");
+        this.onerror = null;
+      }
+    };
+  }
   if (attrs.srcset) {
     imgEl.srcset = attrs.srcset;
     imgEl.sizes = attrs.sizes;
@@ -835,7 +857,8 @@ function applyRestaurantData(restaurant) {
       heroCoverEl.hidden = false;
       applyResponsiveImageToElement(heroCoverEl, bUrl, {
         sizes: "430px",
-        primaryWidth: 800,
+        primaryWidth: 400,
+        preferredSrcWidth: 400,
         maxVariant: 800,
       });
       heroCoverEl.alt = `Bannière ${restaurant.name || "du restaurant"}`;
@@ -921,6 +944,7 @@ function mapPublicMenuData(data) {
         name: product.name,
         meta: getTrimmedDescription(product.description),
         price: formatApiPrice(product.price),
+        imageRaw: rawImage,
         image,
         detailImage: image,
         alt: product.name,
@@ -1110,18 +1134,40 @@ function initMenuAnalyticsDeferred() {
   const script = document.createElement("script");
   script.async = true;
   script.src = "https://www.googletagmanager.com/gtag/js?id=G-N40SHP116G";
+  script.onerror = () => {
+    window.__AFRICA_ANALYTICS_LOADED = false;
+  };
   document.head.appendChild(script);
 }
 
-function scheduleMenuAnalyticsDeferred() {
-  const run = () => initMenuAnalyticsDeferred();
-  if (typeof window.requestIdleCallback === "function") {
-    window.requestIdleCallback(run, { timeout: 5000 });
-    return;
-  }
-  window.addEventListener("load", () => {
-    window.setTimeout(run, 2000);
-  });
+function loadFontAwesomeDeferred() {
+  if (window.__MENU_FA_LOADED) return;
+  window.__MENU_FA_LOADED = true;
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href =
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css";
+  link.referrerPolicy = "no-referrer";
+  link.media = "print";
+  link.onload = () => {
+    link.media = "all";
+  };
+  document.head.appendChild(link);
+}
+
+function scheduleMenuThirdPartyDeferred() {
+  const run = () => {
+    loadFontAwesomeDeferred();
+    initMenuAnalyticsDeferred();
+  };
+
+  window.addEventListener(
+    "load",
+    () => {
+      window.setTimeout(run, 8000);
+    },
+    { once: true },
+  );
 }
 
 function prefersReducedMotion() {
@@ -1129,7 +1175,7 @@ function prefersReducedMotion() {
 }
 
 function showMenuSkeleton() {
-  if (!menuSkeletonEl || !appEl) return;
+  if (!menuSkeletonEl || !appEl || window.__MENU_SHELL_READY__) return;
   menuSkeletonEl.hidden = false;
   menuSkeletonEl.setAttribute("aria-busy", "true");
   appEl.classList.add("menu-enter-pending");
@@ -1302,9 +1348,10 @@ function createProductCard(product) {
   const mediaBlock = productHasImage(product)
     ? `
     <div class="product-card__media">
-      ${buildResponsiveImgHtml("product-card__image", product.image, productAlt, {
+      ${buildResponsiveImgHtml("product-card__image", product.imageRaw || product.image, productAlt, {
         sizes: "(max-width: 430px) 48vw, 195px",
         primaryWidth: 400,
+        preferredSrcWidth: 400,
         maxVariant: 800,
       })}
       ${heartBtn}
@@ -1346,9 +1393,10 @@ function createSimilarProductCard(product) {
   const favorite = isFavorite(product.id);
 
   const imageBlock = productHasImage(product)
-    ? buildResponsiveImgHtml("similar-card__image", product.image, productAlt, {
+    ? buildResponsiveImgHtml("similar-card__image", product.imageRaw || product.image, productAlt, {
         sizes: "140px",
         primaryWidth: 400,
+        preferredSrcWidth: 400,
         maxVariant: 400,
       })
     : `<div class="similar-card__placeholder" role="img" aria-label="${escapeHtml(NO_IMAGE_LABEL)}"><span>${escapeHtml(NO_IMAGE_LABEL)}</span></div>`;
@@ -1982,7 +2030,7 @@ async function initializeMenu() {
     menuEnterPlayed = false;
     playMenuEnterAnimation();
     setupEventListeners();
-    scheduleMenuAnalyticsDeferred();
+    scheduleMenuThirdPartyDeferred();
   } catch (error) {
     console.warn("Impossible de charger le menu public :", error.message);
     hideMenuSkeleton();

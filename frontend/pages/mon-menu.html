@@ -67,11 +67,11 @@
               link.rel = "preload";
               link.as = "image";
               link.type = "image/webp";
-              link.href = banner.replace(/\.webp$/i, "-800w.webp");
+              link.href = banner.replace(/\.webp$/i, "-400w.webp");
               document.head.appendChild(link);
             }
-            if (typeof window.__applyEarlyMenuHero === "function") {
-              window.__applyEarlyMenuHero(data);
+            if (typeof window.__applyEarlyMenuShell === "function") {
+              window.__applyEarlyMenuShell(data);
             } else {
               window.__MENU_BOOTSTRAP_EARLY__ = data;
             }
@@ -82,22 +82,6 @@
           });
       })();
     </script>
-
-    <!-- Font Awesome (non bloquant) -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-      referrerpolicy="no-referrer"
-      media="print"
-      onload="this.media = 'all'"
-    />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-        referrerpolicy="no-referrer"
-      />
-    </noscript>
 
     <meta name="description" content="" />
     <link rel="canonical" href="" />
@@ -110,20 +94,77 @@
 
   <body>
     <script>
-      window.__applyEarlyMenuHero = function (data) {
+      window.__applyEarlyMenuShell = function (data) {
         var restaurant = data && data.restaurant;
-        var banner = restaurant && restaurant.banner_url;
-        if (typeof banner !== "string" || banner.indexOf("/uploads/") !== 0) return;
-        var img = document.getElementById("hero-cover");
-        var frame = document.getElementById("hero-banner-frame");
-        if (!img) return;
-        img.src = banner;
-        img.alt = "Bannière " + (restaurant.name || "du restaurant");
-        img.hidden = false;
-        if (frame) frame.classList.remove("is-empty");
+        if (!restaurant) return;
+
+        window.__MENU_SHELL_READY__ = true;
+
+        var nameEl = document.getElementById("restaurant-name");
+        if (nameEl && restaurant.name) {
+          nameEl.textContent = restaurant.name;
+        }
+
+        var descEl = document.getElementById("restaurant-description");
+        if (descEl) {
+          var desc =
+            restaurant.description && String(restaurant.description).trim();
+          if (desc) {
+            descEl.textContent = desc;
+            descEl.removeAttribute("hidden");
+          }
+        }
+
+        var banner = restaurant.banner_url;
+        if (typeof banner === "string" && banner.indexOf("/uploads/") === 0) {
+          var img = document.getElementById("hero-cover");
+          var frame = document.getElementById("hero-banner-frame");
+          if (img) {
+            img.src = banner.replace(/\.webp$/i, "-400w.webp");
+            img.dataset.fallback = banner;
+            img.onerror = function () {
+              if (this.dataset.fallback) {
+                this.src = this.dataset.fallback;
+                this.onerror = null;
+              }
+            };
+            img.alt = "Bannière " + (restaurant.name || "du restaurant");
+            img.hidden = false;
+          }
+          if (frame) frame.classList.remove("is-empty");
+        }
+
+        var logo = restaurant.logo_url;
+        if (typeof logo === "string" && logo.indexOf("/uploads/") === 0) {
+          var logoEl = document.getElementById("restaurant-logo");
+          var logoWrap = document.getElementById("restaurant-logo-wrap");
+          if (logoEl) {
+            logoEl.src = logo.replace(/\.webp$/i, "-128w.webp");
+            logoEl.dataset.fallback = logo;
+            logoEl.onerror = function () {
+              if (this.dataset.fallback) {
+                this.src = this.dataset.fallback;
+                this.onerror = null;
+              }
+            };
+            logoEl.alt = "Logo " + (restaurant.name || "du restaurant");
+            logoEl.hidden = false;
+          }
+          if (logoWrap) logoWrap.classList.remove("is-empty");
+        }
+
+        var app = document.querySelector(".app");
+        if (app) app.classList.remove("menu-enter-pending");
+
+        var skeleton = document.getElementById("menu-skeleton");
+        if (skeleton) {
+          skeleton.hidden = true;
+          skeleton.removeAttribute("aria-busy");
+        }
       };
+
       if (window.__MENU_BOOTSTRAP_EARLY__) {
-        window.__applyEarlyMenuHero(window.__MENU_BOOTSTRAP_EARLY__);
+        window.__applyEarlyMenuShell(window.__MENU_BOOTSTRAP_EARLY__);
       }
     </script>
     <div class="app menu-enter-pending">
