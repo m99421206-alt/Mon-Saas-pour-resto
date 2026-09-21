@@ -5,8 +5,8 @@
   "start_url": "/index.html",
   "lang": "fr",
   "display": "standalone",
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#ff6b00",
+  "background_color": "#ff6b00",
   "icons": [
     {
       "src": "/frontend/android-chrome-192x192.png",

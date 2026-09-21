@@ -1,5 +1,5 @@
 /**
- * Génère les icônes PWA / écran d'accueil du SaaS depuis logo.svg.
+ * Génère les icônes PWA / écran d'accueil du SaaS depuis logovrai.png.
  * Même recadrage que les logos restaurant (sharp fit: cover, position: center).
  */
 const fs = require("fs");
@@ -7,7 +7,7 @@ const path = require("path");
 const sharp = require("sharp");
 
 const ROOT = path.join(__dirname, "..", "..");
-const SVG = path.join(ROOT, "assets", "images", "icone", "logo.svg");
+const LOGO = path.join(ROOT, "assets", "images", "icone", "logovrai.png");
 
 const OUTPUTS = [
   { dir: "frontend", name: "favicon-16x16.png", size: 16 },
@@ -19,7 +19,7 @@ const OUTPUTS = [
 ];
 
 async function renderIcon(size) {
-  return sharp(SVG)
+  return sharp(LOGO)
     .resize(size, size, {
       fit: "cover",
       position: "center",
@@ -29,8 +29,8 @@ async function renderIcon(size) {
 }
 
 async function main() {
-  if (!fs.existsSync(SVG)) {
-    console.error(`SVG introuvable : ${SVG}`);
+  if (!fs.existsSync(LOGO)) {
+    console.error(`Logo introuvable : ${LOGO}`);
     process.exit(1);
   }
 

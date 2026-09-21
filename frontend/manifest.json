@@ -24,7 +24,7 @@
   ],
   "start_url": "../pages/dashboard.html",
   "display": "standalone",
-  "theme_color": "#10B981",
-  "background_color": "#ffffff",
+  "theme_color": "#ff6b00",
+  "background_color": "#ff6b00",
   "orientation": "portrait"
 }
