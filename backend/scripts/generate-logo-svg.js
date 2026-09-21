@@ -4,7 +4,8 @@ const sharp = require("sharp");
 const potrace = require("potrace");
 
 const ROOT = path.join(__dirname, "..", "..");
-const SRC = path.join(ROOT, "assets", "images", "icone", "logo.png");
+/** Source raster interne (dev) — le logo public est logo.svg uniquement. */
+const SRC = path.join(__dirname, "logo-source.png");
 const OUT = path.join(ROOT, "assets", "images", "icone", "logo.svg");
 const TMP = path.join(ROOT, "assets", "images", "icone", "_logo-data-trace.png");
 
@@ -321,6 +322,14 @@ function roundFrame(frame) {
 }
 
 async function main() {
+  if (!fs.existsSync(SRC)) {
+    console.error(
+      `Source introuvable : ${SRC}\n` +
+        "Le logo public est logo.svg. Pour regénérer, placez une image source dans backend/scripts/logo-source.png.",
+    );
+    process.exit(1);
+  }
+
   const meta = await sharp(SRC).metadata();
   const pngW = meta.width;
   const pngH = meta.height;

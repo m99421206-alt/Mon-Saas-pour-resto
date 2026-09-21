@@ -124,13 +124,6 @@ function resolveSourceImagePath(restaurant) {
   if (fs.existsSync(FALLBACK_ICON_PATH)) {
     return FALLBACK_ICON_PATH;
   }
-  var pngFallback = path.join(
-    __dirname,
-    "../../../assets/images/icone/logo.png",
-  );
-  if (fs.existsSync(pngFallback)) {
-    return pngFallback;
-  }
   return null;
 }
 
