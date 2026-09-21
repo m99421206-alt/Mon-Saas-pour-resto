@@ -41,25 +41,49 @@
       media="(prefers-color-scheme: dark)"
     />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
+    <link rel="stylesheet" href="/frontend/css/responsive-guard.css" />
     <link rel="stylesheet" href="/frontend/css/menu-client.css" />
 
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-      media="print"
-      onload="this.media = 'all'"
-    />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
-      />
-    </noscript>
+    <!-- Préchargement menu + bannière LCP (en parallèle du JS) -->
+    <script>
+      (function () {
+        var match = location.pathname.match(/\/(?:restaurant|menu)\/([^/?#]+)/i);
+        if (!match) return;
+        var slug = decodeURIComponent(match[1]);
+        var apiUrl = "/api/menu/" + encodeURIComponent(slug);
+        window.__MENU_BOOTSTRAP_PROMISE__ = fetch(apiUrl, {
+          credentials: "same-origin",
+        })
+          .then(function (response) {
+            if (!response.ok) return null;
+            return response.json();
+          })
+          .then(function (data) {
+            if (!data || !data.restaurant) return null;
+            window.__MENU_BOOTSTRAP__ = data;
+            var banner = data.restaurant.banner_url;
+            if (typeof banner === "string" && banner.indexOf("/uploads/") === 0) {
+              var link = document.createElement("link");
+              link.rel = "preload";
+              link.as = "image";
+              link.type = "image/webp";
+              link.href = banner.replace(/\.webp$/i, "-800w.webp");
+              document.head.appendChild(link);
+            }
+            if (typeof window.__applyEarlyMenuHero === "function") {
+              window.__applyEarlyMenuHero(data);
+            } else {
+              window.__MENU_BOOTSTRAP_EARLY__ = data;
+            }
+            return data;
+          })
+          .catch(function () {
+            return null;
+          });
+      })();
+    </script>
 
-    <!-- Font Awesome -->
+    <!-- Font Awesome (non bloquant) -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
@@ -75,13 +99,6 @@
       />
     </noscript>
 
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-N40SHP116G"
-    ></script>
-    <!-- Script analytics -->
-    <script src="/frontend/js/analytics.js"></script>
-
     <meta name="description" content="" />
     <link rel="canonical" href="" />
     <meta property="og:title" content="" />
@@ -92,6 +109,23 @@
   </head>
 
   <body>
+    <script>
+      window.__applyEarlyMenuHero = function (data) {
+        var restaurant = data && data.restaurant;
+        var banner = restaurant && restaurant.banner_url;
+        if (typeof banner !== "string" || banner.indexOf("/uploads/") !== 0) return;
+        var img = document.getElementById("hero-cover");
+        var frame = document.getElementById("hero-banner-frame");
+        if (!img) return;
+        img.src = banner;
+        img.alt = "Bannière " + (restaurant.name || "du restaurant");
+        img.hidden = false;
+        if (frame) frame.classList.remove("is-empty");
+      };
+      if (window.__MENU_BOOTSTRAP_EARLY__) {
+        window.__applyEarlyMenuHero(window.__MENU_BOOTSTRAP_EARLY__);
+      }
+    </script>
     <div class="app menu-enter-pending">
       <div
         class="menu-skeleton"

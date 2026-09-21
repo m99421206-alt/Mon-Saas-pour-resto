@@ -2,6 +2,7 @@ const fs = require("fs/promises");
 const path = require("path");
 const { getPool } = require("../config/database");
 const { removeRegistryEntryForUrl } = require("./uploadOwnership");
+const { deleteVariantsForUploadUrl } = require("./uploadImageVariants");
 
 const uploadsDir = path.join(__dirname, "../../uploads");
 
@@ -44,6 +45,7 @@ async function removeUnusedUpload(uploadUrl) {
 
   try {
     await fs.unlink(getUploadPath(normalizedUrl));
+    await deleteVariantsForUploadUrl(normalizedUrl, uploadsDir);
     await removeRegistryEntryForUrl(normalizedUrl);
   } catch (error) {
     if (error.code !== "ENOENT") {
@@ -167,6 +169,7 @@ async function forceDeleteUploadFiles(uploadUrls) {
     var uploadUrl = uniqueUrls[i];
     try {
       await fs.unlink(getUploadPath(uploadUrl));
+      await deleteVariantsForUploadUrl(uploadUrl, uploadsDir);
       deleted += 1;
     } catch (error) {
       if (error.code === "ENOENT") {

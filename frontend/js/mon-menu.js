@@ -125,6 +125,82 @@ function normalizeImageUrl(imageUrl, fallbackUrl = "") {
   return fallbackUrl;
 }
 
+const MENU_IMAGE_VARIANTS = [128, 400, 800];
+
+function buildVariantUploadPath(uploadUrl, width) {
+  if (!uploadUrl || typeof uploadUrl !== "string") {
+    return "";
+  }
+  const trimmed = uploadUrl.trim();
+  if (trimmed.indexOf("/uploads/") !== 0 || !/\.webp$/i.test(trimmed)) {
+    return "";
+  }
+  if (/-\d+w\.webp$/i.test(trimmed)) {
+    return "";
+  }
+  return trimmed.replace(/\.webp$/i, `-${width}w.webp`);
+}
+
+function buildResponsiveImageAttrs(uploadUrl, options = {}) {
+  const fullSrc = normalizeImageUrl(uploadUrl, "");
+  if (!fullSrc) {
+    return { src: "", srcset: "", sizes: "" };
+  }
+
+  const sizes = options.sizes || "(max-width: 430px) 48vw, 195px";
+  const primaryWidth = options.primaryWidth || 400;
+  const maxVariant = options.maxVariant || 800;
+  const srcsetParts = [];
+
+  MENU_IMAGE_VARIANTS.forEach((width) => {
+    if (width > maxVariant) return;
+    const variantPath = buildVariantUploadPath(uploadUrl, width);
+    const variantSrc = normalizeImageUrl(variantPath, "");
+    if (variantSrc) {
+      srcsetParts.push(`${variantSrc} ${width}w`);
+    }
+  });
+
+  srcsetParts.push(`${fullSrc} 1200w`);
+
+  return {
+    src: fullSrc,
+    srcset: srcsetParts.join(", "),
+    sizes,
+  };
+}
+
+function buildResponsiveImgHtml(className, uploadUrl, alt, options = {}) {
+  const attrs = buildResponsiveImageAttrs(uploadUrl, options);
+  if (!attrs.src) {
+    return "";
+  }
+
+  const loadingAttr = options.fetchpriority
+    ? 'fetchpriority="high"'
+    : `loading="${options.loading || "lazy"}"`;
+  const srcsetAttr = attrs.srcset
+    ? ` srcset="${escapeHtml(attrs.srcset)}" sizes="${escapeHtml(attrs.sizes)}"`
+    : "";
+
+  return `<img class="${className}" src="${escapeHtml(attrs.src)}"${srcsetAttr} alt="${alt}" ${loadingAttr} decoding="async" />`;
+}
+
+function applyResponsiveImageToElement(imgEl, uploadUrl, options = {}) {
+  if (!imgEl) return;
+  const attrs = buildResponsiveImageAttrs(uploadUrl, options);
+  if (!attrs.src) return;
+
+  imgEl.src = attrs.src;
+  if (attrs.srcset) {
+    imgEl.srcset = attrs.srcset;
+    imgEl.sizes = attrs.sizes;
+  } else {
+    imgEl.removeAttribute("srcset");
+    imgEl.removeAttribute("sizes");
+  }
+}
+
 // Formatting Helpers
 function formatQuantity(value) {
   return String(value).padStart(2, "0");
@@ -681,7 +757,11 @@ function updateDetailMedia(product, variant) {
     };
     detailImageEl.onerror = () => resetDetailMedia();
 
-    detailImageEl.src = imageUrl;
+    applyResponsiveImageToElement(detailImageEl, imageUrl, {
+      sizes: "(max-width: 430px) 100vw, 430px",
+      primaryWidth: 800,
+      maxVariant: 800,
+    });
 
     detailImageEl.alt = altText;
     detailImagePlaceholderEl.hidden = true;
@@ -753,7 +833,11 @@ function applyRestaurantData(restaurant) {
       : "";
     if (bUrl) {
       heroCoverEl.hidden = false;
-      heroCoverEl.src = normalizeImageUrl(bUrl, "");
+      applyResponsiveImageToElement(heroCoverEl, bUrl, {
+        sizes: "430px",
+        primaryWidth: 800,
+        maxVariant: 800,
+      });
       heroCoverEl.alt = `Bannière ${restaurant.name || "du restaurant"}`;
       heroBannerFrame.classList.remove("is-empty");
     } else {
@@ -770,7 +854,11 @@ function applyRestaurantData(restaurant) {
       : "";
     if (logoUrl) {
       restaurantLogoEl.hidden = false;
-      restaurantLogoEl.src = normalizeImageUrl(logoUrl, "");
+      applyResponsiveImageToElement(restaurantLogoEl, logoUrl, {
+        sizes: "86px",
+        primaryWidth: 128,
+        maxVariant: 128,
+      });
       restaurantLogoEl.alt = `Logo ${restaurant.name || "du restaurant"}`;
       restaurantLogoWrap.classList.remove("is-empty");
     } else {
@@ -897,24 +985,37 @@ async function loadPublicMenu() {
   }
 
   const apiUrl = window.MenuGo_CONFIG?.API_URL || "/api";
-  let response;
+  let response = null;
+  let body =
+    window.__MENU_BOOTSTRAP__ && window.__MENU_BOOTSTRAP__.restaurant
+      ? window.__MENU_BOOTSTRAP__
+      : null;
 
-  try {
-    response = await fetch(
-      `${apiUrl}/menu/${encodeURIComponent(restaurantId)}`,
-    );
-  } catch (fetchError) {
-    throw createMenuLoadError(
-      "network",
-      null,
-      "Connexion impossible. Vérifiez votre réseau mobile ou Wi‑Fi, puis réessayez.",
-    );
+  if (!body && window.__MENU_BOOTSTRAP_PROMISE__) {
+    try {
+      body = await window.__MENU_BOOTSTRAP_PROMISE__;
+    } catch (bootstrapError) {
+      body = null;
+    }
   }
 
-  const contentType = response.headers.get("content-type") || "";
-  let body = null;
+  if (!body) {
+    try {
+      response = await fetch(
+        `${apiUrl}/menu/${encodeURIComponent(restaurantId)}`,
+      );
+    } catch (fetchError) {
+      throw createMenuLoadError(
+        "network",
+        null,
+        "Connexion impossible. Vérifiez votre réseau mobile ou Wi‑Fi, puis réessayez.",
+      );
+    }
+  }
 
-  if (contentType.includes("application/json")) {
+  const contentType = response ? response.headers.get("content-type") || "" : "application/json";
+
+  if (!body && contentType.includes("application/json")) {
     try {
       body = await response.json();
     } catch (parseError) {
@@ -922,7 +1023,7 @@ async function loadPublicMenu() {
     }
   }
 
-  if (!response.ok) {
+  if (response && !response.ok) {
     const serverMessage =
       body && body.message ? String(body.message).trim() : "";
 
@@ -975,9 +1076,52 @@ async function loadPublicMenu() {
     );
   }
 
+  window.__MENU_BOOTSTRAP__ = null;
+  window.__MENU_BOOTSTRAP_PROMISE__ = null;
+
   canonicalizePublicMenuUrl(body.restaurant);
   applyRestaurantData(body.restaurant);
   mapPublicMenuData(body);
+}
+
+function initMenuAnalyticsDeferred() {
+  const host = (window.location.hostname || "").toLowerCase();
+  if (
+    window.__AFRICA_ANALYTICS_LOADED ||
+    host === "localhost" ||
+    host === "127.0.0.1" ||
+    host.endsWith(".local") ||
+    host.indexOf("192.168.") === 0
+  ) {
+    return;
+  }
+
+  window.__AFRICA_ANALYTICS_LOADED = true;
+  window.dataLayer = window.dataLayer || [];
+
+  function gtag() {
+    window.dataLayer.push(arguments);
+  }
+
+  window.gtag = gtag;
+  gtag("js", new Date());
+  gtag("config", "G-N40SHP116G");
+
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = "https://www.googletagmanager.com/gtag/js?id=G-N40SHP116G";
+  document.head.appendChild(script);
+}
+
+function scheduleMenuAnalyticsDeferred() {
+  const run = () => initMenuAnalyticsDeferred();
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(run, { timeout: 5000 });
+    return;
+  }
+  window.addEventListener("load", () => {
+    window.setTimeout(run, 2000);
+  });
 }
 
 function prefersReducedMotion() {
@@ -1158,7 +1302,11 @@ function createProductCard(product) {
   const mediaBlock = productHasImage(product)
     ? `
     <div class="product-card__media">
-      <img class="product-card__image" src="${escapeHtml(product.image)}" alt="${productAlt}" loading="lazy" decoding="async" />
+      ${buildResponsiveImgHtml("product-card__image", product.image, productAlt, {
+        sizes: "(max-width: 430px) 48vw, 195px",
+        primaryWidth: 400,
+        maxVariant: 800,
+      })}
       ${heartBtn}
     </div>`
     : `
@@ -1198,7 +1346,11 @@ function createSimilarProductCard(product) {
   const favorite = isFavorite(product.id);
 
   const imageBlock = productHasImage(product)
-    ? `<img class="similar-card__image" src="${escapeHtml(product.image)}" alt="${productAlt}" loading="lazy" decoding="async" />`
+    ? buildResponsiveImgHtml("similar-card__image", product.image, productAlt, {
+        sizes: "140px",
+        primaryWidth: 400,
+        maxVariant: 400,
+      })
     : `<div class="similar-card__placeholder" role="img" aria-label="${escapeHtml(NO_IMAGE_LABEL)}"><span>${escapeHtml(NO_IMAGE_LABEL)}</span></div>`;
 
   if (!productHasImage(product)) {
@@ -1830,6 +1982,7 @@ async function initializeMenu() {
     menuEnterPlayed = false;
     playMenuEnterAnimation();
     setupEventListeners();
+    scheduleMenuAnalyticsDeferred();
   } catch (error) {
     console.warn("Impossible de charger le menu public :", error.message);
     hideMenuSkeleton();
