@@ -206,9 +206,16 @@
     }
   }
 
-  document.addEventListener("DOMContentLoaded", function () {
+  function initInstallModal() {
     bindTriggers();
     bindModalClose();
     bindForm();
-  });
+    window.__AFRICA_INSTALL_MODAL_READY = true;
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initInstallModal);
+  } else {
+    initInstallModal();
+  }
 })();

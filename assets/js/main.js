@@ -106,23 +106,73 @@
   }
 
   /**
-   * Header + Hero au chargement (sans attendre le scroll).
+   * Hero/header visibles dès le HTML — on ne retarde plus le LCP pour une animation.
    */
   function initLandingEntrance() {
-    if (prefersReducedMotion()) {
-      forceLandingVisible(true);
-      clearLandingFallback();
-      return;
+    document.body.classList.add("landing-ready");
+    const hero = document.querySelector(".reveal-hero");
+    if (hero) hero.classList.add("is-ready");
+    clearLandingFallback();
+  }
+
+  /** Modal installation : scripts chargés à la demande (hors chemin critique). */
+  function loadInstallModalScripts() {
+    if (window.__AFRICA_INSTALL_MODAL_LOADED) {
+      return Promise.resolve();
     }
 
-    window.requestAnimationFrame(() => {
-      document.body.classList.add("landing-ready");
-      window.requestAnimationFrame(() => {
-        const hero = document.querySelector(".reveal-hero");
-        if (hero) hero.classList.add("is-ready");
-        clearLandingFallback();
-      });
+    window.__AFRICA_INSTALL_MODAL_LOADED = true;
+
+    return new Promise((resolve, reject) => {
+      const configScript = document.createElement("script");
+      configScript.src = "/frontend/js/config.js";
+      configScript.defer = true;
+      configScript.onload = () => {
+        const installScript = document.createElement("script");
+        installScript.src = "/assets/js/landing-install-request.js";
+        installScript.defer = true;
+        installScript.onload = () => resolve();
+        installScript.onerror = reject;
+        document.body.appendChild(installScript);
+      };
+      configScript.onerror = reject;
+      document.body.appendChild(configScript);
     });
+  }
+
+  function initInstallModalLazyLoad() {
+    let loading = null;
+
+    const ensureLoaded = () => {
+      if (!loading) loading = loadInstallModalScripts();
+      return loading;
+    };
+
+    document.addEventListener(
+      "click",
+      (event) => {
+        const trigger = event.target.closest("[data-open-install-modal]");
+        if (!trigger || window.__AFRICA_INSTALL_MODAL_READY) return;
+
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        ensureLoaded().then(() => {
+          trigger.dispatchEvent(
+            new MouseEvent("click", { bubbles: true, cancelable: true })
+          );
+        });
+      },
+      true
+    );
+
+    if (typeof window.requestIdleCallback === "function") {
+      window.requestIdleCallback(() => ensureLoaded(), { timeout: 8000 });
+    } else {
+      window.addEventListener("load", () => {
+        window.setTimeout(() => ensureLoaded(), 4000);
+      });
+    }
   }
 
   /**
@@ -418,17 +468,22 @@
     document.documentElement.classList.add("js-landing");
     initLandingEntrance();
     initHeaderScrollState();
-    initScrollReveal();
     initLandingWhatsAppLinks();
     initContactForm();
     initSiteHeaderMenu();
     initInternalAnchors();
     initCtaHooks();
     initFooterYear();
+    initInstallModalLazyLoad();
     scheduleAnalyticsDeferred();
-  }
 
-  scheduleLandingFallback();
+    const runScrollReveal = () => initScrollReveal();
+    if (typeof window.requestIdleCallback === "function") {
+      window.requestIdleCallback(runScrollReveal, { timeout: 2200 });
+    } else {
+      window.setTimeout(runScrollReveal, 300);
+    }
+  }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", bootLanding);

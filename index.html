@@ -49,52 +49,23 @@
       media="(prefers-color-scheme: dark)"
     />
 
-    <!-- LCP : image hero (responsive WebP) -->
+    <!-- LCP : image hero (280px affiché → 560w max sur écrans retina) -->
     <link
       rel="preload"
       as="image"
       type="image/webp"
-      href="assets/images/icone/visiel_hero_400.webp"
-      imagesrcset="
-        assets/images/icone/visiel_hero_400.webp 400w,
-        assets/images/icone/visiel_hero_560.webp 560w,
-        assets/images/icone/visiel_upscaled.webp 780w
-      "
-      imagesizes="(min-width: 56rem) 280px, 78vw"
+      href="assets/images/icone/visiel_hero_560.webp"
+      media="(max-width: 899px)"
     />
-
-    <!-- CSS critique (header + hero) puis feuille complète en non-bloquant -->
-    <link rel="stylesheet" href="/assets/css/critical-landing.css" />
     <link
       rel="preload"
-      href="/assets/css/styles.css"
-      as="style"
-      onload="this.onload=null;this.rel='stylesheet'"
+      as="image"
+      type="image/webp"
+      href="assets/images/icone/visiel_upscaled.webp"
+      media="(min-width: 900px)"
     />
-    <noscript><link rel="stylesheet" href="/assets/css/styles.css" /></noscript>
-    <script>
-      /* Polyfill léger si rel=preload onload ne s’applique pas */
-      (function (d) {
-        var l = d.querySelector('link[href="/assets/css/styles.css"][rel="preload"]');
-        if (l) l.addEventListener("error", function () { this.rel = "stylesheet"; });
-      })(document);
-    </script>
 
-    <!-- Inter : non-bloquant (system-ui en fallback via CSS) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="preload"
-      as="style"
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      onload="this.onload=null;this.rel='stylesheet'"
-    />
-    <noscript>
-      <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-        rel="stylesheet"
-      />
-    </noscript>
+    <link rel="stylesheet" href="/assets/css/styles.css" />
 
     <!-- ÉTAPE 3 : DONNÉES STRUCTURÉES (SCHEMA.ORG / JSON-LD) -->
     <script type="application/ld+json">
@@ -113,17 +84,18 @@
       }
     </script>
   </head>
-  <body>
+  <body class="landing-ready">
     <!-- ========== En-tête ========== -->
     <header class="site-header" id="top">
       <div class="container site-header__inner">
         <a href="#top" class="brand" aria-label="AfricaMenu — Accueil">
           <span class="brand__logo" aria-hidden="true">
             <img
-              src="assets/images/icone/logo.webp"
+              src="assets/images/icone/logo-72.webp"
               alt="Logo AfricaMenu"
               width="36"
               height="36"
+              decoding="async"
             />
           </span>
           <span class="brand__name">AfricaMenu</span>
@@ -204,7 +176,7 @@
     <main>
       <!-- ========== Hero premium (2 colonnes + mockup) ========== -->
       <section
-        class="hero hero--premium section reveal-hero"
+        class="hero hero--premium section reveal-hero is-ready"
         aria-labelledby="hero-title"
       >
         <div class="container hero__layout">
@@ -260,10 +232,10 @@
                 <div class="hero__chip hero__chip--qr" aria-hidden="true">
                   <div class="hero__chip-inner hero__chip-inner--qr">
                     <img
-                      src="assets/images/icone/qrcode.webp"
+                      src="assets/images/icone/qrcode-72.webp"
                       alt="Exemple de QR Code AfricaMenu"
-                      width="72"
-                      height="72"
+                      width="54"
+                      height="54"
                       decoding="async"
                       class="hero__qr-thumb"
                     />
@@ -287,12 +259,16 @@
                     <div class="hero__phone-screen">
                       <picture>
                         <source
+                          media="(min-width: 900px)"
+                          srcset="assets/images/icone/visiel_upscaled.webp"
+                          type="image/webp"
+                        />
+                        <source
                           srcset="
                             assets/images/icone/visiel_hero_400.webp 400w,
-                            assets/images/icone/visiel_hero_560.webp 560w,
-                            assets/images/icone/visiel_upscaled.webp 780w
+                            assets/images/icone/visiel_hero_560.webp 560w
                           "
-                          sizes="(min-width: 56rem) 280px, 78vw"
+                          sizes="280px"
                           type="image/webp"
                         />
                         <img
@@ -407,14 +383,19 @@
             <div class="showcase__visual-img">
               <picture>
                 <source
+                  media="(min-width: 768px)"
                   srcset="assets/images/icone/bamako_saveurs_premium_ad.webp"
                   type="image/webp"
                 />
+                <source
+                  srcset="assets/images/icone/bamako_saveurs_400.webp"
+                  type="image/webp"
+                />
                 <img
-                  src="assets/images/icone/bamako_saveurs_premium_ad.png"
+                  src="assets/images/icone/bamako_saveurs_400.webp"
                   alt="Exemple de menu digital Bamako Saveurs sur AfricaMenu"
-                  width="800"
-                  height="1422"
+                  width="400"
+                  height="711"
                   loading="lazy"
                   decoding="async"
                 />
@@ -941,7 +922,7 @@
             <a href="#top" class="site-footer__brand-link">
               <span class="site-footer__logo" aria-hidden="true">
                 <img
-                  src="assets/images/icone/logo.webp"
+                  src="assets/images/icone/logo-72.webp"
                   alt="Logo AfricaMenu Footer"
                   width="40"
                   height="40"
@@ -1121,8 +1102,6 @@
     <div id="demander-installation" class="visually-hidden" tabindex="-1"></div>
 
     <!-- WhatsApp « Installation complète » : optionnel — <script>window.AFRICA_LANDING_WHATSAPP="+223XXXXXXXX";</script> -->
-    <script src="/frontend/js/config.js"></script>
-    <script src="/assets/js/landing-install-request.js"></script>
-    <script src="/assets/js/main.js"></script>
+    <script defer src="/assets/js/main.js"></script>
   </body>
 </html>

@@ -19,8 +19,7 @@
 
   /* Typo */
   --font-sans:
-    "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
-    sans-serif;
+    system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
   /* Espacements (mobile-first) */
   --space-xs: 0.5rem;
@@ -1013,8 +1012,6 @@ p {
 .hero__phone-wrap {
   position: relative;
   z-index: 4;
-  animation: hero-mock-float 5s ease-in-out infinite;
-  will-change: transform;
 }
 
 .hero__phone {
@@ -1096,14 +1093,12 @@ p {
   box-shadow:
     0 12px 32px rgba(15, 23, 42, 0.1),
     0 4px 10px rgba(15, 23, 42, 0.05);
-  animation: hero-chip-float 4.2s ease-in-out infinite;
 }
 
 .hero__chip--a {
   top: clamp(9%, 2.5vw, 14%);
   left: clamp(-0.25rem, -1vw, 0.25rem);
   bottom: auto;
-  animation-delay: 0s;
 }
 
 .hero__chip--b {
@@ -1111,14 +1106,12 @@ p {
   left: clamp(-0.5rem, -2vw, 0rem);
   bottom: auto;
   max-width: 9rem;
-  animation-delay: 0.5s;
 }
 
 .hero__chip--c {
   top: clamp(34%, 6vw, 40%);
   right: clamp(-0.25rem, -1vw, 0.25rem);
   bottom: auto;
-  animation-delay: 1s;
 }
 
 .hero__chip--qr {
@@ -1127,7 +1120,6 @@ p {
   bottom: auto;
   padding: 0.75rem 0.85rem;
   border-radius: 1rem;
-  animation-delay: 0.25s;
 }
 
 .hero__chip-inner--qr {
@@ -2681,149 +2673,32 @@ body.install-modal-open {
   --motion-distance: 18px;
 }
 
-html.js-landing body:not(.landing-ready) .site-header .brand,
-html.js-landing body:not(.landing-ready) .site-header__bar-tools {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-body.landing-ready .site-header .brand,
-body.landing-ready .site-header__bar-tools {
-  opacity: 1;
-  transform: none;
-  transition:
-    opacity 0.52s var(--motion-ease-out),
-    transform 0.52s var(--motion-ease-out);
-}
-
-body.landing-ready .site-header__bar-tools {
-  transition-delay: 0.08s;
-}
-
-@media (min-width: 48rem) {
-  html.js-landing body:not(.landing-ready) .site-header__nav {
-    opacity: 0;
-    transform: translateY(-8px);
+/* Hero — flottement décoratif desktop uniquement (pas d’entrée animée = LCP/CLS stables) */
+@media (min-width: 48rem) and (prefers-reduced-motion: no-preference) {
+  .reveal-hero.is-ready .hero__chip {
+    animation: hero-chip-float 4.2s ease-in-out infinite;
+    animation-delay: 1s;
   }
 
-  body.landing-ready .site-header__nav {
-    opacity: 1;
-    transform: none;
-    transition:
-      opacity 0.52s var(--motion-ease-out),
-      transform 0.52s var(--motion-ease-out);
-    transition-delay: 0.14s;
+  .reveal-hero.is-ready .hero__chip--a {
+    animation-delay: 1s;
   }
-}
 
-/* Hero — séquence au chargement */
-html.js-landing .reveal-hero:not(.is-ready) .hero__title,
-html.js-landing .reveal-hero:not(.is-ready) .hero__lead,
-html.js-landing .reveal-hero:not(.is-ready) .hero__ctas,
-html.js-landing .reveal-hero:not(.is-ready) .hero__chip,
-html.js-landing .reveal-hero:not(.is-ready) .hero__phone-wrap,
-html.js-landing .reveal-hero:not(.is-ready) .hero__qr-thumb,
-html.js-landing .reveal-hero:not(.is-ready) .hero__qr-caption {
-  opacity: 0;
-}
+  .reveal-hero.is-ready .hero__chip--b {
+    animation-delay: 1.5s;
+  }
 
-html.js-landing .reveal-hero:not(.is-ready) .hero__title,
-html.js-landing .reveal-hero:not(.is-ready) .hero__lead,
-html.js-landing .reveal-hero:not(.is-ready) .hero__ctas {
-  transform: translateY(var(--motion-distance));
-}
+  .reveal-hero.is-ready .hero__chip--c {
+    animation-delay: 2s;
+  }
 
-html.js-landing .reveal-hero:not(.is-ready) .hero__chip {
-  transform: translateY(14px);
-  animation: none;
-}
+  .reveal-hero.is-ready .hero__chip--qr {
+    animation-delay: 1.25s;
+  }
 
-html.js-landing .reveal-hero:not(.is-ready) .hero__phone-wrap {
-  transform: translateY(22px) scale(0.985);
-  animation: none;
-}
-
-html.js-landing .reveal-hero:not(.is-ready) .hero__qr-thumb {
-  transform: scale(0.94);
-}
-
-.reveal-hero.is-ready .hero__title,
-.reveal-hero.is-ready .hero__lead,
-.reveal-hero.is-ready .hero__ctas,
-.reveal-hero.is-ready .hero__chip,
-.reveal-hero.is-ready .hero__phone-wrap,
-.reveal-hero.is-ready .hero__qr-thumb,
-.reveal-hero.is-ready .hero__qr-caption {
-  opacity: 1;
-  transform: none;
-  transition:
-    opacity var(--motion-duration) var(--motion-ease-out),
-    transform var(--motion-duration) var(--motion-ease-out);
-}
-
-.reveal-hero.is-ready .hero__title {
-  transition-delay: 0ms;
-}
-
-.reveal-hero.is-ready .hero__lead {
-  transition-delay: 0.1s;
-}
-
-.reveal-hero.is-ready .hero__ctas {
-  transition-delay: 0.2s;
-}
-
-.reveal-hero.is-ready .hero__chip--qr {
-  transition-delay: 0.26s;
-}
-
-.reveal-hero.is-ready .hero__chip--a {
-  transition-delay: 0.3s;
-}
-
-.reveal-hero.is-ready .hero__chip--b {
-  transition-delay: 0.34s;
-}
-
-.reveal-hero.is-ready .hero__chip--c {
-  transition-delay: 0.38s;
-}
-
-.reveal-hero.is-ready .hero__phone-wrap {
-  transition-delay: 0.15s;
-}
-
-.reveal-hero.is-ready .hero__qr-thumb {
-  transition-delay: 0.32s;
-}
-
-.reveal-hero.is-ready .hero__qr-caption {
-  transition-delay: 0.38s;
-}
-
-.reveal-hero.is-ready .hero__chip {
-  animation: hero-chip-float 4.2s ease-in-out infinite;
-  animation-delay: 1s;
-}
-
-.reveal-hero.is-ready .hero__chip--a {
-  animation-delay: 1s;
-}
-
-.reveal-hero.is-ready .hero__chip--b {
-  animation-delay: 1.5s;
-}
-
-.reveal-hero.is-ready .hero__chip--c {
-  animation-delay: 2s;
-}
-
-.reveal-hero.is-ready .hero__chip--qr {
-  animation-delay: 1.25s;
-}
-
-.reveal-hero.is-ready .hero__phone-wrap {
-  animation: hero-mock-float 5.2s ease-in-out 1.1s infinite;
+  .reveal-hero.is-ready .hero__phone-wrap {
+    animation: hero-mock-float 5.2s ease-in-out 1.1s infinite;
+  }
 }
 
 /* Scroll reveal — éléments individuels */
