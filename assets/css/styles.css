@@ -1077,6 +1077,200 @@ p {
   -webkit-user-drag: none;
 }
 
+/* Aperçu tableau de bord — mockup téléphone hero (landing uniquement) */
+.hero__phone-dash-mock {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 6.2% 5.4% 0;
+  background: #fff;
+  color: #000;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+.hero__phone-dash-mock__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  flex-shrink: 0;
+}
+
+.hero__phone-dash-mock__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.hero__phone-dash-mock__logo {
+  width: 14.3%;
+  min-width: 1.65rem;
+  max-width: 2.5rem;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 22%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.hero__phone-dash-mock__logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.hero__phone-dash-mock__name {
+  font-size: clamp(0.72rem, 4.1vw, 0.95rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.hero__phone-dash-mock__menu-btn {
+  width: clamp(1.55rem, 8.8vw, 2.05rem);
+  height: clamp(1.55rem, 8.8vw, 2.05rem);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 0.55rem;
+  background: #fff;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.hero__phone-dash-mock__menu-icon {
+  position: relative;
+  display: block;
+  width: 0.72rem;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.hero__phone-dash-mock__menu-icon::before,
+.hero__phone-dash-mock__menu-icon::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.hero__phone-dash-mock__menu-icon::before {
+  top: -0.28rem;
+}
+
+.hero__phone-dash-mock__menu-icon::after {
+  top: 0.28rem;
+  width: 78%;
+}
+
+.hero__phone-dash-mock__hero {
+  margin-top: 6.5%;
+  flex-shrink: 0;
+}
+
+.hero__phone-dash-mock__title {
+  margin: 0;
+  font-size: clamp(0.95rem, 5.4vw, 1.25rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.hero__phone-dash-mock__subtitle {
+  margin: 0.42rem 0 0;
+  font-size: clamp(0.58rem, 3.1vw, 0.72rem);
+  line-height: 1.45;
+  color: #757575;
+}
+
+.hero__phone-dash-mock__stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-top: 6.2%;
+  flex-shrink: 0;
+}
+
+.hero__phone-dash-mock__stat {
+  display: flex;
+  align-items: center;
+  gap: 0.42rem;
+  min-width: 0;
+  padding: 0.48rem 0.42rem;
+  border-radius: 0.85rem;
+  background: #fff;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 4px 18px rgba(0, 0, 0, 0.06);
+}
+
+.hero__phone-dash-mock__stat-icon {
+  width: clamp(1.15rem, 6.2vw, 1.45rem);
+  height: clamp(1.15rem, 6.2vw, 1.45rem);
+  border-radius: 0.55rem;
+  flex-shrink: 0;
+}
+
+.hero__phone-dash-mock__stat-icon--purple {
+  background: #e8eaf6;
+}
+
+.hero__phone-dash-mock__stat-icon--orange {
+  background: #fff3e6;
+}
+
+.hero__phone-dash-mock__stat-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.hero__phone-dash-mock__stat-label {
+  font-size: clamp(0.48rem, 2.5vw, 0.58rem);
+  color: #757575;
+  line-height: 1.2;
+}
+
+.hero__phone-dash-mock__stat-value {
+  font-size: clamp(0.72rem, 3.8vw, 0.9rem);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+@media (max-width: 23.4375rem) {
+  .hero__phone-dash-mock__name {
+    font-size: 0.72rem;
+  }
+}
+
 /* Cartes & QR flottants (au-dessus du téléphone — z-index + position haute) */
 .hero__chip {
   position: absolute;
