@@ -1,4 +1,4 @@
-ï»¿<!doctype html>
+<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -8,9 +8,9 @@
     />
     <meta
       name="description"
-      content="Administration plateforme AfricaMenu â€” vue globale et activitÃ©."
+      content="Administration plateforme AfricaMenu — vue globale et activité."
     />
-    <title>Admin â€” AfricaMenu</title>
+    <title>Admin — AfricaMenu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -36,7 +36,7 @@
   <body class="adm-app">
     <a class="adm-skip-link" href="#admin-main">Aller au contenu principal</a>
 
-    <!-- Sidebar fixe (gauche) â€” navigation admin plateforme -->
+    <!-- Sidebar fixe (gauche) — navigation admin plateforme -->
     <aside
       class="adm-sidebar"
       id="adm-sidebar-panel"
@@ -47,7 +47,7 @@
           <a href="../../index.html" class="adm-sidebar__brand">
             <span class="adm-sidebar__logo" aria-hidden="true">
               <img
-                src="../../assets/images/icone/logo.webp"
+                src="../../assets/images/icone/logo.svg"
                 alt="AfricaMenu"
                 width="36"
                 height="36"
@@ -92,7 +92,7 @@
             </li>
             <li>
               <a href="admin-settings.html" class="adm-sidebar__link"
-                >ParamÃ¨tres</a
+                >Paramètres</a
               >
             </li>
             <li>
@@ -116,7 +116,7 @@
                     <path d="M12 7v5l4 2" />
                   </svg>
                 </span>
-                Journal d'activitÃ©
+                Journal d'activité
               </a>
             </li>
             <li>
@@ -147,7 +147,7 @@
           <a
             href="login.html"
             class="adm-sidebar__link adm-sidebar__link--muted"
-            >Quitter lâ€™admin</a
+            >Quitter l’admin</a
           >
         </footer>
       </div>
@@ -159,7 +159,7 @@
     <div class="adm-layout">
       <header class="adm-header">
         <div class="adm-header__inner">
-          <!-- Bouton menu mobile (Ã‰tape 2 : visible petits Ã©crans) -->
+          <!-- Bouton menu mobile (Étape 2 : visible petits écrans) -->
           <button
             type="button"
             class="adm-header__menu-btn"
@@ -182,7 +182,7 @@
               class="adm-search__input"
               type="search"
               name="q"
-              placeholder="Rechercher utilisateurs, restaurantsâ€¦"
+              placeholder="Rechercher utilisateurs, restaurants…"
               autocomplete="off"
             />
           </form>
@@ -212,7 +212,7 @@
                 </span>
               </button>
 
-              <!-- Ã‰tape ultÃ©rieure : menu dÃ©roulant profil -->
+              <!-- Étape ultérieure : menu déroulant profil -->
             </div>
           </div>
         </div>
@@ -231,17 +231,17 @@
             hidden
           ></div>
 
-          <!-- Cartes statistiques â€” libellÃ©s fixes ; valeurs branchÃ©es en JS (Ã©tape suivante) -->
+          <!-- Cartes statistiques — libellés fixes ; valeurs branchées en JS (étape suivante) -->
           <section class="adm-section" aria-labelledby="adm-stats-heading">
             <h2 id="adm-stats-heading" class="visually-hidden">
-              Indicateurs clÃ©s
+              Indicateurs clés
             </h2>
             <ul class="adm-stats-grid">
               <li class="adm-stat-card">
                 <article class="adm-stat-card__inner">
                   <h3 class="adm-stat-card__label">Utilisateurs totaux</h3>
-                  <p class="adm-stat-card__value" data-stat="total-users">â€”</p>
-                  <p class="adm-stat-card__hint">Comptes enregistrÃ©s</p>
+                  <p class="adm-stat-card__value" data-stat="total-users">—</p>
+                  <p class="adm-stat-card__hint">Comptes enregistrés</p>
                 </article>
               </li>
               <li class="adm-stat-card">
@@ -251,16 +251,16 @@
                     class="adm-stat-card__value"
                     data-stat="active-restaurants"
                   >
-                    â€”
+                    —
                   </p>
-                  <p class="adm-stat-card__hint">Ã‰tablissements actifs</p>
+                  <p class="adm-stat-card__hint">Établissements actifs</p>
                 </article>
               </li>
               <li class="adm-stat-card">
                 <article class="adm-stat-card__inner">
                   <h3 class="adm-stat-card__label">Nouveaux inscrits</h3>
-                  <p class="adm-stat-card__value" data-stat="new-signups">â€”</p>
-                  <p class="adm-stat-card__hint">PÃ©riode rÃ©cente</p>
+                  <p class="adm-stat-card__value" data-stat="new-signups">—</p>
+                  <p class="adm-stat-card__hint">Période récente</p>
                 </article>
               </li>
               <li class="adm-stat-card">
@@ -270,10 +270,10 @@
                     class="adm-stat-card__value"
                     data-stat="active-subscriptions"
                   >
-                    â€”
+                    —
                   </p>
                   <p class="adm-stat-card__hint">
-                    Statut Â« actif Â» et Ã©chÃ©ance â‰¥ aujourdâ€™hui
+                    Statut « actif » et échéance = aujourd’hui
                   </p>
                 </article>
               </li>
@@ -283,10 +283,10 @@
                     Revenus CFA (abonnements)
                   </h3>
                   <p class="adm-stat-card__value" data-stat="estimated-revenue">
-                    â€”
+                    —
                   </p>
                   <p class="adm-stat-card__hint">
-                    Somme des tarifs CFA enregistrÃ©s sur ces abonnements
+                    Somme des tarifs CFA enregistrés sur ces abonnements
                   </p>
                 </article>
               </li>
@@ -300,7 +300,7 @@
                   Demandes d'installation
                 </h2>
                 <p class="adm-section-desc">
-                  AperÃ§u des derniÃ¨res demandes â€” gestion complÃ¨te dans la section dÃ©diÃ©e.
+                  Aperçu des dernières demandes — gestion complète dans la section dédiée.
                 </p>
               </div>
               <a
@@ -313,34 +313,34 @@
             <div class="adm-table-wrap">
               <table class="adm-table">
                 <caption class="visually-hidden">
-                  Liste des demandes dâ€™assistance pour lâ€™installation
+                  Liste des demandes d’assistance pour l’installation
                 </caption>
                 <thead>
                   <tr>
                     <th scope="col">Restaurant</th>
                     <th scope="col">Responsable</th>
                     <th scope="col">Statut</th>
-                    <th scope="col">DerniÃ¨re activitÃ©</th>
+                    <th scope="col">Dernière activité</th>
                   </tr>
                 </thead>
                 <tbody id="adm-setup-help-body">
                   <tr class="adm-table__placeholder">
-                    <td colspan="4">Chargementâ€¦</td>
+                    <td colspan="4">Chargement…</td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </section>
 
-          <!-- ActivitÃ© rÃ©cente â€” tableau sÃ©mantique -->
+          <!-- Activité récente — tableau sémantique -->
           <section class="adm-section" aria-labelledby="adm-activity-heading">
             <div class="adm-section-head adm-section-head--row">
               <div>
                 <h2 id="adm-activity-heading" class="adm-section-title">
-                  ActivitÃ© rÃ©cente
+                  Activité récente
                 </h2>
                 <p class="adm-section-desc">
-                  Les 10 derniÃ¨res actions enregistrÃ©es.
+                  Les 10 dernières actions enregistrées.
                 </p>
               </div>
               <a href="admin-activity-log.html" class="adm-section-link-btn"
@@ -351,11 +351,11 @@
             <div class="adm-table-wrap">
               <table class="adm-table">
                 <caption class="visually-hidden">
-                  Liste des Ã©vÃ©nements rÃ©cents : utilisateur, action et date
+                  Liste des événements récents : utilisateur, action et date
                 </caption>
                 <thead>
                   <tr>
-                    <th scope="col">EffectuÃ© par</th>
+                    <th scope="col">Effectué par</th>
                     <th scope="col">Mode</th>
                     <th scope="col">Type</th>
                     <th scope="col">Action</th>
@@ -364,7 +364,7 @@
                 </thead>
                 <tbody id="adm-activity-body">
                   <tr class="adm-table__placeholder">
-                    <td colspan="5">Chargement des activitÃ©sâ€¦</td>
+                    <td colspan="5">Chargement des activités…</td>
                   </tr>
                 </tbody>
               </table>
@@ -374,10 +374,10 @@
           <section class="adm-section" aria-labelledby="adm-sub-watch-heading">
             <div class="adm-section-head">
               <h2 id="adm-sub-watch-heading" class="adm-section-title">
-                Abonnements Ã  surveiller
+                Abonnements à surveiller
               </h2>
               <p class="adm-section-desc">
-                Ã‰chÃ©ances dans les 3 prochains jours â€” contactez le restaurant
+                Échéances dans les 3 prochains jours — contactez le restaurant
                 via WhatsApp.
               </p>
             </div>
@@ -385,20 +385,20 @@
             <div class="adm-table-wrap">
               <table class="adm-table adm-table--sub-watch">
                 <caption class="visually-hidden">
-                  Restaurants dont lâ€™abonnement expire bientÃ´t
+                  Restaurants dont l’abonnement expire bientôt
                 </caption>
                 <thead>
                   <tr>
                     <th scope="col">Restaurant</th>
                     <th scope="col">Plan</th>
-                    <th scope="col">Date dâ€™expiration</th>
+                    <th scope="col">Date d’expiration</th>
                     <th scope="col">Jours restants</th>
                     <th scope="col">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="adm-sub-watch-body">
                   <tr class="adm-table__placeholder">
-                    <td colspan="5">Chargementâ€¦</td>
+                    <td colspan="5">Chargement…</td>
                   </tr>
                 </tbody>
               </table>

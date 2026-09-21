@@ -12,7 +12,7 @@ var { normalizeStoredImageUrl } = require("../utils/imageUrlValidation");
 
 var FALLBACK_ICON_PATH = path.join(
   __dirname,
-  "../../../assets/images/icone/logo.webp",
+  "../../../assets/images/icone/logo.svg",
 );
 var ALLOWED_ICON_SIZES = [32, 180, 192, 512];
 

@@ -8,28 +8,28 @@
     />
     <title>Menu client - AfricaMenu</title>
 
-    <!-- Force le chargement sécurisé (HTTPS) des ressources -->
+    <!-- Force le chargement s�curis� (HTTPS) des ressources -->
     <meta
       http-equiv="Content-Security-Policy"
       content="upgrade-insecure-requests"
     />
 
-    <!-- Favicon & PWA — fallback AfricaMenu, remplacé par le logo restaurant au chargement -->
+    <!-- Favicon & PWA � fallback AfricaMenu, remplac� par le logo restaurant au chargement -->
     <link
       rel="icon"
-      type="image/png"
-      href="/assets/images/icone/logo.webp"
+      type="image/svg+xml"
+      href="/assets/images/icone/logo.svg"
       id="pwa-favicon"
     />
     <link
       rel="apple-touch-icon"
       sizes="180x180"
-      href="/assets/images/icone/logo.webp"
+      href="/assets/images/icone/logo.png"
       id="pwa-apple-touch-icon"
     />
 
     <!-- Configuration PWA -->
-    <!-- Barre d'adresse adaptée au thème système (Clair / Sombre) -->
+    <!-- Barre d'adresse adapt�e au th�me syst�me (Clair / Sombre) -->
     <meta
       name="theme-color"
       content="#ffffff"
@@ -47,7 +47,7 @@
     <link rel="stylesheet" href="/frontend/css/responsive-guard.css" />
     <link rel="stylesheet" href="/frontend/css/menu-client.css" />
 
-    <!-- Préchargement menu + bannière LCP (en parallèle du JS) -->
+    <!-- Pr�chargement menu + banni�re LCP (en parall�le du JS) -->
     <script>
       (function () {
         var match = location.pathname.match(/\/(?:restaurant|menu)\/([^/?#]+)/i);
@@ -131,7 +131,7 @@
                 this.onerror = null;
               }
             };
-            img.alt = "Bannière " + (restaurant.name || "du restaurant");
+            img.alt = "Banni�re " + (restaurant.name || "du restaurant");
             img.hidden = false;
           }
           if (frame) frame.classList.remove("is-empty");
@@ -255,7 +255,7 @@
           <h1 class="menu-error__title" id="menu-error-title">Menu indisponible</h1>
           <p class="menu-error__message" id="menu-error-message"></p>
           <button type="button" class="menu-error__retry" id="menu-error-retry">
-            Réessayer
+            R�essayer
           </button>
         </div>
       </div>
@@ -286,14 +286,14 @@
                 Menu du restaurant
               </h1>
               <p class="restaurant__desc" id="restaurant-description">
-                Les informations du restaurant seront chargées automatiquement.
+                Les informations du restaurant seront charg�es automatiquement.
               </p>
             </div>
           </article>
         </section>
 
         <section class="section" aria-labelledby="categories-title">
-          <h2 class="section__title" id="categories-title">Catégories</h2>
+          <h2 class="section__title" id="categories-title">Cat�gories</h2>
           <div class="categories" id="categories"></div>
         </section>
 
@@ -367,14 +367,14 @@
             </div>
 
             <div class="detail-group">
-              <p class="detail-label">Quantité</p>
-              <div class="quantity-control" aria-label="Choisir une quantité">
+              <p class="detail-label">Quantit�</p>
+              <div class="quantity-control" aria-label="Choisir une quantit�">
                 <button
                   class="quantity-btn quantity-btn--minus"
                   id="quantity-minus"
                   type="button"
                 >
-                  −
+                  -
                 </button>
                 <span class="quantity-value" id="quantity-value">02</span>
                 <button

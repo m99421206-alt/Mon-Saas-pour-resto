@@ -1,4 +1,4 @@
-Ôªø<!doctype html>
+<!doctype html>
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
@@ -8,18 +8,19 @@
     />
     <meta
       name="description"
-      content="Tableau de bord AfricaMenu pour g√©rer votre menu digital."
+      content="Tableau de bord AfricaMenu pour gùrer votre menu digital."
     />
-    <title>Dashboard ‚Äî AfricaMenu</title>
+    <title>Dashboard ù AfricaMenu</title>
 
-    <!-- Force le chargement s√©curis√© (HTTPS) des ressources -->
+    <!-- Force le chargement sùcurisù (HTTPS) des ressources -->
     <meta
       http-equiv="Content-Security-Policy"
       content="upgrade-insecure-requests"
     />
 
-    <!-- Favicon & Ic√¥ne √âcran d'accueil (iOS / Android) -->
-    <link rel="icon" type="image/png" href="/assets/images/icone/logo.png" />
+    <!-- Favicon & Icùne ùcran d'accueil (iOS / Android) -->
+    <link rel="icon" type="image/svg+xml" href="/assets/images/icone/logo.svg" />
+    <link rel="icon" type="image/png" href="/assets/images/icone/logo.png" sizes="512x512" />
     <link
       rel="apple-touch-icon"
       sizes="180x180"
@@ -28,7 +29,7 @@
 
     <!-- Configuration PWA -->
     <link rel="manifest" href="/frontend/manifest.json" />
-    <!-- Barre d'adresse adapt√©e au th√®me syst√®me (Clair / Sombre) -->
+    <!-- Barre d'adresse adaptùe au thùme systùme (Clair / Sombre) -->
     <meta
       name="theme-color"
       content="#ffffff"
@@ -76,10 +77,10 @@
           class="dash-brand"
           aria-label="Retour accueil AfricaMenu"
         >
-          <!-- Logo : carr√© orange + glyphe blanc (placeholder ‚Äî remplacer par SVG) -->
+          <!-- Logo : carrù orange + glyphe blanc (placeholder ù remplacer par SVG) -->
           <span class="dash-brand__logo" aria-hidden="true">
             <img
-              src="../../assets/images/icone/logo.webp"
+              src="../../assets/images/icone/logo.svg"
               alt="Logo AfricaMenu"
               width="40"
               height="40"
@@ -104,7 +105,7 @@
         <div class="dash-hero__text">
           <h1 class="dash-title" id="dashboard-title">Bonjour</h1>
           <p class="dash-subtitle">
-            Vue d‚Äôensemble de votre menu : contenu, lien public et QR code.
+            Vue dùensemble de votre menu : contenu, lien public et QR code.
           </p>
         </div>
       </section>
@@ -126,7 +127,7 @@
                 />
               </div>
               <div class="dash-stat-copy">
-                <p class="dash-label">Cat√©gories</p>
+                <p class="dash-label">Catùgories</p>
                 <p class="dash-value" id="dashboard-categories-count">0</p>
               </div>
             </div>
@@ -153,7 +154,7 @@
           </article>
         </div>
 
-        <!-- Actions rapides (√©dition du menu uniquement) -->
+        <!-- Actions rapides (ùdition du menu uniquement) -->
         <section
           class="dash-panel dash-panel--actions"
           aria-labelledby="dash-quick-title"
@@ -184,7 +185,7 @@
                 aria-hidden="true"
                 >+</span
               >
-              <span class="dash-quick-tile__label">Ajouter une cat√©gorie</span>
+              <span class="dash-quick-tile__label">Ajouter une catùgorie</span>
             </button>
           </div>
         </section>
@@ -194,7 +195,7 @@
           <article class="dash-card dash-card--link">
             <h2 class="dash-card-title">Lien de votre menu</h2>
             <p class="dash-card-desc">
-              Partagez ce lien avec vos clients ou sur vos r√©seaux sociaux.
+              Partagez ce lien avec vos clients ou sur vos rùseaux sociaux.
             </p>
             <div class="dash-link-row">
               <input
@@ -248,7 +249,7 @@
                 <h2 class="dash-qr-title">Votre QR Code</h2>
                 <p class="dash-qr-text">
                   Imprimez-le pour vos tables. Vos clients scanneront et
-                  acc√©deront √† votre menu.
+                  accùderont ù votre menu.
                 </p>
                 <a href="qr-code.html" class="dash-qr-btn">
                   <img
@@ -257,7 +258,7 @@
                     width="20"
                     height="20"
                   />
-                  <span class="dash-qr-btn__label">T√©l√©charger le QR</span>
+                  <span class="dash-qr-btn__label">Tùlùcharger le QR</span>
                 </a>
               </div>
               <div class="dash-qr-preview" aria-hidden="true">
@@ -265,7 +266,7 @@
                   id="dashboard-qr-preview"
                   width="88"
                   height="88"
-                  aria-label="Aper√ßu du QR code"
+                  aria-label="Aperùu du QR code"
                 ></canvas>
               </div>
             </div>
@@ -277,7 +278,7 @@
     <!-- --- Drawer mobile (off-canvas) --- -->
     <div class="dash-overlay" id="dash-overlay" hidden aria-hidden="true"></div>
 
-    <!-- Fermeture en haut √† droite (zone hors panneau gris), comme sur la maquette -->
+    <!-- Fermeture en haut ù droite (zone hors panneau gris), comme sur la maquette -->
     <button
       type="button"
       class="dash-drawer-close"
@@ -285,7 +286,7 @@
       hidden
       aria-label="Fermer le menu"
     >
-      <span class="dash-drawer-close__x" aria-hidden="true">√ó</span>
+      <span class="dash-drawer-close__x" aria-hidden="true">ù</span>
     </button>
 
     <aside
@@ -294,13 +295,13 @@
       aria-labelledby="dash-drawer-title"
       aria-hidden="true"
     >
-      <!-- En-t√™te : logo placeholder + nom (pas de bouton X ici : il est flottant √† droite) -->
+      <!-- En-tùte : logo placeholder + nom (pas de bouton X ici : il est flottant ù droite) -->
       <header class="dash-drawer__header">
         <div class="dash-drawer__brand" id="dash-drawer-title">
-          <!-- M√™me placeholder que la barre du haut -->
+          <!-- Mùme placeholder que la barre du haut -->
           <span class="dash-drawer__logo" aria-hidden="true">
             <img
-              src="../../assets/images/icone/logo.webp"
+              src="../../assets/images/icone/logo.svg"
               alt=""
               width="30"
               height="30"
@@ -352,7 +353,7 @@
                   height="20"
                 />
               </span>
-              <span class="dash-drawer__label">Cat√©gories</span>
+              <span class="dash-drawer__label">Catùgories</span>
             </a>
           </li>
           <li>
@@ -410,7 +411,7 @@
                   height="20"
                 />
               </span>
-              <span class="dash-drawer__label">Param√®tres</span>
+              <span class="dash-drawer__label">Paramùtres</span>
             </a>
           </li>
         </ul>
@@ -435,7 +436,7 @@
               height="20"
             />
           </span>
-          <span>D√©connexion</span>
+          <span>Dùconnexion</span>
         </a>
       </footer>
     </aside>
