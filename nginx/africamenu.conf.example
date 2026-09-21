@@ -49,6 +49,19 @@ server {
 
   client_max_body_size 64M;
 
+  gzip on;
+  gzip_vary on;
+  gzip_min_length 256;
+  gzip_comp_level 5;
+  gzip_types
+    text/css
+    text/javascript
+    application/javascript
+    application/json
+    image/svg+xml
+    text/plain
+    text/xml;
+
   # --- API Express (port 4000) ------------------------------------------------
   location /api/ {
     client_max_body_size 64M;
@@ -110,15 +123,22 @@ server {
   location /css/ {
     alias /var/www/africamenu/frontend/css/;
     access_log off;
-    expires 7d;
-    add_header Cache-Control "public, max-age=604800";
+    expires 30d;
+    add_header Cache-Control "public, max-age=2592000, immutable";
   }
 
   location /js/ {
     alias /var/www/africamenu/frontend/js/;
     access_log off;
-    expires 7d;
-    add_header Cache-Control "public, max-age=604800";
+    expires 30d;
+    add_header Cache-Control "public, max-age=2592000, immutable";
+  }
+
+  location ^~ /frontend/ {
+    access_log off;
+    expires 30d;
+    add_header Cache-Control "public, max-age=2592000, immutable";
+    try_files $uri =404;
   }
 
   # Menus publics

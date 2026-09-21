@@ -31,6 +31,52 @@
     );
   }
 
+  function isLocalDevHost() {
+    const host = (window.location.hostname || "").toLowerCase();
+    return (
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host.endsWith(".local") ||
+      host.indexOf("192.168.") === 0
+    );
+  }
+
+  /**
+   * Google Analytics — chargé après le rendu (évite le blocage du thread principal).
+   */
+  function initAnalyticsDeferred() {
+    if (window.__AFRICA_ANALYTICS_LOADED || isLocalDevHost()) return;
+
+    window.__AFRICA_ANALYTICS_LOADED = true;
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      window.dataLayer.push(arguments);
+    }
+
+    window.gtag = gtag;
+    gtag("js", new Date());
+    gtag("config", "G-N40SHP116G");
+
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = "https://www.googletagmanager.com/gtag/js?id=G-N40SHP116G";
+    document.head.appendChild(script);
+  }
+
+  function scheduleAnalyticsDeferred() {
+    const run = () => initAnalyticsDeferred();
+
+    if (typeof window.requestIdleCallback === "function") {
+      window.requestIdleCallback(run, { timeout: 4000 });
+      return;
+    }
+
+    window.addEventListener("load", () => {
+      window.setTimeout(run, 1500);
+    });
+  }
+
   /**
    * Affiche header + hero (+ sections visibles) — filet de sécurité si l’anim ne part pas.
    */
@@ -379,6 +425,7 @@
     initInternalAnchors();
     initCtaHooks();
     initFooterYear();
+    scheduleAnalyticsDeferred();
   }
 
   scheduleLandingFallback();

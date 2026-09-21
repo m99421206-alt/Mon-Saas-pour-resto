@@ -49,20 +49,52 @@
       media="(prefers-color-scheme: dark)"
     />
 
-    <!-- Police moderne (Inter) -->
+    <!-- LCP : image hero (responsive WebP) -->
+    <link
+      rel="preload"
+      as="image"
+      type="image/webp"
+      href="assets/images/icone/visiel_hero_400.webp"
+      imagesrcset="
+        assets/images/icone/visiel_hero_400.webp 400w,
+        assets/images/icone/visiel_hero_560.webp 560w,
+        assets/images/icone/visiel_upscaled.webp 780w
+      "
+      imagesizes="(min-width: 56rem) 280px, 78vw"
+    />
+
+    <!-- CSS critique (header + hero) puis feuille complète en non-bloquant -->
+    <link rel="stylesheet" href="/assets/css/critical-landing.css" />
+    <link
+      rel="preload"
+      href="/assets/css/styles.css"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <noscript><link rel="stylesheet" href="/assets/css/styles.css" /></noscript>
+    <script>
+      /* Polyfill léger si rel=preload onload ne s’applique pas */
+      (function (d) {
+        var l = d.querySelector('link[href="/assets/css/styles.css"][rel="preload"]');
+        if (l) l.addEventListener("error", function () { this.rel = "stylesheet"; });
+      })(document);
+    </script>
+
+    <!-- Inter : non-bloquant (system-ui en fallback via CSS) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
+      rel="preload"
+      as="style"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
-    <link rel="stylesheet" href="/frontend/css/responsive-guard.css" />
-    <link rel="stylesheet" href="/assets/css/styles.css" />
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-N40SHP116G"
-    ></script>
-    <script src="/frontend/js/analytics.js"></script>
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
 
     <!-- ÉTAPE 3 : DONNÉES STRUCTURÉES (SCHEMA.ORG / JSON-LD) -->
     <script type="application/ld+json">
@@ -255,15 +287,20 @@
                     <div class="hero__phone-screen">
                       <picture>
                         <source
-                          srcset="assets/images/icone/visiel_upscaled.webp"
+                          srcset="
+                            assets/images/icone/visiel_hero_400.webp 400w,
+                            assets/images/icone/visiel_hero_560.webp 560w,
+                            assets/images/icone/visiel_upscaled.webp 780w
+                          "
+                          sizes="(min-width: 56rem) 280px, 78vw"
                           type="image/webp"
                         />
                         <img
-                          src="assets/images/icone/visiel_upscaled.png"
+                          src="assets/images/icone/visiel_hero_400.webp"
                           alt="Aperçu du menu digital AfricaMenu sur smartphone."
                           class="hero__phone-img"
-                          width="780"
-                          height="1662"
+                          width="400"
+                          height="852"
                           decoding="async"
                           fetchpriority="high"
                           draggable="false"
