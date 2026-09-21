@@ -31,6 +31,7 @@
     "db:uploads-webp": "node scripts/migrate-uploads-to-webp.js",
     "assets:webp": "node scripts/convert-static-assets-webp.js",
     "assets:logo-svg": "node scripts/generate-logo-svg.js",
+    "assets:pwa-icons": "node scripts/generate-saas-pwa-icons.js",
     "backup": "node scripts/backup.js",
     "backup:restore": "node scripts/restore-backup.js"
   },

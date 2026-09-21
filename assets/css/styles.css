@@ -231,9 +231,10 @@ p {
     z-index: 3;
   }
 
-  .brand__logo img {
+  .brand__logo {
     width: 2.25rem;
     height: 2.25rem;
+    border-radius: 10px;
   }
 
   .site-header__bar-tools {
@@ -671,25 +672,25 @@ p {
   gap: 0.625rem;
 }
 
-/* Logo AfricaMenu — SVG seul, sans cadre ajouté */
+/* Logo AfricaMenu — même cadrage que .restaurant__logo (menu public) */
 .brand__logo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.16);
   flex-shrink: 0;
   line-height: 0;
-  background: transparent;
 }
 
 .brand__logo img {
   display: block;
-  width: 2.75rem;
-  height: 2.75rem;
-  object-fit: contain;
-  border: none;
-  box-shadow: none;
-  background: transparent;
-  border-radius: 22%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .brand__name {
@@ -2459,24 +2460,24 @@ body.install-modal-open {
 }
 
 .site-footer__logo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  overflow: hidden;
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.16);
   flex-shrink: 0;
   line-height: 0;
-  background: transparent;
   border: none;
 }
 
 .site-footer__logo img {
   display: block;
-  width: 2.5rem;
-  height: 2.5rem;
-  object-fit: contain;
-  border: none;
-  box-shadow: none;
-  background: transparent;
-  border-radius: 22%;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .site-footer__brand-name {
