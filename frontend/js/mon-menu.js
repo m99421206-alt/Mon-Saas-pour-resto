@@ -1155,16 +1155,14 @@ function loadFontAwesomeDeferred() {
   document.head.appendChild(link);
 }
 
-function scheduleMenuThirdPartyDeferred() {
-  const run = () => {
-    loadFontAwesomeDeferred();
-    initMenuAnalyticsDeferred();
-  };
+function scheduleMenuAnalyticsDeferred() {
+  if (window.__MENU_ANALYTICS_SCHEDULED) return;
+  window.__MENU_ANALYTICS_SCHEDULED = true;
 
   window.addEventListener(
     "load",
     () => {
-      window.setTimeout(run, 8000);
+      window.setTimeout(initMenuAnalyticsDeferred, 8000);
     },
     { once: true },
   );
@@ -2030,7 +2028,6 @@ async function initializeMenu() {
     menuEnterPlayed = false;
     playMenuEnterAnimation();
     setupEventListeners();
-    scheduleMenuThirdPartyDeferred();
   } catch (error) {
     console.warn("Impossible de charger le menu public :", error.message);
     hideMenuSkeleton();
@@ -2046,4 +2043,6 @@ menuErrorRetryEl?.addEventListener("click", () => {
   initializeMenu();
 });
 
+loadFontAwesomeDeferred();
+scheduleMenuAnalyticsDeferred();
 initializeMenu();
