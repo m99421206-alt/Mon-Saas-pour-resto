@@ -82,8 +82,6 @@ body.dashboard-page {
   flex-shrink: 0;
   line-height: 0;
   background: transparent;
-  overflow: hidden;
-  border-radius: 22%;
 }
 
 .dash-brand__logo img {
@@ -94,6 +92,7 @@ body.dashboard-page {
   border: none;
   box-shadow: none;
   background: transparent;
+  border-radius: 22%;
 }
 
 /* Glyphe blanc type fourchette / couteau (placeholder CSS) */
