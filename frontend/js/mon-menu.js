@@ -301,18 +301,18 @@ function isFavorite(productId) {
   return favoriteIds.includes(productId);
 }
 
-function getFavoriteIconClass(productId) {
-  return isFavorite(productId) ? "fa-solid" : "fa-regular";
-}
-
 function updateFavoriteButton(button, productId) {
-  const icon = button.querySelector("i");
+  const iconEl = button.querySelector(".icon");
   const favorite = isFavorite(productId);
 
   button.classList.toggle("is-favorite", favorite);
   button.setAttribute("aria-pressed", String(favorite));
-  if (icon) {
-    icon.className = `${getFavoriteIconClass(productId)} fa-heart`;
+  if (iconEl && window.MenuIcon) {
+    window.MenuIcon.set(
+      iconEl,
+      window.MenuIcon.favoriteIconName(favorite),
+      "icon icon--heart",
+    );
   }
 }
 
@@ -1140,24 +1140,8 @@ function initMenuAnalyticsDeferred() {
   document.head.appendChild(script);
 }
 
-function loadFontAwesomeDeferred() {
-  if (window.__MENU_FA_LOADED) return;
-  window.__MENU_FA_LOADED = true;
-  const link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href =
-    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css";
-  link.referrerPolicy = "no-referrer";
-  link.media = "print";
-  link.onload = () => {
-    link.media = "all";
-  };
-  document.head.appendChild(link);
-}
-
 function scheduleMenuThirdPartyDeferred() {
   const run = () => {
-    loadFontAwesomeDeferred();
     initMenuAnalyticsDeferred();
   };
 
@@ -1194,8 +1178,10 @@ function showMenuError(error) {
   const copy = resolveMenuErrorPresentation(error);
   if (menuErrorTitleEl) menuErrorTitleEl.textContent = copy.title;
   if (menuErrorMessageEl) menuErrorMessageEl.textContent = copy.message;
-  if (menuErrorIconEl) {
-    menuErrorIconEl.className = "fa-solid " + copy.icon;
+  if (menuErrorIconEl && window.MenuIcon) {
+    const iconKey =
+      window.MenuIcon.errorKey[copy.icon] || "circleExclamation";
+    window.MenuIcon.set(menuErrorIconEl, iconKey, "icon icon--lg");
   }
 
   menuErrorEl.hidden = false;
@@ -1342,7 +1328,7 @@ function createProductCard(product) {
       aria-label="Ajouter ${productName} aux favoris"
       aria-pressed="${favorite}"
     >
-      <i class="${getFavoriteIconClass(product.id)} fa-heart" aria-hidden="true"></i>
+      ${window.MenuIcon ? window.MenuIcon.svg(window.MenuIcon.favoriteIconName(favorite), "icon icon--heart") : ""}
     </button>`;
 
   const mediaBlock = productHasImage(product)
@@ -1413,7 +1399,7 @@ function createSimilarProductCard(product) {
       aria-label="Ajouter ${productName} aux favoris"
       aria-pressed="${favorite}"
     >
-      <i class="${getFavoriteIconClass(product.id)} fa-heart" aria-hidden="true"></i>
+      ${window.MenuIcon ? window.MenuIcon.svg(window.MenuIcon.favoriteIconName(favorite), "icon icon--heart") : ""}
     </span>
     ${imageBlock}
     <span class="similar-card__price">${productPrice}</span>
@@ -1824,10 +1810,10 @@ function createOrderItem(item) {
     <span class="order-item__name">${item.quantity} x ${itemLabel}</span>
     <span class="order-item__controls">
       <button class="order-qty-btn" type="button" data-action="plus" aria-label="Ajouter ${itemLabel}">
-        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+        ${window.MenuIcon ? window.MenuIcon.svg("plus", "icon icon--qty") : "+"}
       </button>
       <button class="order-qty-btn" type="button" data-action="minus" aria-label="Retirer ${itemLabel}">
-        <i class="fa-solid fa-minus" aria-hidden="true"></i>
+        ${window.MenuIcon ? window.MenuIcon.svg("minus", "icon icon--qty") : "−"}
       </button>
     </span>
     <span class="order-item__price">${itemLinePrice}</span>

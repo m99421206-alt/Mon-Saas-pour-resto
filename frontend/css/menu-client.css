@@ -282,6 +282,51 @@ img {
   text-align: center;
 }
 
+.icon {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: -0.125em;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+.icon--lg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.icon--nav {
+  width: 1.08rem;
+  height: 1.08rem;
+}
+
+.icon--whatsapp {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.icon--whatsapp-lg {
+  width: 1.65rem;
+  height: 1.65rem;
+}
+
+.icon--placeholder {
+  width: 2rem;
+  height: 2rem;
+  opacity: 0.7;
+}
+
+.icon--heart {
+  width: 1rem;
+  height: 1rem;
+}
+
+.icon--qty {
+  width: 0.78rem;
+  height: 0.78rem;
+}
+
 .menu-error__icon-wrap {
   width: 3.25rem;
   height: 3.25rem;
@@ -694,19 +739,9 @@ img {
     background 0.3s ease;
 }
 
-.product-card__heart i,
-.similar-card__heart i {
-  -webkit-text-stroke: 1px var(--primary);
-}
-
 .product-card__heart.is-favorite,
 .similar-card__heart.is-favorite {
   color: var(--primary);
-}
-
-.product-card__heart.is-favorite i,
-.similar-card__heart.is-favorite i {
-  -webkit-text-stroke: 0;
 }
 
 .product-card__heart.is-bouncing,
@@ -791,8 +826,9 @@ img {
   box-shadow: 0 12px 26px rgba(37, 211, 102, 0.36);
 }
 
-.whatsapp i {
-  font-size: 1.65rem;
+.whatsapp .icon {
+  width: 1.65rem;
+  height: 1.65rem;
 }
 
 .bottom-nav {
@@ -837,9 +873,9 @@ img {
   text-decoration: none;
 }
 
-.bottom-nav__item i {
-  font-size: 1.08rem;
-  line-height: 1;
+.bottom-nav__item .icon {
+  width: 1.08rem;
+  height: 1.08rem;
 }
 
 .bottom-nav__label {
@@ -1232,8 +1268,9 @@ img {
   box-shadow: none;
 }
 
-.detail-image-placeholder i {
-  font-size: 2rem;
+.detail-image-placeholder .icon {
+  width: 2rem;
+  height: 2rem;
   opacity: 0.7;
 }
 
@@ -1419,8 +1456,9 @@ img {
   cursor: pointer;
 }
 
-.similar-see-all i {
-  font-size: 0.62rem;
+.similar-see-all .icon {
+  width: 0.62rem;
+  height: 0.62rem;
 }
 
 .similar-list {
@@ -1585,8 +1623,9 @@ img {
   box-shadow: 0 10px 22px var(--primary-shadow);
 }
 
-.action-btn--add i {
-  font-size: 1.05rem;
+.action-btn--add .icon {
+  width: 1.05rem;
+  height: 1.05rem;
 }
 
 .action-btn--order {
@@ -1595,9 +1634,9 @@ img {
   box-shadow: 0 12px 28px rgba(37, 211, 102, 0.35);
 }
 
-.action-btn--order i {
-  font-size: 1.15rem;
-  line-height: 1;
+.action-btn--order .icon {
+  width: 1.15rem;
+  height: 1.15rem;
 }
 
 .order-page {
@@ -1795,9 +1834,9 @@ img {
   flex: 0 0 auto;
 }
 
-.order-submit i {
-  font-size: 1.15rem;
-  line-height: 1;
+.order-submit .icon {
+  width: 1.15rem;
+  height: 1.15rem;
 }
 
 .order-footer {
