@@ -247,12 +247,7 @@
       <div class="menu-error" id="menu-error" hidden role="alert" aria-live="assertive">
         <div class="menu-error__card">
           <div class="menu-error__icon-wrap" aria-hidden="true">
-            <span
-              class="icon icon--lg"
-              id="menu-error-icon"
-              data-menu-icon="circleExclamation"
-              aria-hidden="true"
-            ></span>
+            <i class="fa-solid fa-circle-exclamation" id="menu-error-icon"></i>
           </div>
           <h1 class="menu-error__title" id="menu-error-title">Menu indisponible</h1>
           <p class="menu-error__message" id="menu-error-message"></p>
@@ -316,7 +311,7 @@
           type="button"
           aria-label="Retour au menu"
         >
-          <span class="icon" data-menu-icon="arrowLeft" aria-hidden="true"></span>
+          <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
         </button>
 
         <div class="product-detail__scroll">
@@ -333,11 +328,7 @@
               role="img"
               hidden
             >
-              <span
-                class="icon icon--placeholder"
-                data-menu-icon="image"
-                aria-hidden="true"
-              ></span>
+              <i class="fa-regular fa-image" aria-hidden="true"></i>
               <span>Aucune image disponible</span>
             </div>
           </div>
@@ -405,7 +396,7 @@
                   hidden
                 >
                   Tout voir
-                  <span class="icon" data-menu-icon="chevronRight" aria-hidden="true"></span>
+                  <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
                 </button>
               </div>
               <div class="similar-list" id="similar-products"></div>
@@ -419,7 +410,7 @@
             id="detail-add"
             type="button"
           >
-            <span class="icon" data-menu-icon="cartShopping" aria-hidden="true"></span>
+            <i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
             <span>Ajouter</span>
           </button>
           <button
@@ -427,7 +418,7 @@
             id="detail-order"
             type="button"
           >
-            <span class="icon icon--whatsapp" data-menu-icon="whatsapp" aria-hidden="true"></span>
+            <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
             <span>Commander</span>
           </button>
         </div>
@@ -445,7 +436,7 @@
           type="button"
           aria-label="Retour"
         >
-          <span class="icon" data-menu-icon="arrowLeft" aria-hidden="true"></span>
+          <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
         </button>
 
         <div class="order-card">
@@ -467,7 +458,7 @@
           </div>
 
           <button class="order-submit" id="order-submit" type="button">
-            <span class="icon icon--whatsapp" data-menu-icon="whatsapp" aria-hidden="true"></span>
+            <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
             <span>Commander</span>
           </button>
         </div>
@@ -481,7 +472,7 @@
         rel="noopener noreferrer"
         hidden
       >
-        <span class="icon icon--whatsapp-lg" data-menu-icon="whatsapp" aria-hidden="true"></span>
+        <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
       </a>
 
       <nav class="bottom-nav" aria-label="Navigation principale">
@@ -493,7 +484,7 @@
           aria-label="Accueil"
         >
           <span class="bottom-nav__icon-wrap">
-            <span class="icon icon--nav" data-menu-icon="house" aria-hidden="true"></span>
+            <i class="fa-solid fa-house" aria-hidden="true"></i>
           </span>
           <span class="bottom-nav__label" aria-hidden="true">Accueil</span>
         </a>
@@ -504,13 +495,13 @@
           aria-label="Favoris"
         >
           <span class="bottom-nav__icon-wrap">
-            <span class="icon icon--nav" data-menu-icon="heart" aria-hidden="true"></span>
+            <i class="fa-regular fa-heart" aria-hidden="true"></i>
           </span>
           <span class="bottom-nav__label" aria-hidden="true">Favoris</span>
         </a>
         <a class="bottom-nav__item" id="cart-nav" href="#" aria-label="Panier">
           <span class="bottom-nav__icon-wrap">
-            <span class="icon icon--nav" data-menu-icon="bagShopping" aria-hidden="true"></span>
+            <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
             <span class="cart-badge" id="cart-badge" hidden>0</span>
           </span>
           <span class="bottom-nav__label" aria-hidden="true">Panier</span>
@@ -532,7 +523,6 @@
     <script src="/frontend/js/public-menu-url.js" defer></script>
     <script src="/frontend/js/vendor/dompurify.min.js" defer></script>
     <script src="/frontend/js/dom-safe.js" defer></script>
-    <script src="/frontend/js/menu-icons.js" defer></script>
     <script src="/frontend/js/mon-menu.js" defer></script>
   </body>
 </html>
