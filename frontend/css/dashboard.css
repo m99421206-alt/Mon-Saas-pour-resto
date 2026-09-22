@@ -76,23 +76,19 @@ body.dashboard-page {
 }
 
 .dash-brand__logo {
-  display: grid;
-  place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  overflow: hidden;
-  border-radius: 11px;
-  background: #fff;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.16);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   line-height: 0;
+  background: transparent;
 }
 
 .dash-brand__logo img {
   display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
 }
 
 /* Glyphe blanc type fourchette / couteau (placeholder CSS) */
@@ -1227,22 +1223,18 @@ a.dash-qr-btn {
 /* Logo AfricaMenu dans le menu latéral */
 .dash-drawer__logo {
   flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  overflow: hidden;
-  border-radius: 10px;
-  background: #fff;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.16);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   line-height: 0;
+  background: transparent;
 }
 
 .dash-drawer__logo img {
   display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 2.25rem;
+  height: 2.25rem;
+  object-fit: contain;
 }
 
 .dash-drawer__brand-name {

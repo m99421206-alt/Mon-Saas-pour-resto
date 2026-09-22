@@ -92,23 +92,19 @@ body.auth-page {
 }
 
 .auth-brand__logo {
-  display: grid;
-  place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  overflow: hidden;
-  border-radius: 11px;
-  background: #fff;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.16);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   line-height: 0;
+  background: transparent;
 }
 
 .auth-brand__logo img {
   display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
 }
 
 .auth-brand__name {
