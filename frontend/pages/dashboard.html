@@ -8,17 +8,17 @@
     />
     <meta
       name="description"
-      content="Tableau de bord AfricaMenu pour gùrer votre menu digital."
+      content="Tableau de bord AfricaMenu pour g√©rer votre menu digital."
     />
-    <title>Dashboard ù AfricaMenu</title>
+    <title>Dashboard ‚Äî AfricaMenu</title>
 
-    <!-- Force le chargement sùcurisù (HTTPS) des ressources -->
+    <!-- Force le chargement s√©curis√© (HTTPS) des ressources -->
     <meta
       http-equiv="Content-Security-Policy"
       content="upgrade-insecure-requests"
     />
 
-    <!-- Favicon & icùne ùcran d'accueil (iOS / Android) -->
+    <!-- Favicon & ic√¥ne √©cran d'accueil (iOS / Android) -->
     <link rel="icon" type="image/svg+xml" href="/assets/images/icone/logo.svg" />
     <link
       rel="apple-touch-icon"
@@ -29,7 +29,7 @@
 
     <!-- Configuration PWA -->
     <link rel="manifest" href="/frontend/manifest.json" />
-    <!-- Barre d'adresse adaptùe au thùme systùme (Clair / Sombre) -->
+    <!-- Barre d'adresse adapt√©e au th√®me syst√®me (Clair / Sombre) -->
     <meta
       name="theme-color"
       content="#ff6b00"
@@ -77,7 +77,7 @@
           class="dash-brand"
           aria-label="Retour accueil AfricaMenu"
         >
-          <!-- Logo : carrù orange + glyphe blanc (placeholder ù remplacer par SVG) -->
+          <!-- Logo : carr√© orange + glyphe blanc (placeholder ‚Äî remplacer par SVG) -->
           <span class="dash-brand__logo" aria-hidden="true">
             <img
               src="../../assets/images/icone/logo.svg"
@@ -105,7 +105,7 @@
         <div class="dash-hero__text">
           <h1 class="dash-title" id="dashboard-title">Bonjour</h1>
           <p class="dash-subtitle">
-            Vue d'ensemble de votre menu : contenu, lien public et QR code.
+            Vue d‚Äôensemble de votre menu : contenu, lien public et QR code.
           </p>
         </div>
       </section>
@@ -127,7 +127,7 @@
                 />
               </div>
               <div class="dash-stat-copy">
-                <p class="dash-label">Catùgories</p>
+                <p class="dash-label">Cat√©gories</p>
                 <p class="dash-value" id="dashboard-categories-count">0</p>
               </div>
             </div>
@@ -154,7 +154,7 @@
           </article>
         </div>
 
-        <!-- Actions rapides (ùdition du menu uniquement) -->
+        <!-- Actions rapides (√©dition du menu uniquement) -->
         <section
           class="dash-panel dash-panel--actions"
           aria-labelledby="dash-quick-title"
@@ -185,7 +185,7 @@
                 aria-hidden="true"
                 >+</span
               >
-              <span class="dash-quick-tile__label">Ajouter une catùgorie</span>
+              <span class="dash-quick-tile__label">Ajouter une cat√©gorie</span>
             </button>
           </div>
         </section>
@@ -195,7 +195,7 @@
           <article class="dash-card dash-card--link">
             <h2 class="dash-card-title">Lien de votre menu</h2>
             <p class="dash-card-desc">
-              Partagez ce lien avec vos clients ou sur vos rùseaux sociaux.
+              Partagez ce lien avec vos clients ou sur vos r√©seaux sociaux.
             </p>
             <div class="dash-link-row">
               <input
@@ -249,7 +249,7 @@
                 <h2 class="dash-qr-title">Votre QR Code</h2>
                 <p class="dash-qr-text">
                   Imprimez-le pour vos tables. Vos clients scanneront et
-                  accùderont ù votre menu.
+                  acc√©deront √† votre menu.
                 </p>
                 <a href="qr-code.html" class="dash-qr-btn">
                   <img
@@ -258,7 +258,7 @@
                     width="20"
                     height="20"
                   />
-                  <span class="dash-qr-btn__label">Tùlùcharger le QR</span>
+                  <span class="dash-qr-btn__label">T√©l√©charger le QR</span>
                 </a>
               </div>
               <div class="dash-qr-preview" aria-hidden="true">
@@ -266,7 +266,7 @@
                   id="dashboard-qr-preview"
                   width="88"
                   height="88"
-                  aria-label="Aperùu du QR code"
+                  aria-label="Aper√ßu du QR code"
                 ></canvas>
               </div>
             </div>
@@ -278,7 +278,7 @@
     <!-- --- Drawer mobile (off-canvas) --- -->
     <div class="dash-overlay" id="dash-overlay" hidden aria-hidden="true"></div>
 
-    <!-- Fermeture en haut ù droite (zone hors panneau gris), comme sur la maquette -->
+    <!-- Fermeture en haut √† droite (zone hors panneau gris), comme sur la maquette -->
     <button
       type="button"
       class="dash-drawer-close"
@@ -286,7 +286,7 @@
       hidden
       aria-label="Fermer le menu"
     >
-      <span class="dash-drawer-close__x" aria-hidden="true">ù</span>
+      <span class="dash-drawer-close__x" aria-hidden="true">√ó</span>
     </button>
 
     <aside
@@ -295,10 +295,10 @@
       aria-labelledby="dash-drawer-title"
       aria-hidden="true"
     >
-      <!-- En-tùte : logo placeholder + nom (pas de bouton X ici : il est flottant ù droite) -->
+      <!-- En-t√™te : logo placeholder + nom (pas de bouton X ici : il est flottant √† droite) -->
       <header class="dash-drawer__header">
         <div class="dash-drawer__brand" id="dash-drawer-title">
-          <!-- Mùme placeholder que la barre du haut -->
+          <!-- M√™me placeholder que la barre du haut -->
           <span class="dash-drawer__logo" aria-hidden="true">
             <img
               src="../../assets/images/icone/logo.svg"
@@ -353,7 +353,7 @@
                   height="20"
                 />
               </span>
-              <span class="dash-drawer__label">Catùgories</span>
+              <span class="dash-drawer__label">Cat√©gories</span>
             </a>
           </li>
           <li>
@@ -411,7 +411,7 @@
                   height="20"
                 />
               </span>
-              <span class="dash-drawer__label">Paramùtres</span>
+              <span class="dash-drawer__label">Param√®tres</span>
             </a>
           </li>
         </ul>
@@ -436,7 +436,7 @@
               height="20"
             />
           </span>
-          <span>Dùconnexion</span>
+          <span>D√©connexion</span>
         </a>
       </footer>
     </aside>
