@@ -11,6 +11,8 @@ const LOGO = path.join(ROOT, "assets", "images", "icone", "logovrai.png");
 const BRAND_ORANGE = { r: 255, g: 107, b: 0 };
 
 const OUTPUTS = [
+  /* Google Search exige un favicon PNG ≥ 48 px + /favicon.ico à la racine */
+  { dir: ".", name: "favicon-48x48.png", size: 48 },
   { dir: "frontend", name: "favicon-16x16.png", size: 16 },
   { dir: "frontend", name: "favicon-32x32.png", size: 32 },
   { dir: "frontend", name: "apple-touch-icon.png", size: 180 },
@@ -47,6 +49,15 @@ async function main() {
     const buffer = await renderIcon(output.size);
     fs.writeFileSync(outPath, buffer);
     console.log(`Icône générée : ${outPath} (${output.size}x${output.size})`);
+  }
+
+  const icoSrc = path.join(ROOT, "frontend", "favicon.ico");
+  const icoDest = path.join(ROOT, "favicon.ico");
+  if (fs.existsSync(icoSrc)) {
+    fs.copyFileSync(icoSrc, icoDest);
+    console.log(`Favicon copié : ${icoDest}`);
+  } else {
+    console.warn(`Avertissement : ${icoSrc} introuvable — favicon.ico racine non copié.`);
   }
 }
 
