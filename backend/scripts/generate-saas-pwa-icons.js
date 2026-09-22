@@ -1,6 +1,6 @@
 /**
- * Génère les icônes PWA / écran d'accueil du SaaS depuis logovrai.png.
- * Même recadrage que les logos restaurant (sharp fit: cover, position: center).
+ * Génère les icônes PWA / favicon du SaaS depuis logo.svg.
+ * contain + marge ~10 % pour masques iOS/Android/Google ; fond #FF6C01 (identique au SVG).
  */
 const fs = require("fs");
 const path = require("path");
@@ -8,11 +8,13 @@ const sharp = require("sharp");
 const toIco = require("to-ico");
 
 const ROOT = path.join(__dirname, "..", "..");
-const LOGO = path.join(ROOT, "assets", "images", "icone", "logovrai.png");
-const BRAND_ORANGE = { r: 255, g: 107, b: 0 };
+const LOGO = path.join(ROOT, "assets", "images", "icone", "logo.svg");
+/** Aligné sur logo.svg (rect fill="#FF6C01") */
+const BRAND_ORANGE = { r: 255, g: 108, b: 1 };
+/** Marge de sécurité de chaque côté (évite rognage favicon rond) */
+const PADDING_RATIO = 0.1;
 
 const OUTPUTS = [
-  /* Google Search exige un favicon PNG ≥ 48 px + /favicon.ico à la racine */
   { dir: ".", name: "favicon-48x48.png", size: 48 },
   { dir: "frontend", name: "favicon-16x16.png", size: 16 },
   { dir: "frontend", name: "favicon-32x32.png", size: 32 },
@@ -21,18 +23,27 @@ const OUTPUTS = [
   { dir: "frontend", name: "android-chrome-512x512.png", size: 512 },
   { dir: path.join("assets", "images"), name: "apple-touch-icon.png", size: 180 },
   { dir: ".", name: "apple-touch-icon.png", size: 180 },
-  /* Chemins legacy manifest (../android-chrome-*.png depuis /frontend/) */
   { dir: ".", name: "android-chrome-192x192.png", size: 192 },
   { dir: ".", name: "android-chrome-512x512.png", size: 512 },
 ];
 
 async function renderIcon(size) {
-  return sharp(LOGO)
-    .flatten({ background: BRAND_ORANGE })
-    .resize(size, size, {
-      fit: "cover",
-      position: "center",
-    })
+  const innerSize = Math.max(1, Math.round(size * (1 - PADDING_RATIO * 2)));
+
+  const logoBuffer = await sharp(LOGO)
+    .resize(innerSize, innerSize, { fit: "contain" })
+    .png()
+    .toBuffer();
+
+  return sharp({
+    create: {
+      width: size,
+      height: size,
+      channels: 3,
+      background: BRAND_ORANGE,
+    },
+  })
+    .composite([{ input: logoBuffer, gravity: "center" }])
     .png({ compressionLevel: 9, adaptiveFiltering: true })
     .toBuffer();
 }
@@ -61,7 +72,7 @@ async function main() {
     path.join(ROOT, "frontend", "favicon.ico"),
   ]) {
     fs.writeFileSync(icoPath, icoBuffer);
-    console.log(`Favicon généré depuis logovrai.png : ${icoPath}`);
+    console.log(`Favicon généré depuis logo.svg : ${icoPath}`);
   }
 }
 
