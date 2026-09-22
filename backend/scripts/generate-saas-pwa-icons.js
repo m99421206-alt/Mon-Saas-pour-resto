@@ -8,6 +8,7 @@ const sharp = require("sharp");
 
 const ROOT = path.join(__dirname, "..", "..");
 const LOGO = path.join(ROOT, "assets", "images", "icone", "logovrai.png");
+const BRAND_ORANGE = { r: 255, g: 107, b: 0 };
 
 const OUTPUTS = [
   { dir: "frontend", name: "favicon-16x16.png", size: 16 },
@@ -16,10 +17,15 @@ const OUTPUTS = [
   { dir: "frontend", name: "android-chrome-192x192.png", size: 192 },
   { dir: "frontend", name: "android-chrome-512x512.png", size: 512 },
   { dir: path.join("assets", "images"), name: "apple-touch-icon.png", size: 180 },
+  { dir: ".", name: "apple-touch-icon.png", size: 180 },
+  /* Chemins legacy manifest (../android-chrome-*.png depuis /frontend/) */
+  { dir: ".", name: "android-chrome-192x192.png", size: 192 },
+  { dir: ".", name: "android-chrome-512x512.png", size: 512 },
 ];
 
 async function renderIcon(size) {
   return sharp(LOGO)
+    .flatten({ background: BRAND_ORANGE })
     .resize(size, size, {
       fit: "cover",
       position: "center",
