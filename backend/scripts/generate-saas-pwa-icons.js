@@ -5,6 +5,7 @@
 const fs = require("fs");
 const path = require("path");
 const sharp = require("sharp");
+const toIco = require("to-ico");
 
 const ROOT = path.join(__dirname, "..", "..");
 const LOGO = path.join(ROOT, "assets", "images", "icone", "logovrai.png");
@@ -51,13 +52,16 @@ async function main() {
     console.log(`Icône générée : ${outPath} (${output.size}x${output.size})`);
   }
 
-  const icoSrc = path.join(ROOT, "frontend", "favicon.ico");
-  const icoDest = path.join(ROOT, "favicon.ico");
-  if (fs.existsSync(icoSrc)) {
-    fs.copyFileSync(icoSrc, icoDest);
-    console.log(`Favicon copié : ${icoDest}`);
-  } else {
-    console.warn(`Avertissement : ${icoSrc} introuvable — favicon.ico racine non copié.`);
+  const icoSizes = [16, 32, 48];
+  const icoPngBuffers = await Promise.all(icoSizes.map((size) => renderIcon(size)));
+  const icoBuffer = await toIco(icoPngBuffers);
+
+  for (const icoPath of [
+    path.join(ROOT, "favicon.ico"),
+    path.join(ROOT, "frontend", "favicon.ico"),
+  ]) {
+    fs.writeFileSync(icoPath, icoBuffer);
+    console.log(`Favicon généré depuis logovrai.png : ${icoPath}`);
   }
 }
 
