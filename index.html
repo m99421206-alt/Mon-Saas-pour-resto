@@ -51,6 +51,20 @@
     />
 
     <!-- LCP : image hero (280px affiché → 560w max sur écrans retina) -->
+    <link
+      rel="preload"
+      as="image"
+      type="image/webp"
+      href="assets/images/icone/visiel_hero_560.webp"
+      media="(max-width: 899px)"
+    />
+    <link
+      rel="preload"
+      as="image"
+      type="image/webp"
+      href="assets/images/icone/visiel_upscaled.webp"
+      media="(min-width: 900px)"
+    />
     <link rel="stylesheet" href="/assets/css/styles.css" />
 
     <!-- ÉTAPE 3 : DONNÉES STRUCTURÉES (SCHEMA.ORG / JSON-LD) -->
@@ -243,73 +257,31 @@
                   <div class="hero__phone">
                     <span class="hero__phone-dynamic" aria-hidden="true"></span>
                     <div class="hero__phone-screen">
-                      <div
-                        class="hero__phone-dash-mock"
-                        aria-label="Aperçu du tableau de bord AfricaMenu sur smartphone."
-                      >
-                        <header class="hero__phone-dash-mock__topbar">
-                          <div class="hero__phone-dash-mock__brand">
-                            <span
-                              class="hero__phone-dash-mock__logo"
-                              aria-hidden="true"
-                            >
-                              <img
-                                src="assets/images/icone/logovrai.png"
-                                alt=""
-                                width="40"
-                                height="40"
-                                decoding="async"
-                              />
-                            </span>
-                            <span class="hero__phone-dash-mock__name"
-                              >AfricaMenu</span
-                            >
-                          </div>
-                          <span
-                            class="hero__phone-dash-mock__menu-btn"
-                            aria-hidden="true"
-                          >
-                            <span class="hero__phone-dash-mock__menu-icon"></span>
-                          </span>
-                        </header>
-                        <div class="hero__phone-dash-mock__hero">
-                          <p class="hero__phone-dash-mock__title">Bonjour</p>
-                          <p class="hero__phone-dash-mock__subtitle">
-                            Vue d'ensemble de votre menu : contenu, lien public
-                            et QR code.
-                          </p>
-                        </div>
-                        <div class="hero__phone-dash-mock__stats">
-                          <div class="hero__phone-dash-mock__stat">
-                            <span
-                              class="hero__phone-dash-mock__stat-icon hero__phone-dash-mock__stat-icon--purple"
-                              aria-hidden="true"
-                            ></span>
-                            <span class="hero__phone-dash-mock__stat-copy">
-                              <span class="hero__phone-dash-mock__stat-label"
-                                >Catégories</span
-                              >
-                              <span class="hero__phone-dash-mock__stat-value"
-                                >0</span
-                              >
-                            </span>
-                          </div>
-                          <div class="hero__phone-dash-mock__stat">
-                            <span
-                              class="hero__phone-dash-mock__stat-icon hero__phone-dash-mock__stat-icon--orange"
-                              aria-hidden="true"
-                            ></span>
-                            <span class="hero__phone-dash-mock__stat-copy">
-                              <span class="hero__phone-dash-mock__stat-label"
-                                >Plats</span
-                              >
-                              <span class="hero__phone-dash-mock__stat-value"
-                                >0</span
-                              >
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                      <picture>
+                        <source
+                          media="(min-width: 900px)"
+                          srcset="assets/images/icone/visiel_upscaled.webp"
+                          type="image/webp"
+                        />
+                        <source
+                          srcset="
+                            assets/images/icone/visiel_hero_400.webp 400w,
+                            assets/images/icone/visiel_hero_560.webp 560w
+                          "
+                          sizes="280px"
+                          type="image/webp"
+                        />
+                        <img
+                          src="assets/images/icone/visiel_hero_400.webp"
+                          alt="Aperçu du menu digital AfricaMenu sur smartphone."
+                          class="hero__phone-img"
+                          width="400"
+                          height="852"
+                          decoding="async"
+                          fetchpriority="high"
+                          draggable="false"
+                        />
+                      </picture>
                     </div>
                   </div>
                 </div>
