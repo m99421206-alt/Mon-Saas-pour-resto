@@ -134,6 +134,10 @@ server {
     add_header Cache-Control "public, max-age=2592000, immutable";
   }
 
+  location = /frontend/pages/register.html {
+    return 301 /frontend/pages/login.html;
+  }
+
   location ^~ /frontend/ {
     access_log off;
     expires 30d;

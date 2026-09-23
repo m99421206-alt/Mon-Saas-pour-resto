@@ -1,5 +1,14 @@
 const { getPool } = require("../config/database");
 
+/** Domaine canonique (aligné Google Search Console / canonical homepage). */
+var CANONICAL_SITE_ORIGIN = "https://www.africamenu.com";
+
+/**
+ * Slugs de test/dev — exclus du sitemap sans modification MySQL.
+ * Les menus restent accessibles ; menu_suspended reste le levier admin en prod.
+ */
+var SITEMAP_EXCLUDED_SLUGS = new Set(["u", "mou", "leh", "test-2"]);
+
 function escapeXml(value) {
   return String(value)
     .replace(/&/g, "&amp;")
@@ -59,10 +68,15 @@ function getSiteOrigin(req) {
 
   var host = req.get("host");
   if (host) {
-    return req.protocol + "://" + host;
+    var protocol = req.protocol || "https";
+    var normalizedHost = String(host).replace(/^www\./i, "");
+    if (normalizedHost === "africamenu.com") {
+      return "https://www.africamenu.com";
+    }
+    return protocol + "://" + host;
   }
 
-  return "https://africamenu.com";
+  return CANONICAL_SITE_ORIGIN;
 }
 
 function getStaticPages(baseUrl) {
@@ -74,12 +88,6 @@ function getStaticPages(baseUrl) {
       lastmod: today,
       changefreq: "daily",
       priority: "1.0",
-    },
-    {
-      loc: baseUrl + "/frontend/pages/login.html",
-      lastmod: today,
-      changefreq: "monthly",
-      priority: "0.7",
     },
   ];
 }
@@ -111,6 +119,10 @@ async function fetchPublicRestaurants(pool) {
   return fallbackRows;
 }
 
+function isSitemapExcludedSlug(slug) {
+  return SITEMAP_EXCLUDED_SLUGS.has(String(slug || "").trim().toLowerCase());
+}
+
 function appendRestaurantUrls(urls, baseUrl, restaurants) {
   var seen = new Set(
     urls.map(function (entry) {
@@ -125,7 +137,7 @@ function appendRestaurantUrls(urls, baseUrl, restaurants) {
     }
 
     var slug = String(restaurant.slug).trim();
-    if (!slug) {
+    if (!slug || isSitemapExcludedSlug(slug)) {
       continue;
     }
 
@@ -175,4 +187,7 @@ async function getSitemap(req, res) {
 
 module.exports = {
   getSitemap,
+  CANONICAL_SITE_ORIGIN,
+  SITEMAP_EXCLUDED_SLUGS,
+  isSitemapExcludedSlug,
 };
