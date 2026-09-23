@@ -148,6 +148,37 @@
       return loading;
     };
 
+    const openWhenReady = (trigger) => {
+      ensureLoaded()
+        .then(() => {
+          if (typeof window.AFRICA_openInstallModal === "function") {
+            window.AFRICA_openInstallModal(trigger);
+            return;
+          }
+          throw new Error("install_modal_unavailable");
+        })
+        .catch(() => {
+          window.alert(
+            "Impossible d'ouvrir le formulaire pour le moment. Vérifiez votre connexion et réessayez."
+          );
+        });
+    };
+
+    const prefetchInstallModal = (event) => {
+      if (!event.target.closest("[data-open-install-modal]")) return;
+      ensureLoaded().catch(() => {});
+    };
+
+    // Mobile : charger les scripts dès le toucher (avant le clic ~300 ms plus tard).
+    document.addEventListener("pointerdown", prefetchInstallModal, {
+      capture: true,
+      passive: true,
+    });
+    document.addEventListener("touchstart", prefetchInstallModal, {
+      capture: true,
+      passive: true,
+    });
+
     document.addEventListener(
       "click",
       (event) => {
@@ -156,21 +187,18 @@
 
         event.preventDefault();
         event.stopImmediatePropagation();
-
-        ensureLoaded().then(() => {
-          trigger.dispatchEvent(
-            new MouseEvent("click", { bubbles: true, cancelable: true })
-          );
-        });
+        openWhenReady(trigger);
       },
       true
     );
 
     if (typeof window.requestIdleCallback === "function") {
-      window.requestIdleCallback(() => ensureLoaded(), { timeout: 8000 });
+      window.requestIdleCallback(() => ensureLoaded().catch(() => {}), {
+        timeout: 3000,
+      });
     } else {
       window.addEventListener("load", () => {
-        window.setTimeout(() => ensureLoaded(), 4000);
+        window.setTimeout(() => ensureLoaded().catch(() => {}), 1500);
       });
     }
   }
@@ -250,6 +278,7 @@
     document.addEventListener("click", (event) => {
       const link = event.target.closest('a[href^="#"]');
       if (!link) return;
+      if (link.hasAttribute("data-open-install-modal")) return;
 
       const id = link.getAttribute("href");
       if (!id || id === "#") return;

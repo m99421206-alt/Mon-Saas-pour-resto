@@ -78,11 +78,41 @@
     }
   }
 
-  function openInstallModal(ev) {
-    if (ev) {
-      ev.preventDefault();
-      lastInstallModalTrigger = ev.target.closest("[data-open-install-modal]");
+  function closeMobileNav() {
+    document.body.classList.remove("site-header--nav-open");
+    var nav = document.getElementById("primary-nav");
+    var btn = document.getElementById("site-header-menu-btn");
+    if (nav) {
+      nav.classList.remove("is-open");
     }
+    if (btn) {
+      btn.setAttribute("aria-expanded", "false");
+      btn.setAttribute("aria-label", "Ouvrir le menu");
+    }
+  }
+
+  function resolveInstallTrigger(evOrTrigger) {
+    if (!evOrTrigger) {
+      return null;
+    }
+    if (typeof evOrTrigger.closest === "function") {
+      return evOrTrigger.closest("[data-open-install-modal]") || evOrTrigger;
+    }
+    if (evOrTrigger.target && typeof evOrTrigger.target.closest === "function") {
+      return evOrTrigger.target.closest("[data-open-install-modal]");
+    }
+    return null;
+  }
+
+  function openInstallModal(evOrTrigger) {
+    if (evOrTrigger && typeof evOrTrigger.preventDefault === "function") {
+      evOrTrigger.preventDefault();
+    }
+    var trigger = resolveInstallTrigger(evOrTrigger);
+    if (trigger) {
+      lastInstallModalTrigger = trigger;
+    }
+    closeMobileNav();
     resetForm();
     setModalOpen(true);
   }
@@ -210,6 +240,7 @@
     bindTriggers();
     bindModalClose();
     bindForm();
+    window.AFRICA_openInstallModal = openInstallModal;
     window.__AFRICA_INSTALL_MODAL_READY = true;
   }
 
