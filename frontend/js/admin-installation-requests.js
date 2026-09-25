@@ -260,9 +260,31 @@
     return inp ? String(inp.value || "").trim() : "";
   }
 
+  function resetDropdownPosition(dropdown) {
+    if (!dropdown) return;
+    dropdown.classList.remove("is-fixed");
+    dropdown.style.position = "";
+    dropdown.style.top = "";
+    dropdown.style.left = "";
+    dropdown.style.right = "";
+    dropdown.style.minWidth = "";
+  }
+
+  function positionDropdown(dropdown, menuBtn) {
+    if (!dropdown || !menuBtn) return;
+    var rect = menuBtn.getBoundingClientRect();
+    dropdown.classList.add("is-fixed");
+    dropdown.style.position = "fixed";
+    dropdown.style.top = Math.round(rect.bottom + 4) + "px";
+    dropdown.style.left = "auto";
+    dropdown.style.right = Math.max(8, Math.round(window.innerWidth - rect.right)) + "px";
+    dropdown.style.minWidth = "210px";
+  }
+
   function closeAllMenus() {
     document.querySelectorAll(".ir-dropdown.is-open").forEach(function (el) {
       el.classList.remove("is-open");
+      resetDropdownPosition(el);
     });
     document.querySelectorAll('.ir-menu-btn[aria-expanded="true"]').forEach(function (btn) {
       btn.setAttribute("aria-expanded", "false");
@@ -361,13 +383,13 @@
 
     if (forbidden) {
       tbody.innerHTML =
-        '<tr class="adm-table__placeholder"><td colspan="9">Données indisponibles.</td></tr>';
+        '<tr class="adm-table__placeholder"><td colspan="8">Données indisponibles.</td></tr>';
       return;
     }
 
     if (!items || !items.length) {
       tbody.innerHTML =
-        '<tr class="adm-table__placeholder"><td colspan="9">Aucune demande pour ce filtre.</td></tr>';
+        '<tr class="adm-table__placeholder"><td colspan="8">Aucune demande pour ce filtre.</td></tr>';
       return;
     }
 
@@ -390,9 +412,7 @@
         statusClass(row.status) +
         '">' +
         escapeHtml(statusLabel(row)) +
-        '</span></td><td class="ir-revenue-cell">' +
-        renderRevenueCellHtml(row) +
-        '</td><td class="ir-col-activity">' +
+        '</span></td><td class="ir-col-activity">' +
         escapeHtml(formatRelative(row.last_activity_at)) +
         '</td><td class="ir-actions-cell"><button type="button" class="ir-menu-btn" aria-label="Actions" aria-expanded="false" aria-haspopup="true" data-menu="' +
         row.id +
@@ -414,11 +434,6 @@
           '">' +
           escapeHtml(statusLabel(row)) +
           "</span></div>" +
-          (String(row.status || "").toLowerCase() === "completed" ?
-            '<p class="ir-card__meta ir-card__meta--revenue"><strong>Revenu :</strong> ' +
-              escapeHtml(formatRevenueCell(row)) +
-              "</p>"
-          : "") +
           '<p class="ir-card__meta">' +
           escapeHtml(row.contact_name || "—") +
           " · " +
@@ -1007,6 +1022,7 @@
         closeAllMenus();
         if (!wasOpen && dropdown) {
           dropdown.classList.add("is-open");
+          positionDropdown(dropdown, menuBtn);
           menuBtn.setAttribute("aria-expanded", "true");
           openMenuId = id;
         }
@@ -1106,6 +1122,11 @@
         setCreateModalOpen(false);
         await refreshAll();
       });
+    }
+
+    var tableWrap = document.querySelector(".ir-table-section .adm-table-wrap");
+    if (tableWrap) {
+      tableWrap.addEventListener("scroll", closeAllMenus, { passive: true });
     }
   }
 
