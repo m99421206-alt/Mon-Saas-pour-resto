@@ -13,7 +13,7 @@
     typeof window.AFRICA_LANDING_WHATSAPP === "string" && window.AFRICA_LANDING_WHATSAPP.trim()
       ? window.AFRICA_LANDING_WHATSAPP.trim()
       : "22399421206";
-  const REVEAL_SELECTOR = "[data-reveal], [data-reveal-group]";
+  const REVEAL_SELECTOR = "[data-reveal], [data-reveal-group], .reveal";
   const LANDING_FALLBACK_MS = 1600;
   let landingFallbackTimer = 0;
 
@@ -113,6 +113,9 @@
     const hero = document.querySelector(".reveal-hero");
     if (hero) hero.classList.add("is-ready");
     clearLandingFallback();
+    if (prefersReducedMotion()) {
+      forceLandingVisible(true);
+    }
   }
 
   /** Modal installation : scripts chargés à la demande (hors chemin critique). */

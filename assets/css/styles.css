@@ -1781,7 +1781,7 @@ p {
 
 @media (hover: hover) {
   .pricing-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-3px);
     box-shadow: 0 22px 52px rgba(15, 23, 42, 0.11);
     border-color: rgba(255, 107, 0, 0.22);
   }
@@ -2923,59 +2923,122 @@ body.install-modal-open {
 
 :root {
   --motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --motion-duration: 0.58s;
-  --motion-distance: 18px;
+  --motion-duration: 0.52s;
+  --motion-distance: 16px;
 }
 
-/* Hero — flottement décoratif desktop uniquement (pas d’entrée animée = LCP/CLS stables) */
-@media (min-width: 48rem) and (prefers-reduced-motion: no-preference) {
-  .reveal-hero.is-ready .hero__chip {
-    animation: hero-chip-float 4.2s ease-in-out infinite;
-    animation-delay: 1s;
+@keyframes landing-header-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
   }
 
-  .reveal-hero.is-ready .hero__chip--a {
-    animation-delay: 1s;
-  }
-
-  .reveal-hero.is-ready .hero__chip--b {
-    animation-delay: 1.5s;
-  }
-
-  .reveal-hero.is-ready .hero__chip--c {
-    animation-delay: 2s;
-  }
-
-  .reveal-hero.is-ready .hero__chip--qr {
-    animation-delay: 1.25s;
-  }
-
-  .reveal-hero.is-ready .hero__phone-wrap {
-    animation: hero-mock-float 5.2s ease-in-out 1.1s infinite;
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
-/* Scroll reveal — éléments individuels */
-html.js-landing [data-reveal]:not(.is-visible) {
+@keyframes landing-hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes landing-mockup-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Header — entrée rapide au chargement (sans mouvement au scroll) */
+@media (prefers-reduced-motion: no-preference) {
+  html.js-landing body.landing-ready .site-header {
+    animation: landing-header-in 0.38s var(--motion-ease-out) both;
+  }
+}
+
+/* Hero — séquence titre → sous-titre → boutons → mockup */
+@media (prefers-reduced-motion: no-preference) {
+  html.js-landing .reveal-hero.is-ready .hero__title {
+    animation: landing-hero-in 0.55s var(--motion-ease-out) both;
+  }
+
+  html.js-landing .reveal-hero.is-ready .hero__lead {
+    animation: landing-hero-in 0.55s var(--motion-ease-out) 0.12s both;
+  }
+
+  html.js-landing .reveal-hero.is-ready .hero__ctas {
+    animation: landing-hero-in 0.52s var(--motion-ease-out) 0.22s both;
+  }
+
+  html.js-landing .reveal-hero.is-ready .hero__phone-wrap {
+    animation: landing-mockup-in 0.62s var(--motion-ease-out) 0.34s both;
+  }
+
+  html.js-landing .reveal-hero.is-ready .hero__chip {
+    animation: landing-hero-in 0.48s var(--motion-ease-out) both;
+  }
+
+  html.js-landing .reveal-hero.is-ready .hero__chip--qr {
+    animation-delay: 0.42s;
+  }
+
+  html.js-landing .reveal-hero.is-ready .hero__chip--a {
+    animation-delay: 0.46s;
+  }
+
+  html.js-landing .reveal-hero.is-ready .hero__chip--b {
+    animation-delay: 0.5s;
+  }
+
+  html.js-landing .reveal-hero.is-ready .hero__chip--c {
+    animation-delay: 0.54s;
+  }
+}
+
+/* Scroll reveal — éléments individuels ([data-reveal] ou .reveal) */
+html.js-landing [data-reveal]:not(.is-visible),
+html.js-landing .reveal:not(.is-visible) {
   opacity: 0;
   transform: translateY(var(--motion-distance));
   transition:
     opacity var(--motion-duration) var(--motion-ease-out),
     transform var(--motion-duration) var(--motion-ease-out);
+  will-change: opacity, transform;
 }
 
-[data-reveal].is-visible {
+html.js-landing [data-reveal].is-visible,
+html.js-landing .reveal.is-visible {
   opacity: 1;
   transform: none;
+  will-change: auto;
 }
 
 /* Scroll reveal — groupes avec décalage */
 html.js-landing [data-reveal-group]:not(.is-visible) > * {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(var(--motion-distance));
   transition:
-    opacity 0.55s var(--motion-ease-out),
-    transform 0.55s var(--motion-ease-out);
+    opacity var(--motion-duration) var(--motion-ease-out),
+    transform var(--motion-duration) var(--motion-ease-out);
+  will-change: opacity, transform;
+}
+
+html.js-landing [data-reveal-group].is-visible > * {
+  will-change: auto;
 }
 
 [data-reveal-group].is-visible > *:nth-child(1) {
@@ -2987,19 +3050,19 @@ html.js-landing [data-reveal-group]:not(.is-visible) > * {
 [data-reveal-group].is-visible > *:nth-child(2) {
   opacity: 1;
   transform: none;
-  transition-delay: 0.1s;
+  transition-delay: 0.07s;
 }
 
 [data-reveal-group].is-visible > *:nth-child(3) {
   opacity: 1;
   transform: none;
-  transition-delay: 0.2s;
+  transition-delay: 0.14s;
 }
 
 [data-reveal-group].is-visible > *:nth-child(4) {
   opacity: 1;
   transform: none;
-  transition-delay: 0.3s;
+  transition-delay: 0.21s;
 }
 
 [data-reveal-group].is-visible > *:nth-child(5) {
@@ -3014,39 +3077,21 @@ html.js-landing [data-reveal-group]:not(.is-visible) > * {
   transition-delay: 0.5s;
 }
 
-/* Fonctionnalités — cartes 1–2 depuis la gauche, 3–4 depuis la droite */
-html.js-landing .feature-grid[data-reveal-group]:not(.is-visible) > li:nth-child(1),
-html.js-landing .feature-grid[data-reveal-group]:not(.is-visible) > li:nth-child(2) {
-  transform: translateX(-64px);
-}
-
-html.js-landing .feature-grid[data-reveal-group]:not(.is-visible) > li:nth-child(3),
-html.js-landing .feature-grid[data-reveal-group]:not(.is-visible) > li:nth-child(4) {
-  transform: translateX(64px);
-}
-
+/* Fonctionnalités — fade-up léger avec décalage court entre cartes */
 .feature-grid[data-reveal-group].is-visible > li:nth-child(1) {
-  opacity: 1;
-  transform: translateX(0);
   transition-delay: 0ms;
 }
 
 .feature-grid[data-reveal-group].is-visible > li:nth-child(2) {
-  opacity: 1;
-  transform: translateX(0);
-  transition-delay: 0.09s;
+  transition-delay: 0.06s;
 }
 
 .feature-grid[data-reveal-group].is-visible > li:nth-child(3) {
-  opacity: 1;
-  transform: translateX(0);
-  transition-delay: 0.16s;
+  transition-delay: 0.12s;
 }
 
 .feature-grid[data-reveal-group].is-visible > li:nth-child(4) {
-  opacity: 1;
-  transform: translateX(0);
-  transition-delay: 0.23s;
+  transition-delay: 0.18s;
 }
 
 @media (max-width: 47.9375rem) {
@@ -3055,30 +3100,22 @@ html.js-landing .feature-grid[data-reveal-group]:not(.is-visible) > li:nth-child
     overflow-x: clip;
   }
 
-  html.js-landing .feature-grid[data-reveal-group]:not(.is-visible) > li:nth-child(1),
-  html.js-landing .feature-grid[data-reveal-group]:not(.is-visible) > li:nth-child(2),
-  html.js-landing .feature-grid[data-reveal-group]:not(.is-visible) > li:nth-child(3),
-  html.js-landing .feature-grid[data-reveal-group]:not(.is-visible) > li:nth-child(4) {
-    transform: translateY(14px);
+  /* Hero mobile — entrées plus courtes, chips sans animation décorative */
+  html.js-landing .reveal-hero.is-ready .hero__title,
+  html.js-landing .reveal-hero.is-ready .hero__lead,
+  html.js-landing .reveal-hero.is-ready .hero__ctas,
+  html.js-landing .reveal-hero.is-ready .hero__phone-wrap {
+    animation-duration: 0.42s;
   }
 
-  .feature-grid[data-reveal-group].is-visible > li:nth-child(1),
-  .feature-grid[data-reveal-group].is-visible > li:nth-child(2),
-  .feature-grid[data-reveal-group].is-visible > li:nth-child(3),
-  .feature-grid[data-reveal-group].is-visible > li:nth-child(4) {
-    transform: none;
-  }
-
-  /* Hero : pas d’animation infinie (perf scroll sur petits écrans) */
-  .hero__phone-wrap,
-  .hero__chip {
+  html.js-landing .reveal-hero.is-ready .hero__chip {
     animation: none !important;
-    will-change: auto;
   }
 
   [data-reveal],
   [data-reveal-group] > * {
-    --motion-duration: 0.45s;
+    --motion-duration: 0.42s;
+    --motion-distance: 12px;
   }
 }
 
@@ -3144,21 +3181,39 @@ html.js-landing .showcase__visual:not(.is-visible) .showcase__float-card {
   transition-delay: 0.22s;
 }
 
-/* Hover desktop — cartes & CTA */
+/* Hover desktop — cartes & CTA (micro-interactions légères) */
 @media (hover: hover) {
   .feature-card {
     transition:
       transform 0.22s ease,
       box-shadow 0.22s ease,
-      opacity 0.55s var(--motion-ease-out);
+      opacity var(--motion-duration) var(--motion-ease-out);
   }
 
   .feature-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-3px);
     box-shadow: 0 14px 36px rgba(15, 23, 42, 0.1);
   }
 
-  .btn--on-orange:hover {
+  .steps__item {
+    transition: transform 0.22s ease;
+  }
+
+  .contact-card {
+    transition:
+      transform 0.22s ease,
+      box-shadow 0.22s ease;
+  }
+
+  .contact-card:hover {
+    transform: translateY(-3px);
+  }
+
+  .btn--primary:hover,
+  .btn--outline:hover:not(:disabled),
+  .btn--xl:hover,
+  .btn--on-orange:hover,
+  .pricing-card__btn--cta:hover {
     transform: translateY(-2px);
   }
 }
@@ -3192,17 +3247,23 @@ html.js-landing .showcase__visual:not(.is-visible) .showcase__float-card {
     transform: none;
   }
 
-  .reveal-hero.is-ready .hero__chip,
-  .reveal-hero.is-ready .hero__phone-wrap {
+  html.js-landing body.landing-ready .site-header,
+  html.js-landing .reveal-hero.is-ready .hero__title,
+  html.js-landing .reveal-hero.is-ready .hero__lead,
+  html.js-landing .reveal-hero.is-ready .hero__ctas,
+  html.js-landing .reveal-hero.is-ready .hero__chip,
+  html.js-landing .reveal-hero.is-ready .hero__phone-wrap {
     animation: none !important;
   }
 
   [data-reveal],
+  .reveal,
   [data-reveal-group] > * {
     opacity: 1;
     transform: none;
     transition: none;
     animation: none !important;
+    will-change: auto;
   }
 
   .showcase__visual .showcase__float-card {
