@@ -6,6 +6,7 @@
 
   var TOKEN_KEY = "MenuGo_token";
   var LOGIN_NEXT = "admin-installation-requests.html";
+  var INSTALLATION_PRICE_CFA = 35000;
   var searchTimer = null;
   var currentDetailId = null;
   var openMenuId = null;
@@ -141,6 +142,48 @@
     } catch (e) {
       return "—";
     }
+  }
+
+  function formatCfa(amount, allowZero) {
+    var value = Number(amount);
+    if (!Number.isFinite(value) || value < 0) {
+      return "—";
+    }
+    if (value === 0 && !allowZero) {
+      return "—";
+    }
+    return value.toLocaleString("fr-FR") + " F CFA";
+  }
+
+  function getCompletedRevenueCfa(row) {
+    if (String(row.status || "").toLowerCase() !== "completed") {
+      return null;
+    }
+    var amount = Number(row.revenue_cfa);
+    if (Number.isFinite(amount) && amount > 0) {
+      return amount;
+    }
+    var stored = Number(row.installation_price_cfa);
+    if (Number.isFinite(stored) && stored > 0) {
+      return stored;
+    }
+    return INSTALLATION_PRICE_CFA;
+  }
+
+  function formatRevenueCell(row) {
+    var amount = getCompletedRevenueCfa(row);
+    if (amount == null) {
+      return "—";
+    }
+    return formatCfa(amount);
+  }
+
+  function renderRevenueCellHtml(row) {
+    var text = formatRevenueCell(row);
+    if (String(row.status || "").toLowerCase() === "completed") {
+      return '<span class="ir-revenue-cell__amount">' + escapeHtml(text) + "</span>";
+    }
+    return escapeHtml(text);
   }
 
   function formatRelative(iso) {
@@ -318,13 +361,13 @@
 
     if (forbidden) {
       tbody.innerHTML =
-        '<tr class="adm-table__placeholder"><td colspan="8">Données indisponibles.</td></tr>';
+        '<tr class="adm-table__placeholder"><td colspan="9">Données indisponibles.</td></tr>';
       return;
     }
 
     if (!items || !items.length) {
       tbody.innerHTML =
-        '<tr class="adm-table__placeholder"><td colspan="8">Aucune demande pour ce filtre.</td></tr>';
+        '<tr class="adm-table__placeholder"><td colspan="9">Aucune demande pour ce filtre.</td></tr>';
       return;
     }
 
@@ -333,21 +376,23 @@
       tr.setAttribute("data-request-id", String(row.id));
 
       tr.innerHTML =
-        "<td>" +
+        '<td class="ir-col-restaurant">' +
         escapeHtml(row.restaurant_name || "—") +
-        "</td><td>" +
+        '</td><td class="ir-col-contact">' +
         escapeHtml(row.contact_name || "—") +
         "</td><td>" +
         escapeHtml(row.phone || "—") +
         "</td><td>" +
         escapeHtml(row.city || "—") +
-        "</td><td>" +
+        '</td><td class="ir-col-date">' +
         escapeHtml(formatDateShort(row.created_at)) +
-        '</td><td><span class="' +
+        '</td><td class="ir-col-status"><span class="' +
         statusClass(row.status) +
         '">' +
         escapeHtml(statusLabel(row)) +
-        "</span></td><td>" +
+        '</span></td><td class="ir-revenue-cell">' +
+        renderRevenueCellHtml(row) +
+        '</td><td class="ir-col-activity">' +
         escapeHtml(formatRelative(row.last_activity_at)) +
         '</td><td class="ir-actions-cell"><button type="button" class="ir-menu-btn" aria-label="Actions" aria-expanded="false" aria-haspopup="true" data-menu="' +
         row.id +
@@ -369,6 +414,11 @@
           '">' +
           escapeHtml(statusLabel(row)) +
           "</span></div>" +
+          (String(row.status || "").toLowerCase() === "completed" ?
+            '<p class="ir-card__meta ir-card__meta--revenue"><strong>Revenu :</strong> ' +
+              escapeHtml(formatRevenueCell(row)) +
+              "</p>"
+          : "") +
           '<p class="ir-card__meta">' +
           escapeHtml(row.contact_name || "—") +
           " · " +
@@ -415,11 +465,35 @@
       .join("");
   }
 
+  function renderRevenue(stats) {
+    var panel = document.getElementById("ir-revenue-panel");
+    if (!panel) return;
+    var rev = stats && stats.revenue ? stats.revenue : {};
+    var completedCount = Number(rev.completed_count) || Number(stats.completed) || 0;
+    var unitPrice =
+      Number(rev.price_per_installation_cfa) > 0 ?
+        Number(rev.price_per_installation_cfa)
+      : INSTALLATION_PRICE_CFA;
+    var totalCfa =
+      Number(rev.total_cfa) > 0 ? Number(rev.total_cfa) : completedCount * unitPrice;
+    panel.innerHTML =
+      '<h2 class="ir-revenue-panel__title">Revenus des installations</h2>' +
+      '<div class="ir-revenue-panel__grid">' +
+      '<div class="ir-revenue-panel__item"><span class="ir-revenue-panel__label">Installations terminées</span><span class="ir-revenue-panel__value">' +
+      escapeHtml(String(completedCount)) +
+      '</span></div><div class="ir-revenue-panel__item"><span class="ir-revenue-panel__label">Revenus générés</span><span class="ir-revenue-panel__value ir-revenue-panel__value--accent">' +
+      escapeHtml(formatCfa(totalCfa, true)) +
+      '</span></div><div class="ir-revenue-panel__item"><span class="ir-revenue-panel__label">Prix par installation</span><span class="ir-revenue-panel__value">' +
+      escapeHtml(formatCfa(unitPrice)) +
+      "</span></div></div>";
+  }
+
   async function loadStats(token) {
     var res = await fetchJson("GET", "/api/admin/setup-help/stats", token);
     if (guardApiStatus(res.status)) return;
     if (res.ok && res.data) {
       renderKpi(res.data);
+      renderRevenue(res.data);
     }
   }
 
@@ -619,6 +693,11 @@
         '">' +
         escapeHtml(statusLabel(req)) +
         "</span></dd></div>" +
+        (String(req.status || "").toLowerCase() === "completed" ?
+          "<div><dt>Revenu</dt><dd><strong>" +
+            escapeHtml(formatRevenueCell(req)) +
+            "</strong></dd></div>"
+        : "") +
         "</dl></section>" +
         '<section class="ir-detail-section"><h4>Communication</h4>' +
         '<div class="ir-detail-actions">' +

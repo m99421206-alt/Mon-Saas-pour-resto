@@ -2421,6 +2421,22 @@ p {
   color: var(--color-text);
 }
 
+.contact-form__label-optional {
+  font-weight: 500;
+  color: var(--color-text-muted, #64748b);
+}
+
+.contact-form__hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #64748b);
+  line-height: 1.35;
+}
+
+.contact-form__select {
+  appearance: auto;
+  background-color: #fff;
+}
+
 .contact-form__input {
   width: 100%;
   padding: 0.72rem 0.95rem;
@@ -2567,6 +2583,49 @@ body.install-modal-open {
   font-size: 0.875rem;
   color: #b91c1c;
   font-weight: 600;
+}
+
+#install-request-form .contact-form__input,
+#install-request-form .install-wa-input {
+  min-height: 2.85rem;
+}
+
+.install-wa-input {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 0.65rem;
+  overflow: hidden;
+  background: #fff;
+  transition:
+    border-color 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+.install-wa-input:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.2);
+}
+
+.install-wa-input__prefix {
+  display: flex;
+  align-items: center;
+  padding: 0 0.85rem;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--color-text);
+  background: rgba(15, 23, 42, 0.04);
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+}
+
+.install-wa-input__field {
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 /* ----------------------------------------------------------------------------- Bandeau CTA orange */

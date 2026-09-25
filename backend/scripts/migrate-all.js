@@ -31,6 +31,7 @@ var migrations = [
   { file: "migrate-upload-registry.js", label: "Registre upload_files (quota images)" },
   { file: "migrate-setup-assistance-requests.js", label: "Demandes d'assistance installation" },
   { file: "migrate-setup-assistance-crm.js", label: "CRM demandes d'installation" },
+  { file: "migrate-setup-assistance-revenue.js", label: "Revenus installations clé en main" },
 ];
 
 function runMigration(entry) {

@@ -154,6 +154,12 @@
 
           <section class="ir-kpi-grid" id="ir-kpi-grid" aria-label="Indicateurs"></section>
 
+          <section
+            class="ir-revenue-panel"
+            id="ir-revenue-panel"
+            aria-label="Revenus des installations"
+          ></section>
+
           <section class="adm-section ir-table-section">
             <div class="ir-toolbar">
               <div class="ir-toolbar__search-wrap">
@@ -188,19 +194,20 @@
                 </caption>
                 <thead>
                   <tr>
-                    <th scope="col">Restaurant</th>
-                    <th scope="col">Responsable</th>
+                    <th scope="col" class="ir-col-restaurant">Restaurant</th>
+                    <th scope="col" class="ir-col-contact">Responsable</th>
                     <th scope="col">WhatsApp</th>
                     <th scope="col">Ville</th>
-                    <th scope="col">Date</th>
-                    <th scope="col">Statut</th>
-                    <th scope="col">Dernière activité</th>
-                    <th scope="col">Actions</th>
+                    <th scope="col" class="ir-col-date">Date</th>
+                    <th scope="col" class="ir-col-status">Statut</th>
+                    <th scope="col" class="ir-col-revenue">Revenu</th>
+                    <th scope="col" class="ir-col-activity">Dernière activité</th>
+                    <th scope="col" class="ir-col-actions">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="ir-table-body">
                   <tr class="adm-table__placeholder">
-                    <td colspan="8">Chargement…</td>
+                    <td colspan="9">Chargement…</td>
                   </tr>
                 </tbody>
               </table>

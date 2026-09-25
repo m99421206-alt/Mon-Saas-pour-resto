@@ -22,6 +22,75 @@
   }
 
   var lastInstallModalTrigger = null;
+  var MALI_COUNTRY_CODE = "223";
+
+  function digitsOnly(value) {
+    return String(value || "").replace(/\D/g, "");
+  }
+
+  /**
+   * Numéro local (sans +223) → format backend (+223XXXXXXXX).
+   * Accepte les espaces ; ne modifie pas les numéros déjà complets.
+   */
+  function normalizeMaliWhatsappInput(raw) {
+    var digits = digitsOnly(raw);
+    if (!digits.length) {
+      return null;
+    }
+
+    if (digits.indexOf(MALI_COUNTRY_CODE) === 0 && digits.length >= 11) {
+      return "+" + digits.slice(0, 13);
+    }
+
+    if (digits.charAt(0) === "0") {
+      digits = digits.replace(/^0+/, "");
+    }
+
+    if (digits.length === 8) {
+      return "+" + MALI_COUNTRY_CODE + digits;
+    }
+
+    if (digits.length > 8 && digits.indexOf(MALI_COUNTRY_CODE) === 0) {
+      return "+" + digits.slice(0, 13);
+    }
+
+    return false;
+  }
+
+  function collectFormPayload() {
+    return {
+      restaurantName: String(
+        (document.getElementById("install-restaurant-name") || {}).value || "",
+      ).trim(),
+      fullName: String(
+        (document.getElementById("install-full-name") || {}).value || "",
+      ).trim(),
+      whatsappLocal: String(
+        (document.getElementById("install-whatsapp") || {}).value || "",
+      ).trim(),
+      city: String((document.getElementById("install-city") || {}).value || "").trim(),
+    };
+  }
+
+  function validateFormPayload(raw) {
+    if (!raw.restaurantName) {
+      return "Indiquez le nom de votre restaurant.";
+    }
+
+    var normalizedWhatsapp = normalizeMaliWhatsappInput(raw.whatsappLocal);
+    if (normalizedWhatsapp === null) {
+      return "Indiquez votre numéro WhatsApp.";
+    }
+    if (normalizedWhatsapp === false) {
+      return "Numéro WhatsApp invalide. Exemple : 99 42 12 06";
+    }
+
+    if (!raw.city) {
+      return "Sélectionnez votre ville.";
+    }
+
+    return null;
+  }
 
   function releaseModalFocus(modal) {
     var active = document.activeElement;
@@ -174,17 +243,19 @@
       errorEl.textContent = "";
     }
 
+    var raw = collectFormPayload();
+    var validationError = validateFormPayload(raw);
+    if (validationError) {
+      showError(validationError);
+      return;
+    }
+
+    var normalizedWhatsapp = normalizeMaliWhatsappInput(raw.whatsappLocal);
     var payload = {
-      restaurantName: String(
-        (document.getElementById("install-restaurant-name") || {}).value || "",
-      ).trim(),
-      fullName: String(
-        (document.getElementById("install-full-name") || {}).value || "",
-      ).trim(),
-      whatsapp: String(
-        (document.getElementById("install-whatsapp") || {}).value || "",
-      ).trim(),
-      city: String((document.getElementById("install-city") || {}).value || "").trim(),
+      restaurantName: raw.restaurantName,
+      fullName: raw.fullName,
+      whatsapp: normalizedWhatsapp,
+      city: raw.city,
     };
 
     if (submitBtn) {

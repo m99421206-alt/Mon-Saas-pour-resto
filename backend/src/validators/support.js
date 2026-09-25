@@ -63,11 +63,12 @@ var installationRequestSchema = z
       .trim()
       .min(1, "Le nom du restaurant est obligatoire.")
       .max(160, "Le nom ne doit pas dépasser 160 caractères."),
-    fullName: z
-      .string({ required_error: "Votre nom est obligatoire." })
-      .trim()
-      .min(1, "Votre nom est obligatoire.")
-      .max(160, "Le nom ne doit pas dépasser 160 caractères."),
+    fullName: z.preprocess(function (value) {
+      if (value == null) {
+        return "";
+      }
+      return String(value).trim();
+    }, z.string().max(160, "Le nom ne doit pas dépasser 160 caractères.")),
     whatsapp: z.string().optional(),
     phone: z.string().optional(),
     city: z.string().optional(),
@@ -88,7 +89,7 @@ var installationRequestSchema = z
     if (!cityVal) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Indiquez votre ville.",
+        message: "Sélectionnez votre ville.",
         path: ["city"],
       });
     }

@@ -63,6 +63,58 @@
   color: var(--adm-text, #0f172a);
 }
 
+.ir-revenue-panel {
+  background: var(--adm-surface, #fff);
+  border: 1px solid var(--adm-border, #e2e8f0);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1.25rem;
+}
+
+.ir-revenue-panel__title {
+  margin: 0 0 0.85rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--adm-text, #0f172a);
+}
+
+.ir-revenue-panel__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.85rem;
+}
+
+.ir-revenue-panel__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ir-revenue-panel__label {
+  font-size: 0.75rem;
+  color: var(--adm-muted, #64748b);
+}
+
+.ir-revenue-panel__value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--adm-text, #0f172a);
+}
+
+.ir-revenue-panel__value--accent {
+  color: #c2410c;
+}
+
+.ir-revenue-cell__amount {
+  font-weight: 700;
+  color: #15803d;
+  white-space: nowrap;
+}
+
+.ir-card__meta--revenue {
+  color: #15803d;
+}
+
 .ir-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -120,13 +172,64 @@
 .ir-status--completed { background: #dcfce7; color: #15803d; }
 .ir-status--cancelled { background: #f1f5f9; color: #64748b; }
 
-/* Évite que le menu ⋮ soit coupé par overflow:hidden du tableau */
+/* Tableau large : scroll horizontal propre sans casser la page */
 .ir-table-section .adm-table-wrap {
-  overflow: visible;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
 }
 
-.ir-table-section .adm-table-wrap .adm-table {
-  overflow: visible;
+.ir-table-section .ir-table {
+  min-width: 52rem;
+}
+
+.ir-table .ir-col-restaurant {
+  white-space: normal;
+  min-width: 7.5rem;
+  max-width: 11rem;
+}
+
+.ir-table .ir-col-contact,
+.ir-table .ir-col-date {
+  white-space: nowrap;
+}
+
+.ir-table .ir-revenue-cell {
+  white-space: nowrap;
+  font-size: 0.8125rem;
+}
+
+.ir-table .ir-col-actions,
+.ir-table .ir-actions-cell {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  background: var(--adm-surface, #fff);
+}
+
+.ir-table thead .ir-col-actions {
+  z-index: 3;
+  background: #f9fafb;
+}
+
+.ir-table tbody tr:hover .ir-actions-cell {
+  background: #fafafa;
+}
+
+.ir-table .ir-col-actions,
+.ir-table .ir-actions-cell {
+  box-shadow: -6px 0 10px rgba(15, 23, 42, 0.05);
+}
+
+@media (max-width: 1100px) {
+  .ir-table .ir-col-contact,
+  .ir-table .ir-col-date {
+    display: none;
+  }
+
+  .ir-table-section .ir-table {
+    min-width: 42rem;
+  }
 }
 
 .ir-actions-cell {

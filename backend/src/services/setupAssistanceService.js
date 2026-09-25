@@ -5,6 +5,7 @@
 "use strict";
 
 var { getPool } = require("../config/database");
+var installationPricing = require("../config/installationPricing");
 
 var VALID_STATUSES = [
   "new",
@@ -87,6 +88,21 @@ var EVENT_LABELS = {
 
 function isMissingTableError(err) {
   return err && (err.code === "ER_NO_SUCH_TABLE" || err.errno === 1146);
+}
+
+function isMissingInstallationPriceColumn(err) {
+  return err && (err.code === "ER_BAD_FIELD_ERROR" || err.errno === 1054);
+}
+
+function resolveRequestRevenueCfa(row, status) {
+  var st = normalizeStatus(status || (row && row.status));
+  if (st !== "completed") {
+    return null;
+  }
+  if (row && row.installation_price_cfa != null && Number(row.installation_price_cfa) > 0) {
+    return Number(row.installation_price_cfa);
+  }
+  return installationPricing.INSTALLATION_PRICE_CFA;
 }
 
 function normalizeStatus(value) {
@@ -183,6 +199,15 @@ function mapRequestRow(row) {
     created_at: row.created_at ? new Date(row.created_at).toISOString() : null,
     updated_at: row.updated_at ? new Date(row.updated_at).toISOString() : null,
     checklist: parseChecklist(row.checklist_json),
+    installation_price_cfa:
+      row.installation_price_cfa != null && Number(row.installation_price_cfa) > 0 ?
+        Number(row.installation_price_cfa)
+      : null,
+    installation_price_currency:
+      row.installation_price_currency != null && String(row.installation_price_currency).trim() !== "" ?
+        String(row.installation_price_currency).trim()
+      : null,
+    revenue_cfa: resolveRequestRevenueCfa(row, st),
   };
 }
 
@@ -512,23 +537,52 @@ async function listRequests(options) {
 
 async function getStats() {
   var pool = getPool();
-  var [[row]] = await pool.query(
-    "SELECT " +
-      "SUM(CASE WHEN status = 'new' THEN 1 ELSE 0 END) AS new_count, " +
-      "SUM(CASE WHEN status = 'new' THEN 1 ELSE 0 END) AS to_contact_count, " +
-      "SUM(CASE WHEN status IN ('contacted','info_received','in_progress','correction_needed') THEN 1 ELSE 0 END) AS in_progress_count, " +
-      "SUM(CASE WHEN status = 'ready_to_review' THEN 1 ELSE 0 END) AS to_review_count, " +
-      "SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed_count, " +
-      "SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled_count " +
-      "FROM setup_assistance_requests",
-  );
+  var price = installationPricing.INSTALLATION_PRICE_CFA;
+  var row;
+  try {
+    [[row]] = await pool.query(
+      "SELECT " +
+        "SUM(CASE WHEN status = 'new' THEN 1 ELSE 0 END) AS new_count, " +
+        "SUM(CASE WHEN status = 'new' THEN 1 ELSE 0 END) AS to_contact_count, " +
+        "SUM(CASE WHEN status IN ('contacted','info_received','in_progress','correction_needed') THEN 1 ELSE 0 END) AS in_progress_count, " +
+        "SUM(CASE WHEN status = 'ready_to_review' THEN 1 ELSE 0 END) AS to_review_count, " +
+        "SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed_count, " +
+        "SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled_count, " +
+        "SUM(CASE WHEN status = 'completed' THEN COALESCE(installation_price_cfa, ?) ELSE 0 END) AS total_revenue_cfa " +
+        "FROM setup_assistance_requests",
+      [price],
+    );
+  } catch (err) {
+    if (!isMissingInstallationPriceColumn(err)) {
+      throw err;
+    }
+    [[row]] = await pool.query(
+      "SELECT " +
+        "SUM(CASE WHEN status = 'new' THEN 1 ELSE 0 END) AS new_count, " +
+        "SUM(CASE WHEN status = 'new' THEN 1 ELSE 0 END) AS to_contact_count, " +
+        "SUM(CASE WHEN status IN ('contacted','info_received','in_progress','correction_needed') THEN 1 ELSE 0 END) AS in_progress_count, " +
+        "SUM(CASE WHEN status = 'ready_to_review' THEN 1 ELSE 0 END) AS to_review_count, " +
+        "SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed_count, " +
+        "SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled_count " +
+        "FROM setup_assistance_requests",
+    );
+    row.total_revenue_cfa = (Number(row.completed_count) || 0) * price;
+  }
+  var completedCount = Number(row.completed_count) || 0;
+  var totalRevenue = Number(row.total_revenue_cfa) || 0;
   return {
     new: Number(row.new_count) || 0,
     to_contact: Number(row.to_contact_count) || 0,
     in_progress: Number(row.in_progress_count) || 0,
     to_review: Number(row.to_review_count) || 0,
-    completed: Number(row.completed_count) || 0,
+    completed: completedCount,
     cancelled: Number(row.cancelled_count) || 0,
+    revenue: {
+      completed_count: completedCount,
+      total_cfa: totalRevenue,
+      price_per_installation_cfa: price,
+      currency: installationPricing.INSTALLATION_PRICE_CURRENCY,
+    },
   };
 }
 
@@ -549,10 +603,25 @@ async function updateRequestStatus(id, nextStatus, adminUserId) {
     return { error: "INVALID_TRANSITION", from: current, to: st };
   }
 
-  await pool.query("UPDATE setup_assistance_requests SET status = ?, last_activity_at = NOW() WHERE id = ? LIMIT 1", [
-    st,
-    id,
-  ]);
+  var price = installationPricing.INSTALLATION_PRICE_CFA;
+  var currency = installationPricing.INSTALLATION_PRICE_CURRENCY;
+  try {
+    await pool.query(
+      "UPDATE setup_assistance_requests SET status = ?, last_activity_at = NOW(), " +
+        "installation_price_cfa = CASE WHEN ? = 'completed' THEN COALESCE(installation_price_cfa, ?) ELSE installation_price_cfa END, " +
+        "installation_price_currency = CASE WHEN ? = 'completed' AND installation_price_cfa IS NULL THEN ? ELSE installation_price_currency END " +
+        "WHERE id = ? LIMIT 1",
+      [st, st, price, st, currency, id],
+    );
+  } catch (err) {
+    if (!isMissingInstallationPriceColumn(err)) {
+      throw err;
+    }
+    await pool.query(
+      "UPDATE setup_assistance_requests SET status = ?, last_activity_at = NOW() WHERE id = ? LIMIT 1",
+      [st, id],
+    );
+  }
 
   var eventType = "status_changed";
   if (st === "cancelled") {
@@ -693,10 +762,25 @@ async function completeByRestaurantId(restaurantId) {
   );
 
   if (rows.length) {
-    await pool.query(
-      "UPDATE setup_assistance_requests SET status = 'completed', last_activity_at = NOW() WHERE id = ? LIMIT 1",
-      [rows[0].id],
-    );
+    var price = installationPricing.INSTALLATION_PRICE_CFA;
+    var currency = installationPricing.INSTALLATION_PRICE_CURRENCY;
+    try {
+      await pool.query(
+        "UPDATE setup_assistance_requests SET status = 'completed', last_activity_at = NOW(), " +
+          "installation_price_cfa = COALESCE(installation_price_cfa, ?), " +
+          "installation_price_currency = COALESCE(installation_price_currency, ?) " +
+          "WHERE id = ? LIMIT 1",
+        [price, currency, rows[0].id],
+      );
+    } catch (err) {
+      if (!isMissingInstallationPriceColumn(err)) {
+        throw err;
+      }
+      await pool.query(
+        "UPDATE setup_assistance_requests SET status = 'completed', last_activity_at = NOW() WHERE id = ? LIMIT 1",
+        [rows[0].id],
+      );
+    }
   }
 
   await pool.query(
@@ -723,6 +807,8 @@ async function recordRestaurantCreated(requestId, adminUserId, created) {
 }
 
 module.exports = {
+  INSTALLATION_PRICE_CFA: installationPricing.INSTALLATION_PRICE_CFA,
+  INSTALLATION_PRICE_CURRENCY: installationPricing.INSTALLATION_PRICE_CURRENCY,
   VALID_STATUSES: VALID_STATUSES,
   VALID_SOURCES: VALID_SOURCES,
   STATUS_LABELS: STATUS_LABELS,
