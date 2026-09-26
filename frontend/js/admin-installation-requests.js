@@ -160,12 +160,22 @@
       return null;
     }
     var amount = Number(row.revenue_cfa);
-    if (Number.isFinite(amount) && amount > 0) {
-      return amount;
+    if (Number.isFinite(amount)) {
+      if (amount === 0) {
+        return null;
+      }
+      if (amount > 0) {
+        return amount;
+      }
     }
     var stored = Number(row.installation_price_cfa);
-    if (Number.isFinite(stored) && stored > 0) {
-      return stored;
+    if (Number.isFinite(stored)) {
+      if (stored === 0) {
+        return null;
+      }
+      if (stored > 0) {
+        return stored;
+      }
     }
     return INSTALLATION_PRICE_CFA;
   }
@@ -721,7 +731,7 @@
         '"' +
         (waUrl === "#" ? ' aria-disabled="true"' : ' target="_blank" rel="noopener noreferrer"') +
         ">Contacter WhatsApp</a>" +
-        '<button type="button" class="adm-btn" id="ir-btn-mark-contact">Marquer contact enregistré</button>' +
+        '<button type="button" class="adm-btn" id="ir-btn-mark-contact">Marquer comme contacté (WhatsApp)</button>' +
         "</div>" +
         "<p class=\"ir-card__meta\">Dernier contact : " +
         escapeHtml(formatDateTime(req.last_contacted_at)) +
@@ -820,7 +830,13 @@
       alert((res.data && res.data.message) || "Impossible d'enregistrer le contact.");
       return;
     }
+    if (res.data && res.data.status_changed) {
+      alert(res.data.message || "Demande marquée comme contactée.");
+    }
     await refreshAll();
+    if (currentDetailId === String(id)) {
+      await openDetail(id, true);
+    }
   }
 
   async function postNote(id, text) {

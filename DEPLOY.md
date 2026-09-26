@@ -29,6 +29,20 @@ Navigateur → Frontend statique → API (JSON) → MySQL
                               → /uploads/ (images)
 ```
 
+### Page d’accueil (`index.html`)
+
+| Fichier | Rôle |
+| ------- | ---- |
+| [`assets/js/main.js`](assets/js/main.js) | Scroll-reveal, menu mobile, modal installation (scripts chargés au clic), liens WhatsApp, Google Analytics différé |
+| [`assets/css/styles.css`](assets/css/styles.css) | Styles landing + états `[data-reveal]` / `prefers-reduced-motion` |
+| [`assets/js/landing-install-request.js`](assets/js/landing-install-request.js) | Formulaire « demande d’installation » (API setup assistance) |
+
+**Animations :** sans JavaScript, pas de classe `js-landing` → contenu visible (CSS). Avec JS, si l’`IntersectionObserver` ne déclenche pas, `scheduleLandingFallback` (~2,6 s après le boot) force `.is-visible` sur tous les blocs ; contrôle viewport à 800 ms en complément. En **réduction des animations**, tout est affiché tout de suite (CSS + JS).
+
+**Connexion restaurateur :** lien direct vers [`frontend/pages/login.html`](frontend/pages/login.html) (header / footer). Pas d’ancre `#connexion` sur la landing.
+
+**Contact :** section `#contact` (cartes WhatsApp / téléphone / e-mail) — le formulaire « Envoyez-nous un message » a été retiré ; pas de backend contact dédié.
+
 ---
 
 ## Installation locale (prod-like)
@@ -499,31 +513,38 @@ sudo certbot renew --dry-run
 
 ```env
 NODE_ENV=production
-CORS_ORIGIN=https://africamenu.com
-SITE_ORIGIN=https://africamenu.com
+CORS_ORIGIN=https://www.africamenu.com
+SITE_ORIGIN=https://www.africamenu.com
 ```
 
-`SITE_ORIGIN` force les URLs absolues du **sitemap** (`https://…/restaurant/<slug>`). Sans cela, l’API utilise `X-Forwarded-Proto` + `Host` (nécessite `proxy_set_header X-Forwarded-Proto $scheme` dans nginx — déjà dans l’exemple).
+`SITE_ORIGIN` force les URLs absolues du **sitemap** (`https://www.africamenu.com/restaurant/<slug>`). Le domaine apex `africamenu.com` est **normalisé en www** côté API. Nginx redirige HTTP/HTTPS apex → **www** (voir [`nginx/africamenu.vps.conf`](nginx/africamenu.vps.conf)).
 
 ### 4. Vérifications après déploiement
 
 ```bash
 # Santé API (JSON, pas du HTML)
-curl -sS https://africamenu.com/health
+curl -sS https://www.africamenu.com/health
 # Attendu : {"ok":true,"service":"AfricaMenu-api","db":"up"}
 
-curl -sS https://africamenu.com/api/health
+curl -sS https://www.africamenu.com/api/health
 
-# Sitemap (XML, pas index.html)
-curl -sSI https://africamenu.com/sitemap.xml | head -5
-curl -sS https://africamenu.com/sitemap.xml | head -20
+# Sitemap (XML, pas index.html) — URLs en https://www.africamenu.com/…
+curl -sSI https://www.africamenu.com/sitemap.xml | head -5
+curl -sS https://www.africamenu.com/sitemap.xml | head -20
+cd backend && node scripts/verify-sitemap.js https://www.africamenu.com/sitemap.xml
 
 # Robots
-curl -sS https://africamenu.com/robots.txt
+curl -sS https://www.africamenu.com/robots.txt
 
-# Redirection HTTP → HTTPS
-curl -sSI http://africamenu.com/ | head -3
-# Attendu : HTTP/1.1 301 … Location: https://…
+# Redirections canoniques
+curl -sSI http://africamenu.com/ | head -5
+# Attendu : 301 → https://www.africamenu.com/…
+curl -sSI https://africamenu.com/ | head -5
+# Attendu : 301 → https://www.africamenu.com/…
+
+# En-têtes sécurité (bloc www HTTPS)
+curl -sSI https://www.africamenu.com/ | grep -iE 'strict-transport|x-frame|x-content-type|referrer-policy'
+# Attendu : HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy
 ```
 
 | Test | OK | Problème probable |
@@ -578,3 +599,4 @@ git tag -a v0.9.0-preprod -m "AfricaMenu prêt pour déploiement (pré-productio
 | `/health` renvoie du HTML    | Proxy `/health` absent du bloc **HTTPS** nginx → ajouter `location = /health` |
 | `/sitemap.xml` = page d’accueil | Idem — proxy manquant sur 443 ; voir [`nginx/africamenu.conf.example`](nginx/africamenu.conf.example) |
 | Sitemap en `http://`         | Renseigner `SITE_ORIGIN=https://…` dans `.env` + `X-Forwarded-Proto` nginx    |
+| Landing : blocs invisibles   | Erreur JS ou `main.js` absent ; filet ~2,6 s dans [`assets/js/main.js`](assets/js/main.js) doit tout révéler |

@@ -149,7 +149,17 @@ async function postSetupHelpContact(req, res) {
     if (result.error === "NOT_FOUND") {
       return res.status(404).json({ message: "Demande introuvable." });
     }
-    return res.json({ ok: true, message: "Contact enregistré." });
+    var st = result.status || "new";
+    return res.json({
+      ok: true,
+      message:
+        result.status_changed ?
+          "Contact enregistré — demande marquée comme contactée."
+        : "Contact enregistré.",
+      status: st,
+      status_label: setupAssistanceService.STATUS_LABELS[st] || st,
+      status_changed: Boolean(result.status_changed),
+    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Erreur serveur." });

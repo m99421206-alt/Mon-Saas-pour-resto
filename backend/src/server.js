@@ -59,6 +59,16 @@ function assertProductionConfig() {
       "Configuration production invalide : DB_PASSWORD doit être renseigné.",
     );
   }
+
+  var siteOrigin = String(
+    process.env.SITE_ORIGIN || process.env.PUBLIC_SITE_ORIGIN || "",
+  ).trim();
+  if (!siteOrigin) {
+    console.warn(
+      "[AfricaMenu] SITE_ORIGIN non défini — le sitemap utilisera https://www.africamenu.com sur le domaine prod. " +
+        "Recommandé : SITE_ORIGIN=https://www.africamenu.com dans backend/.env",
+    );
+  }
 }
 
 // Validation au démarrage

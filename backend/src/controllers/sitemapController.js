@@ -58,22 +58,50 @@ function buildSitemapXml(urls) {
   ].join("\n");
 }
 
+function isAfricaMenuProductionHost(hostname) {
+  var host = String(hostname || "")
+    .split(":")[0]
+    .trim()
+    .toLowerCase();
+  return host === "africamenu.com" || host === "www.africamenu.com";
+}
+
+/**
+ * Force https://www.africamenu.com pour le domaine prod (Search Console canonique).
+ */
+function normalizeCanonicalSiteOrigin(value) {
+  var raw = String(value || "").trim();
+  if (!raw) {
+    return "";
+  }
+
+  try {
+    var url = new URL(raw.indexOf("://") !== -1 ? raw : "https://" + raw);
+    if (isAfricaMenuProductionHost(url.hostname)) {
+      return CANONICAL_SITE_ORIGIN;
+    }
+    return url.origin;
+  } catch (err) {
+    return raw.replace(/\/$/, "");
+  }
+}
+
 function getSiteOrigin(req) {
-  var explicitOrigin = String(
+  var explicitOrigin = normalizeCanonicalSiteOrigin(
     process.env.SITE_ORIGIN || process.env.PUBLIC_SITE_ORIGIN || "",
-  ).trim();
+  );
   if (explicitOrigin) {
-    return explicitOrigin.replace(/\/$/, "");
+    return explicitOrigin;
   }
 
   var host = req.get("host");
+  if (host && isAfricaMenuProductionHost(host)) {
+    return CANONICAL_SITE_ORIGIN;
+  }
+
   if (host) {
     var protocol = req.protocol || "https";
-    var normalizedHost = String(host).replace(/^www\./i, "");
-    if (normalizedHost === "africamenu.com") {
-      return "https://www.africamenu.com";
-    }
-    return protocol + "://" + host;
+    return protocol + "://" + String(host).replace(/\/$/, "");
   }
 
   return CANONICAL_SITE_ORIGIN;
@@ -187,6 +215,8 @@ async function getSitemap(req, res) {
 
 module.exports = {
   getSitemap,
+  getSiteOrigin,
+  normalizeCanonicalSiteOrigin,
   CANONICAL_SITE_ORIGIN,
   SITEMAP_EXCLUDED_SLUGS,
   isSitemapExcludedSlug,

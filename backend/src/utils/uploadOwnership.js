@@ -94,13 +94,16 @@ function isMissingUploadRegistry(err) {
   return err && (err.code === "ER_NO_SUCH_TABLE" || err.errno === 1146);
 }
 
+/**
+ * @returns {Promise<{ ok: boolean, reason?: string }>}
+ */
 async function registerUploadForRestaurant(params) {
   var restaurantId = Number(params && params.restaurantId);
   var userId = Number(params && params.userId);
   var filename = String((params && params.filename) || "").trim();
 
   if (!Number.isInteger(restaurantId) || restaurantId < 1 || !filename) {
-    return;
+    return { ok: false, reason: "invalid_params" };
   }
 
   try {
@@ -110,12 +113,12 @@ async function registerUploadForRestaurant(params) {
         "ON DUPLICATE KEY UPDATE restaurant_id = VALUES(restaurant_id), user_id = VALUES(user_id)",
       [restaurantId, Number.isInteger(userId) && userId > 0 ? userId : null, filename, "/uploads/" + filename]
     );
+    return { ok: true };
   } catch (err) {
-    if (!isMissingUploadRegistry(err)) {
-      if (process.env.NODE_ENV !== "production") {
-        console.warn("[upload_files]", err.message || err);
-      }
+    if (isMissingUploadRegistry(err)) {
+      return { ok: false, reason: "no_registry" };
     }
+    throw err;
   }
 }
 
@@ -152,6 +155,59 @@ async function isUploadUrlReferencedByOtherRestaurant(uploadUrl, restaurantId) {
   return Number(restaurantRow.n) > 0;
 }
 
+async function isUploadUrlReferencedByThisRestaurant(uploadUrl, restaurantId) {
+  var rid = Number(restaurantId);
+  if (!uploadUrl || !Number.isInteger(rid) || rid < 1) {
+    return false;
+  }
+
+  var pool = getPool();
+
+  var [[productRow]] = await pool.query(
+    "SELECT COUNT(*) AS n FROM products WHERE image = ? AND restaurant_id = ?",
+    [uploadUrl, rid]
+  );
+  if (Number(productRow.n) > 0) {
+    return true;
+  }
+
+  var [[variantRow]] = await pool.query(
+    "SELECT COUNT(*) AS n FROM product_variants pv " +
+      "INNER JOIN products p ON p.id = pv.product_id " +
+      "WHERE pv.image = ? AND p.restaurant_id = ?",
+    [uploadUrl, rid]
+  );
+  if (Number(variantRow.n) > 0) {
+    return true;
+  }
+
+  var [[restaurantRow]] = await pool.query(
+    "SELECT COUNT(*) AS n FROM restaurants WHERE (logo_url = ? OR banner_url = ?) AND id = ?",
+    [uploadUrl, uploadUrl, rid]
+  );
+  return Number(restaurantRow.n) > 0;
+}
+
+/**
+ * Sans entrée upload_files : autoriser seulement si l’URL est déjà utilisée par ce restaurant
+ * (images d’avant le registre), et rattacher le fichier au registre.
+ */
+async function allowLegacyUploadForRestaurant(uploadUrl, restaurantId, filename) {
+  var rid = Number(restaurantId);
+  if (await isUploadUrlReferencedByOtherRestaurant(uploadUrl, rid)) {
+    return "forbidden";
+  }
+  if (!(await isUploadUrlReferencedByThisRestaurant(uploadUrl, rid))) {
+    return "forbidden";
+  }
+  await registerUploadForRestaurant({
+    restaurantId: rid,
+    userId: null,
+    filename: filename,
+  });
+  return "ok";
+}
+
 async function assertUploadUrlAllowedForRestaurant(uploadUrl, restaurantId) {
   var filename = getFilenameFromUploadUrl(uploadUrl);
   if (!filename) {
@@ -170,18 +226,14 @@ async function assertUploadUrlAllowedForRestaurant(uploadUrl, restaurantId) {
       [filename]
     );
 
-    // Rétrocompatibilité : pas d'entrée registry — refuser si l'URL est déjà utilisée ailleurs.
     if (!rows.length) {
-      if (await isUploadUrlReferencedByOtherRestaurant(uploadUrl, rid)) {
-        return "forbidden";
-      }
-      return "legacy";
+      return allowLegacyUploadForRestaurant(uploadUrl, rid, filename);
     }
 
     return Number(rows[0].restaurant_id) === rid ? "ok" : "forbidden";
   } catch (err) {
     if (isMissingUploadRegistry(err)) {
-      return "legacy";
+      return allowLegacyUploadForRestaurant(uploadUrl, rid, filename);
     }
     throw err;
   }
@@ -191,7 +243,7 @@ async function assertUploadUrlAllowedForRestaurant(uploadUrl, restaurantId) {
  * Vérifie une ou plusieurs URLs d'upload avant enregistrement.
  * @param {string|string[]|null|undefined} uploadUrls
  * @param {number} restaurantId
- * @returns {Promise<"ok"|"invalid"|"forbidden">}
+ * @returns {Promise<"ok"|"invalid"|"forbidden">} — plus de statut « legacy » accepté implicitement.
  */
 async function assertUploadUrlsAllowedForRestaurant(uploadUrls, restaurantId) {
   var list = [];
@@ -207,7 +259,7 @@ async function assertUploadUrlsAllowedForRestaurant(uploadUrls, restaurantId) {
       continue;
     }
     var status = await assertUploadUrlAllowedForRestaurant(url, restaurantId);
-    if (status === "forbidden" || status === "invalid") {
+    if (status !== "ok") {
       return status;
     }
   }

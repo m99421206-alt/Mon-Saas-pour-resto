@@ -1,8 +1,15 @@
 ﻿/**
- * AfricaMenu — scripts landing
- * - Révélation progressive des blocs au scroll (accessibilité : respecte prefers-reduced-motion côté CSS)
- * - Lissage du comportement des ancres internes
- * - Journalisation discrète des clics CTA (placeholder jusqu’à branchement backend)
+ * AfricaMenu — scripts landing (`index.html`)
+ *
+ * Animations scroll-reveal :
+ * - `html.js-landing` + `[data-reveal]` / `[data-reveal-group]` masquent les blocs jusqu’à `.is-visible`.
+ * - Hero/header : visibles tout de suite (`landing-ready`) pour ne pas retarder le LCP.
+ * - `initScrollReveal()` (idle ~2,2 s max) : IntersectionObserver + contrôle viewport à 800 ms.
+ * - `scheduleLandingFallback()` : ~2,6 s après le boot, force `.is-visible` partout si l’IO échoue (timer unique, non réinitialisé).
+ * - `prefers-reduced-motion: reduce` : tout affiché sans observer (CSS + JS).
+ *
+ * Autres : ancres internes, menu mobile, modal installation (lazy), WhatsApp, analytics différé.
+ * Connexion utilisateur : `frontend/pages/login.html` (pas d’ancre `#connexion` sur la landing).
  */
 
 (function () {
@@ -14,7 +21,8 @@
       ? window.AFRICA_LANDING_WHATSAPP.trim()
       : "22399421206";
   const REVEAL_SELECTOR = "[data-reveal], [data-reveal-group], .reveal";
-  const LANDING_FALLBACK_MS = 1600;
+  /** Après ce délai (depuis le boot), tous les `[data-reveal]` passent en `.is-visible`. ≥ idle scroll-reveal (2,2 s). */
+  const LANDING_FALLBACK_MS = 2600;
   let landingFallbackTimer = 0;
 
   function prefersReducedMotion() {
@@ -105,6 +113,13 @@
     }, LANDING_FALLBACK_MS);
   }
 
+  function maybeClearLandingFallbackWhenDone() {
+    const pending = document.querySelectorAll(
+      `${REVEAL_SELECTOR}:not(.is-visible)`
+    );
+    if (!pending.length) clearLandingFallback();
+  }
+
   /**
    * Hero/header visibles dès le HTML — on ne retarde plus le LCP pour une animation.
    */
@@ -112,9 +127,9 @@
     document.body.classList.add("landing-ready");
     const hero = document.querySelector(".reveal-hero");
     if (hero) hero.classList.add("is-ready");
-    clearLandingFallback();
     if (prefersReducedMotion()) {
       forceLandingVisible(true);
+      clearLandingFallback();
     }
   }
 
@@ -230,6 +245,7 @@
 
     if (prefersReducedMotion() || !("IntersectionObserver" in window)) {
       nodes.forEach((el) => el.classList.add("is-visible"));
+      clearLandingFallback();
       return;
     }
 
@@ -240,6 +256,7 @@
           if (!entry.isIntersecting) return;
           entry.target.classList.add("is-visible");
           obs.unobserve(entry.target);
+          maybeClearLandingFallbackWhenDone();
         });
       },
       mobile
@@ -261,6 +278,7 @@
           observer.unobserve(el);
         }
       });
+      maybeClearLandingFallbackWhenDone();
     };
 
     const scheduleRevealFallback = () => {
@@ -346,58 +364,6 @@
       link.href = `https://wa.me/${digits}?text=${encoded}`;
       link.target = "_blank";
       link.rel = "noopener noreferrer";
-    });
-  }
-
-  /** Formulaire contact : compose un message WhatsApp (pas de backend requis). */
-  function whatsappComposeUrl(bodyText) {
-    const digits = String(LANDING_SUPPORT_WHATSAPP || "").replace(/\D/g, "");
-    if (!digits.length) return null;
-    return (
-      "https://wa.me/" + digits + "?text=" + encodeURIComponent(String(bodyText || "").trim())
-    );
-  }
-
-  function initContactForm() {
-    const form = document.getElementById("contact-form");
-    const msgEl = document.getElementById("contact-message");
-    const feedback = document.getElementById("contact-form-feedback");
-
-    function showFeedback(message, isError) {
-      if (!feedback) return;
-      feedback.textContent = message || "";
-      feedback.hidden = false;
-      feedback.classList.toggle("contact-form__feedback--error", Boolean(isError));
-    }
-
-    if (!form || !msgEl) return;
-
-    form.addEventListener("submit", (ev) => {
-      ev.preventDefault();
-      var nameEl = document.getElementById("contact-name");
-      var phoneEl = document.getElementById("contact-phone");
-      var name = nameEl && nameEl.value ? String(nameEl.value).trim() : "";
-      var phone = phoneEl && phoneEl.value ? String(phoneEl.value).trim() : "";
-      var msg = String(msgEl.value || "").trim();
-      if (!msg) {
-        showFeedback("Merci de rédiger un message.", true);
-        msgEl.focus();
-        return;
-      }
-      var body = "Bonjour AfricaMenu,\n\n";
-      if (name) body += "Nom : " + name + "\n";
-      if (phone) body += "Téléphone : " + phone + "\n";
-      body += "\nMessage :\n" + msg;
-      var url = whatsappComposeUrl(body);
-      if (!url) {
-        showFeedback("Numéro support non configuré.", true);
-        return;
-      }
-      showFeedback("Ouverture de WhatsApp…", false);
-      window.open(url, "_blank", "noopener,noreferrer");
-      window.setTimeout(function () {
-        if (feedback) feedback.hidden = true;
-      }, 2600);
     });
   }
 
@@ -501,13 +467,16 @@
     initLandingEntrance();
     initHeaderScrollState();
     initLandingWhatsAppLinks();
-    initContactForm();
     initSiteHeaderMenu();
     initInternalAnchors();
     initCtaHooks();
     initFooterYear();
     initInstallModalLazyLoad();
     scheduleAnalyticsDeferred();
+
+    if (!prefersReducedMotion()) {
+      scheduleLandingFallback();
+    }
 
     const runScrollReveal = () => initScrollReveal();
     if (typeof window.requestIdleCallback === "function") {

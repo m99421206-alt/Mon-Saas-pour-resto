@@ -94,13 +94,98 @@ function isMissingInstallationPriceColumn(err) {
   return err && (err.code === "ER_BAD_FIELD_ERROR" || err.errno === 1054);
 }
 
+function getRevenueRestaurantAnchor(row) {
+  if (!row) {
+    return null;
+  }
+  var linked = Number(row.linked_restaurant_id);
+  if (Number.isInteger(linked) && linked > 0) {
+    return linked;
+  }
+  var rest = Number(row.restaurant_id);
+  if (Number.isInteger(rest) && rest > 0) {
+    return rest;
+  }
+  return null;
+}
+
+/**
+ * Une seule ligne « payante » (35 000 F CFA) par restaurant lié.
+ * Les autres demandes completed pour le même restaurant → installation_price_cfa = 0.
+ */
+async function findCompletedRevenueSibling(pool, anchorRestaurantId, excludeRequestId) {
+  var anchor = Number(anchorRestaurantId);
+  var excludeId = Number(excludeRequestId);
+  if (!Number.isInteger(anchor) || anchor < 1 || !Number.isInteger(excludeId) || excludeId < 1) {
+    return null;
+  }
+
+  var [rows] = await pool.query(
+    "SELECT id FROM setup_assistance_requests " +
+      "WHERE status = 'completed' AND id <> ? " +
+      "AND (linked_restaurant_id = ? OR restaurant_id = ?) " +
+      "AND (installation_price_cfa IS NULL OR installation_price_cfa > 0) " +
+      "ORDER BY id ASC LIMIT 1",
+    [excludeId, anchor, anchor],
+  );
+  return rows.length ? rows[0] : null;
+}
+
+async function resolveInstallationPriceOnComplete(pool, row, requestId) {
+  var price = installationPricing.INSTALLATION_PRICE_CFA;
+  var currency = installationPricing.INSTALLATION_PRICE_CURRENCY;
+
+  if (row && row.installation_price_cfa != null) {
+    var stored = Number(row.installation_price_cfa);
+    if (stored === 0) {
+      return { price_cfa: 0, currency: currency };
+    }
+    if (stored > 0) {
+      return { price_cfa: stored, currency: currency };
+    }
+  }
+
+  var anchor = getRevenueRestaurantAnchor(row);
+  if (anchor != null) {
+    var sibling = await findCompletedRevenueSibling(pool, anchor, requestId);
+    if (sibling) {
+      return { price_cfa: 0, currency: currency };
+    }
+  }
+
+  return { price_cfa: price, currency: currency };
+}
+
+async function queryTotalInstallationRevenueCfa(pool, defaultPrice) {
+  var price = Number(defaultPrice) || installationPricing.INSTALLATION_PRICE_CFA;
+  var [[revRow]] = await pool.query(
+    "SELECT COALESCE(SUM(sub.rev), 0) AS total_revenue_cfa FROM (" +
+      "SELECT MAX(COALESCE(NULLIF(installation_price_cfa, 0), ?)) AS rev " +
+      "FROM setup_assistance_requests " +
+      "WHERE status = 'completed' " +
+      "GROUP BY CASE " +
+      "WHEN COALESCE(linked_restaurant_id, restaurant_id) IS NOT NULL " +
+      "THEN CONCAT('r:', COALESCE(linked_restaurant_id, restaurant_id)) " +
+      "ELSE CONCAT('q:', id) END" +
+      ") sub",
+    [price],
+  );
+  return Number(revRow.total_revenue_cfa) || 0;
+}
+
 function resolveRequestRevenueCfa(row, status) {
   var st = normalizeStatus(status || (row && row.status));
   if (st !== "completed") {
     return null;
   }
-  if (row && row.installation_price_cfa != null && Number(row.installation_price_cfa) > 0) {
-    return Number(row.installation_price_cfa);
+  if (row && row.installation_price_cfa != null) {
+    var stored = Number(row.installation_price_cfa);
+    if (stored === 0) {
+      return 0;
+    }
+    if (stored > 0) {
+      return stored;
+    }
   }
   return installationPricing.INSTALLATION_PRICE_CFA;
 }
@@ -547,10 +632,8 @@ async function getStats() {
         "SUM(CASE WHEN status IN ('contacted','info_received','in_progress','correction_needed') THEN 1 ELSE 0 END) AS in_progress_count, " +
         "SUM(CASE WHEN status = 'ready_to_review' THEN 1 ELSE 0 END) AS to_review_count, " +
         "SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed_count, " +
-        "SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled_count, " +
-        "SUM(CASE WHEN status = 'completed' THEN COALESCE(installation_price_cfa, ?) ELSE 0 END) AS total_revenue_cfa " +
+        "SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled_count " +
         "FROM setup_assistance_requests",
-      [price],
     );
   } catch (err) {
     if (!isMissingInstallationPriceColumn(err)) {
@@ -566,10 +649,17 @@ async function getStats() {
         "SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled_count " +
         "FROM setup_assistance_requests",
     );
-    row.total_revenue_cfa = (Number(row.completed_count) || 0) * price;
   }
   var completedCount = Number(row.completed_count) || 0;
-  var totalRevenue = Number(row.total_revenue_cfa) || 0;
+  var totalRevenue;
+  try {
+    totalRevenue = await queryTotalInstallationRevenueCfa(pool, price);
+  } catch (revErr) {
+    if (!isMissingInstallationPriceColumn(revErr)) {
+      throw revErr;
+    }
+    totalRevenue = completedCount * price;
+  }
   return {
     new: Number(row.new_count) || 0,
     to_contact: Number(row.to_contact_count) || 0,
@@ -603,16 +693,24 @@ async function updateRequestStatus(id, nextStatus, adminUserId) {
     return { error: "INVALID_TRANSITION", from: current, to: st };
   }
 
-  var price = installationPricing.INSTALLATION_PRICE_CFA;
-  var currency = installationPricing.INSTALLATION_PRICE_CURRENCY;
+  var resolvedPrice = null;
+  if (st === "completed") {
+    resolvedPrice = await resolveInstallationPriceOnComplete(pool, row, id);
+  }
   try {
-    await pool.query(
-      "UPDATE setup_assistance_requests SET status = ?, last_activity_at = NOW(), " +
-        "installation_price_cfa = CASE WHEN ? = 'completed' THEN COALESCE(installation_price_cfa, ?) ELSE installation_price_cfa END, " +
-        "installation_price_currency = CASE WHEN ? = 'completed' AND installation_price_cfa IS NULL THEN ? ELSE installation_price_currency END " +
-        "WHERE id = ? LIMIT 1",
-      [st, st, price, st, currency, id],
-    );
+    if (st === "completed" && resolvedPrice) {
+      await pool.query(
+        "UPDATE setup_assistance_requests SET status = ?, last_activity_at = NOW(), " +
+          "installation_price_cfa = ?, installation_price_currency = ? " +
+          "WHERE id = ? LIMIT 1",
+        [st, resolvedPrice.price_cfa, resolvedPrice.currency, id],
+      );
+    } else {
+      await pool.query(
+        "UPDATE setup_assistance_requests SET status = ?, last_activity_at = NOW() WHERE id = ? LIMIT 1",
+        [st, id],
+      );
+    }
   } catch (err) {
     if (!isMissingInstallationPriceColumn(err)) {
       throw err;
@@ -630,13 +728,18 @@ async function updateRequestStatus(id, nextStatus, adminUserId) {
     eventType = "reactivated";
   }
 
+  var eventPayload = { from: current, to: st };
+  if (st === "completed" && resolvedPrice) {
+    eventPayload.installation_price_cfa = resolvedPrice.price_cfa;
+  }
+
   await insertEvent(pool, {
     requestId: id,
     eventType: eventType,
     detail:
       STATUS_LABELS[current] + " → " + STATUS_LABELS[st],
     adminUserId: adminUserId,
-    payload: { from: current, to: st },
+    payload: eventPayload,
   });
 
   if (st === "completed") {
@@ -653,20 +756,47 @@ async function markContacted(id, adminUserId) {
     return { error: "NOT_FOUND" };
   }
 
-  await pool.query(
-    "UPDATE setup_assistance_requests SET last_contacted_at = NOW(), last_activity_at = NOW() WHERE id = ? LIMIT 1",
-    [id],
-  );
+  var current = normalizeStatus(row.status) || "new";
+  var nextStatus = current;
+  var statusChanged = false;
+
+  if (current === "new" && canTransition(current, "contacted")) {
+    nextStatus = "contacted";
+    statusChanged = true;
+    await pool.query(
+      "UPDATE setup_assistance_requests SET status = ?, last_contacted_at = NOW(), last_activity_at = NOW() WHERE id = ? LIMIT 1",
+      [nextStatus, id],
+    );
+    await insertEvent(pool, {
+      requestId: id,
+      eventType: "status_changed",
+      detail: STATUS_LABELS.new + " → " + STATUS_LABELS.contacted,
+      adminUserId: adminUserId,
+      payload: { from: "new", to: "contacted", via: "contact" },
+    });
+  } else if (current !== "completed" && current !== "cancelled") {
+    await pool.query(
+      "UPDATE setup_assistance_requests SET last_contacted_at = NOW(), last_activity_at = NOW() WHERE id = ? LIMIT 1",
+      [id],
+    );
+  } else {
+    await pool.query(
+      "UPDATE setup_assistance_requests SET last_contacted_at = NOW(), last_activity_at = NOW() WHERE id = ? LIMIT 1",
+      [id],
+    );
+  }
 
   await insertEvent(pool, {
     requestId: id,
     eventType: "whatsapp_marked",
-    detail: "Contact WhatsApp enregistré",
+    detail: statusChanged ?
+      "Contact WhatsApp enregistré — statut passé à Contacté"
+    : "Contact WhatsApp enregistré",
     adminUserId: adminUserId,
-    payload: null,
+    payload: statusChanged ? { status: nextStatus } : null,
   });
 
-  return { ok: true };
+  return { ok: true, status: nextStatus, status_changed: statusChanged };
 }
 
 async function addNote(id, text, adminUserId) {
@@ -762,15 +892,15 @@ async function completeByRestaurantId(restaurantId) {
   );
 
   if (rows.length) {
-    var price = installationPricing.INSTALLATION_PRICE_CFA;
-    var currency = installationPricing.INSTALLATION_PRICE_CURRENCY;
+    var requestId = rows[0].id;
+    var requestRow = await getRequestById(requestId);
+    var resolvedPrice = await resolveInstallationPriceOnComplete(pool, requestRow, requestId);
     try {
       await pool.query(
         "UPDATE setup_assistance_requests SET status = 'completed', last_activity_at = NOW(), " +
-          "installation_price_cfa = COALESCE(installation_price_cfa, ?), " +
-          "installation_price_currency = COALESCE(installation_price_currency, ?) " +
+          "installation_price_cfa = ?, installation_price_currency = ? " +
           "WHERE id = ? LIMIT 1",
-        [price, currency, rows[0].id],
+        [resolvedPrice.price_cfa, resolvedPrice.currency, requestId],
       );
     } catch (err) {
       if (!isMissingInstallationPriceColumn(err)) {
@@ -778,7 +908,7 @@ async function completeByRestaurantId(restaurantId) {
       }
       await pool.query(
         "UPDATE setup_assistance_requests SET status = 'completed', last_activity_at = NOW() WHERE id = ? LIMIT 1",
-        [rows[0].id],
+        [requestId],
       );
     }
   }

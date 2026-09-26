@@ -116,11 +116,30 @@ router.post("/", uploadUserRateLimiter, requireRestaurantMenuEdit, async functio
       var finalFilename = optimized.filename || req.file.filename;
 
       var rid = req.restaurantId || (await getRestaurantIdForUserAudit(req.user.id));
-      await registerUploadForRestaurant({
+      var registered = await registerUploadForRestaurant({
         restaurantId: rid,
         userId: req.user.id,
         filename: finalFilename,
       });
+      if (!registered.ok) {
+        if (registered.reason === "no_registry") {
+          if (process.env.NODE_ENV !== "production") {
+            console.warn(
+              "[upload] Table upload_files absente — exécutez npm run db:upload-registry",
+            );
+          }
+        } else {
+          try {
+            fs.unlinkSync(path.join(uploadsDir, finalFilename));
+          } catch (unlinkErr) {
+            /* ignore */
+          }
+          await logUploadFailure(req, "Enregistrement du fichier refusé.");
+          return res.status(500).json({
+            message: "Impossible d’enregistrer l’image pour votre restaurant.",
+          });
+        }
+      }
 
       await appendAuditFromRequest(req, {
         restaurantId: rid,

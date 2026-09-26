@@ -2919,7 +2919,8 @@ body.install-modal-open {
 }
 
 /* ----------------------------------------------------------------------------- Animations landing (CSS + IntersectionObserver) */
-/* Masquage initial uniquement si html.js-landing (JS chargé) — sinon contenu visible. */
+/* Masquage initial uniquement si html.js-landing (JS chargé) — sinon contenu visible.
+   Filet JS : `scheduleLandingFallback()` dans assets/js/main.js (~2,6 s) + contrôle viewport à 800 ms. */
 
 :root {
   --motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);

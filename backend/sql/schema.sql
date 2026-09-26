@@ -145,6 +145,8 @@ CREATE TABLE IF NOT EXISTS `setup_assistance_requests` (
   `last_contacted_at` TIMESTAMP NULL DEFAULT NULL,
   `last_activity_at` TIMESTAMP NULL DEFAULT NULL,
   `checklist_json` JSON NULL,
+  `installation_price_cfa` INT UNSIGNED NULL DEFAULT NULL COMMENT 'Fixé au passage en completed (ex. 35000)',
+  `installation_price_currency` VARCHAR(8) NULL DEFAULT NULL COMMENT 'Ex. FCFA',
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),

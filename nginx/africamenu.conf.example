@@ -25,15 +25,31 @@ server {
   }
 
   location / {
-    return 301 https://$host$request_uri;
+    return 301 https://www.africamenu.com$request_uri;
   }
 }
 
-# --- Site principal HTTPS -----------------------------------------------------
+# --- Apex HTTPS → www (canonique) ---------------------------------------------
 server {
   listen 443 ssl http2;
   listen [::]:443 ssl http2;
-  server_name africamenu.com www.africamenu.com;
+  server_name africamenu.com;
+
+  ssl_certificate /etc/letsencrypt/live/africamenu.com/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/africamenu.com/privkey.pem;
+  include /etc/letsencrypt/options-ssl-nginx.conf;
+  ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+  return 301 https://www.africamenu.com$request_uri;
+}
+
+# --- Site principal HTTPS (www) -----------------------------------------------
+server {
+  listen 443 ssl http2;
+  listen [::]:443 ssl http2;
+  server_name www.africamenu.com;
 
   # Certificats Let’s Encrypt (Certbot les injecte souvent automatiquement)
   ssl_certificate /etc/letsencrypt/live/africamenu.com/fullchain.pem;
@@ -46,6 +62,14 @@ server {
 
   access_log /var/log/nginx/africamenu.access.log;
   error_log /var/log/nginx/africamenu.error.log warn;
+
+  # En-têtes sécurité (HTML, assets, réponses nginx ; API complétée par Helmet)
+  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+  add_header X-Frame-Options "SAMEORIGIN" always;
+  add_header X-Content-Type-Options "nosniff" always;
+  add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+  add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+  add_header Cross-Origin-Opener-Policy "same-origin" always;
 
   client_max_body_size 64M;
 
@@ -98,8 +122,8 @@ server {
   location = /sitemap.xml {
     proxy_pass http://127.0.0.1:4000/sitemap.xml;
     proxy_http_version 1.1;
-    proxy_set_header Host $host;
-    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Host www.africamenu.com;
+    proxy_set_header X-Forwarded-Proto https;
     expires 1h;
     add_header Cache-Control "public, max-age=3600";
   }

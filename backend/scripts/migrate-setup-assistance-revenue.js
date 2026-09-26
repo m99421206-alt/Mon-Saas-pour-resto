@@ -80,6 +80,23 @@ async function main() {
       "Demandes terminées mises à jour : " + (backfill.affectedRows || 0) + " ligne(s).",
     );
 
+    var [dedupe] = await connection.query(
+      "UPDATE setup_assistance_requests sar " +
+        "INNER JOIN (" +
+        "SELECT MIN(id) AS keep_id, COALESCE(linked_restaurant_id, restaurant_id) AS anchor " +
+        "FROM setup_assistance_requests " +
+        "WHERE status = 'completed' AND COALESCE(linked_restaurant_id, restaurant_id) IS NOT NULL " +
+        "GROUP BY anchor" +
+        ") k ON COALESCE(sar.linked_restaurant_id, sar.restaurant_id) = k.anchor " +
+        "SET sar.installation_price_cfa = 0, sar.installation_price_currency = ? " +
+        "WHERE sar.status = 'completed' AND sar.id <> k.keep_id " +
+        "AND (sar.installation_price_cfa IS NULL OR sar.installation_price_cfa > 0)",
+      [currency],
+    );
+    console.log(
+      "Doublons revenus (même restaurant) neutralisés : " + (dedupe.affectedRows || 0) + " ligne(s).",
+    );
+
     console.log("Migration revenus installations terminée.");
   } finally {
     await connection.end();
