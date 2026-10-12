@@ -509,6 +509,8 @@ sudo certbot renew --dry-run
 
 **Important :** les blocs `location` (`/api/`, `/health`, `/sitemap.xml`, `/restaurant/`, etc.) doivent exister dans le **`server { listen 443 ssl … }`**, pas seulement sur le port 80. Sinon le site HTTPS répond mais `/health` ou `/sitemap.xml` renvoient `index.html`.
 
+**Secrets :** le `root` nginx est le dépôt (`/var/www/africamenu`). `location / { try_files $uri … }` servirait sinon `backend/.env`, `.git/` et `backups/`. Les configs nginx refusent ces chemins (`return 404`). Après chaque mise à jour de la config : `sudo nginx -t && sudo systemctl reload nginx`. Les images restent servies via `location /uploads/`.
+
 ### 3. Variables `.env` production
 
 ```env

@@ -190,6 +190,20 @@ server {
     return 301 /restaurant/$1;
   }
 
+  # Le root est le dépôt git. Sans ces blocs, try_files sert backend/.env, .git/, backups/.
+  # /uploads/ (alias) reste public ; ce préfixe ne le couvre pas.
+  location ^~ /backend/ {
+    return 404;
+  }
+
+  location ^~ /backups/ {
+    return 404;
+  }
+
+  location ~ /\.(?!well-known/) {
+    return 404;
+  }
+
   location / {
     try_files $uri $uri/ /index.html;
   }
